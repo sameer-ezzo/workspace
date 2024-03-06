@@ -38,7 +38,7 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
     @Input() tableActions: ActionDescriptor[] = [
         { name: 'edit', icon: 'edit', text: 'Edit', menu: true },
         { name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-        { name: 'create', icon: 'add_circle_outline', text: 'Create', bulk: true }
+        { name: 'create', icon: 'add_circle_outline', text: 'Create' }
     ];
 
     @Input() tableColumns = {};

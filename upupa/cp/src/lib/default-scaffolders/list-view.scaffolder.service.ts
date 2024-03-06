@@ -21,9 +21,9 @@ export class GenericListViewScaffolder implements IScaffolder<ListScaffoldingMod
         if ((listInfo.actions ?? []).length === 0) {
             const { hasCreate, hasEdit, hasView } = resolvePathScaffolders(collection)
 
-            if (hasCreate) actions.push({ position: 'header', name: 'create', icon: 'add_circle_outline', text: 'Create', bulk: true })
-            if (hasEdit) actions.push({ variant: 'icon', name: 'edit', icon: 'edit', menu: false })
-            if (hasView) actions.push({ variant: 'icon', name: 'view', icon: 'visibility', menu: false })
+            if (hasCreate) actions.push({ position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
+            if (hasEdit) actions.push({ variant: 'icon', name: 'edit', icon: 'edit', menu: true })
+            if (hasView) actions.push({ variant: 'icon', name: 'view', icon: 'visibility', menu: true })
         }
         const queryFn = this.resolveQueryFn(listInfo, 'query');
         const queryParamsFn = this.resolveQueryFn(listInfo, 'queryParams');

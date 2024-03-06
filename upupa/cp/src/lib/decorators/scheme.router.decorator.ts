@@ -36,11 +36,11 @@ export type ListViewModelOptions = Partial<Omit<DataListViewModel, 'filterForm' 
 
 export type ListViewOptions = ViewMetaOptions & (ScaffolderOption | ListViewModelOptions);
 export type CreateFormOptions = Partial<DataFormViewModel> & { scaffolder?: IScaffolder<FormScaffoldingModel> | any, }
-export type EditFormOptions = {
+export type EditFormOptions = Partial<{
     selector: `:${string}`,
     scaffolder?: IScaffolder<FormScaffoldingModel> | any,
     options: Partial<DataFormViewModel> & {}
-}
+}>
 export type ViewFormOptions = EditFormOptions;
 
 export type ModelSchemeRouteOptions = {
@@ -125,7 +125,15 @@ export function editFormScaffolder(path: string, options: EditFormOptions = { se
         applyFormScheme(path, target);
 
         const { selector, options: editOptions } = options;
-        const editRoute = { [path]: { [selector]: { type: options.scaffolder ?? FormViewScaffolderService }, meta: editOptions } };
+        const editRoute = {
+            [path]: {
+                [selector || ':id']: {
+                    type: options.scaffolder || FormViewScaffolderService
+                },
+                meta: editOptions
+            }
+        };
+
         _scaffoldingScheme['edit'] = { ..._scaffoldingScheme['edit'], ...editRoute }
     }
 }
@@ -166,21 +174,29 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
     return function (target) {
 
         const opts = {
-            ...{
-                text: toTitleCase(path),
-                editForm: { selector: ':id', options: {} },
-                viewForm: { selector: ':id', options: {} }
-            } as ViewMetaOptions & ModelSchemeRouteOptions, ...options
-        };
-        const meta = {}
-        meta['icon'] = opts.icon;
-        meta['text'] = opts.text;
-        meta['group'] = opts.group;
-        meta['position'] = opts.position;
-
-        if (options.listView !== null) listScaffolder(path, { ...meta, ...opts.listView })(target)
+            ...options,
+            text: toTitleCase(path),
+            createForm: { ...(options.createForm ?? {}) },
+            editForm: {
+                selector: options.editForm?.selector || ':id',
+                options: { ...(options.editForm?.options ?? {}) },
+                scaffolder: options.editForm?.scaffolder
+            },
+            viewForm: {
+                selector: options.viewForm?.selector || ':id',
+                options: { ...(options.viewForm?.options ?? {}) },
+                scaffolder: options.viewForm?.scaffolder
+            }
+        } as ViewMetaOptions & ModelSchemeRouteOptions;
+        const listMeta = {
+            icon: opts.icon,
+            text: opts.text,
+            group: opts.group,
+            position: opts.position,
+        }
+        if (options.listView !== null) listScaffolder(path, { ...listMeta, ...opts.listView })(target)
         if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);
         if (options.editForm !== null) editFormScaffolder(path, opts.editForm)(target);
-        if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);
+        // if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);
     }
 }

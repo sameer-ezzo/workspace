@@ -6,14 +6,13 @@
                 </mat-icon>
             </button>
             <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
-
                 @if(avatarService.userAvatar| async; as avatar){
                 @if(avatar){
-                <mat-icon *ngIf="!avatar; else imgAvatar" style="flex: 0 0 25px;">person</mat-icon>
-                <ng-template #imgAvatar>
-                    <img [src]="avatar" alt="{{auth.user.sub}}">
-                    <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
-                </ng-template>
+                <img [src]="avatar" [attr.alt]="auth.user.name || auth.user.email">
+                <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
+                }
+                @else {
+                <mat-icon style="flex: 0 0 25px;">person</mat-icon>
                 }
                 }
             </div>

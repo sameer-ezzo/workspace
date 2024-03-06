@@ -11,7 +11,7 @@ import { resolvePath } from "./resolve-scaffolder-path.func";
 //     { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
 //     { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
 //     { position: 'bulk', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true, bulk: true },
-//     { position: 'header', name: 'create', icon: 'add_circle_outline', text: 'Create', bulk: true }
+//     { position: 'header', name: 'create', icon: 'add_circle_outline', text: 'Create' }
 // ];
 export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> {
 
