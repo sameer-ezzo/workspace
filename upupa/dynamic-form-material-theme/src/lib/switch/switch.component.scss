@@ -1,0 +1,8 @@
+:host {
+  display: block;
+
+  mat-checkbox + paragraph {
+    padding-block-start: 8px;
+    color: var(--fg-secondary-text);
+  }
+}

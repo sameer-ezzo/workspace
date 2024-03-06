@@ -6,7 +6,7 @@ import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
 @Component({
   selector: 'mat-form-switch-input',
   templateUrl: './switch.component.html',
-  styleUrls: ['./switch.component.css'],
+  styleUrls: ['./switch.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
