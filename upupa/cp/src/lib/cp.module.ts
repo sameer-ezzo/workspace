@@ -2,7 +2,7 @@ import { ModuleWithProviders, NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { DataListComponent } from "./data-list/data-list.component";
-import { SCAFFOLDING_SCHEME } from "./di.token";
+import { CP_OPTIONS, SCAFFOLDING_SCHEME } from "./di.token";
 import { ScaffoldingScheme } from "../types";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import {
@@ -66,20 +66,28 @@ const declarations = [
         TagsModule,
         PermissionsModule
     ],
-    providers: [ScaffoldersProvider],
+    providers: [ScaffoldersProvider, {
+        provide: CP_OPTIONS,
+        useValue: { userAvatarMode: 'avatar' },
+    }],
     exports: [...declarations],
 })
 export class ControlPanelModule {
-    public static register(scaffoldingScheme?: ScaffoldingScheme, options?: {
-        userMenuAvatarMode: string;
-    }): ModuleWithProviders<ControlPanelModule> {
+    public static register(scaffoldingScheme?: ScaffoldingScheme, options: {
+        userAvatarMode: 'avatar' | 'initials' | 'name';
+    } = { userAvatarMode: 'avatar' }): ModuleWithProviders<ControlPanelModule> {
         const scaffolders = mergeScaffoldingScheme(scaffoldingScheme ?? {})
+
         return {
             ngModule: ControlPanelModule,
             providers: [
                 {
                     provide: SCAFFOLDING_SCHEME,
                     useValue: scaffolders,
+                },
+                {
+                    provide: CP_OPTIONS,
+                    useValue: options ?? {},
                 },
             ],
         };

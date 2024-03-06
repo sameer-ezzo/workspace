@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, Input, SimpleChanges, ViewEncapsulation } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input, SimpleChanges, ViewEncapsulation, inject } from '@angular/core'
 import { LanguageService } from '@upupa/language'
 import { AuthService } from '@upupa/auth'
 
@@ -11,6 +11,7 @@ import { SideBarGroup } from './side-bar-group-item'
 import { AvatarMode, UserAvatarService } from './avatar.service'
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
+import { CP_OPTIONS } from '../di.token'
 
 @Component({
     selector: 'cp-layout',
@@ -22,7 +23,7 @@ import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
 export class CpLayoutComponent {
 
     @Input() logo: string | null = null
-    @Input() userAvatarMode: AvatarMode
+
     @Input() sideBarCommands: SideBarGroup[]
     @Input() userMenuCommands: SideBarGroup[]
     sidebarCmds: SideBarGroup[] = []
@@ -30,14 +31,16 @@ export class CpLayoutComponent {
     @Input() isSidebarOpened = false
 
     destroyed$ = new Subject()
-
     constructor(public auth: AuthService,
         public avatarService: UserAvatarService,
         private router: Router,
+        @Inject(CP_OPTIONS) private readonly cpOptions,
         @Inject(DEFAULT_THEME_NAME) private theme: string,
         private dfForm: DynamicFormService,
         public languageService: LanguageService,
         public breakPointObserver: BreakpointObserver) {
+
+        this.avatarService.avatarMode = this.cpOptions.userAvatarMode ?? 'initials'
 
         dfForm.addControlType('inline-editable-list', InlineEditableListComponent, theme)
         breakPointObserver.observe([Breakpoints.XSmall]).subscribe(() => {

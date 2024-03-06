@@ -15,7 +15,6 @@ import { SideBarGroup } from '../cp-layout/side-bar-group-item';
 })
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarGroup[]
-    @Input() avatarMode: AvatarMode = 'initials';
 
 
     destroyed$ = new Subject<boolean>()
@@ -32,10 +31,7 @@ export class ToolbarUserMenuComponent {
         private bus: EventBus) {
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['avatarMode'])
-            this.avatarService.avatarMode = this.avatarMode ?? "initials"
-    }
+    
 
     ngOnDestroy(): void {
         this.destroyed$.next(true)

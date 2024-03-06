@@ -5,7 +5,7 @@
         </button>
         <img [src]="logo" class="logo" alt="">
         <span class="spacer"></span>
-        <toolbar-user-menu [avatarMode]="userAvatarMode" [commands]="userMenuCommands"></toolbar-user-menu>
+        <toolbar-user-menu [commands]="userMenuCommands"></toolbar-user-menu>
     </mat-toolbar>
     <mat-drawer-container autosize [dir]="languageService.dir$ | async" autosize style="flex: 1;">
         <mat-drawer #drawer class="sidenav" [mode]="sideBarMode" [opened]="isSidebarOpened && sidebarCmds?.length > 0">

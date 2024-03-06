@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { AuthService } from '@upupa/auth'
 import { DataService } from '@upupa/data'
 import { FileInfo } from '@upupa/upload'
-import { BehaviorSubject, catchError, combineLatest, debounceTime, firstValueFrom, from, map, Observable, ReplaySubject, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, catchError, combineLatest, debounceTime, firstValueFrom, from, map, Observable, of, ReplaySubject, switchMap, tap } from 'rxjs'
 import { Principle } from '@noah-ark/common'
 
 declare var base;
@@ -12,41 +12,41 @@ export type AvatarMode = 'initials' | 'avatar' | 'name'
 })
 export class UserAvatarService {
 
-    private readonly _avatarModeChanged = new BehaviorSubject<AvatarMode>('avatar')
-    private _avatarMode: AvatarMode;
-    public get avatarMode(): AvatarMode { return this._avatarMode; }
+    private readonly _avatarModeChanged = new BehaviorSubject<AvatarMode>('initials')
+    public get avatarMode(): AvatarMode { return this._avatarModeChanged.value; }
     public set avatarMode(v: AvatarMode) {
-        this._avatarMode = v;
         this._avatarModeChanged.next(v)
     }
 
     userAvatar: Observable<any>
-
     constructor(public auth: AuthService, private dataService: DataService) {
         this.userAvatar = combineLatest([this._avatarModeChanged, this.auth.user$]).pipe(
-            debounceTime(500),
+            debounceTime(250),
             switchMap(([mode, principle]) => this.getAvatar(mode, principle))
         )
     }
 
 
-    async getAvatar(mode: AvatarMode, principle: Principle): Promise<any> {
-        if (!principle) return ''
+    getAvatar(mode: AvatarMode, principle: Principle): Observable<string> {
+        if (!principle) return of('')
         switch (mode) {
-            case 'avatar': return await firstValueFrom(
-                this.dataService.get<FileInfo[]>(`/user/${principle.sub}/picture`)
+            case 'avatar': return this.dataService.get<{ picture: string }>(`/user/${principle.sub}?select=picture`)
                 .pipe(
-                    map(userAvatars => `${base}/${userAvatars[0].path}?view=1&w=100&h=100&access_token=${this.auth.get_token()}`),
-                    catchError(e => from(this.getAvatar('initials', principle)))))
-            case 'initials': return this.generateInitialsAvatar(principle.name ?? principle.email)
-            default: return ''
+                    map(x => x.picture as string),
+                    catchError(e => {
+                        console.error('error getting avatar', e);
+                        return this.getAvatar('initials', principle)
+                    })
+                )
+            case 'initials': return of(this.generateInitialsAvatar(principle.name ?? principle.email))
+            default: return of('')
         }
     }
 
     private _getInitials(name: string, initialsCount: number = 2) {
         return name?.split(' ').map(x => x.trim()).filter(x => x.length > 0).slice(0, initialsCount).map(x => x[0].toLocaleUpperCase()).join('');
     }
-    generateInitialsAvatar(userName: string, initialsCount = 2) {
+    private generateInitialsAvatar(userName: string, initialsCount = 2) {
         //TODO: replace with initials extraction logic.
 
         const initials = this._getInitials(userName, initialsCount)
