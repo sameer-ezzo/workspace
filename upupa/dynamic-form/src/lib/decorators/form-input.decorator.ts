@@ -69,6 +69,11 @@ export type FormFieldOptions = ({ from: any } & VisibleFormFieldOptions) |
         { input: 'fieldset' } & VisibleFormFieldOptions & BaseFormFieldOptions
         | { input: 'hidden' } & BaseFormFieldOptions
         | { input: 'text' } & VisibleFormFieldOptions & TextFieldOptions
+        | { input: 'textarea' } & VisibleFormFieldOptions & TextFieldOptions & {
+            cdkAutosizeMinRows?: number,
+            cdkAutosizeMaxRows?: number,
+            cdkTextareaAutosize?: boolean
+        }
         | { input: 'phone' } & VisibleFormFieldOptions & TextFieldOptions
         | { input: 'password' } & VisibleFormFieldOptions & TextFieldOptions & {
             showConfirmPasswordInput?: boolean,
@@ -108,7 +113,7 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
     }
 
     if (!('input' in options) || options.input === 'fieldset') {
-        const f = {...fieldBase} as Fieldset;
+        const f = { ...fieldBase } as Fieldset;
         f.type = 'fieldset'
         const schemeTarget = options['from'];
         // get path from metadata of schemeTarget
@@ -225,7 +230,7 @@ export function formScheme(path?: string) {
 
 export function formInput(options: FormFieldOptions = { input: 'text' }) {
     return function (target: any, propertyKey: string) {
-        if('from' in options) options['input'] = 'fieldset'
+        if ('from' in options) options['input'] = 'fieldset'
 
         if (!options['input']) {
             // get the type of the property
