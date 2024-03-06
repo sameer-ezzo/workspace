@@ -69,8 +69,6 @@ export class AuthService {
     public readonly deviceService = inject(DeviceService)
 
     constructor() {
-        console.log('AuthService', this.baseUrl);
-
         const user = this.jwt(this.get_token())
         if (user) this.triggerNext(user)
         else this.triggerNext(null)

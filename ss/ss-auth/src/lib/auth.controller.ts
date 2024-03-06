@@ -301,7 +301,11 @@ export class AuthController {
     @Post('external-auth') // TODO: endpoint to be secured by validating users id_token (from google auth) before issuing access and refresh tokens
     async clientExternalAuth(@Body() req) {
         const googleUser = await verifyGoogleUser(req.token)
-        if (!googleUser) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+        if (!googleUser) {
+            // maybe check if the user had been registered using google, the lock the user account or delete it.
+            throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+        }
+        
         let userRecord: User = await this.auth.findUserByEmail(googleUser.email);
         const google_client_regesterateion_enabled = (process.env.GOOGLE_CLIENT_REGESTERATEION_ENABLED || 'false').toLowerCase() === 'true'
 
@@ -318,8 +322,8 @@ export class AuthController {
             language: googleUser.locale,
         } as unknown as User
 
-        if (google_client_regesterateion_enabled === true) {
-            if (!userRecord) {
+        if (!userRecord) {
+            if (google_client_regesterateion_enabled === true) {
                 await this.auth.signUp(user as any, '')
                 userRecord = await this.auth.findUserByEmail(user.email);
             }

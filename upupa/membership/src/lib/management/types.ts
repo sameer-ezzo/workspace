@@ -15,7 +15,7 @@ export const defaultRolesListActions: ActionDescriptor[] = [
 ]
 export const defaultUserListActions: ActionDescriptor[] = [
     { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', bulk: true,  header: true, color: 'warn' },
-    { variant: 'stroked', position: 'header', bulk: false, name: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
+    { variant: 'stroked', position: 'header', name: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
 
     { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', menu: true, color: 'warn' },
     { variant: 'icon', name: 'edit', icon: 'edit' },
