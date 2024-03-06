@@ -1,0 +1,20 @@
+<fieldset style="
+border: 1px solid #ddd;
+    margin: 0 0 1rem 0;
+    padding: 0;
+    border-radius: 3px;">
+    <legend *ngIf="label?.length">
+        <mat-label>{{label}}</mat-label>
+    </legend>
+
+    <!-- <div style="margin: 1em 0; display: flex; flex-direction: column;"> -->
+
+
+    <data-table *ngIf="adapter" [(focusedItem)]="focusedTableItem" [adapter]="adapter" [columns]="tableColumns"
+        [actions]="tableActions" (action)="onTableAction($event)">
+    </data-table>
+
+    <button style="align-self: flex-start; margin: 1rem 0 1rem 1rem;" mat-button color="primary"
+        (click)="onTableAction({action:{name:'add'}})">Add</button>
+    <!-- </div> -->
+</fieldset>

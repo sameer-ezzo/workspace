@@ -1,0 +1,36 @@
+form.dynamic-form {
+  display: flex;
+  width: 100%;
+  //  height: 100%;
+  flex-direction: column;
+
+  .ff-container.hidden {
+    display: none;
+  }
+
+  input[type='submit'] {
+    margin-block-start: -1rem;
+  }
+
+  .ff-container:not(.hidden):not(:last-child) {
+    margin-block-end: 1rem;
+  }
+
+  .ff-container.hidden ~ .ff-container:not(.hidden) {
+    margin-block-start: 0rem;
+  }
+
+  .hidden-input.ff-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+  }
+
+  .mat-form-field-appearance-outline .mat-form-field-wrapper {
+    margin: 0 !important;
+  }
+
+  .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+    display: none !important;
+  }
+}

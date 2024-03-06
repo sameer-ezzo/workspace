@@ -1,0 +1,43 @@
+<ng-container *ngIf="auth.user$ | async as _user">
+    <ng-container *ngIf="_user">
+        <ng-container *ngIf="avatarService.userAvatar| async as avatar">
+            <ng-container *ngIf="avatar">
+                <div id="avatar-wrapper" [class.active]="menuTrigger.menuOpen ||  _user['claims']?.['imps']">
+                    <button mat-icon-button (click)="unimpersonate()" *ngIf="_user['claims']?.['imps']"
+                        style="flex: 0 0 25px;">
+                        <mat-icon style="color: rgba(255, 68, 0, 0.575);font-size: 25pt;">supervised_user_circle
+                        </mat-icon>
+                    </button>
+                    <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger"
+                        [matMenuTriggerFor]="menu">
+
+                        <mat-icon *ngIf="!avatar; else imgAvatar" style="flex: 0 0 25px;">person</mat-icon>
+                        <ng-template #imgAvatar>
+                            <img [src]="avatar" alt="{{auth.user.sub}}">
+                            <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
+                        </ng-template>
+                    </div>
+                </div>
+                <mat-menu #menu="matMenu">
+                    <button (click)="umcClicked({action:{name: 'user-profile'}}); menuTrigger.closeMenu()"
+                        mat-menu-item>
+                        <span
+                            style="display: flex; flex-direction: column; flex: 1 1 auto; font-size: 10pt; line-height: 1rem;">
+                            {{username$ | async}}
+                        </span>
+                    </button>
+                    <mat-divider></mat-divider>
+
+                    <mat-btn [descriptor]="umc" (action)="umcClicked($event); menuTrigger.closeMenu()"
+                        *ngFor="let umc of commands"></mat-btn>
+                    <mat-divider *ngIf="commands?.length"></mat-divider>
+
+                    <button (click)="signout()" mat-menu-item>
+                        <mat-icon>logout</mat-icon>
+                        Sign out
+                    </button>
+                </mat-menu>
+            </ng-container>
+        </ng-container>
+    </ng-container>
+</ng-container>

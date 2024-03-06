@@ -1,0 +1,24 @@
+:host {
+    padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(200px, 320px) auto;
+    grid-template-rows: auto;
+    gap: 1rem;
+
+    #toolbar {
+        grid-column: 1 / span 2;
+    }
+
+    .frow {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .spacer {
+        flex: 1 1 auto;
+    }
+}

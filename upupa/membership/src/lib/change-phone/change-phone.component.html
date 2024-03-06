@@ -1,0 +1,29 @@
+<!-- <mat-form-field [appearance]="appearance" style="width: 100%;">
+    <mat-label>{{'phone'|text}}</mat-label>
+    <button tabindex="-1" matPrefix type="button" mat-icon-button [matMenuTriggerFor]="countriesMenu" [disabled]="readonly"><mat-icon>add</mat-icon></button>
+    <input matInput #_phone="ngModel" [name]="name" [readonly]="readonly" [ngModel]="__phone" (ngModelChange)="phone = $event" required only-numbers pattern="[1-9]\d+" maxlength="15" minlength="4">
+    <span *ngIf="readonly" style="display: flex;" matSuffix>
+        <button mat-icon-button color="primary" (click)="readonly=false;" ><mat-icon>edit</mat-icon></button>
+    </span>
+    <span *ngIf="!readonly" style="display: flex;" matSuffix> 
+        <button mat-icon-button color="primary" (click)="changePhone(_phone)" [disabled]="_phone.invalid"><mat-icon>check</mat-icon></button>
+        <button mat-icon-button (click)="readonly=true;phone=user.phone" ><mat-icon>clear</mat-icon></button>
+    </span>
+    <mat-error>{{_phone.errors|error}}</mat-error>
+</mat-form-field>
+
+<mat-menu #countriesMenu="matMenu"> 
+    <input style="width: 100%;background: #f5f5f5;opacity: 0.95;z-index: 999;" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()" mat-menu-item placeholder="{{'search'|text}}" [(ngModel)]="countriesService.filter" name="countryFilter">
+    <button *ngFor="let c of countriesService.filtered" mat-menu-item [value]="c.alpha_2" (click)="phone = c.phone_code">{{c.name}} ({{c.phone_code}})</button>
+</mat-menu> -->
+<!-- <div style="display: flex;flex-flow: row nowrap;align-items: flex-start;align-content: flex-start;">
+    <button mat-icon-button *ngIf="readonly" color="primary" (click)="readonly=false;"><mat-icon>edit</mat-icon></button>
+    <span style="display: flex;" *ngIf="!readonly"> 
+        <button mat-icon-button color="primary" (click)="changePhone()" [disabled]="phoneControl.invalid"><mat-icon>check</mat-icon></button>
+        <button mat-icon-button (click)="readonly=true;phone=user.phone" ><mat-icon>clear</mat-icon></button>
+    </span>
+    <form-phone-field style="flex: 1 1 auto;" [appearance]="appearance" [readonly]="readonly" [(value)]="phone" [label]="'phone'|text" [control]="phoneControl" [name]="name"></form-phone-field>
+</div> -->
+
+
+<change-user-prop [prop]="'phone'" [(value)]="phone" [label]="'Phone'|text"></change-user-prop>

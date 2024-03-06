@@ -1,0 +1,22 @@
+<!-- <div (blur)="control?.markAsTouched()">
+    <mat-label *ngIf="label">{{label | text}}</mat-label>
+    <ng-container *ngIf="dataAdapter | async as adap">
+        <file-viewer [value]="adap.normalized$ | async" (action)="onAction($event)" [menuActions]="actions" [view]="'list'" [base]="base" [includeAccess]="includeAccess"></file-viewer>
+    </ng-container>
+
+    <div [class.ng-dirty]="control.dirty" style="display: flex; align-items: center; margin-bottom: 1rem;">
+
+        <button mat-raised-button class="margin-5" type="button" (click)="selectFile()" [color]="color" *ngIf="value.length < maxAllowedFiles">
+            <mat-icon>upload_file</mat-icon> {{'select-file'|text}}
+        </button>
+        <span style="width: 10px;"></span>
+        <div class="margin-5">
+            <ng-container *ngIf="value.length === 0">
+                <div *ngIf="placeholder">{{placeholder}}</div>
+                <div *ngIf="!placeholder">{{'no-files-selected'|text}}</div>
+            </ng-container>
+            <mat-hint *ngIf="maxSize">{{'up-to' | text}} {{maxSize|fileSize}}</mat-hint>
+            <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+        </div>
+    </div>
+</div> -->

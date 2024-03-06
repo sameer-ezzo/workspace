@@ -1,0 +1,18 @@
+<div class="toolbar header" *ngIf="title?.length > 0 || showCloseBtn" [class.titled]="title?.length > 0">
+    <span *ngIf="title?.length > 0" style="line-height: 1.25;">
+        <h2 style="margin: 0">{{title | text}} </h2>
+        <small *ngIf="subTitle?.length > 0">{{subTitle | text}}</small>
+    </span>
+    <span style="flex: 1 1 auto;"></span>
+    <button class="close-btn" *ngIf="showCloseBtn" tabindex="-1" mat-icon-button (click)="close()">
+        <mat-icon>close</mat-icon>
+    </button>
+</div>
+<div class="body">
+    <ng-container *ngIf="dialogData.component.type !== 'form'">
+        <ng-template [cdkPortalOutlet]="componentPortal" (attached)="onAttached($event)"></ng-template>
+    </ng-container>
+</div>
+<div *ngIf="actions?.length" class="toolbar footer">
+    <mat-btn class="action" *ngFor="let descriptor of actions" (action)="sendAction($event)" [descriptor]="descriptor"></mat-btn>
+</div>

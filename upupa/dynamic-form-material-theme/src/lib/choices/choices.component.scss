@@ -1,0 +1,52 @@
+.horizontal.choices {
+    display: flex;
+    flex-flow: wrap;
+
+    .choice {
+        &:not(:first-child) {
+            margin-inline-start: 1rem;
+        }
+    }
+}
+
+.vertical.choices {
+    display: flex;
+    flex-direction: column;
+
+    .choice {
+        &:not(:last-child) {
+            margin-block-end: 1rem;
+        }
+    }
+}
+
+.choices {
+    outline: none;
+    margin: 0;
+}
+
+.choices:focus-within {
+    outline: none;
+}
+
+.choice {
+    position: relative;
+    background: none;
+    border: none;
+    outline: none;
+    outline-color: initial;
+    outline-style: none;
+    outline-width: initial;
+    &>mat-icon {
+        top: 4px;
+        left: 4px;
+        position: absolute;
+    }
+    
+}
+
+:host {
+    p {
+        margin: 0 !important
+    }
+}

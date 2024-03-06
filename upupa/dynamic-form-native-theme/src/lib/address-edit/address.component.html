@@ -1,0 +1,65 @@
+<form #addressForm="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="addressFormGroup">
+    <input type="hidden" [formControl]="control">
+    <fieldset *ngIf="label; else noLabelTemplate">
+        <legend>{{label | text}}</legend>
+        <ng-container *ngTemplateOutlet="noLabelTemplate"></ng-container>
+    </fieldset>
+    <ng-template #noLabelTemplate>
+        <div style="display: flex; flex-flow: column nowrap;">
+            <div style="display: flex;">
+                <form-select class="address-field" id="address-country" [required]="required" [adapter]="countryAdapter"
+                    [placeholder]="'Country' | text" [label]="'country'|text"
+                    [control]="getControl('country')"></form-select>
+                <ng-container *ngIf="getControl('state')">
+                    <span style="width: 2rem"></span>
+                    <mat-form-field class="address-field" id="address-state">
+                        <mat-label>{{'state'|text}}</mat-label>
+                        <input matInput formControlName="state" [disabled]="disabled" [required]="required"
+                            placeholder="{{'State'|text}}">
+                        <mat-error *ngFor="let error of getControl('state').errors | keyvalue;">
+                            {{errorMessages[error.key] || error.key | text}}</mat-error>
+                    </mat-form-field>
+                </ng-container>
+            </div>
+
+            <div style="display: flex;">
+
+                <mat-form-field *ngIf="getControl('city')" class="address-field" id="address-city">
+                    <mat-label>{{'city'|text}}</mat-label>
+                    <input matInput formControlName="city" [disabled]="disabled" [required]="required"
+                        placeholder="{{'City'|text}}">
+                    <mat-error *ngFor="let error of getControl('city').errors | keyvalue;">
+                        {{errorMessages[error.key] || error.key | text}}</mat-error>
+
+                </mat-form-field>
+                <ng-container *ngIf="getControl('zipCode')">
+                    <span style="width: 2rem"></span>
+                    <mat-form-field class="address-field" id="address-zipCode">
+                        <mat-label>{{'zip-code'|text}}</mat-label>
+                        <input matInput formControlName="zipCode" [disabled]="disabled"
+                            placeholder="{{'Zip Code'|text}}">
+                        <mat-error *ngFor="let error of getControl('zipCode').errors | keyvalue;">
+                            {{errorMessages[error.key] || error.key | text}}</mat-error>
+                    </mat-form-field>
+                </ng-container>
+
+            </div>
+            <mat-form-field *ngIf="getControl('addressLine1')" class="address-field" id="address-line-1">
+                <mat-label>{{'address-line-1'|text}}</mat-label>
+                <input matInput formControlName="addressLine1" [disabled]="disabled" [required]="required"
+                    placeholder="{{'Building Number, Road Number' | text}}">
+                <mat-error *ngFor="let error of getControl('addressLine1').errors | keyvalue;">
+                    {{errorMessages[error.key] || error.key | text}}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="getControl('addressLine2')" class="address-field" id="address-line-2"
+            >
+                <mat-label>{{'address-line-2'|text}}</mat-label>
+                <input matInput formControlName="addressLine2" [disabled]="disabled" [required]="required"
+                    placeholder="{{'House number, Suite number, Floor numbers, Room number, PO Box number' | text}}">
+                <mat-error *ngFor="let error of getControl('addressLine2').errors | keyvalue;">
+                    {{errorMessages[error.key] || error.key | text}}</mat-error>
+            </mat-form-field>
+        </div>
+    </ng-template>
+</form>

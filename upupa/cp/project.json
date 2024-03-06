@@ -1,0 +1,50 @@
+{
+  "name": "upupa-cp",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/workspace/upupa/cp/src",
+  "prefix": "raptor7-workspace",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/angular:package",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/workspace/upupa/cp"
+      ],
+      "options": {
+        "project": "libs/workspace/upupa/cp/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/upupa/cp"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/upupa/cp/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/upupa/cp/src/**/*.ts",
+          "libs/workspace/upupa/cp/src/**/*.html"
+        ]
+      }
+    }
+  },
+  "tags": [
+    "framework:angular",
+    "type:library"
+  ]
+}

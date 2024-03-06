@@ -1,0 +1,39 @@
+@if(label){
+<mat-label class="mbe-1">{{label}}</mat-label>
+}
+@if(!hideSelectButton){
+<button mat-raised-button class="mbe-1" type="button" (click)="selectFile();" [color]="color">
+    <mat-icon>upload_file</mat-icon> Upload
+</button>
+}
+
+@if(enableDragDrop === true){
+<ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
+}
+@else{
+<ng-container *ngTemplateOutlet="content"></ng-container>
+}
+
+
+@if(placeholder && value?.length === 0){
+<div class="mt-16" style="display: flex; flex-flow: column;">{{placeholder}}</div>
+}
+
+
+<ng-template #content>
+    <file-viewer [path]="path" [files]="viewModel" [view]="view" (click)="$event.stopPropagation()" [selectable]='false'
+        [includeAccess]="includeAccess" (event)="viewerEventsHandler($event)" [actions]="actions"
+        (action)="onAction($event)" (changed)="selectionChanged($event)"></file-viewer>
+</ng-template>
+
+<ng-template #dragDropTemplate>
+    <div #dr class="drop-zone" [class.dragging]="dragging" data-role="drag-drop-container" tabindex="0"
+        (click)="selectFile()" (dragleave)="dragLeave($event)" (dragover)="$event.preventDefault();dragOver($event)"
+        (drop)="onDrop($event)">
+        @if(viewModel.length > 0){
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+        }@else {
+        <p class="placeholder">{{'Drop files here' | text}}</p>
+        }
+    </div>
+</ng-template>

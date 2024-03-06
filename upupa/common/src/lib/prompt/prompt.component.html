@@ -1,0 +1,4 @@
+<mat-form-field [appearance]="appearance" style="width: 100%">
+    <mat-label>{{promptText|text}}</mat-label>
+    <input matInput [placeholder]="placeholder | text" (input)="valueChange($event.target?.['value'])" [value]="value" [type]="type" [required]="required">
+</mat-form-field>

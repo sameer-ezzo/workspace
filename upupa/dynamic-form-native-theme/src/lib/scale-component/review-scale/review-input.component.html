@@ -1,0 +1,9 @@
+<div style="position: relative; width: 100; height: 100px; overflow: hidden;touch-action: none;" 
+(mousemove)="_move($event,$event.target,$event)"
+(touchstart)="_move($event,$event.target,$event.touches[0])" (touchmove)="_move($event,$event.target,$event.touches[0])" 
+(mouseup)="_end($event,$event.target,$event)" (touchend)="_end($event,$event.target,$event.changedTouches[0])"
+(mouseleave)="_end($event)" (touchout)="_end($event)" >
+    <div  [style.-webkit-mask-image]="'url(' + image + ')'" class="el mask gray"></div>
+    <div  [style.-webkit-mask-image]="'url(' + image + ')'" class="el mask green" [style.background-position-x]="_valueOffset + 'px'"></div>
+    <div  [style.-webkit-mask-image]="'url(' + image + ')'" class="el mask red" [style.background-position-x]="_offset + 'px'" style="opacity: 0.7;"></div>
+</div>

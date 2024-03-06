@@ -1,0 +1,25 @@
+<div style="margin: 0; display: flex; align-items: flex-start;">
+    @if(template !== 'toggle'){
+    <mat-slide-toggle style="max-width: 40px; margin-inline-end: .5rem;"
+        (change)="value= control.value;control.markAsDirty()" [checked]="value" (blur)="onTouch();"
+        [formControl]="control" [required]="required">
+    </mat-slide-toggle>
+    } @else {
+    <mat-checkbox style="max-width: 40px; margin-inline-end: .5rem;" *ngIf="template"
+        (change)="value = control.value; control.markAsDirty()" [checked]="value" (blur)="onTouch();"
+        [formControl]="control" [required]="required">
+    </mat-checkbox>
+    }
+
+    @if(label){
+    <label for="{{name}}">
+        <paragraph [text]="label" [renderer]="renderer"></paragraph>
+    </label>
+    }
+
+</div>
+<mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+<ng-container *ngIf="control.touched && control.invalid">
+    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}
+    </mat-error>
+</ng-container>

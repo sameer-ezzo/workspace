@@ -1,0 +1,10 @@
+{
+    "name": "@upupa/popover",
+    "version": "3.0.4",
+    "peerDependencies": {
+        "@angular/animations": "14.0.4",
+        "@angular/cdk": "14.0.4",
+        "@angular/common": "14.0.4",
+        "@angular/core": "14.0.4"
+    }
+}

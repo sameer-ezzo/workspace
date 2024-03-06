@@ -1,0 +1,10 @@
+<mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
+    <mat-label *ngIf="label && appearance === 'outline'">{{label | text}}</mat-label>
+    <textarea matInput #input [value]="value" (input)="inputChange($event.target)" (blur)="onTouch()" [readonly]="readonly" [placeholder]="placeholder | text" [formControl]="control" #autosize="cdkTextareaAutosize" [cdkAutosizeMinRows]="cdkAutosizeMinRows || 3"
+        [cdkAutosizeMaxRows]="cdkAutosizeMaxRows || 5" [cdkTextareaAutosize]="cdkTextareaAutosize">
+    </textarea>
+    <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}</mat-error>
+
+
+</mat-form-field>

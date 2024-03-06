@@ -1,0 +1,7 @@
+<mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
+    <mat-label *ngIf="label">{{label | text}}</mat-label>
+    <input matInput #input type="number" [value]="value" (input)="value = $event.target?.['value']; _propagateChange(); control.markAsDirty()" (blur)="onTouch();" [readonly]="readonly" [placeholder]="placeholder | text" [formControl]="control" [required]="required">
+    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}</mat-error>
+
+    <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+</mat-form-field>

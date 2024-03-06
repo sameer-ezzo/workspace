@@ -1,0 +1,17 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    fieldset {
+        padding: 0;
+    }
+
+    th {
+        text-align: start;
+    }
+
+    table {
+        width: 100%;
+    }
+}

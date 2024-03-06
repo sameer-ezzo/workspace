@@ -1,0 +1,48 @@
+{
+  "name": "ss-auth",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/ss/ss-auth/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/ss/ss-auth",
+        "tsConfig": "libs/workspace/ss/ss-auth/tsconfig.lib.json",
+        "packageJson": "libs/workspace/ss/ss-auth/package.json",
+        "main": "libs/workspace/ss/ss-auth/src/index.ts",
+        "assets": [
+          "libs/workspace/ss/ss-auth/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/ss/ss-auth/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/ss/ss-auth"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/ss/ss-auth/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:nestjs",
+    "type:library"
+  ]
+}

@@ -1,0 +1,16 @@
+<data-table name="users-list" [templates]="_templates"
+    [(focusedItem)]="focusedUser" [adapter]="adapter" [columns]="columns" [actions]="actions"
+    (action)="onAction($event)"></data-table>
+
+<ng-template #emailTemplate let-descriptor="descriptor" let-element="element">
+    <div class="hoverable" style="display: flex; flex-flow: row nowrap; align-items: center;">
+        <span>{{element.item.email}}</span>
+        <mat-icon class="show-on-hover">{{element.item.email && element.item.emv === true ? 'check_circle' : 'error'}}</mat-icon>
+    </div>
+</ng-template>
+
+<ng-template #phoneTemplate let-descriptor="descriptor" let-element="element">
+    <mat-icon *ngIf="element.item.phone && element.item.phv">check</mat-icon>
+    <mat-icon *ngIf="element.item.phone && !element.item.phv">error</mat-icon>
+    {{element.item.phone}}
+</ng-template>

@@ -1,0 +1,7 @@
+{
+    "name": "@ss/notifications",
+    "version": "0.0.3",
+    "devDependencies": {
+        "@types/web-push": "^3.3.2"
+    }
+}

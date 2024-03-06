@@ -1,0 +1,34 @@
+<main>
+    <mat-toolbar class="mat-elevation-z2">
+        <button mat-icon-button *ngIf="sidebarCmds?.length > 0" (click)="drawer.toggle()">
+            <mat-icon>reorder</mat-icon>
+        </button>
+        <img [src]="logo" class="logo" alt="">
+        <span class="spacer"></span>
+        <toolbar-user-menu [avatarMode]="userAvatarMode" [commands]="userMenuCommands"></toolbar-user-menu>
+    </mat-toolbar>
+    <mat-drawer-container autosize [dir]="languageService.dir$ | async" autosize style="flex: 1;">
+        <mat-drawer #drawer class="sidenav" [mode]="sideBarMode" [opened]="isSidebarOpened && sidebarCmds?.length > 0">
+            <mat-accordion id="cp-accordion" multi="true" displayMode="flat">
+                <mat-expansion-panel *ngFor="let g of sidebarCmds; let i = index" [expanded]="g.active === true"
+                    class="mat-elevation-z0">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>{{g.text | text}}</mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <a class="cp-item-link" *ngFor="let item of g.items" (click)="expand(i)" [routerLink]="item.link"
+                        [queryParams]="item.queryParams" routerLinkActive="active">
+    
+                        <ng-container *ngIf="item.icon; else img">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                        </ng-container>
+                        <ng-template #img><img *ngIf="item.icon_url" [src]="item.icon_url" /></ng-template>
+    
+                        <span style="margin: 0 .5rem">{{ item.text | text}}</span>
+                    </a>
+                </mat-expansion-panel>
+            </mat-accordion>
+        </mat-drawer>
+        <router-outlet #outlet="outlet"></router-outlet>
+    </mat-drawer-container>
+    <ng-content select="footer"></ng-content>
+</main>

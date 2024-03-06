@@ -1,0 +1,48 @@
+{
+  "name": "ss-storage",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/ss/ss-storage/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/ss/ss-storage",
+        "tsConfig": "libs/workspace/ss/ss-storage/tsconfig.lib.json",
+        "packageJson": "libs/workspace/ss/ss-storage/package.json",
+        "main": "libs/workspace/ss/ss-storage/src/index.ts",
+        "assets": [
+          "libs/workspace/ss/ss-storage/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/ss/ss-storage/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/ss/ss-storage"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/ss/ss-storage/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:nestjs",
+    "type:library"
+  ]
+}

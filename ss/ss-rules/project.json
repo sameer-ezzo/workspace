@@ -1,0 +1,48 @@
+{
+  "name": "ss-rules",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/ss/ss-rules/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/ss/ss-rules",
+        "tsConfig": "libs/workspace/ss/ss-rules/tsconfig.lib.json",
+        "packageJson": "libs/workspace/ss/ss-rules/package.json",
+        "main": "libs/workspace/ss/ss-rules/src/index.ts",
+        "assets": [
+          "libs/workspace/ss/ss-rules/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/ss/ss-rules/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/ss/ss-rules"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/ss/ss-rules/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:nestjs",
+    "type:library"
+  ]
+}

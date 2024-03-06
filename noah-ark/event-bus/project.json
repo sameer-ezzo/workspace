@@ -1,0 +1,45 @@
+{
+  "name": "noah-ark-event-bus",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/noah-ark/event-bus/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/noah-ark/event-bus",
+        "tsConfig": "libs/workspace/noah-ark/event-bus/tsconfig.lib.json",
+        "packageJson": "libs/workspace/noah-ark/event-bus/package.json",
+        "main": "libs/workspace/noah-ark/event-bus/src/index.ts",
+        "assets": [
+          "libs/workspace/noah-ark/event-bus/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/noah-ark/event-bus/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/noah-ark/event-bus"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/noah-ark/event-bus/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:none",
+    "type:library"
+  ]
+}

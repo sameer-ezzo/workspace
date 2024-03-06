@@ -1,0 +1,36 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+
+    fieldset {
+        padding: 0;
+    }
+
+    h2,
+    h3,
+    h5 {
+        margin: 0;
+        font-weight: bold;
+    }
+
+    th {
+        text-align: start;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    .flex {
+        display: flex;
+    }
+
+    .row {
+        flex-direction: row;
+    }
+    .align-center {
+        align-items: center;
+    }
+}

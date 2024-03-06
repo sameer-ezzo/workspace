@@ -1,0 +1,7 @@
+<dynamic-form [fields]="fields" #dynForm [(value)]="value" (valueChange)="valueChange$.next($event)"
+    [conditions]="conditions">
+</dynamic-form>
+
+<button style="margin: -0.5rem 1rem 1rem 1rem;display: block;" mat-stroked-button color="accent"
+    (click)="clearFilter()">Clear Filter
+</button>

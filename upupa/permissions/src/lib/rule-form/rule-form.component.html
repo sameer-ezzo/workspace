@@ -1,0 +1,26 @@
+<ng-container *ngIf="rule">
+
+    <h2>{{'Rule' | text}}: {{rule.name || rule.path}}</h2>
+
+    <h3>{{ "Permissions" | text }}</h3>
+    <div *ngIf="(loading$ | async) !== true; else loadingTemplate" style="overflow-y: auto">
+        <div *ngFor="let action of actionNames$ | async" style="margin-block-end: 2rem;">
+            <div class="flex row align-center">
+                <h5>{{ action | titlecase}}</h5>
+                <span class="spacer"></span>
+                <button mat-icon-button color="accent" (click)="addPermission(action)">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+            <ng-container *ngIf="actionPermissions.get(action) | async as ps">
+                <rule-permissions-table [permissions]="ps" [action]="action"
+                    (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
+            </ng-container>
+        </div>
+    </div>
+    <ng-template #loadingTemplate>
+        <div class="loader">
+            <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+        </div>
+    </ng-template>
+</ng-container>

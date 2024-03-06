@@ -1,0 +1,86 @@
+<data-table (action)="onTableAction($event)"
+    [templates]="{type: permissionTypeTemplate, value: permissionValueTemplate, access: permissionAccessTemplate}"
+    [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+    [actions]="tableActions"></data-table>
+
+<ng-template #permissionTypeTemplate let-permission="element">
+    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
+        {{permission.item.by}}
+    </ng-container>
+    <ng-template #editableTemplate>
+        <select [ngModel]="permission.item.by" (change)="changeType(permission.item, $event.target)">
+            <option *ngFor="let pt of permissionTypes" [value]="pt.value">
+                {{ pt.display | text }}
+            </option>
+        </select>
+    </ng-template>
+</ng-template>
+
+<ng-template #permissionAccessTemplate let-permission="element">
+    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
+        {{permission.item.access}}
+    </ng-container>
+    <ng-template #editableTemplate>
+    <select [ngModel]="permission.item.access" (change)="changeAccess(permission.item, $event.target)">
+        <option value=""></option>
+        <option [value]="'deny'">{{ 'Deny' | text }}</option>
+        <option [value]="'grant'">{{ 'Grant' | text }}</option>
+    </select>
+    </ng-template>
+</ng-template>
+<ng-template #permissionValueTemplate let-permission="element">
+    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
+        {{permission.item.value}}
+    </ng-container>
+    <ng-template #editableTemplate>
+    <div [ngSwitch]="permission.item.by" style="overflow: hidden">
+
+        <ng-container *ngSwitchCase="'role'">
+            <select *ngIf="permissionsService.roles$ | async as allRoles" [ngModel]="permission.item.value"
+                (change)="changeValue(permission.item, $event.target)">
+                <option *ngFor="let role of allRoles" [value]="role._id">
+                    {{ role.name }}
+                </option>
+            </select>
+        </ng-container>
+        <div *ngSwitchCase="'email'" style="display: flex; align-items: center; flex-flow: row nowrap;">
+            <input #perValueInput [value]="permission.item.value" style="flex: 1 1 auto;min-width: 50px;"
+                placeholder="Enter valid user email" type="{{permission.item.by}}" />
+
+
+            <button [disabled]="permission.item.value !== perValueInput.value" mat-icon-button
+                (click)="changeValue(permission.item, perValueInput)">
+                <mat-icon>check</mat-icon>
+            </button>
+            <button [disabled]="permission.item.value !== perValueInput.value" mat-icon-button
+                (click)="perValueInput.value = permission.item.value">
+                <mat-icon>undo</mat-icon>
+            </button>
+
+        </div>
+        <ng-container *ngSwitchCase="'phone'">
+            <input #perValueInput [value]="permission.item.value" placeholder="Enter valid user phone number"
+                type="{{permission.item.by}}" />
+            <div *ngIf="permission.item.value !== perValueInput.value">
+
+                <button mat-icon-button (click)="changeValue(permission.item, perValueInput)">
+                    <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="perValueInput.value = permission.item.value">
+                    <mat-icon>undo</mat-icon>
+                </button>
+            </div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'claim'">
+            {{permission.item.value | json}}
+            <button mat-icon-button>
+                <mat-icon>edit</mat-icon>
+            </button>
+        </ng-container>
+        <div *ngSwitchDefault>{{permission.item.value}}</div>
+
+
+
+    </div>
+    </ng-template>
+</ng-template>

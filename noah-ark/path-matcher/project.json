@@ -1,0 +1,45 @@
+{
+  "name": "noah-ark-path-matcher",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/noah-ark/path-matcher/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/noah-ark/path-matcher",
+        "tsConfig": "libs/workspace/noah-ark/path-matcher/tsconfig.lib.json",
+        "packageJson": "libs/workspace/noah-ark/path-matcher/package.json",
+        "main": "libs/workspace/noah-ark/path-matcher/src/index.ts",
+        "assets": [
+          "libs/workspace/noah-ark/path-matcher/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/noah-ark/path-matcher/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/noah-ark/path-matcher"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/noah-ark/path-matcher/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:none",
+    "type:library"
+  ]
+}

@@ -1,0 +1,7 @@
+<div *ngIf="avatarName" style="display: flex;justify-content: center;">
+    <change-avatar (changed)="changed.emit('avatar')"></change-avatar>
+</div>
+<br />
+<change-email *ngIf="emailName" [appearance]="appearance" [name]="emailName" (changed)="changed.emit('email')"></change-email>
+<br />
+<change-phone *ngIf="phoneName" [appearance]="appearance" [name]="phoneName" (changed)="changed.emit('phone')"></change-phone>

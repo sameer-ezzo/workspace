@@ -1,0 +1,163 @@
+$border-radius: 2px;
+:root {
+    --bg-img-url: transparent;
+    --collector-bg-color: transparent;
+    --field-text-color: transparent;
+    --field-value-color: transparent;
+    --button-color: transparent;
+    --header-font-family: "tahoma";
+    --paragraph-font-family: "tahoma";
+    --paragraph-font-size: 14pt;
+}
+
+:host {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 0;
+    margin: 0;
+    background-color: var(--collector-bg-color);
+    color: var(--field-text-color);
+    position: relative;
+    font-family: var(--paragraph-font-family) !important;
+    font-size: var(--paragraph-font-size) !important;
+    .cbgi {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        left: 0;
+    }
+}
+
+:host {
+    .qs-wrapper,
+    paragraph,
+    dynamic-form.collector-dform form,
+    dynamic-form.collector-dform,
+    dynamic-form.collector-dform *:not(mat-icon):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+        font-family: var(--paragraph-font-family) !important;
+        font-size: var(--paragraph-font-size) !important;
+    }
+    dynamic-form.collector-dform h1,
+    dynamic-form.collector-dform h2,
+    dynamic-form.collector-dform h3,
+    dynamic-form.collector-dform h4,
+    dynamic-form.collector-dform h5,
+    dynamic-form.collector-dform h6 {
+        font-family: var(--header-font-family) !important;
+    }
+    .qs-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+    dynamic-form.collector-dform {
+        width: 100%;
+        margin: auto;
+        padding: 1em 0;
+        display: flex;
+        box-sizing: border-box;
+        form {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        form>div {
+            border-radius: $border-radius;
+            color: var(--field-text-color) !important;
+        }
+    }
+    dynamic-form.collector-dform .mat-form-field {
+        width: 100%;
+    }
+    dynamic-form.collector-dform label,
+    dynamic-form.collector-dform mat-label,
+    dynamic-form.collector-dform .mat-hint {
+        font-family: var(--paragraph-font-family) !important;
+        color: var(--field-text-color) !important;
+    }
+    dynamic-form.collector-dform mat-hint {
+        opacity: 0.75;
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-inline-start: 0.75rem;
+    }
+    .qs-wrapper>dynamic-form.collector-dform>form>* {
+        position: relative;
+        border-radius: $border-radius;
+        // background-color: var(--bg-color);
+    }
+    .qs-wrapper>dynamic-form.collector-dform>form>*:first-child {
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+    }
+    .qs-wrapper>dynamic-form.collector-dform>form>*:last-child {
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+    }
+    .qs-wrapper>dynamic-form.collector-dform>form {
+        width: 100%;
+        height: 100%;
+        background: none;
+        background-color: transparent;
+        .mat-radio-button.mat-radio-checked .mat-radio-outer-circle {
+            border-color: var(--field-value-color) !important;
+        }
+        .mat-radio-button .mat-radio-inner-circle,
+        .mat-radio-button .mat-radio-ripple .mat-ripple-element:not(.mat-radio-persistent-ripple),
+        .mat-radio-button.mat-radio-checked .mat-radio-persistent-ripple,
+        .mat-radio-button:active .mat-radio-persistent-ripple {
+            background-color: var(--field-value-color) !important;
+        }
+        .mat-input-element {
+            caret-color: var(--field-value-color) !important;
+        }
+        .mat-form-field-underline>.mat-form-field-ripple {
+            border-bottom: 1px solid var(--field-value-color) !important;
+        }
+        .mat-input-element {
+            color: var(--field-value-color) !important;
+        }
+    }
+    dynamic-form.collector-dform .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap,
+    dynamic-form.collector-dform .mat-form-field-outline-start,
+    dynamic-form.collector-dform .mat-form-field-outline-end {
+        background-color: #ffffff15 !important;
+    }
+    dynamic-form.collector-dform .mat-radio-button .mat-radio-ripple .mat-ripple-element {
+        opacity: 0 !important;
+        /*click effect color change*/
+        background-color: var(--text-value-color) !important;
+    }
+    dynamic-form.collector-dform .mat-radio-button .mat-radio-inner-circle {
+        background-color: var(--text-value-color) !important;
+        /*inner circle color change*/
+    }
+    dynamic-form.collector-dform .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+        border-color: var(--text-value-color) !important;
+        /*outer ring color change*/
+    }
+    dynamic-form.collector-dform ::placeholder,
+    dynamic-form.collector-dform ::-ms-input-placeholder,
+    dynamic-form.collector-dform :-ms-input-placeholder {
+        opacity: 0.8;
+        color: var(--text-value-color) !important;
+    }
+    .form-actions {
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        background: transparent;
+        z-index: 1000;
+        box-sizing: border-box;
+    }
+}

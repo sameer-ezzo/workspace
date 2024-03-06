@@ -1,0 +1,64 @@
+<div style="margin: .5em 0; display: flex;" *ngIf="treeActions?.length">
+    <ng-container *ngTemplateOutlet="actionsListTemplate; context:{actionsList: treeActions, node: {all: hierarchy}, eventEmitter: onTreeAction}">
+    </ng-container>
+</div>
+<div #treeElement>
+    <mat-tree cdkDropList (cdkDropListDropped)="drop($event)" [dataSource]="dataNodes" [treeControl]="this">
+
+        <!-- Node without children -->
+        <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding cdkDrag cdkDragDisabled="true" (cdkDragStarted)="dragStart(node)" (cdkDragMoved)="dragging($event)">
+            <div class="drag-placeholder" *cdkDragPlaceholder [ngStyle]="{'margin-left': (level*40)+40+'px'}"></div>
+            <button mat-icon-button disabled></button>
+            <!-- <mat-icon cdkDragHandle class="dd-handle ms-24 show-on-hover">drag_indicator</mat-icon> -->
+            <mat-checkbox *ngIf="selectable" [checked]="node.selected" (change)="itemSelectionToggle(node);control.markAsDirty()"></mat-checkbox>
+            <ng-container *ngIf="nodeTemplate">
+                <ng-container *ngTemplateOutlet="nodeTemplate; context:{node:node}"></ng-container>
+            </ng-container>
+            <ng-container *ngIf="!nodeTemplate">
+                <ng-container *ngTemplateOutlet="defaultNodeTemplate; context:{node:node}"></ng-container>
+            </ng-container>
+            <ng-container *ngTemplateOutlet="actionsListTemplate; context:{actionsList: nodeActions, node: node, eventEmitter: onNodeAction}"></ng-container>
+        </mat-tree-node>
+
+        <!-- Node with children collapsible -->
+        <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding cdkDrag cdkDragDisabled="true" (cdkDragStarted)="collapse(node); dragStart(node)" (cdkDragMoved)="dragging($event)">
+            <div class="drag-placeholder" *cdkDragPlaceholder [ngStyle]="{'margin-left': (level*40)+40+'px'}"></div>
+            <button mat-icon-button matTreeNodeToggle>
+                <mat-icon class="mat-icon-rtl-mirror">{{isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
+            </button>
+            <!-- <mat-icon cdkDragHandle class="dd-handle ms-24 show-on-hover">drag_indicator</mat-icon> -->
+            <mat-checkbox *ngIf="selectable" [checked]="node.selected" (change)="itemSelectionToggle(node);control.markAsDirty()"></mat-checkbox>
+            <ng-container *ngTemplateOutlet="collapsibleNodeTemplate || defaultCollapsibleNodeTemplate; context:{node:node}"></ng-container>
+            <ng-container *ngTemplateOutlet="actionsListTemplate; context:{actionsList: nodeActions, node: node, eventEmitter: onNodeAction}"></ng-container>
+            <!-- <mat-progress-bar *ngIf="node.isLoading" mode="indeterminate" ></mat-progress-bar> -->
+        </mat-tree-node>
+
+    </mat-tree>
+</div>
+
+<ng-template #defaultNodeTemplate let-node="node">
+    {{node.display}}
+</ng-template>
+<ng-template #defaultCollapsibleNodeTemplate let-node="node">
+    {{node.display}}
+</ng-template>
+
+<ng-template #actionsListTemplate let-actions="actionsList" let-data="node" let-emitter="eventEmitter">
+    <ng-container *ngIf="actions?.length">
+        <span style="flex: 1 1 auto;"></span>
+        <div>
+            <ng-container *ngFor="let action of actions">
+                <button *ngIf="action.icon; else btnWithTextTemplate" (click)="emitter.emit({name: action.name, data: data})" mat-icon-button>
+                    <mat-icon>{{action.icon}}</mat-icon>
+                </button>
+                <ng-template #btnWithTextTemplate>
+                    <button (click)="emitter.emit({name: action.name, data: data})" mat-button>
+                        <mat-icon>{{action?.icon}}</mat-icon>
+                        {{action.text | text}}
+                    </button>
+                </ng-template>
+
+            </ng-container>
+        </div>
+    </ng-container>
+</ng-template>

@@ -1,0 +1,25 @@
+#avatar-wrapper {
+  display: flex;
+  padding: 0.25rem;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  align-content: center;
+  justify-content: space-around;
+  height: fit-content;
+  border-radius: 4px;
+  transition: all 200ms ease-in;
+  user-select: none;
+  cursor: pointer;
+  &:hover,
+  &.active,
+  &:focus-within {
+    background-color: var(--bg-hover);
+    border-radius: 8px;
+  }
+  & img {
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    max-height: 40px;
+  }
+}

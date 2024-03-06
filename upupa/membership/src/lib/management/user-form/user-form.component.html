@@ -1,0 +1,11 @@
+@if(scheme){
+<div class="wrapper">
+    <dynamic-form #userForm [fields]="scheme" [conditions]="conditions" (submit)="save(userForm)" [(value)]="user">
+    </dynamic-form>
+</div>
+<div class="toolbar footer">
+    <button mat-button class="action" (click)="discard()" type="button">Discard</button>
+    <button mat-stroked-button color="primary" [disabled]="loading || !userForm.touched || userForm.invalid"
+        (click)="save(userForm)" class="action" type="submit">Submit</button>
+</div>
+}

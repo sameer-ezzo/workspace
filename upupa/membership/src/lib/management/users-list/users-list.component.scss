@@ -1,0 +1,14 @@
+.hoverable {
+
+    .show-on-hover {
+        width: 0;
+        visibility: hidden;
+    }
+
+    &:hover {
+        .show-on-hover {
+            width: auto;
+            visibility: visible;
+        }
+    }
+}

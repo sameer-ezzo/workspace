@@ -1,0 +1,3 @@
+<permissions-side-bar style="overflow-y: auto; padding: 0.25rem" [nodes]="nodes$ | async"
+    (focusedChange)="focused = $event"></permissions-side-bar>
+<rule-form style="overflow-y: auto; padding: 0.25rem" *ngIf="focused" [rule]="focused"></rule-form>

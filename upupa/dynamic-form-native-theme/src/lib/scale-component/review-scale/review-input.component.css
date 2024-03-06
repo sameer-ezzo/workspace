@@ -1,0 +1,15 @@
+.red { background: linear-gradient(0deg, #f00, #f00) no-repeat; }
+.green { background: linear-gradient(0deg, #0f0, #0f0) no-repeat; }
+.gray { background: linear-gradient(0deg, #888, #888) no-repeat; }
+.el {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+}
+
+.mask {
+    mask-size: contain;
+    mask-repeat: repeat-x;
+    mask-position: initial;
+}

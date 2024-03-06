@@ -1,0 +1,7 @@
+:host {
+    display: block;
+
+    &.checkbox paragraph{
+        padding-block-start: 8px;
+    }
+}

@@ -1,0 +1,68 @@
+:host {
+  .actions {
+    margin: 0 -24px;
+
+    & > .action {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-inline-end: 2px solid transparent;
+      transition: all 200ms ease-in;
+
+      &:hover,
+      &.active,
+      &:focus-within {
+        background-color: var(--bg-hover);
+      }
+
+      &.active {
+        border-inline-end-color: blueviolet;
+      }
+
+      & > .action-header {
+        display: flex;
+        align-items: center;
+        color: var(--fg-secondary-text);
+
+        .tag {
+          color: var(--primary-default);
+          font-size: clamp(8px, 2.5vw, 10px);
+
+          &.DELETE,
+          &.POST,
+          &.PATCH,
+          &.PUT {
+            color: var(--warn-lighter);
+          }
+        }
+
+        & > span {
+          font-size: clamp(12px, 4vw, 14px);
+        }
+
+        & > span:not(:last-child) {
+          margin-inline-end: 1rem;
+        }
+      }
+    }
+  }
+
+  .mat-expansion-panel.empty .mat-expansion-panel-body {
+    height: 0;
+    display: none;
+  }
+
+  .frow {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  :host {
+    .mat-expansion-panel-body {
+      padding: 0 !important;
+    }
+  }
+}

@@ -1,0 +1,17 @@
+<br/>
+<br/>
+<h2>{{'confirmation'|text}}: <i>{{control.value}}</i></h2>
+<div>
+  <mat-form-field>
+    <input #codeInput matInput required placeholder="{{'confirmation-code'|text}}" [(ngModel)]="code" (keydown.enter)="runConfirmationTask()">
+    <mat-error>{{task.error}}</mat-error>
+  </mat-form-field>
+</div>
+<div style="display:flex; flex-direction: row-reverse; justify-content: space-between;">
+  <button  matSuffix mat-raised-button type="button" color="primary" [disabled]="task?.disabled" (click)="runConfirmationTask()">
+    {{'submit'|text}}
+  </button>
+  <button matSuffix mat-raised-button type="button" [disabled]="task?.disabled" (click)="runValidationTask()">
+    <mat-icon>refresh</mat-icon> {{'resend'|text}}
+  </button>
+</div>

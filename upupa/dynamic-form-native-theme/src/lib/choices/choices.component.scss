@@ -1,0 +1,42 @@
+.horizontal.choices {
+    display: flex;
+    flex-flow: wrap;
+}
+
+.vertical.choices {
+    display: flex;
+    flex-direction: column;
+}
+
+.choices {
+    outline: none;
+    margin: 0;
+}
+
+.choices:focus-within {
+    outline: none;
+}
+
+.choice {
+    position: relative;
+    background: none;
+    border: none;
+    outline: none;
+    outline-color: initial;
+    outline-style: none;
+    outline-width: initial;
+    &>mat-icon {
+        top: 4px;
+        left: 4px;
+        position: absolute;
+    }
+    &:not(:last-child) {
+        margin-inline-end: 1rem;
+    }
+}
+
+:host {
+    p {
+        margin: 0 !important
+    }
+}

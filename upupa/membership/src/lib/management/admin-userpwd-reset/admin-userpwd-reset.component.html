@@ -1,0 +1,11 @@
+@if(formScheme){
+<div class="wrapper">
+    <dynamic-form #userForm name="admin-reset-user-pwd-form" [fields]="formScheme" [(value)]="value"
+        (submit)="reset()"></dynamic-form>
+</div>
+<div class="toolbar footer">
+    <button mat-button class="action" (click)="discard()" type="button">Discard</button>
+    <button mat-stroked-button color="primary" [disabled]="loading || !userForm.touched || userForm.invalid"
+        (click)="reset()" class="action" type="submit">Submit</button>
+</div>
+}

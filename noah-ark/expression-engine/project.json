@@ -1,0 +1,45 @@
+{
+  "name": "noah-ark-expression-engine",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/noah-ark/expression-engine/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/noah-ark/expression-engine",
+        "tsConfig": "libs/workspace/noah-ark/expression-engine/tsconfig.lib.json",
+        "packageJson": "libs/workspace/noah-ark/expression-engine/package.json",
+        "main": "libs/workspace/noah-ark/expression-engine/src/index.ts",
+        "assets": [
+          "libs/workspace/noah-ark/expression-engine/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/noah-ark/expression-engine/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/noah-ark/expression-engine"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/noah-ark/expression-engine/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:none",
+    "type:library"
+  ]
+}

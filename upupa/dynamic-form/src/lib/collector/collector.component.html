@@ -1,0 +1,11 @@
+<div *ngIf="design?.bgImage?.url" class="cbgi" [ngStyle]="{'background-image': 'url(' + (design.bgImage.url ) + ')'}" [style.background-position]="design.bgImage.position" [style.background-repeat]="design.bgImage.repeat" [style.background-size]="design.bgImage.size"></div>
+<div class="qs-wrapper">
+    <dynamic-form class="collector-dform" #dynForm [initialValueFactory]="initialValueFactory" [fields]="fields" [(value)]="value" [conditions]="conditions" [name]="name" (submit)="onSubmit()" (valueChange)="_checkPageInvalid(activePage); _propagateChange()">
+    </dynamic-form>
+</div>
+<div class="form-actions">
+    <mat-btn *ngIf="nextBtn && canGoNext()" [descriptor]="nextBtn" (action)="next()"></mat-btn>
+    <mat-btn *ngIf="prevBtn && canGoPrev()" [descriptor]="prevBtn" (action)="prev()"></mat-btn>
+    <mat-btn *ngIf="submitBtn" [disabled]="_pageInvalid || loading" [descriptor]="submitBtn" (action)="onSubmit()"></mat-btn>
+    <mat-btn *ngFor="let act of actions" [descriptor]="act" (action)="actionClicked(act)"></mat-btn>
+</div>

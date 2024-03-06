@@ -1,0 +1,32 @@
+@if(options?.logo || options?.title || options?.subTitle){
+<div class="header-wrapper">
+    @if(options?.logo){
+    <img class="logo" src="{{options?.logo}}" />
+    }
+
+    @if(options?.title){
+    <h1 class="title">{{options?.title}}</h1>
+    }
+    @if(options?.subTitle){
+    <p class="subtitle">{{options?.subTitle}}</p>
+    }
+</div>
+}
+
+@if(options.fields){
+<login-form (success)="onSuccess($event)" (resetPassword)="onResetPassword($event)" (fail)="onFailed($event)"
+    [model]="model" [fields]="options.fields" [conditions]="options.conditions"></login-form>
+}
+<!-- 
+    [submitBtn]="signupBtn"
+    [design]="design" 
+     [collectStyle]="formStyle" -->
+
+
+@if(links.length > 0){
+<page-navigation [links]="links"></page-navigation>
+}
+
+@if(external_links.length > 0){
+<page-navigation [links]="external_links" (success)="onSuccess($event)" (onLinkClick)="onExternalLinkClick($event)"></page-navigation>
+}
