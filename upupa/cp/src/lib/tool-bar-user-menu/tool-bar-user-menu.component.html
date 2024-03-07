@@ -26,10 +26,13 @@
             </button>
             <mat-divider></mat-divider>
 
-            <mat-btn [descriptor]="umc" (action)="umcClicked($event); menuTrigger.closeMenu()"
-                *ngFor="let umc of commands"></mat-btn>
-            <mat-divider *ngIf="commands?.length"></mat-divider>
-
+            @if(commands?.length > 0){
+            @for (umc of commands; track $index) {
+            <mat-btn auth-action [path]="umc.path" [action]="umc.action" [descriptor]="umc"
+                (action)="umcClicked($event); menuTrigger.closeMenu()"></mat-btn>
+            }
+            <mat-divider></mat-divider>
+            }
             <button (click)="signout()" mat-menu-item>
                 <mat-icon>logout</mat-icon>
                 Sign out

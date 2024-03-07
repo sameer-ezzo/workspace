@@ -14,16 +14,16 @@ export class GenericListViewScaffolder implements IScaffolder<ListScaffoldingMod
         const { path: _path } = resolvePath(path);
         const collection = _path.split('/').filter(s => s).pop();
         const listInfo = getListInfoOf(collection) as ListViewModelOptions;
-        const actions: ActionDescriptor[] = listInfo.actions ?? [
-            { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-            { position: 'bulk', name: 'delete', icon: 'delete_outline', text: 'Delete', bulk: true },
+        const actions: ActionDescriptor[] = listInfo.actions as ActionDescriptor[] ?? [
+            { position: 'menu', action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
+            { position: 'bulk', action: 'delete', icon: 'delete_outline', text: 'Delete', bulk: true },
         ]
         if ((listInfo.actions ?? []).length === 0) {
             const { hasCreate, hasEdit, hasView } = resolvePathScaffolders(collection)
 
-            if (hasCreate) actions.push({ position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
-            if (hasEdit) actions.push({ variant: 'icon', name: 'edit', icon: 'edit', menu: true })
-            if (hasView) actions.push({ variant: 'icon', name: 'view', icon: 'visibility', menu: true })
+            if (hasCreate) actions.push({ position: 'header', action: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
+            if (hasEdit) actions.push({ variant: 'icon', action: 'edit', icon: 'edit', menu: true })
+            if (hasView) actions.push({ variant: 'icon', action: 'view', icon: 'visibility', menu: true })
         }
         const queryFn = this.resolveQueryFn(listInfo, 'query');
         const queryParamsFn = this.resolveQueryFn(listInfo, 'queryParams');

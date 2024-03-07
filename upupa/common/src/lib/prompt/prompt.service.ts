@@ -19,7 +19,7 @@ export class PromptService {
           actions: [
             {
               meta: { closeDialog: true },
-              name: "yes",
+              action: "yes",
               color: "primary",
               variant: "raised",
               text: o.yes ?? "Yes",

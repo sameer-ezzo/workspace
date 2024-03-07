@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, Input, SimpleChanges, ViewEncapsulation, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input, SimpleChanges, ViewEncapsulation, signal } from '@angular/core'
 import { LanguageService } from '@upupa/language'
 import { AuthService } from '@upupa/auth'
 
@@ -7,8 +7,8 @@ import { Subject } from 'rxjs'
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
 import { MatDrawerMode } from '@angular/material/sidenav'
 import { InlineEditableListComponent } from '../inline-editable-list/inline-editable-list.component'
-import { SideBarGroup } from './side-bar-group-item'
-import { AvatarMode, UserAvatarService } from './avatar.service'
+import { SideBarGroup, SideBarItem } from './side-bar-group-item'
+import { UserAvatarService } from './avatar.service'
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
 import { CP_OPTIONS } from '../di.token'
@@ -25,8 +25,7 @@ export class CpLayoutComponent {
     @Input() logo: string | null = null
 
     @Input() sideBarCommands: SideBarGroup[]
-    @Input() userMenuCommands: SideBarGroup[]
-    sidebarCmds: SideBarGroup[] = []
+    @Input() userMenuCommands: SideBarItem[]
     @Input() sideBarMode: MatDrawerMode = 'side'
     @Input() isSidebarOpened = false
 
@@ -50,28 +49,6 @@ export class CpLayoutComponent {
         })
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['sideBarCommands'] && this.sideBarCommands) {
-            const cmds = this.sideBarCommands.filter(cmds => cmds != null)
-
-            this.sidebarCmds = cmds
-            const path = this.router.url.split('?')[0]
-            const expanded = cmds.slice().filter(cmd => cmd.items.find(p => path.includes(p.link))).shift()
-            if (expanded) this.expand(cmds.indexOf(expanded))
-            else this.expand(0)
-        }
-    }
-
-    expand(index: number) {
-        const cmds = this.sidebarCmds?.slice()
-        if (cmds?.length < 1) return
-        cmds.forEach(cmd => cmd.active = false)
-        cmds[index].active = true
-        this.sidebarCmds = cmds
-    }
-
-    changeLang(lang: string) {
-        const url = this.router.url.substring(4)
-        this.router.navigateByUrl(`/${lang}/${url}`)
-    }
+   
+   
 }

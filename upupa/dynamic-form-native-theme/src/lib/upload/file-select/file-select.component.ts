@@ -52,8 +52,8 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     @Input() enableDragDrop = true
 
     @Input() actions = [
-        { name: 'download', variant: 'icon', text: 'Download', icon: 'get_app' } as ActionDescriptor,
-        { name: 'remove', variant: 'icon', text: 'Remove', icon: 'delete' } as ActionDescriptor,
+        { action: 'download', variant: 'icon', text: 'Download', icon: 'get_app' } as ActionDescriptor,
+        { action: 'remove', variant: 'icon', text: 'Remove', icon: 'delete' } as ActionDescriptor,
     ]
     dragging = false
     viewModel: SelectInputFileVm[] = []
@@ -215,10 +215,10 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     }
 
     async onAction(e: ActionEvent) {
-        if (e.action.name === 'remove') this.removeFile(e.data[0])
-        if (e.action.name === 'download') this.downloadFile(e.data[0])
+        if (e.action.action === 'remove') this.removeFile(e.data[0])
+        if (e.action.action === 'download') this.downloadFile(e.data[0])
         else if (e.action.handler) await e.action.handler(e)
-        else this.bus.emit(`${this.name}-${e.action.name}`, e, this)
+        else this.bus.emit(`${this.name}-${e.action.action}`, e, this)
     }
 
 

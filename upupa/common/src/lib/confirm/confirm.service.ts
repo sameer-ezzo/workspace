@@ -25,14 +25,14 @@ export class ConfirmService {
                     actions: [
                         {
                             meta: { closeDialog: true },
-                            name: "no",
+                            action: "no",
                             variant: "button",
                             type: 'button',
                             text: o.no ?? "No"
                         } as ActionDescriptor,
                         {
                             meta: { closeDialog: true },
-                            name: "yes",
+                            action: "yes",
                             type: "submit",
                             color: o.yesColor ?? "primary",
                             variant: "stroked",

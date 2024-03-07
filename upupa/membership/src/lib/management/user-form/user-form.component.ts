@@ -105,7 +105,7 @@ export class UserFormComponent implements UpupaDialogPortal {
     }
 
     async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>) {
-        if (e.action.name === 'save') {
+        if (e.action.action === 'save') {
             e.action.meta.closeDialog = false
             return this.save(this.form)
         }

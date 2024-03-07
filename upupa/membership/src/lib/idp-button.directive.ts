@@ -1,8 +1,9 @@
-import { Input, EventEmitter, Output, ElementRef, inject, AfterViewInit, Directive, NgZone } from '@angular/core';
+import { Input, EventEmitter, Output, ElementRef, inject, AfterViewInit, Directive, NgZone, PLATFORM_ID } from '@angular/core';
 import { loadScript } from './load-script.func';
 
 import { AuthService } from '@upupa/auth';
 import { IdpName } from './types';
+import { isPlatformBrowser } from '@angular/common';
 
 declare let google: any;
 
@@ -11,7 +12,7 @@ declare let google: any;
   exportAs: 'idpButton'
 })
 export class IdpButtonDirective {
-
+  private readonly platformId = inject(PLATFORM_ID)
   private readonly host = inject(ElementRef).nativeElement;
 
   private _idp: any;
@@ -59,10 +60,15 @@ export class IdpButtonDirective {
     }
 
     google.accounts.id.initialize(options)
-
+    const browserLocale = isPlatformBrowser(this.platformId) ? navigator.language || navigator['userLanguage'] : undefined;
     google.accounts.id.renderButton(
       this.host,
-      { theme: "outline", size: "large", ...this.idp.customize }
+      {
+        theme: "outline",
+        size: "large",
+        locale: browserLocale, 
+        ...this.idp.customize
+      }
     );
 
     google.accounts.id.prompt();

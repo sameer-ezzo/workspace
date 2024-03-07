@@ -51,9 +51,9 @@ export class CollectorComponent extends InputBaseComponent<any> {
     this.activePageChange.emit(this._activePage);
   }
 
-  @Input() submitBtn: ActionDescriptor = { name: "submit", type: 'submit', variant: "stroked", text: "Submit", color: "primary" };
-  @Input() nextBtn: ActionDescriptor = { name: "next", type: 'button', text: "Next" };
-  @Input() prevBtn: ActionDescriptor = { name: "prev", type: 'button', text: "Previous" };
+  @Input() submitBtn: ActionDescriptor = { action: "submit", type: 'submit', variant: "stroked", text: "Submit", color: "primary" };
+  @Input() nextBtn: ActionDescriptor = { action: "next", type: 'button', text: "Next" };
+  @Input() prevBtn: ActionDescriptor = { action: "prev", type: 'button', text: "Previous" };
   @Input() initialValueFactory: () => Promise<any>;
 
   private formFieldsInfo: { [name: string]: { index: number; page: number } } = null;

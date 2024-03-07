@@ -2,9 +2,9 @@
 
     <!-- ACTIONS MENU -->
     <mat-menu #actionsMenu="matMenu">
-        @for(a of getMenuActions(focusedItem?.item); track a.name){
+        @for(a of getMenuActions(focusedItem?.item); track a.action){
         <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
-            <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.name}}
+            <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
         </button>
         }
     </mat-menu>
@@ -37,10 +37,10 @@
             @if(allowChangeColumnsVisibility){
             <button [disabled]="loading" mat-menu-item (click)="openColumnsSelectDialog()">{{'columns'|text}}</button>
             }
-            @for (haim of headerActionsInMenu; track haim.name) {
+            @for (haim of headerActionsInMenu; track haim.action) {
             <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled"
                 (click)="onAction(haim,selected)">
-                <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.name) | text}}
+                <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) | text}}
             </button>
             }
 

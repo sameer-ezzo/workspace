@@ -180,7 +180,7 @@ export class UpupaDialogComponent implements AfterViewInit {
         if (this.dialogRef.getState() === MatDialogState.OPEN)
             if (e.action.meta?.closeDialog === true)
                 this.dialogRef.close(res === e || typeof res === typeof e ? null : res)
-            else console.warn(`Action ${e.action.name} has no handler.`);
+            else console.warn(`Action ${e.action.action} has no handler.`);
 
     }
 

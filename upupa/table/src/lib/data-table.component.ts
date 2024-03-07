@@ -233,7 +233,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         const e = { action: descriptor, data: d }
         if (descriptor.handler) descriptor.handler(e)
         this.action.emit(e)
-        this.bus.emit(`${this.name?.trim().length > 0 ? this.name + '-' : ''}${descriptor.name}`, e, this)
+        this.bus.emit(`${this.name?.trim().length > 0 ? this.name + '-' : ''}${descriptor.action}`, e, this)
     }
 
     bulkActionsData = (value: any | any[]) => this.adapter.normalized.filter(n => value.includes(n.key))

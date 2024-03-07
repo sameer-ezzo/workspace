@@ -8,21 +8,21 @@ import { ColumnsDescriptor } from "@upupa/table";
 import { defaultEmailField, userFullNameField, userNameField } from "../default-values";
 
 export const defaultRolesListActions: ActionDescriptor[] = [
-    { variant: 'stroked', header: true, name: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
-    { variant: 'icon', name: 'edit', icon: 'edit' },
-    { variant: 'icon', name: 'delete', icon: 'delete', color: 'warn' }
+    { variant: 'stroked', header: true, action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
+    { variant: 'icon', action: 'edit', icon: 'edit' },
+    { variant: 'icon', action: 'delete', icon: 'delete', color: 'warn' }
 
 ]
 export const defaultUserListActions: ActionDescriptor[] = [
-    { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', bulk: true,  header: true, color: 'warn' },
-    { variant: 'stroked', position: 'header', name: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
+    { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', bulk: true,  header: true, color: 'warn' },
+    { variant: 'stroked', position: 'header', action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
 
-    { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', menu: true, color: 'warn' },
-    { variant: 'icon', name: 'edit', icon: 'edit' },
-    { variant: 'icon', name: 'impersonate', icon: 'supervised_user_circle' },
-    { variant: 'icon', text: 'Reset password', name: 'reset', icon: 'password', menu: true },
-    { variant: 'icon', text: 'Change roles', name: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
-    { variant: 'icon', text: 'Delete User', name: 'delete', icon: 'delete', color: 'warn', menu: true }
+    { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', menu: true, color: 'warn' },
+    { variant: 'icon', action: 'edit', icon: 'edit' },
+    { variant: 'icon', action: 'impersonate', icon: 'supervised_user_circle' },
+    { variant: 'icon', text: 'Reset password', action: 'reset', icon: 'password', menu: true },
+    { variant: 'icon', text: 'Change roles', action: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
+    { variant: 'icon', text: 'Delete User', action: 'delete', icon: 'delete', color: 'warn', menu: true }
 ];
 
 export const defaultCreateUserFromScheme: FormScheme = {

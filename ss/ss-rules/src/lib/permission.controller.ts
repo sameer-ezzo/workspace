@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
-import type { AuthorizeFun, IncomingMessage, Permission, SimplePermission } from "@noah-ark/common";
+import type { AuthorizeFun, IncomingMessage, Permission, Principle, SimplePermission } from "@noah-ark/common";
 import { EndPoint, EndpointsInfo, Message, logger } from "@ss/common";
 import { DataService } from "@ss/data";
 import { join } from "path";
@@ -24,6 +24,18 @@ export class PermissionController {
     @EndPoint({ http: { method: "GET", path: "permissions" } })
     async getPermissions() {
         return await this.data.get("permission");
+    }
+
+
+    @EndPoint({ http: { method: "GET", path: "user-permessions/:id" } })
+    async getPermissionsForUser(@Message() msg: IncomingMessage<any>) {
+        const userId = msg.query.id as string;
+        const principle = msg.principle as Principle;
+        if (!principle && !userId) return []
+        logger.info('getPermissionsForUser', userId, principle)
+        const user = userId && userId !== principle.sub ? await this.data.find("user", userId) : principle;
+        if (!user) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+        return [];
     }
 
     //nest steps
