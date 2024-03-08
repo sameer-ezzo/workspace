@@ -35,8 +35,6 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
                 ...databasesCollections[provide]?.dbConnectionOptions ?? _options
             }
 
-            console.log("options: xxxxx ", options)
-
             if (url.startsWith('mongodb')) {
                 const databaseInfo = databasesCollections[provide] ?? {}
                 const collections = databaseInfo.collections ?? {}

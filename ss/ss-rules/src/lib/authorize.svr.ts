@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AuthorizeResult, IncomingMessage, Permission, PrincipleBase, SimplePermission } from '@noah-ark/common';
+import { AuthorizeResult, IncomingMessage, Permission,permissionKey, PrincipleBase, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes, isObjectValuePermission, isPermissionSimple } from '@noah-ark/common';
 import { evaluateOpExpression } from "@noah-ark/expression-engine";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { RulesService } from "./rules.svr";
@@ -19,7 +19,6 @@ export class AuthorizeService {
      * @returns grant or deny access for the provided msg/action
      */
     authorize(msg: IncomingMessage, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
-
         //BUILD CONTEXT AND ALLOW SUPER ADMIN
         action ??= msg.operation ?? '*'
         if (this._isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, source: 'default', access: 'grant' }
@@ -42,14 +41,24 @@ export class AuthorizeService {
         if (!accessResults.length || accessResults.every(r => r.result == undefined))
             return { rule: ruleSummary, action, source, access }
 
+        //CHECK PERMISSIONS DENY
         const denyingPermissions = accessResults.filter(r => r.result === false)
         if (denyingPermissions.length) {
-            source = denyingPermissions.map(r => r.permission.name).join(',')
+            source = denyingPermissions.map(r => permissionKey(r.permission)).join(';')
             access = 'deny'
+        }
+
+        //CHECK PERMISSIONS GRANT
+        const grantingPermissions = accessResults.filter(r => r.result === true)
+        if (grantingPermissions.length) {
+            source = grantingPermissions.map(r => permissionKey(r.permission)).join(';')
+            access = 'grant'
         }
 
         return { rule: ruleSummary, action, source, access }
     }
+
+
 
 
     private _evalPermission(p: Permission, action?: string, ctx?: { msg: IncomingMessage, additional?: Record<string, unknown> }): boolean | undefined {

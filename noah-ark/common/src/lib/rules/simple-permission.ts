@@ -35,22 +35,23 @@ export const SimplePermissionTypes = [..._NullPermissionTypes, ..._StringPermiss
  */
 export type SimplePermissionType = typeof SimplePermissionTypes[number]
 
-
-export type SimplePermissionBase = (
-    {
-        by: typeof _NullPermissionTypes[number]
-    } | {
-        by: typeof _StringPermissionTypes[number]
-        value: string
-    } | {
-        by: typeof _ObjectPermissionTypes[number]
-        value: {
-            claimFieldPath: string
-            claimValue: string
-            operator?: string
-        }
+export type NullValuePermission = { by: typeof _NullPermissionTypes[number] }
+export type StringValuePermission = {
+    by: typeof _StringPermissionTypes[number]
+    value: string
+}
+export type ObjectValuePermission = {
+    by: typeof _ObjectPermissionTypes[number]
+    value: {
+        claimFieldPath: string
+        claimValue: string
+        operator?: string
     }
-)
+}
+
+
+export type SimplePermissionBase = NullValuePermission | StringValuePermission | ObjectValuePermission
+
 export type SimplePermission = PermissionBase & SimplePermissionBase
 export type SimplePermissionRecord = SimplePermission & PermissionRecord
 
@@ -61,4 +62,8 @@ export class Permissions {
 
     static role(role: string, access: AccessType = 'grant'): SimplePermission { return { by: 'role', value: role, access } }
     static email(email: string, access: AccessType = 'grant'): SimplePermission { return { by: 'email', value: email, access } }
+}
+
+export function isObjectValuePermission(p: Partial<SimplePermission>): p is ObjectValuePermission {
+    return 'by' in p && _ObjectPermissionTypes.includes(p.by as any)
 }
