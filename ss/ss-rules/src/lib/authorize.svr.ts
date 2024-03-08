@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AuthorizeResult, IncomingMessage, Permission, PrincipleBase, SimplePermission } from '@noah-ark/common';
+import { AuthorizeResult, IncomingMessage, Permission,permissionKey, PrincipleBase, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes, isObjectValuePermission, isPermissionSimple } from '@noah-ark/common';
 import { evaluateOpExpression } from "@noah-ark/expression-engine";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { RulesService } from "./rules.svr";
@@ -19,25 +19,46 @@ export class AuthorizeService {
      * @returns grant or deny access for the provided msg/action
      */
     authorize(msg: IncomingMessage, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
-
         //BUILD CONTEXT AND ALLOW SUPER ADMIN
-        action ??= msg.operation //TODO make sure action is provided in some list (so for example client side would know all possible action ahead of time)
-        if (!action) throw new Error('action is not provided')
+        action ??= msg.operation ?? '*'
         if (this._isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, source: 'default', access: 'grant' }
 
         const rule = this.rulesService.getRule(msg.path, true)! // use default app rule
-        const ruleSummary = rule ? { name: rule.name, path: rule.path } : undefined
+        const ruleSummary = rule ? { name: rule.name, path: rule.path, fallbackSource: rule.fallbackSource, ruleSource: rule.ruleSource } : undefined
+
+        //ASSUME THE RESULT IS THE DEFAULT AUTHORIZATION
+        let access = rule.fallbackAuthorization
+        let source = 'rule-fallback'
 
         //AUTHORIZE BY PERMISSION (GET PERMISSIONS THAT HAS THE ANSWER FOR THIS ACTION)
         const permissions = (rule.actions?.[action] ?? rule.actions?.['*'] ?? [])
-        const accessResults = permissions.map(p => this._evalPermission(p, action, { msg, additional }))
-        if (accessResults.every(ar => ar !== undefined)) {
-            return { rule: ruleSummary, action, source: `permission: ${action}`, access: accessResults.some(ar => ar === true) ? 'grant' : (rule.fallbackAuthorization ?? 'deny') }
+        const accessResults = permissions.map(p => ({
+            result: this._evalPermission(p, action, { msg, additional }),
+            permission: p
+        }))
+
+        //FALLBACK TO DEFAULT AUTHORIZATION
+        if (!accessResults.length || accessResults.every(r => r.result == undefined))
+            return { rule: ruleSummary, action, source, access }
+
+        //CHECK PERMISSIONS DENY
+        const denyingPermissions = accessResults.filter(r => r.result === false)
+        if (denyingPermissions.length) {
+            source = denyingPermissions.map(r => permissionKey(r.permission)).join(';')
+            access = 'deny'
         }
 
-        //STEP 4: FALLBACK TO DEFAULT AUTHORIZATION
-        return { rule: ruleSummary, action, source: 'default', access: rule.fallbackAuthorization ?? 'deny' }
+        //CHECK PERMISSIONS GRANT
+        const grantingPermissions = accessResults.filter(r => r.result === true)
+        if (grantingPermissions.length) {
+            source = grantingPermissions.map(r => permissionKey(r.permission)).join(';')
+            access = 'grant'
+        }
+
+        return { rule: ruleSummary, action, source, access }
     }
+
+
 
 
     private _evalPermission(p: Permission, action?: string, ctx?: { msg: IncomingMessage, additional?: Record<string, unknown> }): boolean | undefined {

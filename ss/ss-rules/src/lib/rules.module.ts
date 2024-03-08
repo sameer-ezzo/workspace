@@ -6,6 +6,8 @@ import { RulesService } from './rules.svr'
 import { AuthorizeService } from './authorize.svr'
 import { AuthorizeInterceptor } from "./authorize.interceptor"
 import { PermissionController } from './permission.controller'
+import { APP_INTERCEPTOR } from '@nestjs/core'
+
 
 export const GrantRule: Rule = (() => {
     const rule = new Rule('/')
@@ -31,12 +33,16 @@ export const AuthenticatedRule: Rule = (() => {
         { provide: 'APP_RULES', useValue: [] },
         RulesService,
         AuthorizeService,
-        AuthorizeInterceptor
+        { provide: APP_INTERCEPTOR, useClass: AuthorizeInterceptor },
     ],
     exports: [RulesService, AuthorizeService],
 })
 export class RulesModule {
     static register(rootRule: Rule = DenyRule, appRules: Rule[] = []): DynamicModule {
+
+        appRules.forEach(r => {
+            if(!r.ruleSource) r.ruleSource = 'code'
+        })
 
 
 
@@ -45,12 +51,11 @@ export class RulesModule {
             { provide: 'APP_RULES', useValue: appRules ?? [] },
             RulesService,
             AuthorizeService,
-            AuthorizeInterceptor
         ]
 
         return {
             module: RulesModule,
-            providers,
+            providers:[...providers,{ provide: APP_INTERCEPTOR, useClass: AuthorizeInterceptor }],
             controllers: [PermissionController],
             exports: [...providers]
         }

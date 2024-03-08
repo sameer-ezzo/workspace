@@ -20,6 +20,17 @@ export class Rule {
     */
     actions?: { [action: string]: Permission<boolean | AuthorizeFun>[] } = {}
     builtIn? = true //TODO this should be replaced by tags
+
+    /**
+     * @description the name of the rule where this rule copied the fallback authorization from. If undefined then the rule has its own fallback
+    */
+    fallbackSource?: string
+
+
+    /**
+     * @description the name of the rule where this rule copied the fallback authorization from. If undefined then the rule has its own fallback
+    */
+    ruleSource?: 'decorator' | 'db' | 'code';
 }
 
 // export type RuleRecord = Rule<ExpressionSet> & { _id: string, path: string; }

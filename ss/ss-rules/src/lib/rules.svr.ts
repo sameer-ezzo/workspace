@@ -160,7 +160,9 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
                     path: p,
                     name: p,
                     builtIn: false,
-                    fallbackAuthorization: parentRule?.fallbackAuthorization
+                    fallbackAuthorization: parentRule.fallbackAuthorization,
+                    fallbackSource: parentRule.fallbackSource ?? parentRule.name,
+                    ruleSource: 'decorator',
                 } as Rule);
         }
     }
@@ -169,7 +171,7 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
 function getAuthorizePermissionsFromEndpoints(endPoints: EndpointInfoRecord[], rulesService: RulesService) {
     return endPoints.map(ep => {
         const parentRule = rulesService.getRule(ep.fullPath, true)!
-        return (Reflect.getMetadata(AUTHORIZE_PERMISSIONS, ep.descriptor.value) ?? []).map((p:any) => ({ ...p, name: ep.operation, action: ep.operation, rule: parentRule.name } as SimplePermission))
+        return (Reflect.getMetadata(AUTHORIZE_PERMISSIONS, ep.descriptor.value) ?? []).map((p: any) => ({ ...p, name: ep.operation, action: ep.operation, rule: parentRule.name } as SimplePermission))
     }).reduce((ps, acc) => ([...ps, ...acc]), []);
 }
 
