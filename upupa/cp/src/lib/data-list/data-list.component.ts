@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, ViewChild } from "@angular/core";
 import { languageDir, LanguageService } from "@upupa/language";
-import { ActionDescriptor, ActionEvent, ConfirmOptions } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, ConfirmOptions, toTitleCase } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { DataService, FilterDescriptor, ServerDataSource } from "@upupa/data";
@@ -251,13 +251,10 @@ export class DataListComponent implements OnDestroy {
         const res = await firstValueFrom(
             this.dialog
                 .openDialog(DataFormComponent, {
-                    maxHeight: "90vh",
-                    width: "90%",
-                    maxWidth: "700px",
                     closeOnNavigation: true,
                     disableClose: true,
                     direction: languageDir(this.languageService.language),
-                    title: payload.action.action + " " + collection,
+                    title: toTitleCase(`${payload.action.action} ${collection}`),
                     inputs: { formResolverResult: scaffolder },
                 })
                 .afterClosed()

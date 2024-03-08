@@ -4,7 +4,7 @@ import { shareReplay, tap } from "rxjs/operators";
 import { DataService } from "@upupa/data";
 import { ScaffoldingService } from "../scaffolding.service";
 import { IScaffolder, FormScaffoldingModel } from "../../types";
-import { resolveFormSchemeOf, FormScheme, resolveFormValueFactoryOf } from "@upupa/dynamic-form";
+import { resolveFormSchemeOf, FormScheme, resolveFormValueFactoryOf, resolveDynamicFormInputsFor } from "@upupa/dynamic-form";
 import { resolvePath } from "./resolve-scaffolder-path.func";
 
 // defaultListActions: ActionDescriptor[] = [
@@ -33,17 +33,18 @@ export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> 
         const { path: _path, view } = resolvePath(path)
         const collection = view !== 'edit' ? _path.split('/').filter(s => s).pop() : _path.split('/').filter(s => s).at(-2);
 
-        const scheme = resolveFormSchemeOf(collection)
+        const dfInputs = resolveDynamicFormInputsFor(collection)
+
         if (view === 'create') {
-            const modelFactory = resolveFormValueFactoryOf(collection)
-            if (modelFactory) this.create = modelFactory
+            if (dfInputs.initialValueFactory) this.create = dfInputs.initialValueFactory
+            else this.create = () => Promise.resolve({} as T);
         }
 
         return Promise.resolve({
             type: 'form',
             viewModel: {
-                scheme: scheme,
                 value$: this.value$(path),
+                ...dfInputs,
                 defaultSubmitOptions: { closeDialog: true },
             }
         } as FormScaffoldingModel);

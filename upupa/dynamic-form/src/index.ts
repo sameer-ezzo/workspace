@@ -26,3 +26,6 @@ export * from './lib/events/handlers';
 export * from './lib/task.validation.component/task.validation.component';
 
 export * from './lib/decorators/form-input.decorator';
+
+export * from './lib/conditional-logic.service';
+export * from './lib/dynamic-form-inputs';

@@ -1,7 +1,7 @@
 import { DataFormViewModel, DataListFilterForm, DataListViewModel, FormScaffoldingModel, IScaffolder, ListScaffoldingModel, ScaffoldingScheme } from "../../types";
 import { FormViewScaffolderService } from "../default-scaffolders/form-view.scaffolder.service";
 import { GenericListViewScaffolder } from "../default-scaffolders/list-view.scaffolder.service";
-import { FormScheme, formScheme } from "@upupa/dynamic-form";
+import { DynamicFormInputs, FormScheme, formScheme } from "@upupa/dynamic-form";
 import 'reflect-metadata'
 import { ColumnDescriptor } from '@upupa/table';
 
@@ -115,7 +115,7 @@ export function listScaffolder(path: string, options: ListViewOptions = {}) {
 }
 export function createFormScaffolder(path: string, options: CreateFormOptions = {}) {
     return function (target) {
-        applyFormScheme(path, target);
+        applyFormScheme(path, target, options);
 
         const createRoute = { [path]: { type: options.scaffolder ?? FormViewScaffolderService } };
         if (options) createRoute[path]['meta'] = options;
@@ -124,7 +124,7 @@ export function createFormScaffolder(path: string, options: CreateFormOptions = 
 }
 export function editFormScaffolder(path: string, options: EditFormOptions = { selector: ':id', options: {} }) {
     return function (target) {
-        applyFormScheme(path, target);
+        applyFormScheme(path, target, options.options);
 
         const { selector, options: editOptions } = options;
         const editRoute = {
@@ -150,9 +150,16 @@ export function viewFormScaffolder(path: string, options: ViewFormOptions = { se
 }
 
 
-function applyFormScheme(path: string, target: any) {
+function applyFormScheme(path: string, target: any, options: Omit<DynamicFormInputs, 'scheme'> = {}) {
     const p = Reflect.getMetadata('path', target) || null;
-    if (p !== path) formScheme(path)(target);
+    const opts = {
+        name: options.name,
+        initialValueFactory: options.initialValueFactory,
+        recaptcha: options.recaptcha,
+        preventDirtyUnload: options.preventDirtyUnload,
+        theme: options.theme,
+    } as DynamicFormInputs
+    if (p !== path) formScheme(path, opts)(target);
 }
 export function formScaffolder(path: string, options: { editForm?: EditFormOptions, viewForm?: EditFormOptions, createForm?: CreateFormOptions } = {
     editForm: { selector: ':id', options: {} },

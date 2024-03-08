@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, Injectable, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener } from "@angular/core"
+import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener } from "@angular/core"
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, NG_VALIDATORS } from "@angular/forms"
 import { Field, FormScheme } from "./types"
-import { Condition, ConditionalLogicServiceBase } from "@noah-ark/expression-engine"
+import { Condition } from "@noah-ark/expression-engine"
 import { Subscription } from "rxjs"
 import { DialogService, EventBus } from '@upupa/common'
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers"
@@ -11,12 +11,7 @@ import { DynamicFormOptions } from "./dynamic-form.options"
 import { DYNAMIC_FORM_OPTIONS } from "./di.token"
 import { DynamicFormRenderer } from "./dynamic-form-renderer"
 import { DynamicFormService } from "./dynamic-form.service"
-
-@Injectable({ providedIn: 'root' })
-export class ConditionalLogicService extends ConditionalLogicServiceBase {
-    constructor(bus: EventBus) { super(bus) }
-}
-
+import { ConditionalLogicService } from "./conditional-logic.service"
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
@@ -32,7 +27,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     formRenderer!: DynamicFormRenderer
 
     @Input() preventDirtyUnload = undefined
-
     @Input() recaptcha: string
     @Input() fields: FormScheme
     @Input() conditions: Condition[]

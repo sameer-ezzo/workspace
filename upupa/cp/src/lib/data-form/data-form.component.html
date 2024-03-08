@@ -2,14 +2,17 @@
     <ng-container *ngIf="formResolverResult | async as resolverResult">
         <div style="display: flex;flex-direction: column;flex-wrap: nowrap;overflow-y: auto;padding: 1rem;">
 
-            <dynamic-form *ngIf="resolverResult.formViewModel?.scheme" [preventDirtyUnload]="true"
-                [fields]="resolverResult.formViewModel.scheme" #dynForm [(value)]="model"
+            <dynamic-form *ngIf="resolverResult.formViewModel?.scheme" [fields]="resolverResult.formViewModel.scheme"
+                #dynForm [(value)]="model" [name]="resolverResult.formViewModel.name"
+                [preventDirtyUnload]="resolverResult.formViewModel.preventDirtyUnload"
+                [initialValueFactory]="resolverResult.formViewModel.initialValueFactory"
+                [recaptcha]="resolverResult.formViewModel.recaptcha" [theme]="resolverResult.formViewModel.theme"
                 [conditions]="resolverResult.formViewModel.conditions" (submit)="submit($event)"></dynamic-form>
         </div>
 
         <div *ngIf="resolverResult.formViewModel.actions?.length" class="toolbar footer">
-            <mat-btn *ngFor="let descriptor of resolverResult.formViewModel.actions" (action)="onAction($event, dialogRef)"
-                [descriptor]="descriptor"></mat-btn>
+            <mat-btn *ngFor="let descriptor of resolverResult.formViewModel.actions"
+                (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
         </div>
     </ng-container>
 </ng-container>

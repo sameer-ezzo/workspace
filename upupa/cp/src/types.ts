@@ -1,6 +1,6 @@
 import { Type } from "@angular/core";
 import { Condition } from "@noah-ark/expression-engine";
-import { DynamicFormCommands, DynamicFormComponent, DynamicFormEvents, FormScheme } from "@upupa/dynamic-form";
+import { DynamicFormCommands, DynamicFormComponent, DynamicFormEvents, DynamicFormInputs, FormScheme } from "@upupa/dynamic-form";
 import { ColumnsDescriptor } from "@upupa/table";
 import { Observable } from "rxjs";
 import { FlatHierarchy } from "@noah-ark/path-matcher";
@@ -8,9 +8,10 @@ import { ActionDescriptor } from "@upupa/common";
 import { DataAdapter, FilterDescriptor, DataAdapterDescriptor } from "@upupa/data";
 
 
+
 export type FormSubmitResult = { closeDialog?: boolean, successMessage?: string, redirect?: string }
-export type DataFormViewModel<T = any> = {
-    scheme: FormScheme,
+export type DataFormViewModel<T = any> = DynamicFormInputs<T> & {
+
     value$: Observable<T>,
     // submitBtn?: ActionDescriptor,
     actions?: ActionDescriptor[],

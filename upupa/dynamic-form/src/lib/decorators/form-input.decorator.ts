@@ -4,11 +4,13 @@ import 'reflect-metadata'
 import { Field, FieldItem, Fieldset, FormScheme, Validator } from '../types';
 import { toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
+import { DynamicFormInputs } from '../dynamic-form-inputs';
 
-const _DYNAMIC_FORM_SCHEMES: Record<string, FormScheme> = {};
-const _MODEL_FACTORIES_SCHEMES: Record<string, () => any> = {};
-export const resolveFormValueFactoryOf = (path: string) => _MODEL_FACTORIES_SCHEMES[path]
-export const resolveFormSchemeOf = (path: string) => _DYNAMIC_FORM_SCHEMES[path] ? Object.assign({}, _DYNAMIC_FORM_SCHEMES[path]) : null;
+const _DYNAMIC_FORM_INPUTS: Record<string, DynamicFormInputs> = {};
+
+export const resolveDynamicFormInputsFor = (path: string) => _DYNAMIC_FORM_INPUTS[path] ? Object.assign({}, _DYNAMIC_FORM_INPUTS[path]) : null;
+export const resolveFormValueFactoryOf = (path: string) => resolveDynamicFormInputsFor(path)?.initialValueFactory;
+export const resolveFormSchemeOf = (path: string) => resolveDynamicFormInputsFor(path)?.scheme;
 
 export interface IDynamicFormFieldOptions { }
 export class TextFieldOptions { }
@@ -191,12 +193,14 @@ function addInputToFormScheme(target: any, field: Field, options: FormFieldOptio
     const path = (Reflect.getMetadata('path', target) || null) as string;
     const key = path ?? target.constructor.name
 
-    const formScheme = (_DYNAMIC_FORM_SCHEMES[key] ?? {}) as FormScheme;
+    const dfInputs = resolveDynamicFormInputsFor(key) || { scheme: {} as FormScheme } as DynamicFormInputs;
+    if (!dfInputs.scheme) dfInputs.scheme = {} as FormScheme;
+
     const segments = field.path.split('/').filter(s => s);
     while (segments.length > 1) {
         const segment = segments.shift()!;
-        if (!formScheme[segment]) {
-            formScheme[segment] = {
+        if (!dfInputs.scheme[segment]) {
+            dfInputs.scheme[segment] = {
                 type: 'fieldset',
                 name: segment,
                 items: {}
@@ -204,25 +208,29 @@ function addInputToFormScheme(target: any, field: Field, options: FormFieldOptio
         }
     }
     if (segments.length === 1) {
-        formScheme[field.name] = field;
+        dfInputs.scheme[field.name] = field;
     }
 
-    Reflect.defineMetadata('DYNAMIC_FORM_SCHEME', formScheme, target);
-    _DYNAMIC_FORM_SCHEMES[key] = formScheme;
+    Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', { scheme: dfInputs.scheme }, target);
+    _DYNAMIC_FORM_INPUTS[key] = { scheme: dfInputs.scheme };
 }
 function toField(path: string, target: any, propertyKey: string, options: FormFieldOptions) {
     const field = makeFieldItem(path, target, propertyKey, options);
     return field;
 }
 
-export function formScheme(path?: string) {
+export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'scheme'> = {}) {
     return function (target: any) {
         const key = path ?? target.name;
         Reflect.defineMetadata('path', key, target);
-        const formScheme = (Reflect.getMetadata('DYNAMIC_FORM_SCHEME', target) ?? _DYNAMIC_FORM_SCHEMES[key] ?? _DYNAMIC_FORM_SCHEMES[target.name] ?? {}) as FormScheme;
-        _DYNAMIC_FORM_SCHEMES[key] = formScheme
+        const formInputs = (Reflect.getMetadata('DYNAMIC_FORM_INPUTS', target) ?? _DYNAMIC_FORM_INPUTS[key] ?? _DYNAMIC_FORM_INPUTS[target.name] ?? {}) as DynamicFormInputs;
         const args = Reflect.getMetadata('design:paramtypes', target) || [];
-        _MODEL_FACTORIES_SCHEMES[key] = () => Promise.resolve(new target(...args));
+        
+        const opts = { ...formInputs, ...options } as DynamicFormInputs;
+        if ((options.name || '').trim().length === 0) opts.name = key.replace(/\//g, '-').toLowerCase();
+        if (!options.initialValueFactory) opts.initialValueFactory = () => Promise.resolve(new target(...args));
+        _DYNAMIC_FORM_INPUTS[key] = opts
+        Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', opts, target);
     }
 }
 
