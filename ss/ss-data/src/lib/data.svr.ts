@@ -261,8 +261,8 @@ export class DataService {
             if (Object.keys(projection).length === 0) exclude.forEach(x => projection[x] = 0);  //make sure to exclude in nothing included
         }
 
-        const model = await this.getModel(modelName)
 
+        const model = await (this.options.autoCreateModel ? this.getOrAddModel(modelName) : this.getModel(modelName))
 
         if (id) {
             if (!model) return null

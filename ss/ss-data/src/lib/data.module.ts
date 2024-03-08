@@ -16,7 +16,8 @@ if (process.env.DBPORT) logger.error(`DBPORT is deprecated. Use DB_[NAME] conven
 if (process.env.DBUSER) logger.error(`DBUSER is deprecated. Use DB_[NAME] convention instead.`)
 if (process.env.DBPASS) logger.error(`DBPASS is deprecated. Use DB_[NAME] convention instead.`)
 
-function getDbsProviders(databasesCollections: DatabasesCollections = {}, databases: any = {}): Provider[] {
+
+function getDbsProviders(databasesCollections: DatabasesCollections = {}, databases: any = {}, dbConnectionOptions: Partial<DbConnectionOptions> = {}): Provider[] {
     const _env = { ...databases, ...process.env }
     const prod = _env.NODE_PROD === 'production'
     if (!prod && !_env["DB_DEFAULT"]) _env["DB_DEFAULT"] = `mongodb://127.0.0.1:27017/${appName ?? 'test'}`
@@ -24,12 +25,17 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
     const dbProviders = Object.keys(_env)
         .filter(name => name.startsWith("DB_"))
         .map((provide: string) => {
-
+            const _options = {
+                ...defaultDbConnectionOptions,
+                ...dbConnectionOptions
+            }
             const url = _env[provide]
             const options = {
-                ...defaultDbConnectionOptions,
-                ...databasesCollections[provide]?.dbConnectionOptions ?? new DbConnectionOptions()
+                ..._options,
+                ...databasesCollections[provide]?.dbConnectionOptions ?? _options
             }
+
+            console.log("options: xxxxx ", options)
 
             if (url.startsWith('mongodb')) {
                 const databaseInfo = databasesCollections[provide] ?? {}
@@ -60,10 +66,10 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
     exports: [DataService, DataChangeService]
 })
 export class DataModule {
-    static register(databasesCollections: DatabasesCollections = {}, databases?: { [name: string]: string }): DynamicModule {
+    static register(databasesCollections: DatabasesCollections = {}, databases?: { [name: string]: string },dbConnectionOptions:Partial<DbConnectionOptions> = {}): DynamicModule {
 
 
-        const dbsProviders = getDbsProviders(databasesCollections, databases)
+        const dbsProviders = getDbsProviders(databasesCollections, databases,dbConnectionOptions)
         dbsProviders.push({ provide: DataService, useExisting: "DB_DEFAULT" })
 
         return {

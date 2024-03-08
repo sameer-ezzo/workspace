@@ -11,6 +11,7 @@ export class DbConnectionOptions {
     bufferCommands?: boolean
     autoIndex?= true
     autoCreate?= false
+    autoCreateModel?= false
 }
 
 

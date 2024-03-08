@@ -38,6 +38,10 @@ export const AuthenticatedRule: Rule = (() => {
 export class RulesModule {
     static register(rootRule: Rule = DenyRule, appRules: Rule[] = []): DynamicModule {
 
+        appRules.forEach(r => {
+            if(!r.ruleSource) r.ruleSource = 'code'
+        })
+
 
 
         const providers: Provider[] = [
