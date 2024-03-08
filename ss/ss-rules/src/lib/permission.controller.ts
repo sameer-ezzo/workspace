@@ -32,7 +32,6 @@ export class PermissionController {
         const userId = msg.query.id as string;
         const principle = msg.principle as Principle;
         if (!principle && !userId) return []
-        logger.info('getPermissionsForUser', userId, principle)
         const user = userId && userId !== principle.sub ? await this.data.find("user", userId) : principle;
         if (!user) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
         return [];

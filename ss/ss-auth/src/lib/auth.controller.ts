@@ -305,7 +305,7 @@ export class AuthController {
             // maybe check if the user had been registered using google, the lock the user account or delete it.
             throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
         }
-        
+
         let userRecord: User = await this.auth.findUserByEmail(googleUser.email);
         const google_client_regesterateion_enabled = (process.env.GOOGLE_CLIENT_REGESTERATEION_ENABLED || 'false').toLowerCase() === 'true'
 
@@ -322,9 +322,13 @@ export class AuthController {
             language: googleUser.locale,
         } as unknown as User
 
-        if (!userRecord) {
+        if (!userRecord || userRecord.external?.google !== googleUser.sub) {
             if (google_client_regesterateion_enabled === true) {
-                await this.auth.signUp(user as any, '')
+                const external = userRecord?.external ?? {}
+                await this.auth.signUp({
+                    ...user,
+                    external: { ...external, ['google']: googleUser.sub }
+                } as User, '')
                 userRecord = await this.auth.findUserByEmail(user.email);
             }
             else userRecord = { _id: googleUser.sub, ...user }
