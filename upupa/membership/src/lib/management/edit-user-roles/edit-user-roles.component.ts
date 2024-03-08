@@ -61,7 +61,7 @@ export class EditUserRolesComponent {
 
     private async onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent>) {
         let roles = this.value.roles
-        if (e.action.name === 'save') {
+        if (e.action.action === 'save') {
             roles = await this.save(this.form)
         }
         dialogRef.close(roles)

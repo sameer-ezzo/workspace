@@ -27,8 +27,10 @@ import { APP_ADMIN_ROLES_TOKEN } from './app-admin-roles.token'
 import { appDefaultAdminRoles } from './user-role';
 
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { AuthorizeActionDirective } from "./authorize-action.directive";
 
 const components = [
+    AuthorizeActionDirective,
     PermissionsPageComponent, PermissionsSideBarComponent, RuleFormComponent, RulePermissionsTableComponent
 ];
 

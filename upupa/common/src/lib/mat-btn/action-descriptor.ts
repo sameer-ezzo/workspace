@@ -5,10 +5,14 @@ export type ActionsDescriptor = ActionDescriptor[];
 export type ActionEvent<T = any> = { action: ActionDescriptor; data: T[]; };
 
 export class ActionDescriptor {
-    name: string;
+    action: string;
+    path?: string;
+
     type?: 'button' | 'submit' = 'button';
     text?: string;
     icon?: string;
+    icon_url?: string;
+
     color?: 'primary' | 'accent' | 'warn' | string;
     tip?: string;
 
@@ -18,6 +22,7 @@ export class ActionDescriptor {
     header?: boolean;
 
     disabled?: boolean; //per command
+    active?: boolean;
 
     matBadge?: string;
     matBadgeColor?: ThemePalette;

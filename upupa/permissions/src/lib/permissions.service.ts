@@ -1,13 +1,14 @@
 import { Injectable } from "@angular/core";
 import { DataService } from "@upupa/data";
-import { map, startWith, tap } from "rxjs/operators";
+import { catchError, map, startWith, tap } from "rxjs/operators";
 
 import { firstValueFrom, Observable, of, shareReplay } from "rxjs";
 import { HttpClient } from "@angular/common/http";
-import { Rule } from "@noah-ark/common";
+import { Permission, Rule } from "@noah-ark/common";
 import { NodeModel } from "./node-model";
 import { SimplePermission } from "@noah-ark/common";
-import { TreeBranch } from "@noah-ark/path-matcher";
+import { PathMatcher, TreeBranch } from "@noah-ark/path-matcher";
+
 
 @Injectable({
     providedIn: "root",
@@ -28,8 +29,25 @@ export class PermissionsService {
         if (!this.roles$) this.roles$ = this.data.get<any>(`/v2/role?select=name`).pipe(
             map((x) => x.data),
             map((roles) => roles.concat(this.adminRoles ?? [])),
-            shareReplay()
+            shareReplay(1)
         )
+
+        this.getRules().subscribe()
+    }
+
+
+
+    userPersmissions = new Map<string, Promise<SimplePermission[]>>();
+    getUserPersmissions(userId: string): Promise<SimplePermission[]> {
+        if (!userId) return Promise.resolve([])
+        if (this.userPersmissions.has(userId)) return this.userPersmissions.get(userId)
+        this.userPersmissions.set(userId, firstValueFrom(this.http.get<SimplePermission[]>(`${this.base}/user-permessions/${userId}`).pipe(
+            startWith([]),
+            catchError((err) => of([])),
+            shareReplay(1)
+        ))
+        )
+        return this.userPersmissions.get(userId)
     }
 
     getRules(): Observable<NodeModel[]> {
@@ -39,7 +57,7 @@ export class PermissionsService {
                 this.nodes = convertTreeToArray(tree)
                 return this.nodes;
             }),
-            startWith(this.nodes)
+            shareReplay(1)
         );
     }
 

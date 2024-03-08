@@ -42,7 +42,7 @@ export class RulePermissionsTableComponent {
     tableActions = (item) => {
         return item?.builtIn === true ? [] : [
             {
-                name: "delete",
+                action: "delete",
                 variant: "icon",
                 icon: "delete",
                 color: "warn",
@@ -88,7 +88,7 @@ export class RulePermissionsTableComponent {
 
 
     async onTableAction(e: ActionEvent) {
-        const action = e.action.name;
+        const action = e.action.action;
         switch (action) {
             case "delete": {
                 await this.permissionsService.deletePermission(e.data[0])

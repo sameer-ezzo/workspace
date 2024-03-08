@@ -61,12 +61,12 @@ export class FileInputComponent extends DataComponentBase {
     }
 
     actions = [
-        { name: 'download', text: 'Download', icon: 'get_app' } as ActionDescriptor,
-        { name: 'remove', text: 'Remove', icon: 'clear' } as ActionDescriptor,
+        { action: 'download', text: 'Download', icon: 'get_app' } as ActionDescriptor,
+        { action: 'remove', text: 'Remove', icon: 'clear' } as ActionDescriptor,
     ]
 
     onAction(e: ActionEvent) {
-        if (e.action.name === 'remove') {
+        if (e.action.action === 'remove') {
             this.removeFile(e.data[0].item)
         }
     }

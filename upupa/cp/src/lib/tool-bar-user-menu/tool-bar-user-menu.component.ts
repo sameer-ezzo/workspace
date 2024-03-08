@@ -1,11 +1,10 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { Observable, of, Subject } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
+import { Component, Input } from '@angular/core';
+import { Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { EventBus } from '@upupa/common';
-import { DataService } from '@upupa/data';
 import { AuthService } from '@upupa/auth';
-import { AvatarMode, UserAvatarService } from '../cp-layout/avatar.service';
-import { SideBarGroup } from '../cp-layout/side-bar-group-item';
+import { UserAvatarService } from '../cp-layout/avatar.service';
+import { SideBarItem } from '../cp-layout/side-bar-group-item';
 
 
 @Component({
@@ -14,7 +13,7 @@ import { SideBarGroup } from '../cp-layout/side-bar-group-item';
     styleUrls: ['./tool-bar-user-menu.component.scss']
 })
 export class ToolbarUserMenuComponent {
-    @Input() commands: SideBarGroup[]
+    @Input() commands: SideBarItem[]
 
 
     destroyed$ = new Subject<boolean>()

@@ -19,8 +19,9 @@ export function resolvePathScaffolders(path: string) {
     return { hasCreate, hasEdit, hasView, hasList };
 }
 
+export type CPCommandPosition = 'sidebar' | 'user-menu' | 'toolbar';
 export type ViewMetaOptions = {
-    position?: 'sidebar' | string
+    positions?: CPCommandPosition[],
     text?: string
     icon?: string
     group?: string
@@ -102,10 +103,11 @@ export function listScaffolder(path: string, options: ListViewOptions = {}) {
 
         if (options['scaffolder']) return
 
-        const listInfo = {
+        const listInfo: Partial<ListViewOptions> = {
             columns: Reflect.getMetadata('LIST_COLUMN_DESCRIPTORS', target) || _LISTS_INFO[target.name]['columns'] || {},
             select: Reflect.getMetadata('LIST_SELECT', target) || _LISTS_INFO[target.name]['select'] || [],
-            ...options
+            ...options,
+            positions: options.positions?.length ? options.positions as CPCommandPosition[] : ['sidebar']
         }
         _LISTS_INFO[path] = listInfo;
 
@@ -192,7 +194,7 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
             icon: opts.icon,
             text: opts.text,
             group: opts.group,
-            position: opts.position,
+            positions: opts.positions
         }
         if (options.listView !== null) listScaffolder(path, { ...listMeta, ...opts.listView })(target)
         if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);

@@ -20,7 +20,7 @@ export class ForgotPasswordFormComponent {
     @Output() fail = new EventEmitter();
 
     @Input() model: { email: string, phone?: string } & Record<string, unknown> = { email: '' }
-    @Input() submitBtn: ActionDescriptor = { name: 'submit', type: 'submit', text: 'Submit', color: 'primary', variant: 'raised' };
+    @Input() submitBtn: ActionDescriptor = { action: 'submit', type: 'submit', text: 'Submit', color: 'primary', variant: 'raised' };
     @Input() fields: FormScheme = defaultForgotPasswordFormFields
     @Input() conditions: Condition[] = []
 

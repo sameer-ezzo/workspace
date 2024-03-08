@@ -44,7 +44,7 @@ export class RoleFormComponent {
   }
 
   async onAction(e: ActionEvent) {
-    if (e.action.name === "submit") return await this.save();
+    if (e.action.action === "submit") return await this.save();
 
     return undefined;
   }

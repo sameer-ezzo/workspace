@@ -56,7 +56,7 @@ export class DataListComponent implements OnDestroy {
 
     collection: string;
     destroyed$ = new Subject<void>();
-    filterButtonActionDescriptor = { name: 'filter', icon: 'filter_list', header: true, variant: 'icon', handler: (event: ActionEvent) => this.toggleFilterDrawer() } as ActionDescriptor
+    filterButtonActionDescriptor = { action: 'filter', icon: 'filter_list', header: true, variant: 'icon', handler: (event: ActionEvent) => this.toggleFilterDrawer() } as ActionDescriptor
     constructor(
         public injector: Injector,
         public auth: AuthService,
@@ -236,7 +236,7 @@ export class DataListComponent implements OnDestroy {
 
     private async openFormDialog(collection: string, payload: ActionEvent) {
         const id = payload.data?.length > 0 ? payload.data[0]._id : null;
-        const path = '/' + [payload.action.name, collection, id].filter(s => s).join("/")
+        const path = '/' + [payload.action.action, collection, id].filter(s => s).join("/")
         const scaffolder = await this.scaffolder.scaffold(path)
 
         const formResolverResult = (
@@ -257,7 +257,7 @@ export class DataListComponent implements OnDestroy {
                     closeOnNavigation: true,
                     disableClose: true,
                     direction: languageDir(this.languageService.language),
-                    title: payload.action.name + " " + collection,
+                    title: payload.action.action + " " + collection,
                     inputs: { formResolverResult: scaffolder },
                 })
                 .afterClosed()
@@ -282,7 +282,7 @@ export class DataListComponent implements OnDestroy {
 
     async onAction(x: ActionEvent) {
         const path = PathInfo.parse(this.inputs.path, 1);
-        switch (x.action.name) {
+        switch (x.action.action) {
             case "create":
             case "edit":
             case "view":
@@ -315,7 +315,7 @@ export class DataListComponent implements OnDestroy {
                 break;
             }
             default:
-                const id = `${this.collection}_${x.action.name}`
+                const id = `${this.collection}_${x.action.action}`
                 this.bus.emit(id, {
                     msg: id,
                     ...x,

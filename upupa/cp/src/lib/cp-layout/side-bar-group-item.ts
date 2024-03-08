@@ -1,23 +1,14 @@
+import { ActionDescriptor } from "@upupa/common";
 
 
-type SideBarItemBase = {
-    roles?: string[];
-    active?: boolean;
-    name: string;
-    icon?: string;
-    icon_url?: string;
-    text: string;
-}
-export type SideBarItem = SideBarItemBase & {
+export type SideBarItem = ActionDescriptor & {
     link: string;
     queryParams?: any;
-
     href?: string;
     target?: string;
     external?: boolean;
-
 };
 
-export type SideBarGroup = SideBarItemBase & {
+export type SideBarGroup = ActionDescriptor & {
     items: SideBarItem[];
 };
