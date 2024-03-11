@@ -257,7 +257,7 @@ export class AuthController {
                 }
             case "refresh":
                 {
-                    const token = this.auth.verifyToken(msg.payload.refresh_token)
+                    const token = await this.auth.verifyToken(msg.payload.refresh_token)
                     if (!token) throw new HttpException('INVALID_TOKEN', HttpStatus.BAD_REQUEST)
 
                     const user = await this.auth.signInUserByRefreshToken(msg.payload.refresh_token)

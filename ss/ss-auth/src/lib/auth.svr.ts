@@ -1,12 +1,11 @@
 import { hash, compare } from 'bcryptjs'
 const bcrypt = { hash, compare }
-import * as jwt from "jsonwebtoken"
+import * as jose from 'jose'
 import * as crypto from 'crypto'
 import mongoose from 'mongoose'
 
 
 import { Model } from "mongoose"
-import { SignOptions } from "jsonwebtoken"
 import { DataService } from "@ss/data"
 import { AuthException, AuthExceptions } from './auth-exception'
 import { Inject, Injectable } from "@nestjs/common"
@@ -18,6 +17,14 @@ import { User, randomString, randomDigits, UserDevice } from '@noah-ark/common'
 import { UserDocument } from './user.document'
 import userSchema from './user.schema'
 import { roleSchema } from './role.schema'
+
+
+export type SignOptions = {
+    issuer?: string
+    expiresIn: string
+    audience?: string
+    subject?: string
+}
 
 export type Verification = {
     code: string
@@ -40,6 +47,9 @@ export type TokenBase = { t: TokenTypes } & Record<string, any>;
 
 @Injectable()
 export class AuthService {
+
+    #secret = new TextEncoder().encode(this.options.secret)
+
     constructor(@Inject('AUTH_DB') public readonly data: DataService,
         private readonly broker: Broker,
         @Inject('AUTH_OPTIONS') public readonly options: AuthOptions) {
@@ -80,25 +90,28 @@ export class AuthService {
         return result;
     }
 
-    verifyToken(token: string): TokenBase {
+    async verifyToken(token: string): Promise<TokenBase> {
         try {
-            return jwt.verify(token, this.options.secret) as TokenBase;
+            const result = await jose.jwtVerify(token, this.#secret)
+            return result.payload as TokenBase
         } catch (error) {
+            console.error(error)
             return undefined
         }
     }
-
-    static verifyToken(token: string, secret = process.env.SECRET): TokenBase {
-        try {
-            return jwt.verify(token, secret) as TokenBase;
-        } catch (error) {
-            return undefined
-        }
-    }
-
 
     async sign(payload: TokenBase, options: SignOptions): Promise<string> {
-        return jwt.sign(payload, this.options.secret, options);
+        const jwt = await new jose.SignJWT(payload)
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime(options.expiresIn)
+
+
+        if (this.options.issuer) jwt.setIssuer(options.issuer)
+        if (options.audience) jwt.setAudience(options.audience)
+
+
+        return jwt.sign(this.#secret)
     }
 
     async updateUserToRoles(userId: string, roles: string[]) {
@@ -137,7 +150,7 @@ export class AuthService {
     }
 
     async issueGenericToken(payload: TokenBase, expiresIn = "7 days"): Promise<string> {
-        return this.sign(payload, { expiresIn: expiresIn })
+        return this.sign(payload, { expiresIn })
     }
 
 
@@ -295,7 +308,7 @@ export class AuthService {
 
 
     async signInUserByRefreshToken(refreshToken: string): Promise<UserDocument> {
-        const token = this.verifyToken(refreshToken)
+        const token = await this.verifyToken(refreshToken)
         if (token && token.t === "rfs") {
             const user = await this.findUserById(token.sub)
             if (!user) throw new AuthException(AuthExceptions.UserNotFound)
@@ -349,7 +362,7 @@ export class AuthService {
     }
 
     async resetPassword(resetToken: string, newPassword: string, forceChange = false) {
-        const token = this.verifyToken(resetToken)
+        const token = await this.verifyToken(resetToken)
         if (token && token.t === TokenTypes.reset) {
             const model = await this.userModel()
             const user = await model.findOne({ _id: token.sub })
@@ -393,7 +406,7 @@ export class AuthService {
         if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
 
         if (!value) {
-            const token = this.verifyToken(verifyToken);
+            const token = await this.verifyToken(verifyToken);
             verifyToken = '';
             if (token && token.t === TokenTypes.verify) {
                 verifyToken = token.code;

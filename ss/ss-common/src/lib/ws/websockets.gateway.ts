@@ -4,9 +4,10 @@ import { filter } from 'rxjs/operators'
 import { Inject, Injectable } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { Deferred, Principle } from "@noah-ark/common"
-import * as jwt from "jsonwebtoken"
+import * as jose from "jose"
 import { __secret } from "../secret.fun"
 import { logger } from "../logger"
+import { TokenBase } from "@ss/auth"
 
 type RemoteSocket = Awaited<ReturnType<ReturnType<Server['in']>['fetchSockets']>>[number]
 
@@ -22,10 +23,11 @@ export type WsEvent<T = any> = {
     }
 }
 
-function verifyToken(token: string): Principle {
+async function verifyToken(token: string): Promise<Principle> {
     const secret = __secret()
     try {
-        return jwt.verify(token, secret) as Principle;
+        const result = await jose.jwtVerify(token, new TextEncoder().encode(secret))
+        return result.payload as Principle
     } catch (error) {
         return undefined
     }
@@ -64,7 +66,7 @@ export class WebsocketsGateway {
 
     async auth(socket: Socket) {
         const token = socket.handshake.auth?.token
-        const principle = verifyToken(token)
+        const principle = await verifyToken(token)
         if (principle) {
             socket.data = socket.data ? { ...socket.data, principle } : { principle }
             await socket.join(principle.sub)

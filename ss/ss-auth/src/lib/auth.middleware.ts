@@ -2,9 +2,13 @@ import { Observable, of, throwError } from 'rxjs'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { AuthService, TokenTypes } from './auth.svr'
 import { DataService } from '@ss/data'
-import * as crypto from 'crypto'
+
 import { timeout } from 'rxjs/operators'
 import { logger } from "./logger";
+import { Principle } from "@noah-ark/common"
+import * as jose from "jose"
+
+
 
 function promisify<T>(o: Observable<T>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -16,114 +20,145 @@ export class AuthenticationInterceptor implements NestInterceptor {
 
     constructor(private data: DataService, private auth: AuthService) { }
 
-    async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-        await this._authenticate(context)
-        if (context.getType() !== 'rpc') return next.handle()
-        else {
-            try {
-                const result = await promisify(next.handle());
-                return of(result)
-            } catch (error) {
-                logger.error("Error was caught in AuthenticationInterceptor:RPC next.handle()", error.message,context.getArgs())
-                return throwError(() => error)
-            }
-        }
-    }
+    providers: HttpAuthenticationProvider[] = [
+        new BearerAuthenticationProvider(this.auth),
+        new CloudflareCookieAuthenticationProvider(this.auth)
+    ]
 
-    async _authenticate(context: ExecutionContext) {
+    async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
 
         switch (context.getType()) {
+            case 'rpc': return next.handle() // internal call no need to authenticate
             case 'http':
-                const req = context.switchToHttp().getRequest()
-                req.principle ??= await this._authenticateHttpContext(context)
-                // req.user = req.principle
-                if (req._context) req._context.principle = req.principle
-                else req._context = { principle: req.principle }
-                break
-            case 'rpc':
-                {
-                    const data = context.switchToRpc().getData()
-                    data.principle ??= await this._authenticateRpcContext(context)
-                }
-                break
+                await this._authenticateHttp(context.switchToHttp().getRequest())
+                break;
             case 'ws':
-                {
-                    const data = context.switchToWs().getData()
-                    data.principle ??= await this._authenticateWsContext(context)
-                }
-                break
             default:
-                logger.error(`Unknown Transport ${context.getType()}`)
-                break
+                console.error('AuthenticationInterceptor: unsupported context type', context.getType())
+                break;
+
+        }
+
+
+        try {
+            const result = await promisify(next.handle());
+            return of(result)
+        } catch (error) {
+            logger.error("Error was caught in AuthenticationInterceptor:RPC next.handle()", error.message, context.getArgs())
+            return throwError(() => error)
         }
     }
 
-    private _authenticateHttpContext(context: ExecutionContext) {
-        const req = context.switchToHttp().getRequest()
-        const auth = req.get('Authorization') as string
+    async _authenticateHttp(req: Request & Record<string, any>) {
+        if (req.principle) return req.principle
+
+        for (const provider of this.providers) {
+            const principle = await provider.authenticate(req)
+            if (principle) {
+                // fill out context object
+                if (req._context) req._context.principle = req.principle
+                else req._context = { principle: req.principle }
+                return principle
+            }
+        }
+
+    }
+
+
+
+
+
+}
+
+import { Request } from 'express';
+import { __secret } from '@ss/common'
+
+export interface HttpAuthenticationProvider {
+    authenticate(req: Request): Promise<Principle>
+}
+
+
+
+export class BearerAuthenticationProvider implements HttpAuthenticationProvider {
+    constructor(private auth: AuthService, public readonly headerName = 'Auhtorization') { }
+    async authenticate(req: Request & Record<string, any>): Promise<Principle> {
+
+        if (req.principle) return req.principle
+
+        const auth = req.get(this.headerName) as string
         if (auth) {
             const spaceIndex = auth.indexOf(' ')
             const authType = auth.substring(0, spaceIndex)
             switch (authType) {
-                case 'Bearer': return this._authenticateBearer(auth.substring(7))
-                case 'Basic': return this._authenticateBasic(auth.substring(6))
-                default: throw `Authentication Type ${authType} is not supported`
+                case 'Bearer': req.principle = this._authenticateBearer(auth.substring(7))
             }
         }
         if (req.query.access_token) {
-            const access_token = req.query.access_token
-            delete req.query.access_token
-            return this._authenticateBearer(access_token) //todo: find better way to pass access token.
+            const access_token = req.query.access_token as string
+            req.principle = this._authenticateBearer(access_token)
         }
-    }
 
-    private _authenticateRpcContext(context: ExecutionContext) {
-        const msg = context.switchToRpc().getData()
-        if (msg.access_token) {
-            const access_token = msg.access_token
-            delete msg.access_token
-            return this._authenticateBearer(access_token)
-        }
-    }
-
-    private _authenticateWsContext(context: ExecutionContext) {
-        const client = context.switchToWs().getClient()
-        const msg = context.switchToWs().getData()
-        if (client.handshake.auth?.token) {
-            const access_token = client.handshake.auth.token
-            return this._authenticateBearer(access_token)
-        }
+        return req.principle
     }
 
     async _authenticateBearer(token: string) {
-        const principle = this.auth.verifyToken(token)
-
-
+        const principle = await this.auth.verifyToken(token)
         if (principle?.t === TokenTypes.access) {
-            //TODO data/session checks  (has token.sec been changed? has token.session/refresh been blacklisted?)
-            //ideally sessions have thier own service (could use server memory or solutions like Redis)
-            //btw security code is checked when refreshToken is submited which is more performance friendly but refresh mechanisim is not the case for long lasting tokens such as for devices access (API)
             delete principle.t
             return principle
         }
     }
 
-    async _authenticateBasic(basic: string) {
-        const [key, secret] = basic.substring(8).split(":")
 
-        const model = await this.data.getOrAddModel('api_key')
-        const document = (await model.findOne({ key }, null, { lean: true })) as any
+}
 
-        if (document) {
-            const hash = crypto.createHash('sha256')
-                .update(key + secret)
-                .digest()
-                .toString('base64')
 
-            if (document.secrethash === hash) {
-                return document.principle //roles, claims, scope, audiance
+export class CookieAuthenticationProvider implements HttpAuthenticationProvider {
+
+    jkws_cache: Record<string, any> = {}
+
+    constructor(protected auth: AuthService, public readonly cookieName = 'Authorization', public readonly jwksPath = '/oauth2/v3/certs') { }
+    async authenticate(req: Request & Record<string, any>): Promise<Principle> {
+
+        const cookie = req.get('Cookie')
+        if (!cookie) return null
+
+        const cookies = cookie.split(';').map(c => c.split('=').map(x => x.trim()))
+        const token = cookies.find(c => c[0] === this.cookieName)?.[1]
+
+        const claims = jose.decodeJwt(token)
+        if (!claims) return null
+
+        const issuer = claims.iss
+        const header = jose.decodeProtectedHeader(token)
+
+        if (header.kid && issuer.startsWith('http')) {
+            try {
+
+                const JWKS = this.jkws_cache[issuer] ? this.jkws_cache[issuer] : (this.jkws_cache[issuer] = await jose.createRemoteJWKSet(new URL(`${issuer}${this.jwksPath}`)))
+                const { payload } = await jose.jwtVerify(token, JWKS)
+                req.principle = payload as Principle
             }
+            catch (error) {
+                console.error('CookieAuthenticationProvider.authenticate', error)
+            }
+        } else {
+            const secret = __secret()
+            try {
+                const { payload } = await jose.jwtVerify(token, new TextEncoder().encode(secret))
+                req.principle = payload as Principle
+            }
+            catch (error) { }
         }
-    }
 
+        return req.principle
+    }
+}
+
+
+
+export class CloudflareCookieAuthenticationProvider extends CookieAuthenticationProvider {
+    constructor(protected auth: AuthService) {
+        super(auth, 'CF_Authorization', '/cdn-cgi/access/certs')
+    }
 }
