@@ -1,0 +1,48 @@
+{
+  "name": "ss-users",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workspace/ss/ss-users/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/libs/workspace/ss/ss-users",
+        "tsConfig": "libs/workspace/ss/ss-users/tsconfig.lib.json",
+        "packageJson": "libs/workspace/ss/ss-users/package.json",
+        "main": "libs/workspace/ss/ss-users/src/index.ts",
+        "assets": [
+          "libs/workspace/ss/ss-users/*.md"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/ss/ss-users/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/ss/ss-users"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/ss/ss-users/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:nestjs",
+    "type:library"
+  ]
+}

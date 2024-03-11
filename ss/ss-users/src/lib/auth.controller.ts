@@ -9,12 +9,10 @@ import { Authorize, AuthorizeService } from "@ss/rules";
 import { appName, Broker, EndPoint, Message } from "@ss/common";
 import { DataChangedEvent, DataService } from "@ss/data";
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
-
-import { AuthService, TokenTypes } from "./auth.svr";
-import { AuthException, AuthExceptions } from "./auth-exception"
-import { UserDocument } from "./user.document";
 import { Axios } from "axios";
 import { logger } from "./logger";
+import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
+import { AuthException, AuthExceptions } from "./auth-exception";
 
 
 
@@ -29,7 +27,8 @@ export type SigninRequest = SigninRequestBase & (PasswordSigninRequestGrant | Re
 @Controller('auth')
 export class AuthController {
     private http: Axios
-    constructor(private auth: AuthService,
+    constructor(
+        private auth: AuthService,
         private readonly broker: Broker,
         @Inject('AUTH_DB') private dataService: DataService,
         private authorizationService: AuthorizeService) {

@@ -40,9 +40,8 @@ export class PermissionsService {
         this.userPersmissions.set(userId, firstValueFrom(this.http.get<SimplePermission[]>(`${this.base}/user-permessions/${userId}`).pipe(
             startWith([]),
             catchError((err) => of([]))),
-            shareReplay(1)
+            // shareReplay(1)
         ))
-        )
         return this.userPersmissions.get(userId)
     }
 

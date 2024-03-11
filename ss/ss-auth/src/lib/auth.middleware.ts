@@ -1,7 +1,6 @@
 import { Observable, of, throwError } from 'rxjs'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { AuthService, TokenTypes } from './auth.svr'
-import { DataService } from '@ss/data'
 
 import { timeout } from 'rxjs/operators'
 import { logger } from "./logger";
@@ -18,7 +17,7 @@ function promisify<T>(o: Observable<T>): Promise<T> {
 @Injectable()
 export class AuthenticationInterceptor implements NestInterceptor {
 
-    constructor(private data: DataService, private auth: AuthService) { }
+    constructor(private auth: AuthService) { }
 
     providers: HttpAuthenticationProvider[] = [
         new BearerAuthenticationProvider(this.auth),
@@ -28,7 +27,14 @@ export class AuthenticationInterceptor implements NestInterceptor {
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
 
         switch (context.getType()) {
-            case 'rpc': return next.handle() // internal call no need to authenticate
+            case 'rpc':
+                try {
+                    const result = await promisify(next.handle());
+                    return of(result)
+                } catch (error) {
+                    logger.error("Error was caught in AuthenticationInterceptor:RPC next.handle()", error.message, context.getArgs())
+                    return throwError(() => error)
+                }
             case 'http':
                 await this._authenticateHttp(context.switchToHttp().getRequest())
                 break;
@@ -38,15 +44,10 @@ export class AuthenticationInterceptor implements NestInterceptor {
                 break;
 
         }
+        return next.handle() // internal call no need to authenticate
 
 
-        try {
-            const result = await promisify(next.handle());
-            return of(result)
-        } catch (error) {
-            logger.error("Error was caught in AuthenticationInterceptor:RPC next.handle()", error.message, context.getArgs())
-            return throwError(() => error)
-        }
+
     }
 
     async _authenticateHttp(req: Request & Record<string, any>) {

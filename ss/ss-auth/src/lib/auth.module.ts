@@ -1,9 +1,8 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { AuthOptions } from './auth-options'
-import { AuthController } from './auth.controller'
 import { AuthenticationInterceptor } from './auth.middleware'
-import { AuthService } from './auth.svr'
+
 import { CommonModule, __secret } from '@ss/common'
 import { randomString } from '@noah-ark/common'
 import { logger } from "./logger";
@@ -12,6 +11,7 @@ import { PassportModule } from '@nestjs/passport'
 import { FacebookStrategy } from './external/facebook.strategy'
 import { GoogleStrategy } from './external/google.strategy'
 import { DataModule } from '@ss/data'
+import { AuthService } from './auth.svr'
 
 const defaultAuthOptions = new AuthOptions()
 const _authOptions = {
@@ -57,7 +57,7 @@ const providers: Provider[] = [
 ]
 
 @Module({
-    controllers: [AuthController],
+    controllers: [],
     providers: [
         { provide: APP_INTERCEPTOR, useClass: AuthenticationInterceptor },
         ...providers
@@ -98,7 +98,7 @@ export class AuthModule {
         return {
             module: AuthModule,
             exports: [...providers],
-            controllers: [AuthController],
+            controllers: [],
             providers: [
                 { provide: APP_INTERCEPTOR, useClass: AuthenticationInterceptor },
                 ...providers

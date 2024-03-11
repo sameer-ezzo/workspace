@@ -1,9 +1,7 @@
-import { Injectable, ExecutionContext, applyDecorators, createParamDecorator, HttpException, HttpStatus, NestInterceptor, CallHandler, UseInterceptors } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Injectable, ExecutionContext, createParamDecorator, HttpException, HttpStatus, NestInterceptor, CallHandler, UseInterceptors } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { ExtractIncomingMessage } from "@ss/common";
 
-import { AccessType, SimplePermission, SimplePermissionType } from '@noah-ark/common';
 
 function getPrinciple(ctx: ExecutionContext) {
     switch (ctx.getType()) {
@@ -24,5 +22,4 @@ export class AuthenticatedInterceptor implements NestInterceptor {
         if (!msg.principle) throw new HttpException('not authenticated', HttpStatus.FORBIDDEN);
         return next.handle();
     }
-
 }

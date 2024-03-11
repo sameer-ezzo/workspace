@@ -106,9 +106,11 @@ export class AuthService {
             .setIssuedAt()
             .setExpirationTime(options.expiresIn)
 
-
-        if (this.options.issuer) jwt.setIssuer(options.issuer)
+        if (this.options.issuer) jwt.setIssuer(this.options.issuer)
+        if (options.issuer) jwt.setIssuer(options.issuer)
         if (options.audience) jwt.setAudience(options.audience)
+        if (options.subject) jwt.setSubject(options.subject)
+        if (options.expiresIn) jwt.setExpirationTime(options.expiresIn)
 
 
         return jwt.sign(this.#secret)

@@ -30,14 +30,13 @@ export class AuthorizeService {
         //ASSUME THE RESULT IS THE DEFAULT AUTHORIZATION
 
         //AUTHORIZE BY PERMISSION (GET PERMISSIONS THAT HAS THE ANSWER FOR THIS ACTION)
-        let access: AccessType = rule.fallbackAuthorization as AccessType
+        let access: AccessType = typeof rule.fallbackAuthorization === 'string' ? rule.fallbackAuthorization : 'deny'
         let source = 'rule-fallback'
         let permissions = rule.actions?.[action] ?? []
         if (permissions.length === 0) {
-            const fallbackRule = this.rulesService.getRule(rule.fallbackSource ?? '/', true)
-            logger.warn(`No permissions found for action ${action} on rule ${msg.path}`)
-            if (Array.isArray(fallbackRule.fallbackAuthorization)) {
-                permissions = fallbackRule.fallbackAuthorization
+            logger.warn(`No permissions found for action ${action} on rule ${rule.name}`)
+            if (Array.isArray(rule.fallbackAuthorization)) {
+                permissions = rule.fallbackAuthorization
             }
         }
 
