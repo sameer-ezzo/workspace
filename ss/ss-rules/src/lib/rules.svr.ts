@@ -130,7 +130,7 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
         if (!args.controller) {
             prefix = _controllerPrefix(target)
             const fullPath = '/' + prefix
-            return { ...s, fullPath, prefix, path: fullPath, operation: '*' }
+            return { ...s, fullPath, prefix, path: fullPath }
 
         }
         else {

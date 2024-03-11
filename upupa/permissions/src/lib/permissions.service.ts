@@ -1,13 +1,14 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { DataService } from "@upupa/data";
 import { catchError, map, startWith, tap } from "rxjs/operators";
 
 import { firstValueFrom, Observable, of, shareReplay } from "rxjs";
 import { HttpClient } from "@angular/common/http";
-import { Permission, Rule } from "@noah-ark/common";
+import { Rule } from "@noah-ark/common";
 import { NodeModel } from "./node-model";
 import { SimplePermission } from "@noah-ark/common";
-import { PathMatcher, TreeBranch } from "@noah-ark/path-matcher";
+import { TreeBranch } from "@noah-ark/path-matcher";
+import { PERMISSIONS_BASE_URL } from "./app-admin-roles.token";
 
 
 @Injectable({
@@ -19,23 +20,18 @@ export class PermissionsService {
     private nodes: NodeModel[] = [];
 
     readonly roles$: Observable<any[]>;
+    private readonly base = inject(PERMISSIONS_BASE_URL)
+    private readonly data = inject(DataService)
+    private readonly http = inject(HttpClient)
 
-    readonly base!: string;
-    adminRoles: any[];
-    constructor(private readonly data: DataService, private readonly http: HttpClient
-        // @Inject(APP_ADMIN_ROLES_TOKEN) private adminRoles: UserRole[]
-    ) {
-        this.base = `${this.data.api.api_base.substring(0, this.data.api.api_base.length - 4)}/permissions`
+    constructor() {
         if (!this.roles$) this.roles$ = this.data.get<any>(`/v2/role?select=name`).pipe(
-            map((x) => x.data),
-            map((roles) => roles.concat(this.adminRoles ?? [])),
+            map(x => x.data),
+            map(roles => roles || []),
             shareReplay(1)
         )
-
         this.getRules().subscribe()
     }
-
-
 
     userPersmissions = new Map<string, Promise<SimplePermission[]>>();
     getUserPersmissions(userId: string): Promise<SimplePermission[]> {
@@ -43,7 +39,7 @@ export class PermissionsService {
         if (this.userPersmissions.has(userId)) return this.userPersmissions.get(userId)
         this.userPersmissions.set(userId, firstValueFrom(this.http.get<SimplePermission[]>(`${this.base}/user-permessions/${userId}`).pipe(
             startWith([]),
-            catchError((err) => of([])),
+            catchError((err) => of([]))),
             shareReplay(1)
         ))
         )

@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { AuthorizeResult, IncomingMessage, Permission,permissionKey, PrincipleBase, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes, isObjectValuePermission, isPermissionSimple } from '@noah-ark/common';
+import { AuthorizeResult, IncomingMessage, Permission, permissionKey, PrincipleBase, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes, isObjectValuePermission, isPermissionSimple, AccessType } from '@noah-ark/common';
 import { evaluateOpExpression } from "@noah-ark/expression-engine";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { RulesService } from "./rules.svr";
+import { logger } from "@ss/common";
 
 
 
@@ -20,26 +21,35 @@ export class AuthorizeService {
      */
     authorize(msg: IncomingMessage, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
         //BUILD CONTEXT AND ALLOW SUPER ADMIN
-        action ??= msg.operation ?? '*'
+        action ??= msg.operation
         if (this._isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, source: 'default', access: 'grant' }
 
         const rule = this.rulesService.getRule(msg.path, true)! // use default app rule
         const ruleSummary = rule ? { name: rule.name, path: rule.path, fallbackSource: rule.fallbackSource, ruleSource: rule.ruleSource } : undefined
 
         //ASSUME THE RESULT IS THE DEFAULT AUTHORIZATION
-        let access = rule.fallbackAuthorization
-        let source = 'rule-fallback'
 
         //AUTHORIZE BY PERMISSION (GET PERMISSIONS THAT HAS THE ANSWER FOR THIS ACTION)
-        const permissions = (rule.actions?.[action] ?? rule.actions?.['*'] ?? [])
+        let access: AccessType = rule.fallbackAuthorization as AccessType
+        let source = 'rule-fallback'
+        let permissions = rule.actions?.[action] ?? []
+        if (permissions.length === 0) {
+            const fallbackRule = this.rulesService.getRule(rule.fallbackSource ?? '/', true)
+            logger.warn(`No permissions found for action ${action} on rule ${msg.path}`)
+            if (Array.isArray(fallbackRule.fallbackAuthorization)) {
+                permissions = fallbackRule.fallbackAuthorization
+            }
+        }
+
+        if (!permissions.length) return { rule: ruleSummary, action, source, access }
+
         const accessResults = permissions.map(p => ({
-            result: this._evalPermission(p, action, { msg, additional }),
+            result: this._evalPermission(p, { msg, additional }),
             permission: p
         }))
 
         //FALLBACK TO DEFAULT AUTHORIZATION
-        if (!accessResults.length || accessResults.every(r => r.result == undefined))
-            return { rule: ruleSummary, action, source, access }
+        if (accessResults.every(r => r.result == undefined)) return { rule: ruleSummary, action, source, access }
 
         //CHECK PERMISSIONS DENY
         const denyingPermissions = accessResults.filter(r => r.result === false)
@@ -58,51 +68,42 @@ export class AuthorizeService {
         return { rule: ruleSummary, action, source, access }
     }
 
-
-
-
-    private _evalPermission(p: Permission, action?: string, ctx?: { msg: IncomingMessage, additional?: Record<string, unknown> }): boolean | undefined {
+    private _evalPermission(p: Permission, ctx?: { msg: IncomingMessage, additional?: Record<string, unknown> }): boolean | undefined {
         // if (!action || !p?.action) return undefined
-        if (!ctx) return undefined
-        if (typeof p === 'object' && 'by' in p) { //simple permission
+
+        if (isPermissionSimple(p)) {
             const permission = p as SimplePermission
             const access = permission.access === 'grant'
-            const principle = ctx.msg.principle
+            const isNullPermission = _NullPermissionTypes.includes(p.by as any)
+            if (isNullPermission && p.by === 'anonymous') return access
 
-            switch (p.by) {
-                case 'anonymous': return principle ? undefined : access;
-                case 'user': return principle ? access : undefined;
-                case 'emv': return principle?.emv ? access : undefined;
-                case 'phv': return principle?.phv ? access : undefined;
+            if (!ctx) return undefined
+            const principle = ctx.msg?.principle
 
-                case 'role':
-                    {
-                        const role = p.value
-                        return principle?.roles?.some(r => r === role) ? access : undefined
-                    }
-                case 'email':
-                    {
-                        const email = p.value?.toLocaleLowerCase()
-                        return principle?.email?.toLocaleLowerCase() === email ? access : undefined
-                    }
-                case 'phone':
-                    {
-                        const phone = p.value?.toLocaleLowerCase()
-                        return principle?.phone?.toLocaleLowerCase() === phone ? access : undefined
-                    }
-                case 'claim':
-                    {
-                        //TODO: evaluate claimObject by its operator and value
-                        const claimObject = p.value
-                        const v = JsonPointer.get(principle?.claims, claimObject.claimFieldPath)
-                        return v === claimObject.claimValue ? access : undefined;
-                    }
-                default: return access;
+            if (isNullPermission) {
+                if (p.by === 'user') return principle ? access : undefined;
+                if (p.by === 'emv') return principle?.emv ? access : undefined;
+                if (p.by === 'phv') return principle?.phv ? access : undefined;
             }
-        } else { //functional permission
+            if ('value' in p && _StringPermissionTypes.includes(p.by as any)) {
+                const value = (p.value as string || '').toLocaleLowerCase()
+                if (p.by === 'role') return principle?.roles?.some(r => r === value) ? access : undefined
+                if (p.by === 'email') return principle?.email?.toLocaleLowerCase() === value ? access : undefined
+                if (p.by === 'phone') return principle?.phone?.toLocaleLowerCase() === value ? access : undefined
+            }
+            if (isObjectValuePermission(p)) {
+                if (p.by === 'claim') {
+                    //TODO: evaluate claimObject by its operator and value
+                    const claimObject = p.value
+                    const value = JsonPointer.get(principle?.claims, claimObject.claimFieldPath)
+                    return value === claimObject.claimValue ? access : undefined;
+                }
+            }
+            return access;
+        }
+        else { //functional permission
             const r = evaluateOpExpression(p, ctx)
             return r === 'grant'
-            // return authorizeFun(ctx) === 'grant' ? true : false
         }
     }
 

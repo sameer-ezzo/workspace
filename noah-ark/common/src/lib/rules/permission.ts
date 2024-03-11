@@ -1,6 +1,6 @@
 import { SimplePermission, SimplePermissionRecord, _NullPermissionTypes, _StringPermissionTypes, isObjectValuePermission } from "./simple-permission";
 
-export type AccessType = "grant" | "deny";
+export type AccessType = "grant" | "deny" ;
 export type AuthorizeResult = {
     rule?: { name: string; path: string };
     action: string;
@@ -63,7 +63,8 @@ export function isPermissionSimple(p: Permission): p is SimplePermission {
 export function permissionKey(p: Permission) {
     if (isPermissionSimple(p)) {
         if (_NullPermissionTypes.includes(p.by as any)) return `${p.access}:${p.by}`
-        else if ('value' in p && _StringPermissionTypes.includes(p.by as any)) return `${p.access}:${p.by}:${p.value}`
-        else if (isObjectValuePermission(p)) return`${p.access}:${p.by}:${p.value.claimFieldPath}${p.value.operator??'='}${p.value.claimValue}`
-    } else return '<function>'
+        if ('value' in p && _StringPermissionTypes.includes(p.by as any)) return `${p.access}:${p.by}:${p.value}`
+        if (isObjectValuePermission(p)) return `${p.access}:${p.by}:${p.value.claimFieldPath}${p.value.operator ?? '='}${p.value.claimValue}`
+    }
+    return '<function>'
 }

@@ -1,5 +1,5 @@
-import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
-import type { AuthorizeFun, IncomingMessage, Permission, Principle, SimplePermission } from "@noah-ark/common";
+import { Controller, HttpException, HttpStatus } from "@nestjs/common";
+import type { IncomingMessage, Principle, SimplePermission } from "@noah-ark/common";
 import { EndPoint, EndpointsInfo, Message, logger } from "@ss/common";
 import { DataService } from "@ss/data";
 import { join } from "path";
@@ -21,7 +21,7 @@ export class PermissionController {
         return this.rulesService.tree
     }
 
-    @EndPoint({ http: { method: "GET", path: "permissions" } })
+    @EndPoint({ http: { method: "GET", path: "*" } })
     async getPermissions() {
         return await this.data.get("permission");
     }

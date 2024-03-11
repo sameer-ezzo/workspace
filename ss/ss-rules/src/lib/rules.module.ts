@@ -21,7 +21,7 @@ export const DenyRule: Rule = (() => {
 })()
 export const AuthenticatedRule: Rule = (() => {
     const rule = new Rule('/')
-    rule.actions = { ['*']: [{ access: 'grant', by: 'user', action: '*' }] }
+    rule.fallbackAuthorization = [{ access: 'grant', by: 'user' }]
     return rule
 })()
 
@@ -40,22 +40,22 @@ export const AuthenticatedRule: Rule = (() => {
 export class RulesModule {
     static register(rootRule: Rule = DenyRule, appRules: Rule[] = []): DynamicModule {
 
-        appRules.forEach(r => {
-            if(!r.ruleSource) r.ruleSource = 'code'
+        (appRules ??= []).forEach(r => {
+            if (!r.ruleSource) r.ruleSource = 'code'
         })
 
 
 
         const providers: Provider[] = [
             { provide: 'ROOT_RULE', useValue: rootRule ?? DenyRule },
-            { provide: 'APP_RULES', useValue: appRules ?? [] },
+            { provide: 'APP_RULES', useValue: appRules },
             RulesService,
             AuthorizeService,
         ]
 
         return {
             module: RulesModule,
-            providers:[...providers,{ provide: APP_INTERCEPTOR, useClass: AuthorizeInterceptor }],
+            providers: [...providers, { provide: APP_INTERCEPTOR, useClass: AuthorizeInterceptor }],
             controllers: [PermissionController],
             exports: [...providers]
         }

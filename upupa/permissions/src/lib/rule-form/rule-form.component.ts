@@ -24,8 +24,7 @@ export class RuleFormComponent {
     public set rule(value: Rule) {
         if (this._rule === value) return;
         this._rule = value;
-        this._rule.actions ??= { '*': [] }
-
+        this._rule.actions ??= {  }
         this._init(this.rule)
     }
 

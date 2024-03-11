@@ -13,7 +13,7 @@ export class Rule {
     /**
      * @description If permissions did not match then this is the default authorization (permissions could not match in case the action is not present or the authorize function returned false returned undefiled)
     */
-    fallbackAuthorization: AccessType = 'deny'; //TODO add the option to fallback to parent rule
+    fallbackAuthorization: AccessType | Permission<boolean | AuthorizeFun>[] = 'deny';
 
     /**
      * @description list of permissions to be checked against the path
