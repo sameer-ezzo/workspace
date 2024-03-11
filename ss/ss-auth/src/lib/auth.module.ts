@@ -12,7 +12,6 @@ import { PassportModule } from '@nestjs/passport'
 import { FacebookStrategy } from './external/facebook.strategy'
 import { GoogleStrategy } from './external/google.strategy'
 import { DataModule } from '@ss/data'
-import { RulesModule } from '@ss/rules'
 
 const defaultAuthOptions = new AuthOptions()
 const _authOptions = {
@@ -64,7 +63,7 @@ const providers: Provider[] = [
         ...providers
     ],
     exports: [...providers],
-    imports: [RulesModule, DataModule, CommonModule, PassportModule],
+    imports: [DataModule, CommonModule, PassportModule],
 })
 export class AuthModule {
     static register(authOptions: Partial<AuthOptions> = {}): DynamicModule {

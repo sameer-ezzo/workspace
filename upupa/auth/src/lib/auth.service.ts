@@ -185,7 +185,7 @@ export class AuthService {
         this._token$.next(tokens?.access_token)
     }
     async signin_Google(user) {
-        const res = await this._doHttpFetch(`${this.baseUrl}/external-auth`, user)
+        const res = await this._doHttpFetch(`${this.baseUrl}/google-auth`, user)
         this.setTokens(res)
         const principle = this.jwt(res.access_token)
         this.triggerNext(principle)
@@ -193,7 +193,7 @@ export class AuthService {
     }
 
     async signin_Facebook(user) {
-        const res = await this._doHttpFetch(`${this.baseUrl}/fb-external-auth`, user)
+        const res = await this._doHttpFetch(`${this.baseUrl}/facebook-auth`, user)
         this.setTokens(res)
         const principle = this.jwt(res.access_token)
         this.triggerNext(principle)

@@ -18,6 +18,7 @@ import { logger } from "./logger";
 
 
 
+
 let installed = false
 
 export type SigninRequestBase = { device?: UserDevice }
@@ -47,11 +48,11 @@ export class AuthController {
                 await model.updateOne({ _id: data._id }, { $set: { emailVerified: false, emailVerification: undefined } })
             if (patches.some(p => p.path.includes('phone')))
                 await model.updateOne({ _id: data._id }, { $set: { phoneVerified: false, phoneVerification: undefined } })
-
         }
     }
 
 
+    @Authorize({ by: 'anonymous', access: 'grant' })
     @EndPoint({ http: { method: 'POST', path: 'forgotpassword' }, cmd: 'auth/forgotpassword' })
     public async forgotPassword(@Message() msg: IncomingMessage<{ email: string }>) {
         const email = msg.payload.email
@@ -71,6 +72,7 @@ export class AuthController {
         this.broker.emit(`${appName}/auth/forgotpassword`, { ...msg.payload, user, token: resetToken });
     }
 
+    @Authorize({ by: 'anonymous', access: 'grant' })
     @EndPoint({ http: { method: 'GET', path: 'install' }, cmd: 'auth/install' })
     public async install(@Message() msg: IncomingMessage) {
         logger.info('installing')
@@ -90,6 +92,7 @@ export class AuthController {
         }
     }
 
+    @Authorize({ by: 'role', value: 'super-admin', access: 'grant' })
     @EndPoint({ http: { method: 'POST', path: 'resetpassword' }, cmd: 'auth/resetpassword' })
     public async resetpassword(@Message() msg: IncomingMessage<{ new_password: string, reset_token: string }>) {
         const new_password = msg.payload.new_password
@@ -107,7 +110,7 @@ export class AuthController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'changepassword/:id' }, cmd: 'auth/changepassword' })
-    @Authorize()
+    @Authorize({ by: 'user', access: 'grant' })
     public async changePassword(@Message() msg: IncomingMessage<{ new_password: string, old_password: string }>) {
         if (!msg.payload) throw new HttpException('MISSING_INFO', HttpStatus.BAD_REQUEST)
         const { new_password, old_password } = msg.payload
@@ -187,10 +190,6 @@ export class AuthController {
     public async admincreateuser(@Message() msg: IncomingMessage<any>) {
 
         const _user = msg.payload;
-
-        // const { access, rule, source } = this.authorizationService.authorize(msg, 'create')
-        // if (access === 'deny') throw new HttpException({ rule, source }, HttpStatus.FORBIDDEN)
-
 
         const roles = _user?.roles as string[]
         delete _user.roles
@@ -284,13 +283,10 @@ export class AuthController {
         }
     }
 
-    @Get('google-auth')
-    @UseGuards(AuthGuard('google'))
-    async googleAuth() { return 0 }
 
-    @Get('google/callback')
-    @Redirect('https://nestjs.com', 301)
-    @UseGuards(AuthGuard('google'))
+
+    @Authorize({ by: 'anonymous', access: 'grant' })
+    @EndPoint({ http: { method: 'GET', path: 'google/callback' } })
     async googleAuthRedirect(@Req() req) {
         const user: User = await this.auth.findUserByEmail(req.user.email);
         const access_token = await this.auth.issueAccessToken(user);
@@ -298,7 +294,8 @@ export class AuthController {
         return { url: `${this.auth.options.externalAuth.google.client_url}/login?access_token=${access_token}&refresh_token=${refresh_token}` }
     }
 
-    @Post('external-auth') // TODO: endpoint to be secured by validating users id_token (from google auth) before issuing access and refresh tokens
+    @Authorize({ by: 'anonymous', access: 'grant' })
+    @EndPoint({ http: { method: 'POST', path: 'google-auth' }, operation: 'google-auth' })
     async clientExternalAuth(@Body() req) {
         const googleUser = await verifyGoogleUser(req.token)
         if (!googleUser) {
@@ -338,35 +335,40 @@ export class AuthController {
         const refresh_token = await this.auth.issueRefreshToken(userRecord);
         return { access_token, refresh_token }
     }
-    @Post('fb-external-auth') // TODO: endpoint to be secured by validating users id_token (from google auth) before issuing access and refresh tokens
+
+    @Authorize({ by: 'anonymous', access: 'grant' })
+    @EndPoint({ http: { method: 'POST', path: 'fbacebook-auth' }, operation: 'fbacebook-auth' })
     async fb_clientExternalAuth(@Body() req) {
         const fbuser = await this.http.get("https://graph.facebook.com/v1.0" + "/me?fields=id,name,email" + "&access_token=" + req.access_token)
         const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN)
         // verifying the user token was issued by our app
-        if (inspectToken.status === 200) {
-            const user: User = await this.auth.findUserByEmail(fbuser.data.email);
-            if (user) {
-                const access_token = await this.auth.issueAccessToken(user);
-                const refresh_token = await this.auth.issueRefreshToken(user);
-                return { access_token, refresh_token }
-            }
-            else {
-                const user = { username: fbuser.data.email, email: fbuser.data.email, name: fbuser.data.name }
-                await this.auth.signUp(user as any, 'xxxxx')
-                const userRecord: User = await this.auth.findUserByEmail(fbuser.data.email);
-                const access_token = await this.auth.issueAccessToken(userRecord);
-                const refresh_token = await this.auth.issueRefreshToken(userRecord);
-                return { access_token, refresh_token }
+        if (inspectToken.status !== 200) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+        const user = {
+            username: fbuser.data.email,
+            email: fbuser.data.email,
+            name: fbuser.data.name
+        }
+        let userRecord = await this.auth.findUserByEmail(fbuser.data.email);
+        if (!userRecord) {
+            const facebook_client_regesterateion_enabled = (process.env.FACEBOOK_CLIENT_REGESTERATEION_ENABLED || 'false').toLowerCase() === 'true'
+            if (!userRecord || userRecord.external?.facebook !== fbuser.data.email) {
+                if (facebook_client_regesterateion_enabled === true) {
+                    const external = userRecord?.external ?? {}
+                    await this.auth.signUp({
+                        ...user,
+                        external: { ...external, ['facebook']: fbuser.data.email }
+                    } as User, '')
+                }
+                else userRecord = { _id: fbuser.data.email, ...user } as any
             }
         }
-        else throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+
+        const access_token = await this.auth.issueAccessToken(userRecord);
+        const refresh_token = await this.auth.issueRefreshToken(userRecord);
+        return { access_token, refresh_token }
     }
 
-    @Get("/facebook-auth")
-    @UseGuards(AuthGuard("facebook"))
-    async facebookLogin(): Promise<any> {
-        return HttpStatus.OK;
-    }
+
 
     @Get("/facebook/redirect")
     @Redirect('https://nestjs.com', 301)
@@ -380,6 +382,7 @@ export class AuthController {
     }
 
     @EndPoint({ http: { method: 'POST', path: '' }, cmd: 'auth/signin' })
+    @Authorize({ by: 'anonymous', access: 'grant' })
     public async signIn(@Message() msg: IncomingMessage<SigninRequest>) {
 
         try {
@@ -391,6 +394,7 @@ export class AuthController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'signup' } })
+    @Authorize({ by: 'anonymous', access: 'grant' })
     public async signup(@Message() msg: IncomingMessage<User & { password: string }>) {
         try {
             const _user = msg.payload;
@@ -579,6 +583,7 @@ export class AuthController {
         return "OK"
     }
 }
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET); // TODO: verify user tokens signed in using google auth on client side
 async function verifyGoogleUser(token: string): Promise<TokenPayload> {
     try {

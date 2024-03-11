@@ -64,7 +64,7 @@ const declarations = [
         UsersManagementModule,
         MembershipModule,
         TagsModule,
-        PermissionsModule
+        PermissionsModule,
     ],
     providers: [ScaffoldersProvider, {
         provide: CP_OPTIONS,
