@@ -179,11 +179,12 @@ export class DataService {
     private _models: { [name: string]: Model<any> } = {};
     private _exclusions: { [name: string]: string[] } = {};
 
-    async getOrAddModel(name: string, idType = String): Promise<Model<any>> {
+    async getOrAddModel(name: string): Promise<Model<any>> {
         const model = await this.getModel(name);
         if (model) return model;
         else {
-            return this.addModel(name, this.getDynamicSchema(idType));
+            const schema = await this.getDynamicSchema(this.prefix + name);
+            return this.addModel(name,schema);
         }
     }
 
@@ -197,8 +198,11 @@ export class DataService {
     private async _updateModelsFromDb() {
         const collections = this._connection.collections
         for (const collection in collections) {
-            if (!this._models[collection])
-                this.addModel(collection, this.getDynamicSchema(String), "")
+            if (!this._models[collection]) {
+                const schema = await this.getDynamicSchema(collection);
+                this.addModel(collection, schema, "")
+            }
+
 
         }
     }
@@ -207,7 +211,7 @@ export class DataService {
         return this._exclusions[name]
     }
 
-    async addModel(collection: string, schema: mongoose.Schema = this.getDynamicSchema(String), prefix?: string, exclude: string[] = [], overwrite = false): Promise<Model<any>> {
+    async addModel(collection: string, schema: mongoose.Schema, prefix?: string, exclude: string[] = [], overwrite = false): Promise<Model<any>> {
         await this.connect()
         prefix ??= this.prefix
         const cName = prefix + collection
@@ -216,6 +220,23 @@ export class DataService {
 
         logger.info(`Adding schema: [${cName}] overwrite:${overwrite}`)
         schema.plugin(mongooseUniqueValidator)
+
+        const extstingCollection = await this.connection.collection(cName).findOne({});
+        if (extstingCollection && extstingCollection._id) {
+            const typeOfId = typeof extstingCollection._id
+            let schemaIdType: mongoose.SchemaDefinitionProperty
+            if (typeOfId === 'string') schemaIdType = String
+            else if (typeOfId === 'number') schemaIdType = Number
+            else if (typeOfId === 'object') schemaIdType = mongoose.SchemaTypes.ObjectId
+            else schemaIdType = String
+
+            if (schemaIdType !== schema.obj._id) {
+                logger.error(`Schema: [${cName}] has different _id type.`)
+            }
+        }
+
+
+
 
         this._models[prefix + collection] = this._connection.model(cName, schema)
 
@@ -228,10 +249,10 @@ export class DataService {
     }
 
 
-    getDynamicSchema()
-    getDynamicSchema(idType: 'string' | 'ObjectId')
-    getDynamicSchema(idType: mongoose.SchemaDefinitionProperty)
-    getDynamicSchema(idType?: unknown) {
+    getDynamicSchema(collection: string): Promise<mongoose.Schema>
+    getDynamicSchema(collection: string, idType: 'string' | 'ObjectId'): Promise<mongoose.Schema>
+    getDynamicSchema(collection: string, idType: mongoose.SchemaDefinitionProperty): Promise<mongoose.Schema>
+    async getDynamicSchema(collection: string, idType?: unknown) : Promise<mongoose.Schema> {
 
         idType = idType ?? String
 
@@ -239,9 +260,20 @@ export class DataService {
 
         let _idType: mongoose.SchemaDefinitionProperty
 
-        if (idType === 'ObjectId') _idType = mongoose.SchemaTypes.ObjectId
-        else if (idType === 'string') _idType = String
-        else _idType = idType
+        const cName = collection
+        const extstingCollection = await this.connection.collection(cName).findOne({});
+        if (extstingCollection && extstingCollection._id) {
+            const typeOfId = typeof extstingCollection._id
+            if (typeOfId === 'string') _idType = String
+            else if (typeOfId === 'number') _idType = Number
+            else if (typeOfId === 'object') _idType = mongoose.SchemaTypes.ObjectId
+        }
+
+        if (!_idType) {
+            if (idType === 'ObjectId') _idType = mongoose.SchemaTypes.ObjectId
+            else if (idType === 'string') _idType = String
+            else _idType = idType
+        }
 
         schema.add({ _id: _idType });
         return schema;
@@ -267,6 +299,7 @@ export class DataService {
         if (id) {
             if (!model) return null
             const result = (await model.findById(id, projection).lean()) as T
+            // const result = (await model.findOne({ _id:  }).lean()) as T
             if (!result) return null
 
             try { return pointer ? JsonPointer.get(result, `/${pointer}`) : result }
