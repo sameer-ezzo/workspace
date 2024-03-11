@@ -81,7 +81,7 @@ export interface HttpAuthenticationProvider {
 
 
 export class BearerAuthenticationProvider implements HttpAuthenticationProvider {
-    constructor(private auth: AuthService, public readonly headerName = 'Auhtorization') { }
+    constructor(private auth: AuthService, public readonly headerName = 'Authorization') { }
     async authenticate(req: Request & Record<string, any>): Promise<Principle> {
 
         if (req.principle) return req.principle
