@@ -1,5 +1,5 @@
 
-import { GetPublicKeyOrSecret, verify } from "jsonwebtoken"
+
 import jwksClient, { RsaSigningKey } from 'jwks-rsa';
 import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common"
 
@@ -100,7 +100,7 @@ export class FusionAuthService {
         }
     }
 
-    getKey: GetPublicKeyOrSecret = async (header, callback) => {
+    async getKey(header, callback): GetPublicKeyOrSecret {
         const jwks = jwksClient({
             jwksUri: `${this.options.fusionAuthURL}/.well-known/jwks.json`
         });
