@@ -474,7 +474,6 @@ export class DataService {
             }
 
             const result: any = await model.findByIdAndUpdate(newData._id, newData, { new: true, upsert: true, lean: true });
-            console.log(`data-changed/${segments.path}/${newData._id}`, result)
             this.broker.emit(`data-changed/${segments.path}/${newData._id}`, {
                 path: `${segments.path}/${newData._id}`,
                 data: result.value,
