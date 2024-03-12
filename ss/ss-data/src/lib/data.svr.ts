@@ -54,7 +54,7 @@ export class DataService {
     private async _migrate(ds: DataService, migrations: IDbMigration[]) {
         try {
 
-            const model = await ds.getOrAddModel("migration");
+            const model = await ds.getModel("migration");
             const ms = await model.find({}).lean();
 
             const throwMismatchError = () => {
@@ -104,6 +104,7 @@ export class DataService {
                 ...options
             } as ConnectOptions
 
+            // mongoose.set('debug', true);
             const connection = await mongoose.createConnection(url, _options)
 
             const s = url.substring(10) //skip scheme
@@ -179,21 +180,21 @@ export class DataService {
     private _models: { [name: string]: Model<any> } = {};
     private _exclusions: { [name: string]: string[] } = {};
 
-    async getOrAddModel(name: string): Promise<Model<any>> {
-        const model = await this.getModel(name);
-        if (model) return model;
-        else {
-            const schema = await this.getDynamicSchema(this.prefix + name);
-            return this.addModel(name,schema);
-        }
-    }
+
 
     async getModel<T extends Document = any>(name: string, prefix?: string): Promise<Model<T> | undefined> {
         await this.connect()
-
         prefix ??= this.prefix
-        const result = this._models[prefix + name]
-        return result
+
+        let model = this._models[prefix + name]
+
+        if (!model && this.options.autoCreateModel) {
+            const schema = await this.getDynamicSchema(this.prefix + name);
+            model = await this.addModel(name, schema);
+            this._models[prefix + name] = model
+        }
+
+        return model
     }
     private async _updateModelsFromDb() {
         const collections = this._connection.collections
@@ -223,20 +224,20 @@ export class DataService {
 
         const extstingCollection = await this.connection.collection(cName).findOne({});
         if (extstingCollection && extstingCollection._id) {
-            const typeOfId = typeof extstingCollection._id
-            let schemaIdType: mongoose.SchemaDefinitionProperty
-            if (typeOfId === 'string') schemaIdType = String
-            else if (typeOfId === 'number') schemaIdType = Number
-            else if (typeOfId === 'object') schemaIdType = mongoose.SchemaTypes.ObjectId
-            else schemaIdType = String
 
-            if (schemaIdType !== schema.obj._id) {
-                logger.error(`Schema: [${cName}] has different _id type.`)
+            let schemaIdType = 'String'
+            const typeOfId = typeof extstingCollection._id
+            switch (typeOfId) {
+                case 'string': schemaIdType = 'String'; break;
+                case 'number': schemaIdType = 'Number'; break;
+                case 'object': schemaIdType = 'ObjectId'; break;
+            }
+
+            if (schemaIdType !== schema.paths._id.instance) {
+                logger.error(`Schema: [${cName}] has different _id type. The existing id ${extstingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`)
+                return null
             }
         }
-
-
-
 
         this._models[prefix + collection] = this._connection.model(cName, schema)
 
@@ -252,7 +253,7 @@ export class DataService {
     getDynamicSchema(collection: string): Promise<mongoose.Schema>
     getDynamicSchema(collection: string, idType: 'string' | 'ObjectId'): Promise<mongoose.Schema>
     getDynamicSchema(collection: string, idType: mongoose.SchemaDefinitionProperty): Promise<mongoose.Schema>
-    async getDynamicSchema(collection: string, idType?: unknown) : Promise<mongoose.Schema> {
+    async getDynamicSchema(collection: string, idType?: unknown): Promise<mongoose.Schema> {
 
         idType = idType ?? String
 
@@ -294,7 +295,7 @@ export class DataService {
         }
 
 
-        const model = await (this.options.autoCreateModel ? this.getOrAddModel(modelName) : this.getModel(modelName))
+        const model = await (this.options.autoCreateModel ? this.getModel(modelName) : this.getModel(modelName))
 
         if (id) {
             if (!model) return null
@@ -326,7 +327,7 @@ export class DataService {
         let projection: any = {};
         if (segments.projectionPath) { projection[segments.projectionPath] = 1; }
 
-        //const model = await this.getOrAddModel(segments.collection);
+        //const model = await this.getModel(segments.collection);
         const queryInfo = q ? this.queryParser.parse(<any>q) : null;
         const filter: any = queryInfo ? queryInfo.filter : {};
         const sort = queryInfo ? queryInfo.sort : {};
@@ -445,7 +446,7 @@ export class DataService {
         try { segments = typeof path === 'string' ? PathInfo.parse(path) : path; }
         catch (error) { throw { status: 400, body: "INVALID_PATH" }; }
 
-        const model = await this.getOrAddModel(segments.collection);
+        const model = await this.getModel(segments.collection);
         if (segments.id) { //push to array field
             //if (!Array.isArray(oldData)) { throw { status: 400, body: "INVALID_POST" }; }
             const update = { $push: {} };
@@ -465,13 +466,15 @@ export class DataService {
             return { _id: newData._id, result: result }
 
         } else {
-            if (!newData._id) newData._id = new mongoose.Types.ObjectId();
+
+            if (!newData._id) newData._id = await this.generateId()
             else {
                 const old = await model.countDocuments({ _id: newData._id });
                 if (old) throw new HttpException("CANNOT_POST_OVER_EXISTING_DOCUMENT", HttpStatus.NOT_ACCEPTABLE);
             }
 
             const result: any = await model.findByIdAndUpdate(newData._id, newData, { new: true, upsert: true, lean: true });
+            console.log(`data-changed/${segments.path}/${newData._id}`, result)
             this.broker.emit(`data-changed/${segments.path}/${newData._id}`, {
                 path: `${segments.path}/${newData._id}`,
                 data: result.value,
@@ -488,7 +491,7 @@ export class DataService {
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
-        const model = await this.getOrAddModel(collection);
+        const model = await this.getModel(collection);
 
         const directPatches = patches.filter(p => p.path === "/");
 
@@ -610,7 +613,7 @@ export class DataService {
     }
 
 
-    generateId(): string {
-        return new mongoose.Types.ObjectId().toHexString()
+    generateId() {
+        return new mongoose.Types.ObjectId()
     }
 }

@@ -17,7 +17,7 @@ export class JsonPointer {
             }
             x = x[s1];
         }
-        x[segments.pop()] = value;
+        x[segments.pop()!] = value;
         return result;
     }
 
@@ -26,16 +26,16 @@ export class JsonPointer {
         const segments = path.split("/").filter(s => s);
         if (segments.length === 0) throw "INVALID_PATH";
 
-        const s = segments.pop();
+        const s = segments.pop()!;
         const parentPath = segments.join('/');
         const parent = JsonPointer.get(doc, parentPath);
         delete parent[s];
     }
 
-    static get<T = any>(doc: any, path: string): T {
+    static get<T = any>(doc: any, path: string): T | undefined {
         const segments = path.split("/").filter(s => s);
         if (segments.length === 0) return doc;
-        const property = segments.pop();
+        const property = segments.pop()!;
         let x = doc;
         for (let i = 0; i < segments.length; ++i) {
             const s = segments[i];
@@ -111,9 +111,9 @@ export class JsonPatch {
         return result;
     }
 
-    private static _add(result: any, segments: string[], value) {
-        const last = segments.length ? segments[segments.length - 1] : null;
-        let index: number = null;
+    private static _add(result: any, segments: string[], value: any) {
+        const last : any = segments.length ? segments[segments.length - 1] : null;
+        let index: number | null = null;
         if (last === "-" || !isNaN(index = +last)) segments.pop();
         const path = segments.join("/");
 
@@ -131,7 +131,7 @@ export class JsonPatch {
     }
 
     private static _remove(result: any, segments: string[]) {
-        const last = segments.length ? segments[segments.length - 1] : null;
+        const last:any = segments.length ? segments[segments.length - 1] : null;
         let index: number | null = null;
         if (last === "-" || !isNaN(index = +last)) segments.pop();
         const path = segments.join("/");

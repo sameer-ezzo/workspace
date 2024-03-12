@@ -3,10 +3,17 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { ActionEvent } from '../mat-btn/action-descriptor';
 
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+
 
 @Component({
   selector: 'prompt',
-  templateUrl: 'prompt.component.html'
+  templateUrl: 'prompt.component.html',
+  standalone: true,
+  import: [ MatDialogModule, MatInputModule, MatFormFieldModule, FormsModule, CommonModule ],
 })
 export class PromptComponent {
 

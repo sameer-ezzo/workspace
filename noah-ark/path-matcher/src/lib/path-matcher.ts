@@ -12,17 +12,17 @@ export type PathMatch<T> = {
 }
 
 export type TreeBranch<T> = {
-    item?: T //if item is undefined that indeicates that the tree branch is created just for nesting purpose
+    item?: T | null //if item is undefined that indeicates that the tree branch is created just for nesting purpose
     children: { [segment: string]: TreeBranch<T> }
 }
 
 export class PathMatcher<T extends object> {
 
-    private readonly _items = new Map<string, T>()
+    private readonly _items = new Map<string, T | null>()
 
-    items(path?: string): { item: T, path: string }[] {
-        path = path?.trim().length ? path : '/'
-        return Array.from(this._items).filter(e => e[0].startsWith(path)).map(e => ({ path: e[0], item: e[1] }))
+    items(path?: string): { path: string,item: T | null }[] {
+        const p : string = path?.trim().length ? path : '/'
+        return Array.from(this._items).filter(e => e[0].startsWith(p)).map(e => ({ path: e[0], item: e[1] }))
     }
 
 

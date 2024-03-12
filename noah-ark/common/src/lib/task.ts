@@ -6,7 +6,7 @@ export function delay(timeout: number): Promise<void> {
 }
 
 
-export async function task<T>(promise: Promise<T>): Promise<{ result: T } | { error: Error }> {
+export async function task<T>(promise: Promise<T>): Promise<{ result: T } | { error: unknown }> {
     try {
         const result = await promise
         return { result }

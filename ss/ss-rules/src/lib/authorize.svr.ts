@@ -34,8 +34,8 @@ export class AuthorizeService {
         let source = 'rule-fallback'
         let permissions = rule.actions?.[action] ?? []
         if (permissions.length === 0) {
-            logger.warn(`No permissions found for action ${action} on rule ${rule.name}`)
             if (Array.isArray(rule.fallbackAuthorization)) {
+                logger.warn(`Falling back to parent rule permissions. Parent rule: ${rule.name}`)
                 permissions = rule.fallbackAuthorization
             }
         }

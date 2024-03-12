@@ -32,7 +32,7 @@ function getCookie(name: string) {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     refreshed$ = new Subject<number>()
-    user: Principle
+    user?: Principle
     private _user$ = new ReplaySubject<Principle>(1)
     user$ = this._user$.asObservable()
 
@@ -43,9 +43,7 @@ export class AuthService {
         .pipe(
             filter(() => !this.router),
             take(1),
-            switchMap((x) => this.router.events)
-        )
-        .pipe(
+            switchMap((x) => this.router.events),
             filter((e) => e instanceof ActivationEnd), //if access_token is provided by the link switch to it
             tap((e: ActivationEnd) => {
                 const access_token = e.snapshot.queryParams["access_token"]

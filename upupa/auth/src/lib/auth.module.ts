@@ -13,16 +13,16 @@ const convertToProvider = (token: InjectionToken<string>, option: string | Provi
     return option
 }
 
-const authProviders = (options: AuthOptions) => {
+function authProviders(options: AuthOptions): Provider[] {
     return [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         { provide: DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN, useValue: options.password_policy },
-        convertToProvider(AUTH_BASE_TOKEN, options.auth_base_url),
-        convertToProvider(DEFAULT_LOGIN_PROVIDER_TOKEN, options.default_login_url),
-        convertToProvider(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, options.default_forbidden_url),
-        convertToProvider(DEFAULT_VERIFY_PROVIDER_TOKEN, options.default_verify_url),
-        convertToProvider(DEFAULT_REDIRECT_PROVIDER_TOKEN, options.redirect_url)
-    ]
+        options.auth_base_url ? convertToProvider(AUTH_BASE_TOKEN, options.auth_base_url) : null,
+        options.default_login_url ? convertToProvider(DEFAULT_LOGIN_PROVIDER_TOKEN, options.default_login_url) : null,
+        options.default_forbidden_url ? convertToProvider(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, options.default_forbidden_url) : null,
+        options.default_verify_url ? convertToProvider(DEFAULT_VERIFY_PROVIDER_TOKEN, options.default_verify_url) : null,
+        options.redirect_url ? convertToProvider(DEFAULT_REDIRECT_PROVIDER_TOKEN, options.redirect_url) : null
+    ].filter(e => e) as Provider[]
 }
 
 @NgModule({

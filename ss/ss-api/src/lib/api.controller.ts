@@ -7,6 +7,7 @@ import type { IncomingMessage } from "@noah-ark/common"
 import { EndPoint, Message } from "@ss/common"
 import ObjectToCSV from 'object-to-csv'
 import { MongoError } from "mongodb"
+import { logger } from "@ss/common"
 const baseUrl = '/api'
 
 
@@ -210,7 +211,12 @@ export class ApiController {
                 default: return new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
-        else return new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
+        else {
+            const message = error.message || error
+            const stack = error.stack || ''
+            logger.error(message, stack)
+            return new HttpException({message}, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 }
 
