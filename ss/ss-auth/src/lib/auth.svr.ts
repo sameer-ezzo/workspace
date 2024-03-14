@@ -249,7 +249,7 @@ export class AuthService {
     }
 
     async generateApiKey(user: UserDocument, name: string, principle: any) {
-        const model = await this.data.getOrAddModel('api_key');
+        const model = await this.data.getModel('api_key');
         const key = randomString(20);
         const secret = randomString(20);
         const secrethash = crypto.createHash('sha256').update(key + secret).digest().toString('base64');
@@ -449,7 +449,7 @@ export class AuthService {
 
     userModel(): Promise<Model<UserDocument>> {
         // return this.data.getModel("user");
-        return this.data.getOrAddModel('user');
+        return this.data.getModel('user');
     }
     private _registerFailedAttempt(user: UserDocument) {
         user.attempts = user.attempts + 1;

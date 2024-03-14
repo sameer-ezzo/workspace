@@ -10,7 +10,7 @@ export class AuthInterceptor implements HttpInterceptor {
   // in milliseconds
   REFRESH_IDENTITY_BEFORE = 60000;
 
-  refreshingIdentity: Promise<any>;
+  refreshingIdentity?: Promise<any>;
 
   constructor(public auth: AuthService) { }
 
@@ -22,7 +22,7 @@ export class AuthInterceptor implements HttpInterceptor {
       //resolve promise before http request
       this.tryRefreshToken()
         .then(() => {
-          this.refreshingIdentity = null; //free up
+          this.refreshingIdentity = undefined; //free up
 
           const token = this.auth.get_token();
           if (token) { request = request.clone({ setHeaders: { Authorization: `Bearer ${token}` } }); }

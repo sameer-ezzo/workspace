@@ -30,14 +30,14 @@ export type User = {
 
 
 export class PrincipleBase {
-    sub: string
-    name: string
+    sub!: string
+    roles: string[] = []
+    exp!: number
+    iat!: number
+    name?: string
     email?: string
     phone?: string
-    roles: string[] = []
-    claims: UserClaims
-    exp: number
-    iat: number
+    claims?: UserClaims
     phv?: boolean
     emv?: boolean
 }

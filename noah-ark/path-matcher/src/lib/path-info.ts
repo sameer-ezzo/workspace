@@ -37,7 +37,7 @@ export class PathInfo {
         const pointer = segments.length ? '/' + segments.join("/") : undefined;
         const projectionPath = segments.length ? segments.filter(s => isNaN(+s)).join(".") : undefined;
 
-        let criteria: { key: string, value: string }[];
+        let criteria: { key: string, value: string }[] = [];
         if (query) {
             criteria = query.split("&")
                 .filter(q => q)
@@ -60,7 +60,7 @@ export class PathInfo {
 
 }
 export class ArrayPath {
-    path: string;
+    path!: string;
     index?: number;
 
     static parse(path: string): ArrayPath {

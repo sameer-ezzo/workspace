@@ -8,7 +8,7 @@ export class Rule {
     /**
      * @description incoming message (request) path pattern to run the authorization against. Same pattern as express router.
      */
-    path: string;
+    path = '/';
 
     /**
      * @description If permissions did not match then this is the default authorization (permissions could not match in case the action is not present or the authorize function returned false returned undefiled)

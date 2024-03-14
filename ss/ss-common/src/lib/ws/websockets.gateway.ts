@@ -7,7 +7,6 @@ import { Deferred, Principle } from "@noah-ark/common"
 import * as jose from "jose"
 import { __secret } from "../secret.fun"
 import { logger } from "../logger"
-import { TokenBase } from "@ss/auth"
 
 type RemoteSocket = Awaited<ReturnType<ReturnType<Server['in']>['fetchSockets']>>[number]
 

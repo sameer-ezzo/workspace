@@ -35,6 +35,7 @@ export class AuthorizeService {
         let permissions = rule.actions?.[action] ?? []
         if (permissions.length === 0) {
             if (Array.isArray(rule.fallbackAuthorization)) {
+                logger.warn(`Falling back to parent rule permissions. Parent rule: ${rule.name}`)
                 permissions = rule.fallbackAuthorization
             }
         }

@@ -6,6 +6,7 @@ import { DEFAULT_FORBIDDEN_PROVIDER_TOKEN, DEFAULT_LOGIN_PROVIDER_TOKEN } from '
 import {CanActivateFn} from "@angular/router";
 import {FusionAuthService} from "@fusionauth/angular-sdk";
 import {inject} from "@angular/core";
+import { Principle } from '@noah-ark/common';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -20,8 +21,8 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         const user = this.authService.user;
 
         if (!user) return this.reject(user);
-        const data = route.routeConfig.data ?? {};
-        const { rule, roles } = data as { rule: (user) => boolean, roles: string[] }
+        const data = route.routeConfig?.data ?? {};
+        const { rule, roles } = data as { rule: (user:Principle) => boolean, roles: string[] }
         // const roles: string[] = route.routeConfig.data ? route.routeConfig.data.roles : null;
         if (rule && !rule(user)) { return this.reject(user); }
         if (roles && !(user.roles ?? []).some(r => roles.indexOf(r) > -1)) { return this.reject(user); }
@@ -31,7 +32,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         return this.canActivate(route, state);
     }
 
-    reject(user): boolean {
+    reject(user:Principle | undefined): boolean {
         if (user) {
             const forbiddenUrl = this.injector.get(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, '/forbidden') as string
             this.router.navigateByUrl(forbiddenUrl ?? '');

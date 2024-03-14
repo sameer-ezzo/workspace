@@ -15,7 +15,6 @@ import {
 import { ComponentType } from "@angular/cdk/portal";
 import { DOCUMENT } from "@angular/common";
 import { UpupaDialogComponent } from "./upupa-dialog/upupa-dialog.component";
-import { LanguageService } from "@upupa/language";
 import { firstValueFrom, Subject, Observable } from "rxjs";
 import { ActionsDescriptor } from "./mat-btn/action-descriptor";
 import { DialogRef } from "@angular/cdk/dialog";
@@ -67,7 +66,6 @@ export class DialogService {
 
     constructor(
         private dialog: MatDialog,
-        private languageService: LanguageService,
         @Inject(DOCUMENT) private document: any
     ) { }
 
