@@ -7,13 +7,14 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'prompt',
   templateUrl: 'prompt.component.html',
   standalone: true,
-  import: [ MatDialogModule, MatInputModule, MatFormFieldModule, FormsModule, CommonModule ],
+  imports: [MatDialogModule, MatInputModule, MatFormFieldModule, FormsModule, CommonModule],
 })
 export class PromptComponent {
 

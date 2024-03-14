@@ -91,12 +91,12 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
             const spaceIndex = auth.indexOf(' ')
             const authType = auth.substring(0, spaceIndex)
             switch (authType) {
-                case 'Bearer': req.principle = this._authenticateBearer(auth.substring(7))
+                case 'Bearer': req.principle = await this._authenticateBearer(auth.substring(7))
             }
         }
         if (req.query.access_token) {
             const access_token = req.query.access_token as string
-            req.principle = this._authenticateBearer(access_token)
+            req.principle = await this._authenticateBearer(access_token)
         }
 
         return req.principle
