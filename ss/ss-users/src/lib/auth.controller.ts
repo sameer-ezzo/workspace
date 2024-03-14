@@ -581,6 +581,12 @@ export class AuthController {
 
         return "OK"
     }
+
+    @EndPoint({ http: { method: 'GET', path: 'whoami' } })
+    @Authorize({by:'anonymous'})
+    public async whoami(@Message() msg: IncomingMessage) {
+        return msg.principle ?? {}
+    }
 }
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET); // TODO: verify user tokens signed in using google auth on client side
