@@ -48,7 +48,6 @@ export class ApiController {
         const total = await this.dataService.count(path, ...q) //TODO use count based on pipeline api
         const result = { data, total, query: q }
         return result
-
     }
 
     @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'read' })

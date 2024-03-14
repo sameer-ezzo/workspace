@@ -126,7 +126,8 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
 
         const cookies = cookie.split(';').map(c => c.split('=').map(x => x.trim()))
         const token = cookies.find(c => c[0] === this.cookieName)?.[1]
-
+        if (!token) return null
+        
         const claims = jose.decodeJwt(token)
         if (!claims) return null
 

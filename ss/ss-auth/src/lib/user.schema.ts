@@ -4,10 +4,11 @@ const bcrypt = { hashSync, compare }
 import { Schema } from "mongoose";
 
 import { User, randomString } from "@noah-ark/common";
+import { ObjectId } from 'mongodb';
 
 
 const userSchema = new Schema({
-    _id: String,
+    _id: ObjectId,
     username: { type: String, required: true, index: true, unique: true },
 
     passwordHash: String,
