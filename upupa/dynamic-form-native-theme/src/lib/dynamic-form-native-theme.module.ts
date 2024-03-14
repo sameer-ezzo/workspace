@@ -28,7 +28,6 @@ import { SliderComponent } from './scale-component/slider/slider.component';
 import { SelectComponent } from './select/select.component';
 import { SwitchComponent } from './switch/switch.component';
 import { ArrayInputComponent } from './table/array-input.component';
-import { TagsInputComponent } from './tags-input/tags-input.component';
 import { TextAreaComponent } from './text-area/text-area.component';
 import { TreeComponent } from './tree/tree.component';
 import { FileBrowserComponent } from './upload/file-browser/file-browser.component';
@@ -82,7 +81,7 @@ export const DF_NATIVE_THEME_INPUTS = {
 const declarations = [
     PhoneInputComponent, TextAreaComponent, DateInputComponent,
     SelectComponent, TreeComponent, NumberComponent,
-    ChipsComponent, TagsInputComponent, PasswordInputComponent,
+    ChipsComponent, PasswordInputComponent,
     InputComponent, ArrayInputComponent, ChoicesComponent,
     SwitchComponent, ColorInputComponent, AutoCompleteTextComponent,
     AddressComponent, FileIconPerTypePipe, SliderComponent,

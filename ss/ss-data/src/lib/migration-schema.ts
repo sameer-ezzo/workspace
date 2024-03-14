@@ -1,7 +1,8 @@
+import { ObjectId } from "mongodb";
 import { Schema } from "mongoose";
 
 const migrationSchema = new Schema({
-    _id: String,
+    _id: ObjectId,
     name: { type: String, required: true, index: true },
     date: { type: Date, index: true }
 });

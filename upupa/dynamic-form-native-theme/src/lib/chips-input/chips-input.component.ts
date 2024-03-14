@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes'
-import { Component, ElementRef, EventEmitter, forwardRef, Input, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, DestroyRef, ElementRef, EventEmitter, forwardRef, inject, Input, Output, signal, SimpleChanges, ViewChild } from '@angular/core'
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatChipInputEvent } from '@angular/material/chips'
@@ -7,6 +7,8 @@ import { EventBus } from '@upupa/common'
 import { NormalizedItem } from '@upupa/data'
 import { catchError, combineLatest, debounceTime, firstValueFrom, map, Observable, of, take, timeout } from 'rxjs'
 import { SelectComponent } from '../select/select.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { KeyValue } from '@angular/common'
 
 @Component({
     selector: 'form-chips-input',
@@ -26,12 +28,13 @@ export class ChipsComponent extends SelectComponent {
     @Input() override separatorKeysCodes: number[] = [ENTER, COMMA]
 
 
-    @Output() adding = new EventEmitter<string>()
+    @Output() adding = new EventEmitter<{ chipKey: string, update: (chip: NormalizedItem) => void }>()
 
 
-    options$: Observable<NormalizedItem[]>
+    options = signal<NormalizedItem[]>([])
 
-    constructor(private _bus: EventBus) {
+    private readonly destroyRef = inject(DestroyRef)
+    constructor(protected readonly _bus: EventBus) {
         super(_bus)
     }
 
@@ -39,13 +42,14 @@ export class ChipsComponent extends SelectComponent {
         await super.ngOnChanges(changes)
 
         if (changes['adapter']) {
-            this.options$ = combineLatest([this.valueDataSource$, this.adapter.normalized$])
+            combineLatest([this.valueDataSource$, this.adapter.normalized$])
                 .pipe(
+                    takeUntilDestroyed(this.destroyRef),
                     debounceTime(200),
                     map(([vs, ns]) => {
                         if (vs?.length > 0) return ns.filter(n => !vs.find(v => v?.key === n?.key))
                         else return ns
-                    }))
+                    })).subscribe(x => this.options.set(x))
         }
 
     }
@@ -61,19 +65,26 @@ export class ChipsComponent extends SelectComponent {
         this._clearFilter()
     }
 
-    private _clearFilter() {
+    protected _clearFilter() {
         this.q = this.filterInput.nativeElement.value = ''
     }
 
+    getErrorMessage(error: KeyValue<unknown, unknown>) {
+        const [key, value] = Object.entries(error)[0]
+        return this.errorMessages[key] ?? key
+    }
+
     handeled = false
-    selectionChange(e: MatAutocompleteSelectedEvent): void {
-        if (!e.option.value) return
+    async selectionChange(e: MatAutocompleteSelectedEvent): Promise<void> {
+        if (e.option.value === null && this.filterInput.nativeElement.value.length > 0) {
+            await this.onAdding(this.filterInput.nativeElement.value)
+        }
 
         setTimeout(() => { this.handeled = false }, 50)
         this.handeled = true
 
-
         const item = e.option.value as NormalizedItem<any>
+
 
         this.select(item.key)
         this.value = [...(this.value ?? []).slice(), item.key]
@@ -96,31 +107,15 @@ export class ChipsComponent extends SelectComponent {
 
 
 
-    async onAdding(e: MatChipInputEvent): Promise<void> {
-        if (this.handeled === true) return
-        const chip = e.value
-
+    async onAdding(value: string): Promise<void> {
+        const chip = value
         if (this.isInValue(chip)) return
-        this.adding.emit(chip)
-        this._bus.emit(getAddChipEventName(this.name), { chip }, this)
-
-        const item = await firstValueFrom(
-            this._bus.on(getAddChipEventName(this.name) + '_reply').pipe(
-                take(1),
-                map(x => x.payload.key),
-                catchError(e => of(chip)),
-                timeout({ each: 2000, with: () => of(chip) }))
-        )
-
-        this.value = [...(this.value ?? []).slice().filter(x => x !== chip), item]
-        this._clearFilter()
-        this.control.markAsDirty()
-
+        this.adding.emit({
+            chipKey: chip, update: (chip) => {
+                this.value = [...(this.value ?? []).slice(), chip.key]
+                this._clearFilter()
+                this.control.markAsDirty()
+            }
+        })
     }
-}
-
-export function getAddChipEventName(name: string) {
-    const r = (name?.trim().length > 0 ? name + '_' : '') + 'add_chip'
-
-    return r
 }

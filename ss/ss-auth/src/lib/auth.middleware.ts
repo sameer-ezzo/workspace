@@ -91,12 +91,12 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
             const spaceIndex = auth.indexOf(' ')
             const authType = auth.substring(0, spaceIndex)
             switch (authType) {
-                case 'Bearer': req.principle = this._authenticateBearer(auth.substring(7))
+                case 'Bearer': req.principle = await this._authenticateBearer(auth.substring(7))
             }
         }
         if (req.query.access_token) {
             const access_token = req.query.access_token as string
-            req.principle = this._authenticateBearer(access_token)
+            req.principle = await this._authenticateBearer(access_token)
         }
 
         return req.principle
@@ -126,7 +126,8 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
 
         const cookies = cookie.split(';').map(c => c.split('=').map(x => x.trim()))
         const token = cookies.find(c => c[0] === this.cookieName)?.[1]
-
+        if (!token) return null
+        
         const claims = jose.decodeJwt(token)
         if (!claims) return null
 

@@ -14,7 +14,7 @@ export const defaultRolesListActions: ActionDescriptor[] = [
 
 ]
 export const defaultUserListActions: ActionDescriptor[] = [
-    { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', bulk: true,  header: true, color: 'warn' },
+    { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
     { variant: 'stroked', position: 'header', action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
 
     { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', menu: true, color: 'warn' },
@@ -63,7 +63,7 @@ export const defaultUserListColumns: ColumnsDescriptor = {
 };
 
 export const defaultRolesListColumns: ColumnsDescriptor = {
-    _id: 1,
+    _id: { header: 'Role Id' },
     name: { header: 'Role Name' },
 }
 

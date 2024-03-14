@@ -30,7 +30,7 @@
     <input type="hidden" [formControl]="control">
     <mat-label *ngIf="label">{{label | text}}</mat-label>
     <mat-chip-grid #chipGrid aria-label="Fruit selection">
-        @for (item of valueDataSource$ | async; track item) {
+        @for (item of valueDataSource$ | async; track item.key) {
         <mat-chip-row (removed)="remove(item)">
             {{item.display}}
             <button matChipRemove [attr.aria-label]="'remove ' + item.key">
@@ -39,20 +39,31 @@
         </mat-chip-row>
         }
     </mat-chip-grid>
-    <input #filterInput [formControl]="control" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
+    <input #filterInput [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput (input)="q = filterInput.value"
-        [required]="required" (blur)="onTouch()" [placeholder]="placeholder" (matChipInputTokenEnd)="onAdding($event)">
+        [required]="required" (blur)="onTouch()" [placeholder]="placeholder"
+        (matChipInputTokenEnd)="onAdding($event.value)">
+
 
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event)">
-        @for (opt of options$ | async; track opt) {
-        <img *ngIf="opt.image" [src]="opt.image">
-        <span>{{opt.display}}</span>
+
+        @for (opt of options(); track opt) {
+        <mat-option [value]="opt">
+            @if(opt.image){
+            <img [src]="opt.image" [attr.alt]="opt.value">
+            }
+            <span>{{opt.display}}</span>
+        </mat-option>
         }
+        @if(filterInput.value.length > 0 && options().length === 0){
         <mat-option [value]="null">
             <span>Add</span>
         </mat-option>
+        }
+
     </mat-autocomplete>
-    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}
-    </mat-error>
+    @for (error of control?.errors|keyvalue; track error) {
+    <mat-error>{{getErrorMessage(error)}} </mat-error>
+    }
 </mat-form-field>
 }

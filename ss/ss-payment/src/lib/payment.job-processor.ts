@@ -15,7 +15,7 @@ export class PaymentJobProcessor implements JobProcessor<TransactionInfo, Transa
     }
     async canProcess(payload: TransactionInfo): Promise<JobPriority> {
         if (!this.currencies || !this.currencies.length || this.currencies.some(c => payload.currency === c)) {
-            const model = await this.data.getOrAddModel('transaction')
+            const model = await this.data.getModel('transaction')
             const transaction = await model.findOne({ _id: payload._id }).lean()
             return -this.provider.fees(transaction as Transaction) //priority is for cheaper fees
         }
@@ -23,7 +23,7 @@ export class PaymentJobProcessor implements JobProcessor<TransactionInfo, Transa
     }
 
     async process(payload: TransactionInfo, job: Job): Promise<TransactionProcessResult> {
-        const model = await this.data.getOrAddModel('transaction')
+        const model = await this.data.getModel('transaction')
         const transaction = await model.findOne({ _id: payload._id })
         if (transaction.status !== 'processing') {
             const transactionId = typeof transaction._id === 'string' ? transaction._id : transaction._id.toHexString()

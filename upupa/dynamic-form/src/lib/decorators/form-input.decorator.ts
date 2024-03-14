@@ -102,7 +102,8 @@ export type FormFieldOptions = ({ from: any } & VisibleFormFieldOptions) |
             selectable?: boolean,
             removable?: boolean,
             separatorKeysCodes?: string[]
-        }
+        } |
+        { input: string } & VisibleFormFieldOptions & AdapterFieldOptions & { inputs: Record<string, any> }
     );
 
 
@@ -127,7 +128,12 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
     const field = {
         ...fieldBase,
         input: options.input,
-        ui: { inputs: { required: options.required } },
+        ui: {
+            inputs: {
+                required: options.required,
+                ...(options['inputs'] || {}),
+            }
+        },
         type: 'field'
     } as FieldItem;
 
@@ -225,7 +231,7 @@ export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'sche
         Reflect.defineMetadata('path', key, target);
         const formInputs = (Reflect.getMetadata('DYNAMIC_FORM_INPUTS', target) ?? _DYNAMIC_FORM_INPUTS[key] ?? _DYNAMIC_FORM_INPUTS[target.name] ?? {}) as DynamicFormInputs;
         const args = Reflect.getMetadata('design:paramtypes', target) || [];
-        
+
         const opts = { ...formInputs, ...options } as DynamicFormInputs;
         if ((options.name || '').trim().length === 0) opts.name = key.replace(/\//g, '-').toLowerCase();
         if (!options.initialValueFactory) opts.initialValueFactory = () => Promise.resolve(new target(...args));

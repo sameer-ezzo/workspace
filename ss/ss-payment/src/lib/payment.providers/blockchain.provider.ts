@@ -83,7 +83,7 @@ export class CryptoGateway implements PaymentProvider {
 
     async process(payload: TransactionInfo): Promise<TransactionProcessResult> {
 
-        const model = await this.data.getOrAddModel('transaction')
+        const model = await this.data.getModel('transaction')
         const transaction: Transaction = await model.findOne({ _id: payload._id }).lean()
         const transactionId = typeof transaction._id === 'string' ? transaction._id : transaction._id.toHexString()
         if (transaction.status === 'pending') {
@@ -125,7 +125,7 @@ export class CryptoGateway implements PaymentProvider {
 
         if (receivedTransactions.length === 0) return { status: "retry", transactionId }
         else {
-            const transactionModel = await this.data.getOrAddModel('transaction')
+            const transactionModel = await this.data.getModel('transaction')
             for (const tx of receivedTransactions) {
 
                 const registeredTxNo = await transactionModel.countDocuments({ confirmationCode: tx.txID })

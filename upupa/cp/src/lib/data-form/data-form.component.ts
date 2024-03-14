@@ -1,6 +1,6 @@
-import { Component, ViewChild, Input } from '@angular/core';
+import { Component, ViewChild, Input, signal } from '@angular/core';
 import { DynamicFormComponent } from '@upupa/dynamic-form';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { ActionEvent, SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
 import { DataService } from '@upupa/data';
@@ -19,8 +19,9 @@ export class DataFormComponent implements UpupaDialogPortal {
 
     resolverResult: DataFormResolverResult;
     dialogRef?: MatDialogRef<UpupaDialogComponent>;
-    model: any;
-    model$: Observable<any>
+    model = signal<any>(null)
+
+    sub: Subscription
     private _formResolverResult: Observable<DataFormResolverResult>
     @Input()
     public get formResolverResult(): Observable<DataFormResolverResult> {
@@ -28,10 +29,13 @@ export class DataFormComponent implements UpupaDialogPortal {
     }
     public set formResolverResult(value: Observable<DataFormResolverResult>) {
         this._formResolverResult = value;
-        this.model$ = this.formResolverResult.pipe(
+        this.sub?.unsubscribe()
+
+        this.sub = value.pipe(
             tap(x => this.resolverResult = x),
-            switchMap(s => s.formViewModel.value$),
-            tap(model => this.model = model));
+            switchMap(s => s.formViewModel.value$)).subscribe(model => {
+                this.model.set(model)
+            });
     }
 
 
@@ -73,7 +77,7 @@ export class DataFormComponent implements UpupaDialogPortal {
         let submitResult: FormSubmitResult;
         if (formViewModel.onSubmit) {
             try {
-                submitResult = await formViewModel.onSubmit(pathInfo.path, value);
+                submitResult = await formViewModel.onSubmit(pathInfo.path, this.model());
             }
             catch (error) {
                 this.handleSubmitError(error)

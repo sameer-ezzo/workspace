@@ -34,8 +34,8 @@ import { DataFilterFormComponent, formSchemeToDynamicFormFilter } from "../data-
 export class DataListComponent implements OnDestroy {
 
     private _filterFormValue: any;
-    private _listViewModelActions: (ActionDescriptor | ((row: any) => ActionDescriptor))[];
-    dataTableActions: (ActionDescriptor | ((row: any) => ActionDescriptor))[];
+    private _listViewModelActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
+    dataTableActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
     public get filterFormValue(): any {
         return this._filterFormValue;
     }
@@ -92,8 +92,8 @@ export class DataListComponent implements OnDestroy {
                 }
 
                 this.filterFormVm = inputs.listViewModel.filterForm
-                this._listViewModelActions = inputs.listViewModel.actions.slice()
-                this.dataTableActions = [...(this._listViewModelActions ?? [])]
+                this._listViewModelActions = inputs.listViewModel.actions
+                this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions
 
                 this.listenOnQueryParamsChange()
                 if (this.filterFormVm) {
@@ -230,7 +230,9 @@ export class DataListComponent implements OnDestroy {
             this.filterButtonActionDescriptor.matBadgeSize = 'small';
         }
 
-        this.dataTableActions = [...(this._listViewModelActions ?? []), this.filterButtonActionDescriptor];
+        this.dataTableActions = Array.isArray(this._listViewModelActions) ?
+            [...(this._listViewModelActions ?? []), this.filterButtonActionDescriptor] :
+            (row: any) => ((this._listViewModelActions as Function)(row) ?? []).concat(this.filterButtonActionDescriptor).slice();
     }
 
 
