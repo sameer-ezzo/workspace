@@ -4,13 +4,9 @@ import {
   Input,
   Output,
   EventEmitter,
-  SimpleChanges,
-  ViewChild,
-  AfterViewInit,
   Inject,
   Optional,
 } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
 import { HttpClient } from "@angular/common/http";
 import { ServerDataSource, DataAdapter, DataService } from "@upupa/data";
 import { AuthService } from "@upupa/auth";

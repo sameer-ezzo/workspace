@@ -1,18 +1,19 @@
-<ng-container *ngIf="model$ | async">
-    <ng-container *ngIf="formResolverResult | async as resolverResult">
-        <div style="display: flex;flex-direction: column;flex-wrap: nowrap;overflow-y: auto;padding: 1rem;">
+@if(formResolverResult | async; as result){
+<div id="form-wrapper">
 
-            <dynamic-form *ngIf="resolverResult.formViewModel?.scheme" [fields]="resolverResult.formViewModel.scheme"
-                #dynForm [(value)]="model" [name]="resolverResult.formViewModel.name"
-                [preventDirtyUnload]="resolverResult.formViewModel.preventDirtyUnload"
-                [initialValueFactory]="resolverResult.formViewModel.initialValueFactory"
-                [recaptcha]="resolverResult.formViewModel.recaptcha" [theme]="resolverResult.formViewModel.theme"
-                [conditions]="resolverResult.formViewModel.conditions" (submit)="submit($event)"></dynamic-form>
-        </div>
+    <dynamic-form *ngIf="result.formViewModel?.scheme" [fields]="result.formViewModel.scheme" #dynForm [value]="model()"
+        (valueChange)="model.set($event)" [name]="result.formViewModel.name"
+        [preventDirtyUnload]="result.formViewModel.preventDirtyUnload"
+        [initialValueFactory]="result.formViewModel.initialValueFactory" [recaptcha]="result.formViewModel.recaptcha"
+        [theme]="result.formViewModel.theme" [conditions]="result.formViewModel.conditions"
+        (submit)="submit($event)"></dynamic-form>
+</div>
 
-        <div *ngIf="resolverResult.formViewModel.actions?.length" class="toolbar footer">
-            <mat-btn *ngFor="let descriptor of resolverResult.formViewModel.actions"
-                (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
-        </div>
-    </ng-container>
-</ng-container>
+@if(result.formViewModel.actions?.length){
+<div class="toolbar footer">
+    @for(descriptor of result.formViewModel.actions; track descriptor.action){
+    <mat-btn (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
+    }
+</div>
+}
+}

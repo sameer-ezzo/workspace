@@ -9,12 +9,12 @@ import { TranslationModule } from '@upupa/language';
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { TagsSelectInputComponent } from './tags-select-input/tags-select-input.component';
+import { TagsChipsInputComponent } from './tags-chips-input/tags-chips-input.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DynamicFormMaterialThemeModule } from '@upupa/dynamic-form-material-theme';
+import { MatIconModule } from '@angular/material/icon';
 
-const declarations = [TagsComponent, TagsSelectInputComponent, TagFormComponent];
+const declarations = [TagsComponent, TagsChipsInputComponent, TagFormComponent];
 
 @NgModule({
   declarations,
@@ -29,7 +29,7 @@ const declarations = [TagsComponent, TagsSelectInputComponent, TagFormComponent]
     MatAutocompleteModule,
     MatFormFieldModule,
     MatChipsModule,
-    DynamicFormMaterialThemeModule
+    MatIconModule
   ],
   exports: [...declarations, MatDialogModule]
 })

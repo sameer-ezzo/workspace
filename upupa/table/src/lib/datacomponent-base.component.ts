@@ -9,6 +9,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { MatTable } from '@angular/material/table'
 import { SelectionModel } from '@angular/cdk/collections'
 import { InputBaseComponent } from '@upupa/common'
+import { FormControl } from '@angular/forms'
 
 
 export class Logger {
@@ -45,6 +46,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.firstLoad$.next(value)
     }
 
+    @Input() filterControl = new FormControl('')
     @Input() noDataImage: string
     @Input('add-url') addUrl: string
     @Input('show-add') showAdd: boolean

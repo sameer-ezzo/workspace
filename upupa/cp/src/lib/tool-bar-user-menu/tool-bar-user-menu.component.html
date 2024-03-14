@@ -6,9 +6,9 @@
         </mat-icon>
     </button>
     <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
-        @if(avatarService.userAvatar| async; as avatar){
-        @if(avatar){
-        <img [src]="avatar" [attr.alt]="auth.user.name || auth.user.email">
+        @if(userImageService.resolver| async; as userIamge){
+        @if(userIamge){
+        <img [src]="userIamge" [attr.alt]="auth.user.name || auth.user.email">
         <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
         }
         @else {

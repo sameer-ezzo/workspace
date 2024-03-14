@@ -1,15 +1,15 @@
-import { DataFormViewModel, DataListFilterForm, DataListViewModel, FormScaffoldingModel, IScaffolder, ListScaffoldingModel, ScaffoldingScheme } from "../../types";
+import { ScaffoldingScheme } from "../../types";
 import { FormViewScaffolderService } from "../default-scaffolders/form-view.scaffolder.service";
 import { GenericListViewScaffolder } from "../default-scaffolders/list-view.scaffolder.service";
-import { DynamicFormInputs, FormScheme, formScheme } from "@upupa/dynamic-form";
+import { DynamicFormInputs, formScheme } from "@upupa/dynamic-form";
 import 'reflect-metadata'
-import { ColumnDescriptor } from '@upupa/table';
 
 import { toTitleCase } from "@upupa/common";
-import { DatePipe } from "@angular/common";
-import { FactorySansProvider } from "@angular/core";
+import { CPCommandPosition, CreateFormOptions, EditFormOptions, ListViewOptions, ModelSchemeRouteOptions, ViewFormOptions, ViewMetaOptions } from "./decorator.types";
 
+export const _LISTS_INFO: Record<string, Partial<ListViewOptions>> = {};
 const _scaffoldingScheme: ScaffoldingScheme = {};
+
 
 export function resolvePathScaffolders(path: string) {
     const hasCreate = _scaffoldingScheme['create']?.[path] !== undefined;
@@ -19,76 +19,14 @@ export function resolvePathScaffolders(path: string) {
     return { hasCreate, hasEdit, hasView, hasList };
 }
 
-export type CPCommandPosition = 'sidebar' | 'user-menu' | 'toolbar';
-export type ViewMetaOptions = {
-    positions?: CPCommandPosition[],
-    text?: string
-    icon?: string
-    group?: string
-}
-
-type ScaffolderOption = { scaffolder?: IScaffolder<ListScaffoldingModel> | any };
-export type QueryFactoryProvider = FactorySansProvider & { useFactory: (...deps: any[]) => Iterable<readonly [string, string]> }
-export type ListViewModelOptions = Partial<Omit<DataListViewModel, 'filterForm' | 'query' | 'queryParams'>> & {
-    filterForm?: Partial<Omit<DataListFilterForm, 'fields'>> & { fields: FormScheme | string },
-    query?: ((...deps: any[]) => Iterable<readonly [string, string]>) | QueryFactoryProvider,
-    queryParams?: ((...deps: any[]) => Iterable<readonly [string, string]>) | QueryFactoryProvider,
-};
-
-export type ListViewOptions = ViewMetaOptions & (ScaffolderOption | ListViewModelOptions);
-export type CreateFormOptions = Partial<DataFormViewModel> & { scaffolder?: IScaffolder<FormScaffoldingModel> | any, }
-export type EditFormOptions = Partial<{
-    selector: `:${string}`,
-    scaffolder?: IScaffolder<FormScaffoldingModel> | any,
-    options: Partial<DataFormViewModel> & {}
-}>
-export type ViewFormOptions = EditFormOptions;
-
-export type ModelSchemeRouteOptions = {
-    listView?: ListViewOptions,
-    createForm?: CreateFormOptions,
-    editForm?: EditFormOptions,
-    viewForm?: EditFormOptions
-}
-
-const _LISTS_INFO: Record<string, Partial<ListViewOptions>> = {};
 export const getListInfoOf = (path: string) => Object.assign({}, _LISTS_INFO[path]);
-export type ColumnOptions = ColumnDescriptor & { order?: number, includeInDataSelect?: boolean }
-export function column(options: ColumnOptions = { order: 1, includeInDataSelect: true }) {
-    return function (target: any, propertyKey: string) {
 
-        const columns = Reflect.getMetadata('LIST_COLUMN_DESCRIPTORS', target) || _LISTS_INFO[target.constructor.name] || {}
-        const select = Reflect.getMetadata('LIST_SELECT', target) || []
-        const text = options.header ?? toTitleCase(propertyKey);
-        options.header = text;
-        columns[propertyKey] = options;
-        delete options.includeInDataSelect;
-        delete options.order;
 
-        if (options.includeInDataSelect !== false) {
-            select.push(propertyKey)
-            Reflect.defineMetadata('LIST_SELECT', select, target);
-        }
-
-        if (Reflect.getMetadata('design:type', target, propertyKey) === Date) {
-            if (options.pipe === undefined) {
-                options.pipe = { pipe: DatePipe, args: ['short'] }
-            }
-        }
-        Reflect.defineMetadata('LIST_COLUMN_DESCRIPTORS', columns, target);
-        _LISTS_INFO[target.constructor.name] = { columns, select };
-    }
-}
-
-function getScaffoldingScheme() {
-    return _scaffoldingScheme //Object.freeze({ ..._scaffoldingScheme })
-}
+function getScaffoldingScheme() { return _scaffoldingScheme }
 export function mergeScaffoldingScheme(scheme?: ScaffoldingScheme): ScaffoldingScheme {
     for (const key in scheme) {
         _scaffoldingScheme[key] = { ..._scaffoldingScheme[key], ...scheme[key] }
     }
-
-
     return _scaffoldingScheme;
 }
 export const scaffoldingScheme = getScaffoldingScheme()
@@ -116,8 +54,8 @@ export function listScaffolder(path: string, options: ListViewOptions = {}) {
 export function createFormScaffolder(path: string, options: CreateFormOptions = {}) {
     return function (target) {
         applyFormScheme(path, target, options);
-
-        const createRoute = { [path]: { type: options.scaffolder ?? FormViewScaffolderService } };
+        const registeredRoute = _scaffoldingScheme['create']?.[path];
+        const createRoute = { [path]: { type: registeredRoute?.type || options.scaffolder || FormViewScaffolderService } };
         if (options) createRoute[path]['meta'] = options;
         _scaffoldingScheme['create'] = { ..._scaffoldingScheme['create'], ...createRoute }
     }
@@ -126,15 +64,13 @@ export function editFormScaffolder(path: string, options: EditFormOptions = { se
     return function (target) {
         applyFormScheme(path, target, options.options);
 
+
         const { selector, options: editOptions } = options;
-        const editRoute = {
-            [path]: {
-                [selector || ':id']: {
-                    type: options.scaffolder || FormViewScaffolderService
-                },
-                meta: editOptions
-            }
-        };
+        const s = selector || ':id'
+        const registeredRoute = _scaffoldingScheme['edit']?.[s]?.[path];
+        const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
+        const editRoute = { [path]: { [s]: { type } } };
+        if (editOptions) editRoute[path][s]['meta'] = editOptions;
 
         _scaffoldingScheme['edit'] = { ..._scaffoldingScheme['edit'], ...editRoute }
     }
@@ -144,7 +80,13 @@ export function viewFormScaffolder(path: string, options: ViewFormOptions = { se
         applyFormScheme(path, target);
 
         const { selector, options: editOptions } = options;
-        const viewRoute = { [path]: { [selector]: { type: options.scaffolder ?? FormViewScaffolderService }, meta: editOptions } };
+        const s = selector || ':id'
+        const registeredRoute = _scaffoldingScheme['edit']?.[s]?.[path];
+        const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
+        
+        const viewRoute = { [path]: { [s]: { type } } };
+        if (editOptions) viewRoute[path][s]['meta'] = editOptions;
+
         _scaffoldingScheme['view'] = { ..._scaffoldingScheme['view'], ...viewRoute }
     }
 }
@@ -179,6 +121,7 @@ export function formScaffolder(path: string, options: { editForm?: EditFormOptio
         if (options.viewForm !== null) editFormScaffolder(path, opts.editForm as EditFormOptions)(target);
     }
 }
+
 export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeRouteOptions = {}) {
     return function (target) {
 
@@ -206,6 +149,9 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
         if (options.listView !== null) listScaffolder(path, { ...listMeta, ...opts.listView })(target)
         if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);
         if (options.editForm !== null) editFormScaffolder(path, opts.editForm)(target);
-        // if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);
+        if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);
+
+        console.log(_scaffoldingScheme);
+
     }
 }

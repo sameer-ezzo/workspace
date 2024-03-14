@@ -54,7 +54,7 @@ export class ScaffoldingService {
         if (!scaffolder) throw `NO SCAFFOLDER FOR PATH ${path}`;
 
         let promise: Promise<ScaffoldingModel> | ScaffoldingModel;
-        
+
         if (scaffolder.type)
             promise = this.injector
                 .get<IScaffolder<ScaffoldingModel>>(scaffolder.type)
@@ -115,8 +115,8 @@ export class ScaffoldingService {
         else throw 'UNSUPPORTED DATA ADAPTER TYPE'
 
         listViewModel.actions ??= scaffoldingModel.actions ?? defaultListActions;
-
-        const options = Object.assign({}, listViewModel.adapter.options);
+        const filter = listViewModel.query?.();
+        const options = Object.assign({}, listViewModel.adapter.options, { filter: { ...listViewModel.adapter.options?.filter, ...filter } });
         options.page ??= { pageSize: 100 };
         const adapter = new DataAdapter(
             source,

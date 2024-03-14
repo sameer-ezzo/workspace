@@ -37,7 +37,7 @@ export type FormResolverCollectionMap = { [collection: string]: DataFormResolver
 export type DataListViewModel<TData = any, AdapterType extends 'server' | 'client' | 'http' = 'server'> = {
     select: string | string[],
     columns: ColumnsDescriptor<TData>,
-    actions?: (ActionDescriptor | ((row: any) => ActionDescriptor))[],
+    actions?: ActionDescriptor[] | ((row: any) => ActionDescriptor[]),
     filterForm?: DataListFilterForm,
     query?: (...deps: any[]) => Iterable<readonly [string, string]>,
     queryParams?: (...deps: any[]) => Iterable<readonly [string, string]>,
@@ -45,7 +45,7 @@ export type DataListViewModel<TData = any, AdapterType extends 'server' | 'clien
 }
 
 export type ScaffoldingViewModel = {
-    actions?: (ActionDescriptor | ((row: any) => ActionDescriptor))[],
+    actions?: ActionDescriptor[] | ((row: any) => ActionDescriptor[]),
     query?: Record<string, any>
 }
 export type FormScaffoldingModel = ScaffoldingViewModel & { type: 'form', viewModel: DataFormViewModel };

@@ -1,22 +1,26 @@
 <div (blur)="control?.markAsTouched()">
-    <mat-label *ngIf="label">{{label | text}}</mat-label>
+    @if(label){
+    <label>{{label}}</label>
     <br />
+    }
 
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
 
-        <button mat-raised-button class="margin-5" type="button" (click)="selectFile()" [color]="color">
-            <mat-icon>upload_file</mat-icon> {{'select-file'|text}}
-        </button>
+        <button class="margin-5" type="button" (click)="selectFile()"> Select file </button>
         <span style="width: 10px;"></span>
         <div class="margin-5">
             <ng-container *ngIf="!value">
                 <div *ngIf="placeholder">{{placeholder}}</div>
-                <div *ngIf="!placeholder">{{'no-files-selected'|text}}</div>
+                <div *ngIf="!placeholder">No selected files</div>
             </ng-container>
-            <mat-hint *ngIf="maxSize">{{'up-to' | text}} {{maxSize|fileSize}}</mat-hint>
-            <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+            @if(maxSize){
+            <small>Up to {{maxSize}}</small> 
+            <!-- |fileSize -->
+            }
+            @if(hint){
+            <small>{{hint}}</small>
+            }
         </div>
     </div>
 </div>
-<!--     <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}</mat-error>
- -->
+<span class="error" *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key}}</span>

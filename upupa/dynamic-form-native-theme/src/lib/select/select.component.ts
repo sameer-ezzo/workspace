@@ -27,13 +27,13 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     @Input() panelClass: string
     @Input() placeholder: string
     @Input() hint: string
-    @Input() errorMessages = {}
+    @Input() errorMessages:Record<string, string> = {}
     @Input() valueTemplate: TemplateRef<any>
     @Input() itemTemplate: TemplateRef<any>
     _onlySelected = false
 
     @ViewChild('search') searchInput: ElementRef<HTMLInputElement>
-    constructor(private bus: EventBus) { super() }
+    constructor(protected readonly bus: EventBus) { super() }
 
     viewDataSource$ = new BehaviorSubject<'adapter' | 'value'>('value')
     items: NormalizedItem[]
@@ -98,14 +98,14 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     }
 
     firstLoaded = false
-    async openedChange(open: boolean) {
+    async openedChange(open: boolean, input?: {open: () => void}) {
 
         this.isPanelOpened = open
         if (!this.firstLoaded && open) {
             this.refreshData()
             this.viewDataSource$.next('adapter')
             await firstValueFrom(this.adapter.normalized$)
-            this.selectInput.open()
+            input?.open()
         }
         // if (open) this.setScrollPaginator(selectInput)
         // else this.removeScrollPaginator(selectInput)

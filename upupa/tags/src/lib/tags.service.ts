@@ -22,11 +22,13 @@ export class TagsService {
     const tags = this.tagsMap.get(parentPath)
     if (tags?.length) return of(tags)
     filter['parentPath'] = `${parentPath}*`
-    return this.dataService.get<any>(`/v2/tag`, filter).pipe(map(res => res.data as Tag[]), tap(tags => {
-      this.tagsMap.set(parentPath, tags)
-      tags.forEach(t => this.idTtagMap.set(t._id, t))
-    }
-    ))
+    return this.dataService.get<any>(`/v2/tag`, filter).pipe(
+      map(res => res.data as Tag[]),
+      tap(tags => {
+        this.tagsMap.set(parentPath, tags)
+        tags.forEach(t => this.idTtagMap.set(t._id, t))
+      })
+    )
   }
 
 

@@ -3,8 +3,8 @@ import { Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { EventBus } from '@upupa/common';
 import { AuthService } from '@upupa/auth';
-import { UserAvatarService } from '../cp-layout/avatar.service';
 import { SideBarItem } from '../cp-layout/side-bar-group-item';
+import { UserImageService } from '../user-image.service';
 
 
 @Component({
@@ -26,7 +26,7 @@ export class ToolbarUserMenuComponent {
 
     constructor(
         public auth: AuthService,
-        public avatarService: UserAvatarService,
+        public userImageService: UserImageService,
         private bus: EventBus) {
     }
 

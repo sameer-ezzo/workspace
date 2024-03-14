@@ -8,7 +8,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
 import { MatDrawerMode } from '@angular/material/sidenav'
 import { InlineEditableListComponent } from '../inline-editable-list/inline-editable-list.component'
 import { SideBarGroup, SideBarItem } from './side-bar-group-item'
-import { UserAvatarService } from './avatar.service'
+
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
 import { CP_OPTIONS } from '../di.token'
@@ -31,7 +31,7 @@ export class CpLayoutComponent {
 
     destroyed$ = new Subject()
     constructor(public auth: AuthService,
-        public avatarService: UserAvatarService,
+
         private router: Router,
         @Inject(CP_OPTIONS) private readonly cpOptions,
         @Inject(DEFAULT_THEME_NAME) private theme: string,
@@ -39,7 +39,6 @@ export class CpLayoutComponent {
         public languageService: LanguageService,
         public breakPointObserver: BreakpointObserver) {
 
-        this.avatarService.avatarMode = this.cpOptions.userAvatarMode ?? 'initials'
 
         dfForm.addControlType('inline-editable-list', InlineEditableListComponent, theme)
         breakPointObserver.observe([Breakpoints.XSmall]).subscribe(() => {
