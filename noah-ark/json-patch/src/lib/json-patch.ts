@@ -42,7 +42,7 @@ export class JsonPointer {
             if (x[s] === undefined) return undefined;
             x = x[s];
         };
-        return x[property];
+        return x?.[property];
     }
     static nonObjTypes = ["string", "bigint", "boolean", "function", "number", "symbol"];
     static isObject(obj: any): boolean {
