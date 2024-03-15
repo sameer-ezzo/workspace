@@ -29,7 +29,7 @@ import tagSchema from "./tag.schema"
 import { DataChangedEvent } from "./data-changed-event"
 import { IDbMigration } from "./databases-collections";
 import migrationSchema, { MigrationModel } from "./migration-schema";
-import { ObjectId } from "@noah-ark/common";
+import { groupBy, sortBy } from "lodash";
 
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
@@ -53,26 +53,39 @@ export class DataService {
 
     private async _migrate(ds: DataService, migrations: IDbMigration[]) {
         try {
+            let model = await ds.getModel("migration");
+            if (!model) model = await ds.addModel("migration", migrationSchema);
+            const migrationsInDb = await model.find({}).lean();
 
-            const model = await ds.getModel("migration");
-            const ms = await model.find({}).lean();
+            const migrationsByCollection = groupBy(migrations, m => m.collectionName)
+            const migrationsInDbByCollection = groupBy(migrationsInDb, m => m.collectionName)
 
-            const throwMismatchError = () => {
-                logger.error("Migrations mismatch");
-                throw "Migrations mismatch";
+            const throwMismatchError = (msg?: string) => {
+                const reason = `Migrations mismatch ${msg ? `!: ${msg}` : '!'}`;
+                logger.error(reason);
+                throw new Error(reason);
             };
-
-            if (ms.length > migrations.length) throwMismatchError();
-            for (let i = 0; i < migrations.length; i++) {
-                if (i < ms.length) {
-                    if (migrations[i].name !== ms[i].name) throwMismatchError();
-                } else {
-                    await migrations[i].up?.(ds);
-                    await model.create({
-                        _id: ObjectId.generate(),
-                        name: migrations[i].name,
-                        date: new Date(),
-                    } as MigrationModel);
+            for (const collection in migrationsByCollection) {
+                const ms = sortBy(migrationsInDbByCollection[collection] ?? [], m => m.date);
+                const migrations = migrationsByCollection[collection];
+                if (ms.length > migrations.length) throwMismatchError('Migrations in db are more than the migrations in code');
+                for (let i = 0; i < migrations.length; i++) {
+                    if (i < ms.length) {
+                        if (migrations[i].name !== ms[i].name) throwMismatchError('Migration name mismatch');
+                    } else {
+                        const migrationModel = await ds.getModel(migrations[i].collectionName);
+                        if (!migrationModel) {
+                            logger.warn(`Migration model not found for ${migrations[i].collectionName}. Migation skipped!`);
+                            continue
+                        }
+                        await migrations[i].up?.(ds);
+                        await model.create({
+                            _id: this.generateId(),
+                            name: migrations[i].name,
+                            date: new Date(),
+                            collectionName: migrations[i].collectionName
+                        } as MigrationModel);
+                    }
                 }
             }
         } catch (error) {
@@ -215,14 +228,14 @@ export class DataService {
     async addModel(collection: string, schema: mongoose.Schema, prefix?: string, exclude: string[] = [], overwrite = false): Promise<Model<any>> {
         await this.connect()
         prefix ??= this.prefix
-        const cName = prefix + collection
-        if (this._models[cName] && !overwrite)
-            return this._models[cName]
+        const collectionName = prefix + collection
+        if (this._models[collectionName] && !overwrite)
+            return this._models[collectionName]
 
-        logger.info(`Adding schema: [${cName}] overwrite:${overwrite}`)
+        logger.info(`Adding schema: [${collectionName}] overwrite:${overwrite}`)
         schema.plugin(mongooseUniqueValidator)
 
-        const extstingCollection = await this.connection.collection(cName).findOne({});
+        const extstingCollection = await this.connection.collection(collectionName).findOne({});
         if (extstingCollection && extstingCollection._id) {
 
             let schemaIdType = 'String'
@@ -234,16 +247,21 @@ export class DataService {
             }
 
             if (schemaIdType !== schema.paths._id.instance) {
-                logger.error(`Schema: [${cName}] has different _id type. The existing id ${extstingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`)
+                logger.error(`Schema: [${collectionName}] has different _id type. The existing id ${extstingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`)
                 return null
             }
         }
 
-        this._models[prefix + collection] = this._connection.model(cName, schema)
+        this._models[collectionName] = this._connection.model(collectionName, schema)
 
-        if (exclude?.length > 0) this.addExclusion(cName, exclude)
-        logger.info(`Schema: [${cName}] has been added successfully!`)
-        return this._models[prefix + collection]
+        if (exclude?.length > 0) this.addExclusion(collectionName, exclude)
+        logger.info(`Schema: [${collectionName}] has been added successfully!`)
+
+        // run migrations for this collection
+        const migration = (this.migrations || []).filter(m => `${prefix}${m.collectionName}` === collectionName)
+        await this._migrate(this, migration)
+
+        return this._models[collectionName]
     }
     addExclusion(name: string, exclude: string[]) {
         this._exclusions[name] = exclude;
