@@ -142,7 +142,8 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
                 req.principle = payload as Principle
             }
             catch (error) {
-                console.error('CookieAuthenticationProvider.authenticate', error)
+                if (error.code != 'ERR_JWT_EXPIRED')
+                    console.error('CookieAuthenticationProvider.authenticate', error)
             }
         } else {
             const secret = __secret()

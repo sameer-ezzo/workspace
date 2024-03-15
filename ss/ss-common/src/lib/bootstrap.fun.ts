@@ -152,7 +152,17 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
 
 
     //This special header is required for DataService TODO (rami) this should be moved to inside DataModule and thus app initialization stages should be reactive
-    application.enableCors({ allowedHeaders: ['*', 'X-Get-Count'] })
+    //TODO handle cors properly!
+    application.enableCors({
+        allowedHeaders: ['content-type', 'X-Get-Count'],
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        origin: '*'
+    })
+application.enableCors({
+        allowedHeaders: [ 'X-Get-Count'],
+        credentials: true,
+        origin: 'http://localhost:4200'
+    })
 
     application.useGlobalInterceptors()
 
