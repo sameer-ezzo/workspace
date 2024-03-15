@@ -18,6 +18,7 @@ export * from './lib/user-image.service';
 export * from './lib/default-scaffolders/form-view.scaffolder.service';
 export * from './lib/default-scaffolders/list-view.scaffolder.service';
 export * from './lib/default-scaffolders/base-form-view.scaffolder';
+export * from './lib/default-scaffolders/base-list-view.scaffolder';
 export * from './lib/media-library/media-library.component';
 export * from './lib/data-filter-form/data-filter-form.component';
 export * from './lib/decorators/decorator.types';

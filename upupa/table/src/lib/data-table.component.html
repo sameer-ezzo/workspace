@@ -114,11 +114,7 @@
                 [stickyEnd]="columns['actions']?.sticky === 'end'">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let row; let i = index" class="actions">
-                    <div style="display: flex;align-items: center;
-                    justify-content: flex-start;
-                    align-content: center;
-                    flex-wrap: nowrap;
-                    flex-direction: row;">
+                    <div>
                         <ng-container [ngTemplateOutlet]="commandTemplate"
                             [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row.item]}"></ng-container>
                         <button *ngIf="getMenuActions(row.item).length"

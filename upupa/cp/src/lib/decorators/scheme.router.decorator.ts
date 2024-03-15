@@ -35,17 +35,17 @@ export function listScaffolder(path: string, options: ListViewOptions = {}) {
     return function (target) {
         if ((options.text || '').trim().length === 0) options.text = toTitleCase(path);
 
-        const scaffolder = options['scaffolder'] ?? GenericListViewScaffolder;
+        const registeredRoute = _scaffoldingScheme['list']?.[path];
+
+        const scaffolder = registeredRoute?.type || options['scaffolder'] || GenericListViewScaffolder;
         const listRoute = { [path]: { type: scaffolder, meta: options } };
         _scaffoldingScheme['list'] = { ..._scaffoldingScheme['list'], ...listRoute }
-
-        if (options['scaffolder']) return
 
         const listInfo: Partial<ListViewOptions> = {
             columns: Reflect.getMetadata('LIST_COLUMN_DESCRIPTORS', target) || _LISTS_INFO[target.name]['columns'] || {},
             select: Reflect.getMetadata('LIST_SELECT', target) || _LISTS_INFO[target.name]['select'] || [],
             ...options,
-            positions: options.positions?.length ? options.positions as CPCommandPosition[] : ['sidebar']
+            positions: options.positions === null ? null : options.positions?.length ? options.positions as CPCommandPosition[] : ['sidebar']
         }
         _LISTS_INFO[path] = listInfo;
 
@@ -67,7 +67,8 @@ export function editFormScaffolder(path: string, options: EditFormOptions = { se
 
         const { selector, options: editOptions } = options;
         const s = selector || ':id'
-        const registeredRoute = _scaffoldingScheme['edit']?.[s]?.[path];
+
+        const registeredRoute = _scaffoldingScheme['edit']?.[path]?.[s];
         const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
         const editRoute = { [path]: { [s]: { type } } };
         if (editOptions) editRoute[path][s]['meta'] = editOptions;
@@ -81,9 +82,9 @@ export function viewFormScaffolder(path: string, options: ViewFormOptions = { se
 
         const { selector, options: editOptions } = options;
         const s = selector || ':id'
-        const registeredRoute = _scaffoldingScheme['edit']?.[s]?.[path];
+        const registeredRoute = _scaffoldingScheme['edit']?.[path]?.[s];
         const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
-        
+
         const viewRoute = { [path]: { [s]: { type } } };
         if (editOptions) viewRoute[path][s]['meta'] = editOptions;
 
@@ -150,8 +151,5 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
         if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);
         if (options.editForm !== null) editFormScaffolder(path, opts.editForm)(target);
         if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);
-
-        console.log(_scaffoldingScheme);
-
     }
 }

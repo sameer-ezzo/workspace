@@ -27,7 +27,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     @Input() panelClass: string
     @Input() placeholder: string
     @Input() hint: string
-    @Input() errorMessages:Record<string, string> = {}
+    @Input() errorMessages: Record<string, string> = {}
     @Input() valueTemplate: TemplateRef<any>
     @Input() itemTemplate: TemplateRef<any>
     _onlySelected = false
@@ -80,9 +80,19 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     }
 
 
-    onArrowDown(e, select) {
-        if (select.panelOpen === true) return
+    keyDown(e: KeyboardEvent, input?: { open: () => void, panelOpen: boolean }) {
         e.stopPropagation();
+        e.preventDefault();
+        if (!input || input.panelOpen) return
+        if (e.key === 'ArrowDown') return this.onArrowDown(e, input)
+        const isLetter = e.key.length === 1 && /[a-z0-9 ]/i.test(e.key)
+        return this.openedChange(isLetter, input)
+    }
+
+    onArrowDown(e, select) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (select.panelOpen === true) return
         this.openedChange(!select.panelOpen)
     }
 
@@ -98,8 +108,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     }
 
     firstLoaded = false
-    async openedChange(open: boolean, input?: {open: () => void}) {
-
+    async openedChange(open: boolean, input?: { open: () => void }) {
         this.isPanelOpened = open
         if (!this.firstLoaded && open) {
             this.refreshData()

@@ -1,18 +1,18 @@
-<ng-container *ngIf="inputs$ | async as _inputs">
-    <ng-container *ngIf="filterFormVm && filterFormVm.position !== 'dialog';else defaultListTemplate">
-        <ng-container *ngTemplateOutlet="withSideFilterForm; context: { 
+@if(_dataListResolverResult(); as _inputs){
+<ng-container *ngIf="filterFormVm && filterFormVm.position !== 'dialog';else defaultListTemplate">
+    <ng-container *ngTemplateOutlet="withSideFilterForm; context: { 
             tableInputs: _inputs, 
             actions: dataTableActions,
             fields: filterFormVm.fields,
             path: _inputs.path
          }">
-        </ng-container>
     </ng-container>
-    <ng-template #defaultListTemplate>
-        <ng-container
-            *ngTemplateOutlet="dataTableTemplate; context: { tableInputs: _inputs, actions: dataTableActions }"></ng-container>
-    </ng-template>
 </ng-container>
+<ng-template #defaultListTemplate>
+    <ng-container
+        *ngTemplateOutlet="dataTableTemplate; context: { tableInputs: _inputs, actions: dataTableActions }"></ng-container>
+</ng-template>
+}
 
 <ng-template #withSideFilterForm let-tableInputs="tableInputs" let-actions="actions" let-fields="fields"
     let-path="path">
@@ -32,8 +32,7 @@
     <data-table *ngIf="tableInputs.adapter" [name]="tableInputs.path" [(focusedItem)]="item"
         [adapter]="tableInputs.adapter" [columns]="tableInputs.listViewModel.columns" [actions]="actions"
         (action)="onAction($event)" (selectionChange)="selectionChanged($event)"
-        (filterChange)="filterValueChangeHandler($event)"
-        (pageChange)="updatePageInfo($event)"
+        (filterChange)="filterValueChangeHandler($event)" (pageChange)="updatePageInfo($event)"
         (sortChange)="updateSortInfo($event)" [maxAllowed]="100000" [(focusedItem)]="focusedItem">
     </data-table>
 </ng-template>

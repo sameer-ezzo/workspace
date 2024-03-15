@@ -1,15 +1,79 @@
-<mat-form-field [appearance]="appearance" (keydown.arrowdown)="onArrowDown($event, selectInput)" [floatLabel]="floatLabel" style="width: 100%;">
-    <mat-label *ngIf="label">{{label | text}}</mat-label>
-    <mat-select #selectInput [class.ng-dirty]="control.dirty" 
-        (openedChange)="openedChange($event, selectInput)" (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
-        *ngIf="!maxAllowed || maxAllowed > 1" multiple [panelClass]="panelClass" [(value)]="selected"
-        (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder | text"
+<mat-form-field [appearance]="appearance" (keydown.arrowdown)="onArrowDown($event, selectInput)"
+    [floatLabel]="floatLabel" style="width: 100%;">
+    @if(label?.length > 0){
+    <mat-label>{{label}}</mat-label>
+    }
+    @if(!maxAllowed || maxAllowed > 1){
+    <mat-select #selectInput [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
+        (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen)" multiple [panelClass]="panelClass"
+        [(value)]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
+        [required]="required">
+
+        @if(showSearch){
+        <ng-container [ngTemplateOutlet]="searchBox"></ng-container>
+        }
+
+
+        @if(loading){
+        <mat-option>
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </mat-option>
+        }
+
+        @if(valueDataSource$ | async; as vds){
+        @if(vds.length > 0){
+        <div style="padding: 1rem; display: flex; align-items: center;">
+            <span>{{vds.length}} {{'selected'|text}}</span>
+            <span style="flex: 1 1 auto;"></span>
+            <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
+                (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value'}}
+            </mat-checkbox>
+        </div>
+        }
+        }
+
+        <ng-container *ngIf="items$ | async as itms">
+            <mat-option *ngFor="let item of itms" [value]="item.key">
+
+                <ng-container *ngIf="itemTemplate; else itemTemp">
+                    <ng-container [ngTemplateOutlet]="itemTemplate" [ngTemplateOutletContext]="{item:item}">
+                    </ng-container>
+                </ng-container>
+                <ng-template #itemTemp>
+                    <img #img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;"
+                        [src]="item.image" (error)="img.onerror=null;img.src = ''">
+                    <span>{{item.display}}</span>
+                </ng-template>
+
+            </mat-option>
+        </ng-container>
+        <!-- <mat-optgroup *ngFor="let g of groups" [label]="g.name">
+            <mat-option *ngFor="let item of g.items" [value]="item.value">
+                <img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;" [src]="item.image"><span>{{item.display}}</span><span *ngIf="item.sub">{{item.sub}}</span>
+            </mat-option>
+        </mat-optgroup> -->
+        @if(adapter?.normalized?.length === 0){
+        <p style="padding: 1rem;">
+            'NO DATA'
+        </p>
+        }
+        @for(item of actions; track item.action){
+        <mat-option (click)="onAction($event,item)">
+            @if(item.icon?.length){<mat-icon>{{item.icon}}</mat-icon>}
+            <span>{{item.text}}</span>
+        </mat-option>
+        }
+
+    </mat-select>
+    }@else{
+    <mat-select #selectInput [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
+        (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen)" [panelClass]="panelClass"
+        [(value)]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
         [required]="required">
 
         <ng-container *ngIf="showSearch" [ngTemplateOutlet]="searchBox"></ng-container>
 
 
-
         <mat-option *ngIf="loading">
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-option>
@@ -20,7 +84,7 @@
                 <span>{{vds.length}} {{'selected'|text}}</span>
                 <span style="flex: 1 1 auto;"></span>
                 <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
-                    (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value' | text}}
+                    (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value'}}
                 </mat-checkbox>
             </div>
         </ng-container>
@@ -35,60 +99,7 @@
                 <ng-template #itemTemp>
                     <img #img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;"
                         [src]="item.image" (error)="img.onerror=null;img.src = ''">
-                    <span>{{item.display | text}}</span>
-                </ng-template>
-
-            </mat-option>
-        </ng-container>
-        <!-- <mat-optgroup *ngFor="let g of groups" [label]="g.name">
-            <mat-option *ngFor="let item of g.items" [value]="item.value">
-                <img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;" [src]="item.image"><span>{{item.display}}</span><span *ngIf="item.sub">{{item.sub}}</span>
-            </mat-option>
-        </mat-optgroup> -->
-        <p *ngIf="adapter?.normalized?.length === 0">
-            {{'NO DATA' | text}}
-        </p>
-        <mat-option *ngFor="let item of actions" (click)="onAction($event,item)">
-            <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
-            <span>{{item.text | text}}</span>
-        </mat-option>
-
-    </mat-select>
-
-    <mat-select #selectInput [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event)"
-        (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen)" *ngIf="maxAllowed === 1"
-        [panelClass]="panelClass" [(value)]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()"
-        [placeholder]="placeholder | text" [required]="required">
-
-        <ng-container *ngIf="showSearch" [ngTemplateOutlet]="searchBox"></ng-container>
-
-
-        <mat-option *ngIf="loading">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </mat-option>
-
-        <ng-container *ngIf="valueDataSource$ | async as vds">
-
-            <div *ngIf="vds.length > 0" style="padding: 1rem; display: flex; align-items: center;">
-                <span>{{vds.length}} {{'selected'|text}}</span>
-                <span style="flex: 1 1 auto;"></span>
-                <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
-                    (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value' | text}}
-                </mat-checkbox>
-            </div>
-        </ng-container>
-
-        <ng-container *ngIf="items$ | async as itms">
-            <mat-option *ngFor="let item of itms" [value]="item.key">
-
-                <ng-container *ngIf="itemTemplate; else itemTemp">
-                    <ng-container [ngTemplateOutlet]="itemTemplate" [ngTemplateOutletContext]="{item:item}">
-                    </ng-container>
-                </ng-container>
-                <ng-template #itemTemp>
-                    <img #img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;"
-                        [src]="item.image" (error)="img.onerror=null;img.src = ''">
-                    <span>{{item.display | text}}</span>
+                    <span>{{item.display}}</span>
                 </ng-template>
 
             </mat-option>
@@ -99,23 +110,25 @@
                 <img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;" [src]="item.image"><span>{{item.display}}</span><span *ngIf="item.sub">{{item.sub}}</span>
             </mat-option>
         </mat-optgroup> -->
-        <p *ngIf="adapter?.normalized?.length === 0">
-            {{'NO DATA' | text}}
+        <p *ngIf="adapter?.normalized?.length === 0" style="padding: 1rem;">
+            {{'NO DATA'}}
         </p>
         <mat-option *ngFor="let item of actions" (click)="onAction($event,item)">
             <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
-            <span>{{item.text | text}}</span>
+            <span>{{item.text}}</span>
         </mat-option>
     </mat-select>
+    }
 
 
-
-    <mat-progress-spinner matSuffix *ngIf="loading" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
-
-    <button class="select-action" matSuffix *ngIf="selected && !loading" mat-icon-button
-        (click)="$event.stopPropagation(); selected=null; valueChanged(undefined)">
+    @if(loading){
+    <mat-progress-spinner matSuffix [diameter]="20" mode="indeterminate"></mat-progress-spinner>
+    }
+    @if(selected && !loading){
+    <button matSuffix mat-icon-button (click)="$event.stopPropagation(); selected=null; valueChanged(undefined)">
         <mat-icon>clear</mat-icon>
     </button>
+    }
 
 
     <!-- <button matSuffix *ngFor="let item of actions" (click)="onAction($event,item)">
@@ -123,23 +136,22 @@
         <span>{{item.text}}</span>
     </button> -->
 
-    <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
-    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}
+    @if(hint?.length > 0){
+    <mat-hint>{{hint}}</mat-hint>
+    }
+    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key}}
     </mat-error>
 
 </mat-form-field>
 
 
 <ng-template #searchBox>
-    <div
-        style="padding: 10px;border-bottom: solid 1px #eee;position: sticky;top: 0;background-color: inherit;z-index: 99;">
-        <div style="display: flex;justify-content: space-between;align-items: center;">
-            <mat-icon>search</mat-icon>
-            <input autofocus style="flex: 1;border:none;outline: none;" [value]="q" (input)="inputChange($event.target)"
-                (keydown.enter)="filter$.next(q)">
-            <button mat-icon-button (click)="q=''">
-                <mat-icon>clear</mat-icon>
-            </button>
-        </div>
-    </div>
+    <mat-form-field class="select-filter-input">
+        <span matPrefix><mat-icon>search</mat-icon></span>
+        <input autofocus matInput style="flex: 1;border:none;outline: none;" [value]="q"
+            (input)="q=$event.target?.['value']" (keydown.enter)="filter$.next(q)">
+        <button matSuffix *ngIf="q.length > 0" mat-icon-button (click)="$event.stopPropagation(); q=''">
+            <mat-icon>clear</mat-icon>
+        </button>
+    </mat-form-field>
 </ng-template>

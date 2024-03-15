@@ -1,17 +1,18 @@
-@if(formResolverResult | async; as result){
+@if(formResolverResult){
 <div id="form-wrapper">
-
-    <dynamic-form *ngIf="result.formViewModel?.scheme" [fields]="result.formViewModel.scheme" #dynForm [value]="model()"
-        (valueChange)="model.set($event)" [name]="result.formViewModel.name"
-        [preventDirtyUnload]="result.formViewModel.preventDirtyUnload"
-        [initialValueFactory]="result.formViewModel.initialValueFactory" [recaptcha]="result.formViewModel.recaptcha"
-        [theme]="result.formViewModel.theme" [conditions]="result.formViewModel.conditions"
-        (submit)="submit($event)"></dynamic-form>
+    @if(formResolverResult.formViewModel?.scheme){
+    <dynamic-form [fields]="formResolverResult.formViewModel.scheme" #dynForm
+        [value]="formResolverResult.formViewModel.value$ | async" [name]="formResolverResult.formViewModel.name"
+        [preventDirtyUnload]="formResolverResult.formViewModel.preventDirtyUnload"
+        [initialValueFactory]="formResolverResult.formViewModel.initialValueFactory"
+        [recaptcha]="formResolverResult.formViewModel.recaptcha" [theme]="formResolverResult.formViewModel.theme"
+        [conditions]="formResolverResult.formViewModel.conditions" (submit)="submit($event)"></dynamic-form>
+    }
 </div>
 
-@if(result.formViewModel.actions?.length){
+@if(formResolverResult.formViewModel.actions?.length){
 <div class="toolbar footer">
-    @for(descriptor of result.formViewModel.actions; track descriptor.action){
+    @for(descriptor of formResolverResult.formViewModel.actions; track descriptor.action){
     <mat-btn (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
     }
 </div>

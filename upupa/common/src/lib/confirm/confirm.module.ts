@@ -9,12 +9,10 @@ import { TranslationModule } from '@upupa/language';
 
 import { ConfirmComponent } from './confirm.component';
 import { ConfirmDirective } from './confirm.directive';
-import { PromptComponent } from '../prompt/prompt.component';
-import { PromptDirective } from '../prompt/prompt.directive';
 
 
 @NgModule({
-    declarations: [ConfirmDirective, ConfirmComponent, PromptComponent, PromptDirective],
+    declarations: [ConfirmDirective, ConfirmComponent],
     imports: [
         CommonModule,
         MatButtonModule,
@@ -24,6 +22,6 @@ import { PromptDirective } from '../prompt/prompt.directive';
         FormsModule,
         MatInputModule
     ],
-    exports: [ConfirmDirective, ConfirmComponent, PromptComponent, PromptDirective]
+    exports: [ConfirmDirective, ConfirmComponent]
 })
 export class ConfirmModule { }

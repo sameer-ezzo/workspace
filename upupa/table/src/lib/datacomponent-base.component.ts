@@ -290,8 +290,6 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     }))
     override async _updateViewModel() {
         const value = this._value
-        console.log('_updateViewModel: ', this.name, 'value', value);
-
         if (value) {
             if (this.adapter) {
                 const keys = this.adapter.getKeysFromValue(value)

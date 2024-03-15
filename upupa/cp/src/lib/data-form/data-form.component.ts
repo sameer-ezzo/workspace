@@ -1,14 +1,20 @@
-import { Component, ViewChild, Input, signal } from '@angular/core';
+import { Component, ViewChild, Input, inject, DestroyRef } from '@angular/core';
 import { DynamicFormComponent } from '@upupa/dynamic-form';
-import { Observable, Subscription } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { ActionEvent, SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
 import { DataService } from '@upupa/data';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataFormResolverResult, FormSubmitResult } from '../../types';
 import { PathInfo } from '@noah-ark/path-matcher';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Observable, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+
+
+function isPromise<T>(x: any): x is Promise<T> {
+    return x && typeof x.then === 'function';
+}
 @Component({
     selector: 'cp-data-form',
     templateUrl: './data-form.component.html',
@@ -16,26 +22,21 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class DataFormComponent implements UpupaDialogPortal {
 
+    @ViewChild('dynForm') form: DynamicFormComponent;
 
-    resolverResult: DataFormResolverResult;
     dialogRef?: MatDialogRef<UpupaDialogComponent>;
-    model = signal<any>(null)
+    private readonly destroyRef = inject(DestroyRef)
+
 
     sub: Subscription
-    private _formResolverResult: Observable<DataFormResolverResult>
+    private _formResolverResult: DataFormResolverResult
     @Input()
-    public get formResolverResult(): Observable<DataFormResolverResult> {
+    public get formResolverResult(): DataFormResolverResult {
         return this._formResolverResult;
     }
-    public set formResolverResult(value: Observable<DataFormResolverResult>) {
+    public set formResolverResult(value: DataFormResolverResult) {
+        if (!value) return;
         this._formResolverResult = value;
-        this.sub?.unsubscribe()
-
-        this.sub = value.pipe(
-            tap(x => this.resolverResult = x),
-            switchMap(s => s.formViewModel.value$)).subscribe(model => {
-                this.model.set(model)
-            });
     }
 
 
@@ -43,13 +44,21 @@ export class DataFormComponent implements UpupaDialogPortal {
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private snack: SnackBarService) {
-        this.formResolverResult = this.activatedRoute.data.pipe(
-            switchMap(s => s['scheme'] as Observable<DataFormResolverResult>)
-        );
-
     }
 
-    @ViewChild('dynForm') form: DynamicFormComponent
+    ngAfterViewInit() {
+        if (!this.formResolverResult) {
+            this.activatedRoute.data.pipe(
+                switchMap(s => s['scheme']),
+                filter(s => !!s))
+                .subscribe((scheme: DataFormResolverResult) => {
+                    this.formResolverResult = scheme
+                });
+        }
+        
+    }
+
+
     async submit(value) {
         const form = this.form
         if (!form) return
@@ -64,8 +73,8 @@ export class DataFormComponent implements UpupaDialogPortal {
             }
         }
 
-        const pathInfo = PathInfo.parse(this.resolverResult.path, 1);
-        const formViewModel = this.resolverResult.formViewModel;
+        const pathInfo = PathInfo.parse(this.formResolverResult.path, 1);
+        const formViewModel = this.formResolverResult.formViewModel;
 
         if (formViewModel.valueToRecord)
             try {
@@ -77,7 +86,7 @@ export class DataFormComponent implements UpupaDialogPortal {
         let submitResult: FormSubmitResult;
         if (formViewModel.onSubmit) {
             try {
-                submitResult = await formViewModel.onSubmit(pathInfo.path, this.model());
+                submitResult = await formViewModel.onSubmit(pathInfo.path, this.form.value);
             }
             catch (error) {
                 this.handleSubmitError(error)
@@ -122,7 +131,7 @@ export class DataFormComponent implements UpupaDialogPortal {
 
     async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>): Promise<any | ActionEvent> {
         if (e.action.type === 'submit') {
-            await this.submit(this.model)
+            await this.submit(this.form.value)
         }
         else if (e.action.meta?.closeDialog === true) ref.close(e)
     }

@@ -49,6 +49,7 @@ export class DialogService {
         autoFullScreen: true,
         closeTimeout: 400,
         closingClasses: [],
+        showCloseButton: false,
         canEscape: true,
     };
 

@@ -1,31 +1,12 @@
-import {
-    TemplateRef,
-    Inject,
-    ViewChild,
-    Optional,
-    ComponentRef,
-    SimpleChange,
-    SimpleChanges,
-    AfterViewInit,
-    reflectComponentType,
-    HostBinding,
-    Input,
-    ViewEncapsulation,
-    HostListener,
-} from "@angular/core";
-import {
-    MatDialogRef,
-    MatDialogState,
-    MAT_DIALOG_DATA,
-} from "@angular/material/dialog";
-import {
-    CdkPortalOutletAttachedRef,
-    ComponentPortal,
-} from "@angular/cdk/portal";
+import { TemplateRef, Inject, ViewChild, Optional, ComponentRef, SimpleChange, SimpleChanges, AfterViewInit, reflectComponentType, HostBinding, Input, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID } from "@angular/core";
+import { MatDialogRef, MatDialogState, MAT_DIALOG_DATA } from "@angular/material/dialog";
+import { CdkPortalOutletAttachedRef, ComponentPortal } from "@angular/cdk/portal";
 import { Component } from "@angular/core";
 import { ActionEvent, ActionsDescriptor } from "../..";
 import { fromEvent, Subject } from "rxjs";
-import { debounceTime, takeUntil } from "rxjs/operators";
+import { debounceTime, startWith, takeUntil } from "rxjs/operators";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { isPlatformBrowser } from "@angular/common";
 
 
 export interface UpupaDialogPortal {
@@ -49,6 +30,7 @@ export class UpupaDialogComponent implements AfterViewInit {
     }
     public set class(value) {
         this._class = 'upupa-dialog-container ' + value.replace('upupa-dialog-container', '')
+        this.dialogRef.addPanelClass("upupa-dialog-overlay");
     }
 
     @ViewChild("templatePortalContent")
@@ -60,14 +42,11 @@ export class UpupaDialogComponent implements AfterViewInit {
     title: string;
     subTitle: string;
     showCloseBtn = true;
-
-    destroyed = new Subject<boolean>();
-
-
-    // set listeners on wsc button click to close the dialog
-    @HostListener('keyup', ['$event']) keyup(e) {
-        if (e.key === 'Escape' && this.dialogData.canEscape === true)
-            this.close();
+    private readonly destroyRef = inject(DestroyRef)
+    @HostListener('keyup', ['$event'])
+    keyup(e) {
+        if (e.key === 'Escape' && this.dialogData.canEscape !== true) return
+        this.close();
     }
 
     constructor(
@@ -76,32 +55,23 @@ export class UpupaDialogComponent implements AfterViewInit {
     ) {
         this.actions = dialogData.actions ?? [];
         if (this.actions.length > 0) this._class += ' scroll-y'
-
         this.title = dialogData.title;
         this.subTitle = dialogData.subTitle;
-
         this.showCloseBtn = dialogData.hideCloseBtn !== true;
-
-        this.dialogRef.beforeClosed().subscribe(() => {
-            this.component?.ngOnDestroy?.();
-            this.destroyed.next(true);
-            this.destroyed.complete();
-        });
+        this.componentPortal = new ComponentPortal(this.dialogData.component);
     }
 
+    // inject platform id
+    private readonly platformId = inject(PLATFORM_ID)
     ngAfterViewInit() {
-        this.dialogRef.addPanelClass("upupa-dialog-overlay");
 
-        fromEvent(window, "resize")
-            .pipe(debounceTime(50), takeUntil(this.destroyed))
-            .subscribe((e) => {
-                this._setWidth();
-            });
+        if (isPlatformBrowser(this.platformId))
+            fromEvent(window, "resize")
+                .pipe(startWith(0), debounceTime(50), takeUntilDestroyed(this.destroyRef))
+                .subscribe((e) => {
+                    this._setWidth();
+                });
 
-        setTimeout(() => {
-            this.componentPortal = new ComponentPortal(this.dialogData.component);
-            this._setWidth();
-        }, 100);
     }
 
     private _setWidth() {
@@ -109,6 +79,7 @@ export class UpupaDialogComponent implements AfterViewInit {
         else this.dialogRef.updateSize("100%");
     }
     onAttached(portalOutletRef: CdkPortalOutletAttachedRef) {
+
         portalOutletRef = portalOutletRef as ComponentRef<any>;
         this.component = portalOutletRef.instance;
         this.component.dialogRef = this.dialogRef;
@@ -122,9 +93,7 @@ export class UpupaDialogComponent implements AfterViewInit {
             if (inputsKeys.length > 0) {
                 const changes = {} as SimpleChanges;
                 for (const inputName of inputsKeys) {
-                    const input = inputs.find(
-                        (i) => i.propName === inputName || i.templateName === inputName
-                    );
+                    const input = inputs.find((i) => i.propName === inputName || i.templateName === inputName);
                     if (input) {
                         changes[input.templateName] = {
                             currentValue: inputsData[inputName],

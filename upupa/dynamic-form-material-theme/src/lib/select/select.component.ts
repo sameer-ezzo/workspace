@@ -9,8 +9,8 @@ import { SelectComponent } from '@upupa/dynamic-form-native-theme'
     styles: [`
     .select-filter-input{
         position: sticky;
-        top: 0; 
-        z-index: 99; 
+        top: -8px; 
+        z-index: 100; 
         width: 100%
     }
     .select-filter-input .mat-form-field-subscript-wrapper {

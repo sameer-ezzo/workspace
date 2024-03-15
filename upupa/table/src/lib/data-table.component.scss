@@ -136,6 +136,14 @@ tr td.mat-column-select {
 
 tr td.actions {
   padding-inline-end: 12px;
+  & > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    align-content: center;
+    flex-wrap: nowrap;
+    flex-direction: row;
+  }
 }
 
 tr td.mat-column-select {

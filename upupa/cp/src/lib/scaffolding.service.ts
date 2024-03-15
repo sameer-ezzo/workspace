@@ -25,7 +25,7 @@ import {
 } from "../defaults";
 
 import { PathInfo, PathMatcher } from "@noah-ark/path-matcher";
-import { DialogService } from "@upupa/common";
+import { DialogService, DialogServiceConfig } from "@upupa/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { HttpClient } from "@angular/common/http";
 
@@ -44,11 +44,7 @@ export class ScaffoldingService {
     }
 
 
-    async scaffold(
-        path: string,
-        fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" },
-        ...params: any[]
-    ) {
+    async scaffold(path: string, fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" }, ...params: any[]) {
 
         const scaffolder: Scaffolder = this.matcher.get(path);
         if (!scaffolder) throw `NO SCAFFOLDER FOR PATH ${path}`;
@@ -65,6 +61,7 @@ export class ScaffoldingService {
 
         if (fallback && fallback.type !== _model.type)
             throw "FALLBACK TYPE MUST BE EQUAL TO MATCHED TYPE";
+
         const model = { ...fallback, ..._model };
 
         switch (model.type) {
@@ -82,18 +79,15 @@ export class ScaffoldingService {
     scaffoldForm(
         path: string,
         scaffoldingModel: FormScaffoldingModel
-    ): Observable<DataFormResolverResult> {
+    ): Promise<DataFormResolverResult> {
         const formViewModel = scaffoldingModel.viewModel;
-        return of({
-            path,
-            formViewModel,
-        } as DataFormResolverResult);
+        return Promise.resolve({ path, formViewModel }) as Promise<DataFormResolverResult>;
     }
 
     scaffoldList(
         path: string,
         scaffoldingModel: ListScaffoldingModel
-    ): DataListResolverResult {
+    ): Promise<DataListResolverResult> {
         const listViewModel = scaffoldingModel.viewModel;
         let select = listViewModel.select ?? Object.keys(listViewModel.columns ?? {})
         if (typeof select === 'string') select = select.split(',').filter(s => s)
@@ -126,24 +120,15 @@ export class ScaffoldingService {
             listViewModel.adapter.imageProperty,
             options
         );
-        return { path, adapter, listViewModel } as DataListResolverResult;
+        return Promise.resolve({ path, adapter, listViewModel }) as Promise<DataListResolverResult>;
     }
 
-    async dialogForm<T = any>(
-        path: string,
-        fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" },
-        ...params: any[]
-    ): Promise<T> {
-        const data = await this.scaffold(path, fallback, ...params) as Observable<DataFormResolverResult>;
-        const d = await firstValueFrom(data)
-        return firstValueFrom(
-            this.dialog.openDialog(DataFormComponent, {
-                inputs: {
-                    formResolverResult: data,
-                },
-                actions: d.formViewModel.actions
-            }).afterClosed()
-        );
+    async dialogForm<T = any>(path: string, dialogOptions?: DialogServiceConfig, ...params: any[]): Promise<T> {
+        const data = await this.scaffold(path, undefined, ...params) as DataFormResolverResult;
+        return firstValueFrom(this.dialog.openDialog(DataFormComponent, {
+            ...dialogOptions,
+            inputs: { ...dialogOptions.inputs, formResolverResult: data }
+        }).afterClosed())
     }
 }
 

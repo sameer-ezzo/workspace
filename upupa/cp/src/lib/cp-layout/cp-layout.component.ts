@@ -1,14 +1,11 @@
-import { ChangeDetectionStrategy, Component, Inject, Input, SimpleChanges, ViewEncapsulation, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input, ViewEncapsulation } from '@angular/core'
 import { LanguageService } from '@upupa/language'
 import { AuthService } from '@upupa/auth'
-
-import { Router } from '@angular/router'
 import { Subject } from 'rxjs'
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
 import { MatDrawerMode } from '@angular/material/sidenav'
 import { InlineEditableListComponent } from '../inline-editable-list/inline-editable-list.component'
 import { SideBarGroup, SideBarItem } from './side-bar-group-item'
-
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
 import { CP_OPTIONS } from '../di.token'
@@ -31,8 +28,6 @@ export class CpLayoutComponent {
 
     destroyed$ = new Subject()
     constructor(public auth: AuthService,
-
-        private router: Router,
         @Inject(CP_OPTIONS) private readonly cpOptions,
         @Inject(DEFAULT_THEME_NAME) private theme: string,
         private dfForm: DynamicFormService,
@@ -47,7 +42,4 @@ export class CpLayoutComponent {
             this.isSidebarOpened = !xs
         })
     }
-
-   
-   
 }

@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, Injector, OnDestroy, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, Input, ViewChild, inject, signal } from "@angular/core";
 import { languageDir, LanguageService } from "@upupa/language";
 import { ActionDescriptor, ActionEvent, ConfirmOptions, toTitleCase } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { DataService, FilterDescriptor, ServerDataSource } from "@upupa/data";
-import { firstValueFrom, isObservable, Observable, Subject } from "rxjs";
-import { filter, switchMap, takeUntil, tap } from "rxjs/operators";
+import { firstValueFrom, isObservable, Observable } from "rxjs";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { DialogService, SnackBarService } from "@upupa/common";
 import { DataFormComponent } from "../data-form/data-form.component";
@@ -22,8 +21,7 @@ import { DataListResolverService } from "../list-resolver.service";
 import { defaultFormActions } from "../../defaults";
 
 import { DataFilterFormComponent, formSchemeToDynamicFormFilter } from "../data-filter-form/data-filter-form.component";
-
-
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
     selector: "cp-data-list",
@@ -31,8 +29,9 @@ import { DataFilterFormComponent, formSchemeToDynamicFormFilter } from "../data-
     styleUrls: ["./data-list.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataListComponent implements OnDestroy {
+export class DataListComponent {
 
+    private readonly destroyRef = inject(DestroyRef)
     private _filterFormValue: any;
     private _listViewModelActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
     dataTableActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
@@ -50,13 +49,58 @@ export class DataListComponent implements OnDestroy {
     item: any;
     focusedItem: any;
     selection = [];
-    inputs: DataListResolverResult;
+
 
     @ViewChild("filterDrawer") filterDrawer: any;
 
-    collection: string;
-    destroyed$ = new Subject<void>();
+    private _collection: string;
+    @Input()
+    public get collection(): string {
+        return this._collection;
+    }
+    public set collection(value: string) {
+        if (value === this._collection) return;
+        this._collection = value;
+        this.listService.resolve(this.collection, 'list', undefined).then(r => this.dataListResolverResult = r)
+    }
+
     filterButtonActionDescriptor = { action: 'filter', icon: 'filter_list', header: true, variant: 'icon', handler: (event: ActionEvent) => this.toggleFilterDrawer() } as ActionDescriptor
+
+    _dataListResolverResult = signal<DataListResolverResult<any>>(null)
+    @Input()
+    public get dataListResolverResult(): DataListResolverResult<any> {
+        return this._dataListResolverResult();
+    }
+    public set dataListResolverResult(value: DataListResolverResult<any>) {
+        if (!value) return
+        this._dataListResolverResult.set(value);
+
+        //todo: make sure to call this only if no filter provided.
+        value.adapter.refresh()
+
+        const { page, per_page, sort_by } = this.route.snapshot.queryParams
+        if (page) value.adapter.page.pageIndex = +page - 1
+        if (per_page) value.adapter.page.pageSize = +per_page
+        if (sort_by) {
+            const [active, direction] = sort_by.split(',')
+            value.adapter.sort = { active, direction }
+        }
+
+        this.filterFormVm = value.listViewModel.filterForm
+        this._listViewModelActions = value.listViewModel.actions
+        this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions
+
+        this.listenOnQueryParamsChange()
+        if (this.filterFormVm) {
+            if (this.filterFormVm.fields === null || this.filterFormVm.fields === undefined)
+                throw new Error(`${DataListComponent.name} at ${value.path} filterForm fields is null or undefined`)
+
+            const toFilterDescriptor = this.filterFormVm.toFilterDescriptor ?? formSchemeToDynamicFormFilter(this.filterFormVm.fields)
+            this.setDataTableActions(toFilterDescriptor(this.filterFormValue))
+            this.filterDrawerStatus = localStorage.getItem(`${value.path}_dld`)
+        }
+    }
+
     constructor(
         public injector: Injector,
         public auth: AuthService,
@@ -71,42 +115,13 @@ export class DataListComponent implements OnDestroy {
         public snack: SnackBarService,
         private listService: DataListResolverService,
         public bus: EventBus) {
-        this.inputs$ = this.route.params.pipe(
-            filter((ps) => this.collection !== ps["collection"]),
-            tap((ps) => (this.collection = ps["collection"])),
-            switchMap(async (ps) =>
-                this.listService.resolve(this.route.snapshot, this.router.routerState.snapshot)
-            ),
-            tap((inputs) => {
-                this.inputs = inputs
+    }
 
-                //todo: make sure to call this only if no filter provided.
-                this.inputs.adapter.refresh()
-
-                const { page, per_page, sort_by } = this.route.snapshot.queryParams
-                if (page) this.inputs.adapter.page.pageIndex = +page - 1
-                if (per_page) this.inputs.adapter.page.pageSize = +per_page
-                if (sort_by) {
-                    const [active, direction] = sort_by.split(',')
-                    this.inputs.adapter.sort = { active, direction }
-                }
-
-                this.filterFormVm = inputs.listViewModel.filterForm
-                this._listViewModelActions = inputs.listViewModel.actions
-                this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions
-
-                this.listenOnQueryParamsChange()
-                if (this.filterFormVm) {
-                    if (this.filterFormVm.fields === null || this.filterFormVm.fields === undefined)
-                        throw new Error(`${DataListComponent.name} at ${inputs.path} filterForm fields is null or undefined`)
-
-                    const toFilterDescriptor = this.filterFormVm.toFilterDescriptor ?? formSchemeToDynamicFormFilter(this.filterFormVm.fields)
-                    this.setDataTableActions(toFilterDescriptor(this.filterFormValue))
-                    this.filterDrawerStatus = localStorage.getItem(`${this.inputs.path}_dld`)
-                }
-
-            })
-        )
+    async ngAfterViewInit() {
+        this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+            if (this.collection !== params["collection"])
+                this.collection = params["collection"]
+        })
     }
 
     filterDrawerStatus = 'closed'
@@ -114,7 +129,7 @@ export class DataListComponent implements OnDestroy {
 
     private listenOnQueryParamsChange() {
         this.route.queryParams.pipe(
-            takeUntil(this.destroyed$))
+            takeUntilDestroyed(this.destroyRef))
             .subscribe((qps) => {
                 this.filterFormValue = this.convertQpsToFilterFormValue(qps)
             })
@@ -144,7 +159,7 @@ export class DataListComponent implements OnDestroy {
         }
         else {
             this.filterDrawer?.toggle();
-            localStorage.setItem(`${this.inputs.path}_dld`, this.filterDrawer?.opened ? 'opened' : 'closed')
+            localStorage.setItem(`${this.dataListResolverResult.path}_dld`, this.filterDrawer?.opened ? 'opened' : 'closed')
         }
     }
 
@@ -160,6 +175,7 @@ export class DataListComponent implements OnDestroy {
             relativeTo: this.route
         })
     }
+
     updateSortInfo($event) {
 
         const { qps_sort } = this.route.snapshot.queryParams
@@ -192,7 +208,7 @@ export class DataListComponent implements OnDestroy {
         const { groupBy } = this.filterFormVm as any
         const q = groupBy ? { [this.filterFormVm.groupBy]: this.toBase64(this.filterFormValue) } : this.filterFormValue
 
-        const vm = this.inputs.listViewModel
+        const vm = this.dataListResolverResult.listViewModel
         const _q = vm.query?.() ?? [];
         const _qps = vm.queryParams?.() ?? [];
         const query = Object.fromEntries(_q); // this is an extra step to convert entries to Obj since the data service query is an object which has to be entries instead.
@@ -213,13 +229,13 @@ export class DataListComponent implements OnDestroy {
         })
 
 
-        this.inputs.adapter.filter = { ...r, ...query };
-        this.inputs.adapter.refresh()
+        this.dataListResolverResult.adapter.filter = { ...r, ...query };
+        this.dataListResolverResult.adapter.refresh()
     }
 
-    get page() { return (this.inputs.adapter.page?.pageIndex ?? 0) + 1 }
-    get per_page() { return this.inputs.adapter.page?.pageSize ?? 100 }
-    get sort_by() { return this.inputs.adapter.sort ? `${this.inputs.adapter.sort.active},${this.inputs.adapter.sort.direction}` : undefined }
+    get page() { return (this.dataListResolverResult.adapter.page?.pageIndex ?? 0) + 1 }
+    get per_page() { return this.dataListResolverResult.adapter.page?.pageSize ?? 100 }
+    get sort_by() { return this.dataListResolverResult.adapter.sort ? `${this.dataListResolverResult.adapter.sort.active},${this.dataListResolverResult.adapter.sort.direction}` : undefined }
 
     private setDataTableActions(e: FilterDescriptor) {
         const filterLength = Object.keys(e ?? {}).filter(k => e[k] !== undefined).length
@@ -239,48 +255,28 @@ export class DataListComponent implements OnDestroy {
     private async openFormDialog(collection: string, payload: ActionEvent) {
         const id = payload.data?.length > 0 ? payload.data[0]._id : null;
         const path = '/' + [payload.action.action, collection, id].filter(s => s).join("/")
-        const scaffolder = await this.scaffolder.scaffold(path)
 
-        const formResolverResult = (
-            isObservable(scaffolder)
-                ? await firstValueFrom(scaffolder)
-                : await scaffolder
-        ) as DataFormResolverResult<any>;
-
-        if ((formResolverResult.formViewModel.actions ?? []).length === 0)
-            formResolverResult.formViewModel.actions = defaultFormActions;
-
-        const res = await firstValueFrom(
-            this.dialog
-                .openDialog(DataFormComponent, {
-                    closeOnNavigation: true,
-                    disableClose: true,
-                    direction: languageDir(this.languageService.language),
-                    title: toTitleCase(`${payload.action.action} ${collection}`),
-                    inputs: { formResolverResult: scaffolder },
-                })
-                .afterClosed()
-        )
+        const res = await this.scaffolder.dialogForm(path, {
+            closeOnNavigation: true,
+            disableClose: true,
+            direction: languageDir(this.languageService.language),
+            title: toTitleCase(`${payload.action.action} ${collection}`),
+        })
 
         if (res) {
-            if (this.inputs.adapter.dataSource instanceof ServerDataSource) {
-                const dpath = (this.inputs.adapter.dataSource as ServerDataSource<any>).path
+            if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
+                const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path
                 await this.ds.refreshCache((dpath));
-                this.inputs.adapter.refresh();
+                this.dataListResolverResult.adapter.refresh();
             }
             else {
-                this.inputs.adapter.refresh();
+                this.dataListResolverResult.adapter.refresh();
             }
         }
     }
 
-    ngOnDestroy() {
-        this.destroyed$.next();
-        this.destroyed$.complete();
-    }
-
     async onAction(x: ActionEvent) {
-        const path = PathInfo.parse(this.inputs.path, 1);
+        const path = PathInfo.parse(this.dataListResolverResult.path, 1);
         switch (x.action.action) {
             case "create":
             case "edit":
@@ -309,7 +305,7 @@ export class DataListComponent implements OnDestroy {
                         }
                     }
                     await this.ds.refreshCache(path.path);
-                    this.inputs.adapter.refresh();
+                    this.dataListResolverResult.adapter.refresh();
                 }
                 break;
             }

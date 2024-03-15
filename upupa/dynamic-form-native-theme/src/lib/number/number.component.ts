@@ -1,7 +1,8 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, DestroyRef, Input, forwardRef, inject } from '@angular/core';
 import { UntypedFormControl, NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
 import { InputDefaults } from '../defaults';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 
@@ -30,6 +31,27 @@ export class NumberComponent extends InputBaseComponent {
 
   @Input() min: number = null;
   @Input() max: number = null;
+
+
+  // add input to tell the component about the number type (integer, float, double, etc)
+  @Input() numberType: 'integer' | 'float' | 'double' = 'float';
+  // override _updateViewModel() {
+  //   super._updateViewModel();
+  //   this.fixNumberType(this.value);
+  // }
+  private readonly destroyRef = inject(DestroyRef);
+  ngAfterViewInit() {
+    this.control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => {
+        this.fixNumberType(value);
+      });
+  }
+
+  private readonly fixNumberType = (value: any) => {
+    if (value === null || value === undefined) return
+    if (this.numberType === 'integer') this._value = parseInt(value, 10);
+    else this._value = parseFloat(value);
+  }
 
 }
 

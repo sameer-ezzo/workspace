@@ -19,15 +19,9 @@ export class DataListResolverService {
     constructor(public scaffolder: ScaffoldingService) { }
 
 
-    resolve(snapshot: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-
-        const collection = snapshot.params['collection'];
-        const view = snapshot.params['view'] ?? 'list';
-
-
+    resolve(collection: string, view: string, queryParams: any) {
         const path = '/' + [view, collection].filter(x => x).join('/');
-
-        return this.scaffolder.scaffold(path, { type: 'list', query: snapshot.queryParams }) as Promise<DataListResolverResult>;
+        return this.scaffolder.scaffold(path, { type: 'list', query: queryParams }) as Promise<DataListResolverResult>;
     }
 
 }
