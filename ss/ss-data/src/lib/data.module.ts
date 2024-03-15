@@ -40,8 +40,7 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
                 const collections = databaseInfo.collections ?? {}
                 const migrations = databaseInfo.migrations ?? []
 
-                logger.info("provide: ")
-                logger.info(provide, url, options, collections, migrations)
+                logger.info("provide: ", provide, url, options, Object.keys(collections), migrations?.map(m => m.name))
                 return {
                     provide,
                     useFactory: (broker: Broker) => DataService.create(provide, url, options, collections, migrations, broker),
@@ -64,10 +63,10 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
     exports: [DataService, DataChangeService]
 })
 export class DataModule {
-    static register(databasesCollections: DatabasesCollections = {}, databases?: { [name: string]: string },dbConnectionOptions:Partial<DbConnectionOptions> = {}): DynamicModule {
+    static register(databasesCollections: DatabasesCollections = {}, databases?: { [name: string]: string }, dbConnectionOptions: Partial<DbConnectionOptions> = {}): DynamicModule {
 
 
-        const dbsProviders = getDbsProviders(databasesCollections, databases,dbConnectionOptions)
+        const dbsProviders = getDbsProviders(databasesCollections, databases, dbConnectionOptions)
         dbsProviders.push({ provide: DataService, useExisting: "DB_DEFAULT" })
 
         return {
