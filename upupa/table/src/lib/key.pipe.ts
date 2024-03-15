@@ -10,6 +10,6 @@ export class KeyPipe implements PipeTransform {
     transform(value: any, key: string): any {
         if (!value || !key) return value
         const path = key.indexOf('.') > -1 ? key.replace(/\./g, '/') : key;
-        return JsonPointer.get(value, path)
+        return JsonPointer.get(value, path) || ''
     }
 }
