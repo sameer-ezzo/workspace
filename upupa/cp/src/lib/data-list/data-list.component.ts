@@ -262,17 +262,17 @@ export class DataListComponent {
             direction: languageDir(this.languageService.language),
             title: toTitleCase(`${payload.action.action} ${collection}`),
         })
+        if (!res || (res['action'] && !res['data'])) return
 
-        if (res) {
-            if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
-                const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path
-                await this.ds.refreshCache((dpath));
-                this.dataListResolverResult.adapter.refresh();
-            }
-            else {
-                this.dataListResolverResult.adapter.refresh();
-            }
+        if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
+            const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path
+            await this.ds.refreshCache((dpath));
+            this.dataListResolverResult.adapter.refresh();
         }
+        else {
+            this.dataListResolverResult.adapter.refresh();
+        }
+
     }
 
     async onAction(x: ActionEvent) {
