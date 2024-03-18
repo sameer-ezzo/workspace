@@ -10,6 +10,6 @@
 </mat-error>
 
 <ng-template #htmlEditorTemplate>
-    <ckeditor #ckEditor [editor]="Editor" [config]="config" [data]="model.data" [disabled]="disabled || readonly"
+    <ckeditor #ckEditor [editor]="editor" [config]="config" [data]="model.data" [disabled]="disabled || readonly"
         (change)="htmlChanged($event)" (blur)="markAsTouched()" (ready)="onReady($event, ckEditor)"></ckeditor>
 </ng-template>
