@@ -46,7 +46,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
     @Input() errorMessages: { [errorCode: string]: string } = {};
     @Input() uploadPath!: string
     config: EditorConfig
-    editor: Editor;
+    editor: any;
 
     initialized = false
     override _updateViewModel(): void {
@@ -97,13 +97,13 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
     }
 
 
-    public onReady(editor: DecoupledEditor, ckEditor: any): void {
+    public onReady(editor: Editor, ckEditor: any): void {
         this.editor = editor;
         const element = editor.ui.getEditableElement()!;
         const parent = element.parentElement!;
 
         parent.insertBefore(
-            editor.ui.view.toolbar.element!,
+            editor.ui.view['toolbar'].element!,
             element
         );
 
@@ -112,7 +112,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
         //     editor.ui.view.editable.element
         // )
 
-        editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        (editor.plugins.get('FileRepository') as any).createUploadAdapter = (loader) => {
 
             const path = `${this.baseUrl}/${this.uploadPath}`
                 .split('/')
