@@ -4,7 +4,6 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthOptions } from './auth-options';
 import { AUTH_BASE_TOKEN, DEFAULT_FORBIDDEN_PROVIDER_TOKEN, DEFAULT_LOGIN_PROVIDER_TOKEN, DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN, DEFAULT_REDIRECT_PROVIDER_TOKEN, DEFAULT_VERIFY_PROVIDER_TOKEN } from './di.token';
-import { FusionAuthModule } from "@fusionauth/angular-sdk";
 
 const _options = new AuthOptions()
 
@@ -26,10 +25,7 @@ function authProviders(options: AuthOptions): Provider[] {
 }
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FusionAuthModule
-    ],
+    imports: [CommonModule],
     providers: [
         ...authProviders(_options)
     ]

@@ -19,6 +19,7 @@ import * as os from 'os'
 import { logger, updateDefaultLoggerScope } from "./utils/logger"
 import { completeEndpointsInfo } from "./messaging/endpoints-info.fun"
 import { ConfigOptions } from "express-handlebars/types"
+import { env } from "process"
 
 
 export let appName: string
@@ -151,18 +152,15 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
     }
 
 
-    //This special header is required for DataService TODO (rami) this should be moved to inside DataModule and thus app initialization stages should be reactive
-    //TODO handle cors properly!
-    application.enableCors({
-        allowedHeaders: ['content-type', 'X-Get-Count'],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-        origin: '*'
-    })
-application.enableCors({
-        allowedHeaders: [ 'X-Get-Count'],
-        credentials: true,
-        origin: 'http://localhost:4200'
-    })
+    if (env.NODE_ENV === 'development') {
+        application.enableCors({ origin: '*' })
+    }
+    // application.enableCors({
+    //     allowedHeaders: ['X-Get-Count'],
+    //     credentials: true,
+    //     origin: 'http://localhost:4205'
+    // })
+
 
     application.useGlobalInterceptors()
 

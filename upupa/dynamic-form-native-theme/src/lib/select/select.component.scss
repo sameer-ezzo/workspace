@@ -1,0 +1,21 @@
+:host {
+  color: var(--fg-base);
+  .select-filter-input {
+    position: sticky;
+    top: -8px;
+    z-index: 100;
+    width: 100%;
+  }
+  .select-filter-input .mat-form-field-subscript-wrapper {
+    min-height: 0 !important;
+  }
+
+  .selected-wrapper {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    & > * {
+      color: var(--fg-base);
+    }
+  }
+}

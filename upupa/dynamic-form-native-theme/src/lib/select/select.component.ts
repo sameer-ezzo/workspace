@@ -81,20 +81,11 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
 
 
     keyDown(e: KeyboardEvent, input?: { open: () => void, panelOpen: boolean }) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (!input || input.panelOpen) return
-        if (e.key === 'ArrowDown') return this.onArrowDown(e, input)
-        const isLetter = e.key.length === 1 && /[a-z0-9 ]/i.test(e.key)
-        return this.openedChange(isLetter, input)
+        if (!input || input.panelOpen === true) return
+        const shouldOpen = e.key === 'ArrowDown' || e.key.length === 1 && /[a-z0-9 ]/i.test(e.key)
+        if (shouldOpen) this.openedChange(true)
     }
 
-    onArrowDown(e, select) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (select.panelOpen === true) return
-        this.openedChange(!select.panelOpen)
-    }
 
     isPanelOpened = false
     paginatorSubscription: Subscription

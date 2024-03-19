@@ -3,9 +3,6 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanAc
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { DEFAULT_FORBIDDEN_PROVIDER_TOKEN, DEFAULT_LOGIN_PROVIDER_TOKEN } from './di.token';
-import {CanActivateFn} from "@angular/router";
-import {FusionAuthService} from "@fusionauth/angular-sdk";
-import {inject} from "@angular/core";
 import { Principle } from '@noah-ark/common';
 
 @Injectable({ providedIn: 'root' })

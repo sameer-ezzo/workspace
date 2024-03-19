@@ -6,7 +6,7 @@ import { InputComponent } from '@upupa/dynamic-form-native-theme';
 @Component({
   selector: 'mat-form-input',
   templateUrl: './input.component.html',
-  styleUrls: ['./input.component.css'],
+  styleUrls: ['./input.component.scss'],
   encapsulation: ViewEncapsulation.None,
   providers: [
     {

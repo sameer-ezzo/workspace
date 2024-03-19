@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener } from "@angular/core"
+import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener, inject, HostBinding } from "@angular/core"
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, NG_VALIDATORS } from "@angular/forms"
 import { Field, FormScheme } from "./types"
 import { Condition } from "@noah-ark/expression-engine"
@@ -26,11 +26,26 @@ import { ConditionalLogicService } from "./conditional-logic.service"
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnInit, OnChanges {
     formRenderer!: DynamicFormRenderer
 
+    public readonly el = inject(ElementRef)
+    public readonly renderer = inject(Renderer2)
+    public readonly conditionalService = inject(ConditionalLogicService)
+    public readonly fb = inject(UntypedFormBuilder)
+    public readonly bus = inject(EventBus)
+    public readonly dialog = inject(DialogService)
+    protected readonly formService = inject(DynamicFormService)
+    public readonly options: DynamicFormOptions = inject(DYNAMIC_FORM_OPTIONS)
+
+    @Input()
+    @HostBinding('class')
+    class = undefined
+
     @Input() preventDirtyUnload = undefined
     @Input() recaptcha: string
     @Input() fields: FormScheme
     @Input() conditions: Condition[]
-    @Input() name = `${Math.round(1000 * Math.random())}`
+    @Input() 
+    @HostBinding('attr.name')
+    name = `${Math.round(1000 * Math.random())}`
     // eslint-disable-next-line @angular-eslint/no-output-native
     @Output() submit = new EventEmitter<DynamicFormComponent>()
 
@@ -40,10 +55,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         return this._theme;
     }
     public set theme(v: string) {
-        if (this._theme === v) return;
+        if (!v || this._theme === v) return;
 
-        this._theme = v?.trim().length > 0 ? v : this.formService.defaultThemeName;
-        if (this.formRenderer) this.formRenderer = new DynamicFormRenderer(this.formService, this.theme, this.bus, this.fb, this.dialog, this, this.renderer)
+        this._theme = v || this.formService.defaultThemeName;
+        if (this.formRenderer) this.formRenderer = new DynamicFormRenderer(this.formService, this._theme, this.bus, this.fb, this.dialog, this, this.renderer)
     }
 
     @Input() initialValueFactory: () => Promise<T>
@@ -85,17 +100,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     get controls() { return this.formRenderer.controls }
 
-    constructor(
-        public el: ElementRef,
-        public ls: LanguageService,
-        public renderer: Renderer2,
-        public conditionalService: ConditionalLogicService,
-        public bus: EventBus,
-        public fb: UntypedFormBuilder,
-        public dialog: DialogService,
-        protected formService: DynamicFormService,
-        @Inject(DYNAMIC_FORM_OPTIONS) public options: DynamicFormOptions
-    ) {
+    constructor() {
 
         this.formRenderer = new DynamicFormRenderer(this.formService, this.theme, this.bus, this.fb, this.dialog, this, this.renderer)
         this.theme = this.formService.defaultThemeName || 'native'
@@ -121,6 +126,12 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        if (changes['name'] && !changes['name'].firstChange) {
+            throw `Name cannot be changed after initialized ${this.name}`
+        }
+
+        if (changes['initialValueFactory'] && changes['initialValueFactory'].isFirstChange) this._value = await this.initialValueFactory()
+
         if (changes['fields']) {
             if (typeof this.fields !== 'object' || Array.isArray(this.fields))
                 throw new Error('fields must be passed as dictionary format')
@@ -135,12 +146,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             if (previousValue?.length) previousValue.forEach(c => this.conditionalService.removeCondition(c))
             if (currentValue?.length) currentValue.forEach(c => this.subs.push(this.conditionalService.addCondition(c)))
         }
-        if (changes['initialValueFactory'] && changes['initialValueFactory'].isFirstChange && this.initialValueFactory) this.value = await this.initialValueFactory()
-
-        if (changes['name'] && !changes['name'].firstChange) {
-            throw `Name cannot be changed after initialized ${this.name}`
-        }
-
     }
 
 
@@ -161,7 +166,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name})`, 'background: #0065ff; color: #fff', val);
         this._value = val;
         this.formRenderer.writeValue(val);
-        this.control?.setValue(val, { emitEvent: false });
+        this.control?.setValue(val, { emitEvent: false, onlySelf: true });
     }
 
 
@@ -229,7 +234,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     ngOnDestroy(): void {
         this.subs.forEach(s => s.unsubscribe());
         this.formRenderer.destroy();
-        this.formService = null;
     }
 }
 

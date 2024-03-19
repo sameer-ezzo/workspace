@@ -1,12 +1,12 @@
-<form #dynForm="ngForm" id="{{name}}" class="dynamic-form" (ngSubmit)="onSubmit($event)"
+<form #dynForm="ngForm" [attr.id]="name" class="dynamic-form" (ngSubmit)="onSubmit($event)"
     [formGroup]="formRenderer.form">
 
-    <ng-container *ngFor="let field of formRenderer.fields">
-        <ng-container
-            *ngTemplateOutlet="fieldTemplate; context:{ field: field, form:formRenderer.form }"></ng-container>
-    </ng-container>
-    <form-recaptcha-field *ngIf="recaptcha" [key]="recaptcha" [(value)]="value['g-recaptcha-response']">
-    </form-recaptcha-field>
+    @for(field of formRenderer.fields; track field.path){
+    <ng-container *ngTemplateOutlet="fieldTemplate; context:{ field: field, form:formRenderer.form }"></ng-container>
+    }
+    @if(recaptcha){
+    <form-recaptcha-field [key]="recaptcha" [(value)]="value['g-recaptcha-response']"></form-recaptcha-field>
+    }
     <input type="submit" style="display: none" />
 </form>
 

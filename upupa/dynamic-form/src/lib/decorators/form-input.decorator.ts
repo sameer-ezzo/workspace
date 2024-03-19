@@ -103,7 +103,7 @@ export type FormFieldOptions = ({ from: any } & VisibleFormFieldOptions) |
             removable?: boolean,
             separatorKeysCodes?: string[]
         } |
-        { input: string } & VisibleFormFieldOptions & AdapterFieldOptions & { inputs: Record<string, any> }
+        { input: string } & Partial<VisibleFormFieldOptions & AdapterFieldOptions & { inputs: Record<string, any> }>
     );
 
 
@@ -131,6 +131,8 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
         ui: {
             inputs: {
                 required: options.required,
+                readonly: options['readonly'] === true,
+                disabled: options['disabled'] === true,
                 ...(options['inputs'] || {}),
             }
         },

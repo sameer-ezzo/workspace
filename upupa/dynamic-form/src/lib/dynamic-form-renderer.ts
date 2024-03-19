@@ -36,7 +36,7 @@ export class DynamicFormRenderer<T = any> {
         this.form = this.fb.group({});
     }
 
-    get theme() { return this.parent?.theme ?? this.defaultTheme }
+    private get theme() { return this.parent?.theme ?? this.defaultTheme }
 
     getValidator(validator: Validator): ValidatorFn {
         const validatorFactory = this.formService.getValidatorFactory(validator.name)

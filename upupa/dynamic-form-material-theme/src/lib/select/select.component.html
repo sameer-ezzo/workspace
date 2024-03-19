@@ -1,5 +1,4 @@
-<mat-form-field [appearance]="appearance" (keydown.arrowdown)="onArrowDown($event, selectInput)"
-(keydown)="keyDown($event, selectInput)" [floatLabel]="floatLabel"
+<mat-form-field [appearance]="appearance" (keydown)="keyDown($event, selectInput)" [floatLabel]="floatLabel"
     style="width: 100%;">
     @if(label?.length > 0){
     <mat-label>{{label}}</mat-label>
@@ -82,13 +81,15 @@
 
         @if(valueDataSource$ | async; as vds){
 
-        <div style="padding: 1rem; display: flex; align-items: center;">
+        @if(vds['length'] > 1){
+        <div class="selected-wrapper">
             <span>{{vds['length']}} Selected</span>
             <span style="flex: 1 1 auto;"></span>
             <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
                 (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value'}}
             </mat-checkbox>
         </div>
+        }
         }
 
         <ng-container *ngIf="items$ | async as itms">
@@ -160,53 +161,3 @@
         </button>
     </mat-form-field>
 </ng-template>
-
-<!-- 
-
-    <ng-container *ngIf="showSearch" [ngTemplateOutlet]="searchBox"></ng-container>
-
-
-        <mat-option *ngIf="loading">
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </mat-option>
-
-        <ng-container *ngIf="valueDataSource$ | async as vds">
-
-            <div *ngIf="vds.length > 0" style="padding: 1rem; display: flex; align-items: center;">
-                <span>{{vds.length}} {{'selected'|text}}</span>
-                <span style="flex: 1 1 auto;"></span>
-                <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
-                    (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">{{'show-only-value'}}
-                </mat-checkbox>
-            </div>
-        </ng-container>
-
-        <ng-container *ngIf="items$ | async as itms">
-            <mat-option *ngFor="let item of itms" [value]="item.key">
-
-                <ng-container *ngIf="itemTemplate; else itemTemp">
-                    <ng-container [ngTemplateOutlet]="itemTemplate" [ngTemplateOutletContext]="{item:item}">
-                    </ng-container>
-                </ng-container>
-                <ng-template #itemTemp>
-                    <img #img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;"
-                        [src]="item.image" (error)="img.onerror=null;img.src = ''">
-                    <span>{{item.display}}</span>
-                </ng-template>
-
-            </mat-option>
-        </ng-container>
-    -->
-<!-- <mat-optgroup *ngFor="let g of groups" [label]="g.name">
-            <mat-option *ngFor="let item of g.items" [value]="item.value">
-                <img *ngIf="item.image" style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px;" [src]="item.image"><span>{{item.display}}</span><span *ngIf="item.sub">{{item.sub}}</span>
-            </mat-option>
-        </mat-optgroup> -->
-<!-- 
-        <p *ngIf="adapter?.normalized?.length === 0" style="padding: 1rem;">
-            {{'NO DATA'}}
-        </p>
-        <mat-option *ngFor="let item of actions" (click)="onAction($event,item)">
-            <mat-icon *ngIf="item.icon?.length">{{item.icon}}</mat-icon>
-            <span>{{item.text}}</span>
-        </mat-option> -->
