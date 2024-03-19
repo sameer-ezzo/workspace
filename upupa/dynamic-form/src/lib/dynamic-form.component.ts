@@ -43,7 +43,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     @Input() recaptcha: string
     @Input() fields: FormScheme
     @Input() conditions: Condition[]
-    @Input() 
+    @Input()
     @HostBinding('attr.name')
     name = `${Math.round(1000 * Math.random())}`
     // eslint-disable-next-line @angular-eslint/no-output-native
@@ -130,7 +130,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             throw `Name cannot be changed after initialized ${this.name}`
         }
 
-        if (changes['initialValueFactory'] && changes['initialValueFactory'].isFirstChange) this._value = await this.initialValueFactory()
+        if (changes['initialValueFactory']?.isFirstChange && typeof this.initialValueFactory === 'function')
+            this._value = await this.initialValueFactory()
 
         if (changes['fields']) {
             if (typeof this.fields !== 'object' || Array.isArray(this.fields))
