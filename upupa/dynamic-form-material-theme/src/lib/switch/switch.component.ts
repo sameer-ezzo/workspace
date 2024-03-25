@@ -22,5 +22,5 @@ export class MatSwitchComponent extends SwitchComponent {
 
   @Input()
   @HostBinding('class')
-  override template: 'checkbox' | 'toggle';
+  override template: 'checkbox' | 'toggle' = 'checkbox';
 }
