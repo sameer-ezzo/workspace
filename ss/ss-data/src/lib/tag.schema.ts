@@ -5,7 +5,7 @@ const tagSchema = new Schema({
     name: { type: String, required: true, index: true },
     class: { type: String, index: true, default: undefined },
     parent: { type: String, index: true, default: undefined },
-    parentPath: { type: String, index: true, default: '/' },
+    parentPath: { type: String, index: true, required: true, default: '/' },
     meta: { type: Schema.Types.Mixed, default: undefined }
 }, { strict: true });
 tagSchema.index({ name: 1, parentPath: 1 }, { unique: true });

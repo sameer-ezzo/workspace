@@ -5,8 +5,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 import { HttpClientModule } from '@angular/common/http';
-import { LanguageModule, TranslationModule } from '@upupa/language';
-
 import { FocusLeaveDirective } from './focusleave.dir';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CollectorComponent } from './collector/collector.component';
@@ -38,8 +36,6 @@ const declarations = [
         MatBtnModule,
         FormsModule,
         ReactiveFormsModule,
-        LanguageModule,
-        TranslationModule,
         ScrollingModule,
         DynamicFormNativeThemeModule,
         UtilsModule

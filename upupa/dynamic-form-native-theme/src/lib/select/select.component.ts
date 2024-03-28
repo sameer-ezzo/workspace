@@ -66,6 +66,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes)
+        if(changes['adapter']) this.firstLoaded = false
         this.showSearch = this.adapter?.options?.terms?.length > 0
     }
 

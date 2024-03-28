@@ -12,9 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 
-function isPromise<T>(x: any): x is Promise<T> {
-    return x && typeof x.then === 'function';
-}
+
 @Component({
     selector: 'cp-data-form',
     templateUrl: './data-form.component.html',
@@ -22,10 +20,25 @@ function isPromise<T>(x: any): x is Promise<T> {
 })
 export class DataFormComponent implements UpupaDialogPortal {
 
-    @ViewChild('dynForm') form: DynamicFormComponent;
 
     dialogRef?: MatDialogRef<UpupaDialogComponent>;
     private readonly destroyRef = inject(DestroyRef)
+
+    private _form: DynamicFormComponent;
+    @ViewChild('dynForm')
+    public get form(): DynamicFormComponent {
+        return this._form;
+    }
+    public set form(value: DynamicFormComponent) {
+        this._form = value;
+        this.form.formElement.statusChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(status => {
+                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
+                submitButton.disabled = status !== 'VALID'
+            })
+    }
+
 
 
     sub: Subscription
@@ -55,7 +68,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                     this.formResolverResult = scheme
                 });
         }
-        
+
     }
 
 

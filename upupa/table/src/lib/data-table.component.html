@@ -130,7 +130,7 @@
             <tr mat-header-row *matHeaderRowDef="_columns; sticky: true"
                 [class.selected]="selectionModel.selected.length > 1"></tr>
             <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true"
-                [cdkDragData]="row" class="dd-item" [class.focused]="focusedItem === row"
+                [cdkDragData]="row" class="dd-item {{rowClass(row)}}"  [class.focused]="focusedItem === row"
                 [class.selected]="selectionModel.isSelected(row.value)" (click)="onClick(row)" (touch)="onClick(row)"
                 (long-press)="onLongPress(row)">
                 <td class="dd-placeholder" *cdkDragPlaceholder></td>
@@ -175,7 +175,6 @@
     <ng-container *ngIf="descriptor.value.pipe; else noPipe">
         <div *ngIf="descriptor.value.pipe.pipe; else simplePipe"
             [innerHTML]="element.item[descriptor.key] | dynamic:descriptor.value.pipe.pipe:descriptor.value.pipe.args">
-
         </div>
     </ng-container>
     <ng-template #noPipe>{{element.item | key:descriptor.key}}</ng-template>

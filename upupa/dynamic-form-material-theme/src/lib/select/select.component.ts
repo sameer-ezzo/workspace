@@ -7,7 +7,7 @@ import { SelectComponent } from '@upupa/dynamic-form-native-theme'
     selector: 'mat-form-select-input',
     templateUrl: './select.component.html',
     styleUrls: ['./select.component.scss'],
-    // encapsulation: ViewEncapsulation.None,
+    encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatSelectComponent), multi: true },
         { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatSelectComponent), multi: true }

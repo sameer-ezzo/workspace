@@ -236,9 +236,11 @@ export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'sche
 
         const opts = { ...formInputs, ...options } as DynamicFormInputs;
         if ((options.name || '').trim().length === 0) opts.name = key.replace(/\//g, '-').toLowerCase();
-        if (!options.initialValueFactory) opts.initialValueFactory = () => Promise.resolve(new target(...args));
+        if (options.initialValueFactory !== null) opts.initialValueFactory = () => Promise.resolve(new target(...args));
         _DYNAMIC_FORM_INPUTS[key] = opts
         Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', opts, target);
+        console.log('formScheme', key, opts);
+        
     }
 }
 

@@ -100,6 +100,7 @@ function applyFormScheme(path: string, target: any, options: Omit<DynamicFormInp
         initialValueFactory: options.initialValueFactory,
         recaptcha: options.recaptcha,
         preventDirtyUnload: options.preventDirtyUnload,
+        conditions: options.conditions,
         theme: options.theme,
     } as DynamicFormInputs
     if (p !== path) formScheme(path, opts)(target);
@@ -110,16 +111,25 @@ export function formScaffolder(path: string, options: { editForm?: EditFormOptio
     createForm: {}
 }) {
     return function (target) {
-        applyFormScheme(path, target);
 
         const opts = {
-            ...options,
             editForm: { selector: ':id', options: {} },
-            createForm: {}
+            createForm: {},
+            viewForm: {},
+            ...options
         };
-        if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);
-        if (options.editForm !== null) editFormScaffolder(path, opts.editForm as EditFormOptions)(target);
-        if (options.viewForm !== null) editFormScaffolder(path, opts.editForm as EditFormOptions)(target);
+        if (options.createForm !== null) {
+            applyFormScheme(path, target, opts.createForm);
+            createFormScaffolder(path, opts.createForm)(target)
+        };
+        if (options.editForm !== null) {
+            applyFormScheme(path, target, opts.editForm.options);
+            editFormScaffolder(path, opts.editForm as EditFormOptions)(target)
+        };
+        if (options.viewForm !== null) {
+            applyFormScheme(path, target, opts.viewForm.options);
+            editFormScaffolder(path, opts.editForm as EditFormOptions)(target)
+        };
     }
 }
 

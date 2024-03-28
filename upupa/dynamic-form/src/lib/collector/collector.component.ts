@@ -2,7 +2,6 @@ import { Component, EventEmitter, forwardRef, Input, Output, SimpleChanges, View
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { ActionDescriptor, InputBaseComponent } from "@upupa/common";
-import { LanguageService } from "@upupa/language";
 import { ActionsDescriptor } from "@upupa/common";
 import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
@@ -77,10 +76,6 @@ export class CollectorComponent extends InputBaseComponent<any> {
   pages: FormPage[] = [];
   _pageInvalid = true;
   loading = false;
-
-  constructor(public languageService: LanguageService) {
-    super();
-  }
 
   get formElement() {
     return this.dynamicForm.formElement;

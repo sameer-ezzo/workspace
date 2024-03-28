@@ -46,6 +46,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = []
     @Input() dragDropDisabled = true
 
+    @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Output() action = new EventEmitter<ActionEvent>()
 
     bulkActions: ActionDescriptor[]
@@ -108,7 +109,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         })
     }
 
-    
+
     private readonly cdRef = inject(ChangeDetectorRef)
     private _updateHeaderBulkActionsDisableState() {
         const bulkActionsDisabled = this.selectionModel.selected.length === 0

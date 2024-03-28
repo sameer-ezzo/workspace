@@ -6,7 +6,6 @@ import { Subscription } from "rxjs"
 import { DialogService, EventBus } from '@upupa/common'
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers"
 import { JsonPointer, Patch } from "@noah-ark/json-patch"
-import { LanguageService } from "@upupa/language"
 import { DynamicFormOptions } from "./dynamic-form.options"
 import { DYNAMIC_FORM_OPTIONS } from "./di.token"
 import { DynamicFormRenderer } from "./dynamic-form-renderer"
@@ -143,7 +142,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         if (changes['conditions']) {
             const currentValue = changes['conditions'].currentValue as Condition[]
             const previousValue = changes['conditions'].previousValue as Condition[]
-
+            console.log('conditions changed', currentValue, previousValue)
+            
             if (previousValue?.length) previousValue.forEach(c => this.conditionalService.removeCondition(c))
             if (currentValue?.length) currentValue.forEach(c => this.subs.push(this.conditionalService.addCondition(c)))
         }

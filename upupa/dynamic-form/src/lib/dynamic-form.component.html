@@ -17,7 +17,7 @@
             [formGroup]="form" [class.hidden]="field.ui?.hidden === true">
             <paragraph *ngIf="field.input === 'paragraph' || field.text" [text]="field.text"
                 [renderer]="field.ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
-            <legend *ngIf="field?.ui?.inputs?.label">{{field.ui.inputs.label | text}}</legend>
+            <legend *ngIf="field?.ui?.inputs?.label">{{field.ui.inputs.label}}</legend>
             <ng-container *ngFor="let item of _values(field.items)">
                 <ng-container *ngTemplateOutlet="fieldTemplate; context:{ field:item , form:form.get(field.name) }">
                 </ng-container>

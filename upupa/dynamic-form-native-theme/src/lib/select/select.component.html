@@ -152,7 +152,7 @@
 
 
 <ng-template #searchBox>
-    <mat-form-field class="select-filter-input">
+    <mat-form-field class="select-filter-input"  style="width: 100%">
         <span matPrefix><mat-icon>search</mat-icon></span>
         <input autofocus matInput style="flex: 1;border:none;outline: none;" [value]="q"
             (input)="q=$event.target?.['value']" (keydown.enter)="filter$.next(q)">

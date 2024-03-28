@@ -38,7 +38,6 @@ export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> 
 
         if (view === 'create') {
             if (dfInputs.initialValueFactory) this.create = dfInputs.initialValueFactory
-            else this.create = () => Promise.resolve({} as T);
         }
 
         const v = this.value$(path)

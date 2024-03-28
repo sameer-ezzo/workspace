@@ -1,5 +1,8 @@
 :host {
   color: var(--fg-base);
+  mat-icon {
+    color: var(--fg-base);
+  }
   .select-filter-input {
     position: sticky;
     top: -8px;

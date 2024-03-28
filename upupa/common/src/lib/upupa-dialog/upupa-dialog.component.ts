@@ -45,7 +45,8 @@ export class UpupaDialogComponent implements AfterViewInit {
     private readonly destroyRef = inject(DestroyRef)
     @HostListener('keyup', ['$event'])
     keyup(e) {
-        if (e.key === 'Escape' && this.dialogData.canEscape !== true) return
+        if (e.key !== 'Escape') return
+        if (this.dialogData.canEscape !== true) return
         this.close();
     }
 
