@@ -15,7 +15,7 @@ export interface IDbMigration {
 export type DatabasesCollections = {
     [database: `DB_${string}`]: {
         collections: DbCollectionInfo;
-        dbConnectionOptions: DbConnectionOptions;
+        dbConnectionOptions?: DbConnectionOptions;
         migrations?: IDbMigration[]
     };
 };
