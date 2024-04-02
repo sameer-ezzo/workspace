@@ -21,7 +21,7 @@ export class AuthorizeActionDirective implements AfterViewInit {
 
     async ngAfterViewInit(): Promise<void> {
         if (!this.path) return;
-        const rules = await this.permissions.getUserPersmissions(this.user.sub)
+        const rules = await this.permissions.getUserPersmissions(this.user?.sub ?? '')
         if (rules.length === 0) return;
 
         if (!this.user) this.el.style.display = 'none';

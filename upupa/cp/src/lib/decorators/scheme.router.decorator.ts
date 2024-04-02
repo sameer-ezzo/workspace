@@ -42,8 +42,8 @@ export function listScaffolder(path: string, options: ListViewOptions = {}) {
         _scaffoldingScheme['list'] = { ..._scaffoldingScheme['list'], ...listRoute }
 
         const listInfo: Partial<ListViewOptions> = {
-            columns: Reflect.getMetadata('LIST_COLUMN_DESCRIPTORS', target) || _LISTS_INFO[target.name]['columns'] || {},
-            select: Reflect.getMetadata('LIST_SELECT', target) || _LISTS_INFO[target.name]['select'] || [],
+            columns: Reflect.getMetadata('LIST_COLUMN_DESCRIPTORS', target) || _LISTS_INFO[target.name]?.['columns'] || {},
+            select: Reflect.getMetadata('LIST_SELECT', target) || _LISTS_INFO[target.name]?.['select'] || [],
             ...options,
             positions: options.positions === null ? null : options.positions?.length ? options.positions as CPCommandPosition[] : ['sidebar']
         }
