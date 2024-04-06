@@ -19,19 +19,34 @@ export class BooleanFieldOptions { }
 export class AdapterFieldOptions {
     minAllowed?: number = 1
     maxAllowed?: number = 1
-    adapter: {
-        dataSource: 'server' | 'client' | 'url';
-        keyProperty?: string,
-        displayProperty?: string
-        valueProperty?: string | string[],
-        imageProperty?: string,
-        providerOptions?: any
-    } & (
-            { dataSource: 'client' } & { data: any[] }
-            | { dataSource: 'url' } & { url: string }
-            | { dataSource: 'server', path?: string, selectedColumns?: string[] }
-        )
-        = { dataSource: 'server' }
+    adapter: SimplifiedDataAdapter = { dataSource: 'client' , data: [] }
+}
+
+export type SimplifiedDataAdapter = SimpleServerDataAdapter | SimpleClientDataAdapter | SimpleUrlDataAdapter;
+
+type SimpleDataAdapterBase = {
+    dataSource: 'server' | 'client' | 'url'
+    keyProperty?: string
+    displayProperty?: string
+    valueProperty?: string | string[]
+    imageProperty?: string
+    providerOptions?: any
+    selectedColumns?: string[]
+}
+
+export type SimpleServerDataAdapter = SimpleDataAdapterBase & {
+    dataSource: 'server';
+    path: string
+}
+
+export type SimpleClientDataAdapter = SimpleDataAdapterBase &{
+    dataSource: 'client';
+    data: any[]
+}
+
+export type SimpleUrlDataAdapter = SimpleDataAdapterBase & {
+    dataSource: 'url';
+    url: string
 }
 
 
@@ -240,7 +255,7 @@ export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'sche
         _DYNAMIC_FORM_INPUTS[key] = opts
         Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', opts, target);
         console.log('formScheme', key, opts);
-        
+
     }
 }
 
