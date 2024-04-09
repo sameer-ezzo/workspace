@@ -19,10 +19,10 @@ export class BooleanFieldOptions { }
 export class AdapterFieldOptions {
     minAllowed?: number = 1
     maxAllowed?: number = 1
-    adapter: SimplifiedDataAdapter = { dataSource: 'client' , data: [] }
+    adapter: SimpleDataAdapter = { dataSource: 'client' , data: [] }
 }
 
-export type SimplifiedDataAdapter = SimpleServerDataAdapter | SimpleClientDataAdapter | SimpleUrlDataAdapter;
+export type SimpleDataAdapter = SimpleServerDataAdapter | SimpleClientDataAdapter | SimpleUrlDataAdapter;
 
 type SimpleDataAdapterBase = {
     dataSource: 'server' | 'client' | 'url'

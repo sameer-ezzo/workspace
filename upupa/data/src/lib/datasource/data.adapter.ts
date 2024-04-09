@@ -19,7 +19,7 @@ export type DataAdapterDescriptor<T extends DataAdapterType = 'server', TData = 
     & (T extends 'http' ? { url: string, httpOptions?: HttpServerDataSourceOptions } : {})
 
 
-    
+
 export class Normalizer<S = any, N = any> {
     private _normalized$ = new ReplaySubject<N[]>(1)
     normalized$ = this._normalized$.asObservable()
@@ -74,6 +74,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         readonly options?: ProviderOptions<T>) {
         super(dataSource.data$)
 
+        if(!keyProperty) keyProperty = '_id' as keyof T
 
 
         if (options) {
