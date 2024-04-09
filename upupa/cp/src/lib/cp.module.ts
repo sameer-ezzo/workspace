@@ -88,7 +88,7 @@ const declarations = [
     exports: [...declarations],
 })
 export class ControlPanelModule {
-    public static register(scaffoldingScheme?: ScaffoldingScheme, options: {
+    public static register(viewModels:any, scaffoldingScheme?: ScaffoldingScheme, options: {
         providers?: any[],
     } = {
             providers: [usreImageProvider]
