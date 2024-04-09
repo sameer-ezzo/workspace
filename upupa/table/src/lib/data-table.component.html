@@ -63,10 +63,11 @@
         <mat-progress-bar [class.hidden]="!loading" mode="query"></mat-progress-bar>
 
 
-        <table #table mat-table class="dd-list" *ngIf="adapter" [dataSource]="adapter.normalized$ | async" cdkDropList
-            [cdkDropListDisabled]="dragDropDisabled" (cdkDropListDropped)="drop($event)" matSort
-            [matSortDisabled]="loading" [matSortDirection]="adapter.sort?.direction"
-            [matSortActive]="adapter.sort?.active" (matSortChange)="onSortData($event)">
+        <table #table mat-table multiTemplateDataRows class="dd-list" *ngIf="adapter"
+            [dataSource]="adapter.normalized$ | async" cdkDropList [cdkDropListDisabled]="dragDropDisabled"
+            (cdkDropListDropped)="drop($event)" matSort [matSortDisabled]="loading"
+            [matSortDirection]="adapter.sort?.direction" [matSortActive]="adapter.sort?.active"
+            (matSortChange)="onSortData($event)">
 
             <!-- <ng-container matColumnDef="drag" [sticky]="'start'">
                 <th mat-header-cell *matHeaderCellDef></th>
@@ -91,8 +92,17 @@
                     </mat-checkbox>
                 </th>
                 <td mat-cell *matCellDef="let row">
+                    @if(adapter.imageProperty){
+
+                    <img [src]="row.image" [attr.alt]="row.display || row.key" class="avatar" />
                     <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.value)"
                         (change)="toggleSelection($event,row)"></mat-checkbox>
+
+                    }
+                    @else {
+                    <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.value)"
+                        (change)="toggleSelection($event,row)"></mat-checkbox>
+                    }
                 </td>
             </ng-container>
 
@@ -127,15 +137,26 @@
                 </td>
             </ng-container>
 
+            @if(expandable !== 'none' && expandedTemplate){
+            <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length">
+                    <ng-container [ngTemplateOutlet]="expandedTemplate"
+                        [ngTemplateOutletContext]="{element}"></ng-container>
+                </td>
+            </ng-container>
+            }
             <tr mat-header-row *matHeaderRowDef="_columns; sticky: true"
                 [class.selected]="selectionModel.selected.length > 1"></tr>
             <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true"
-                [cdkDragData]="row" class="dd-item {{rowClass(row)}}"  [class.focused]="focusedItem === row"
+                [cdkDragData]="row" class="dd-item {{rowClass(row)}}" [class.focused]="focusedItem === row"
                 [class.selected]="selectionModel.isSelected(row.value)" (click)="onClick(row)" (touch)="onClick(row)"
                 (long-press)="onLongPress(row)">
                 <td class="dd-placeholder" *cdkDragPlaceholder></td>
             </tr>
             <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc;"></tr>
+            @if(expandable !== 'none' && expandedTemplate){
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            }
 
         </table>
 
