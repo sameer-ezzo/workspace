@@ -12,6 +12,7 @@ import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
 import { firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
+import { animate, state, style, transition, trigger } from '@angular/animations'
 
 
 export type PipeDescriptor = { pipe: Type<any>, args: string[] }
@@ -68,6 +69,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     _columns: string[] = []
     @Input() columns: string[] | ColumnsDescriptor | 'auto' = 'auto' //eventually columns are the container of all and it's a dictionary
     @Input() templates: any = {}
+
+    @Input() expandable: 'single' | 'multi' | 'none' = 'none'
+    @Input() expandedTemplate: any = null
+
 
     @Input() cellTemplate: any
     @ViewChild('defaultTemplate') defaultTemplate: any

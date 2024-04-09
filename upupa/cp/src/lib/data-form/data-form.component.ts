@@ -1,4 +1,4 @@
-import { Component, ViewChild, Input, inject, DestroyRef } from '@angular/core';
+import { Component, ViewChild, Input, inject, DestroyRef, signal, effect } from '@angular/core';
 import { DynamicFormComponent } from '@upupa/dynamic-form';
 import { filter, switchMap } from 'rxjs/operators';
 import { ActionEvent, SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
@@ -52,11 +52,23 @@ export class DataFormComponent implements UpupaDialogPortal {
         this._formResolverResult = value;
     }
 
+    loading = signal(false)
 
     constructor(private ds: DataService,
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private snack: SnackBarService) {
+
+        effect(() => {
+            if (this.loading() === true) {
+                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
+                submitButton.disabled = true
+            }
+            else {
+                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
+                submitButton.disabled = false
+            }
+        })
     }
 
     ngAfterViewInit() {
@@ -85,6 +97,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                 // return
             }
         }
+        this.loading.set(true)
 
         const pathInfo = PathInfo.parse(this.formResolverResult.path, 1);
         const formViewModel = this.formResolverResult.formViewModel;
@@ -95,6 +108,9 @@ export class DataFormComponent implements UpupaDialogPortal {
             } catch (error) {
                 this.handleSubmitError(error)
             }
+            finally {
+                this.loading.set(false)
+            }
 
         let submitResult: FormSubmitResult;
         if (formViewModel.onSubmit) {
@@ -103,6 +119,9 @@ export class DataFormComponent implements UpupaDialogPortal {
             }
             catch (error) {
                 this.handleSubmitError(error)
+            }
+            finally {
+                this.loading.set(false)
             }
         }
         else if (formViewModel.onSubmit === undefined) {
@@ -116,6 +135,9 @@ export class DataFormComponent implements UpupaDialogPortal {
                 } catch (error) {
                     this.handleSubmitError(error)
                 }
+                finally {
+                    this.loading.set(false)
+                }
             }
             else {
                 try {
@@ -123,11 +145,23 @@ export class DataFormComponent implements UpupaDialogPortal {
                 } catch (error) {
                     this.handleSubmitError(error)
                 }
+                finally {
+                    this.loading.set(false)
+                }
             }
         }
 
         submitResult ??= formViewModel.defaultSubmitOptions;
-        if (submitResult) await this.handleSubmit(submitResult, value);
+        if (submitResult) {
+            try {
+                await this.handleSubmit(submitResult, value);
+            } catch (error) {
+                this.handleSubmitError(error)
+            }
+            finally {
+                this.loading.set(false)
+            }
+        }
     }
     handleSubmitError(error: any) {
         const e = error.error ?? error

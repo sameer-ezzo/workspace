@@ -1,14 +1,3 @@
-// :host {
-//     --accent-hsl: 47, 100%, 63%;
-//     --accent: hsl(var(--accent-hsl));
-//     --highlight-hsl: 0deg 0% 87% / 35%;
-//     --highlight: hsl(var(--highlight-hsl));
-//     --zebra-hsl: 47, 100%, 93%;
-//     --zebra: hsl(var(--zebra-hsl));
-//     --primary-hsl: 262, 52%, 47%;
-//     --primary: hsl(var(--primary-hsl));
-// }
-
 :not([dir='rtl']) {
   th.mat-header-cell:last-of-type,
   td.mat-cell:last-of-type,
@@ -80,7 +69,6 @@ th {
 } */
 
 [mat-row]:hover {
-  //   background: var(--highlight) !important;
   background: var(--bg-hover);
 }
 
@@ -111,7 +99,7 @@ th.mat-column-select {
   padding-inline: 0 !important;
   height: inherit;
   align-items: center;
-  max-width: 35px;
+  // max-width: 35px;
 }
 
 /* actions */
@@ -130,7 +118,7 @@ tr:not(.focused) td.actions {
 
 tr td.actions,
 tr td.mat-column-select {
-  // width: 1%;
+  width: 1%;
   white-space: nowrap;
 }
 
@@ -147,7 +135,7 @@ tr td.actions {
 }
 
 tr td.mat-column-select {
-  // padding-inline-start: 12px;
+  padding-inline-start: 12px;
 }
 
 button[disabled] {
@@ -161,8 +149,13 @@ tr > th:first-child {
   border-inline-start: solid transparent 5px;
 }
 
-tr.focused > td:first-child {
-  border-inline-start: solid var(--primary) 5px;
+tr {
+  & > td:first-child {
+    border-inline-start: solid transparent 5px;
+  }
+  &.focused > td:first-child {
+    border-inline-start-color: var(--bg-focused-button);
+  }
 }
 
 /* create button */
@@ -244,6 +237,44 @@ table > div {
     letter-spacing: (--mat-table-header-headline-tracking);
     &::placeholder {
       color: var(--fg-hint-text);
+    }
+  }
+}
+
+tr + tr.detail-row td {
+  border-bottom: none;
+}
+
+.detail-row {
+  height: 0;
+  border: none;
+}
+
+tr {
+  .mat-column-select {
+    mat-checkbox {
+      display: none;
+    }
+    img.avatar {
+      display: block;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      object-position: center;
+    }
+  }
+
+  &:hover,
+  &:focus-within,
+  &.selected{
+    .mat-column-select {
+      mat-checkbox {
+        display: block;
+      }
+      img.avatar {
+        display: none;
+      }
     }
   }
 }

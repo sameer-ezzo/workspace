@@ -160,7 +160,7 @@ export class StorageController {
             const filename = f.filename
             const ext = Path.extname(filename)
 
-            f._id = new mongoose.Types.ObjectId().toHexString()
+            f._id = new mongoose.Types.ObjectId()
             f.originalname = filename
             f.filename = f._id + ext
 
