@@ -6,7 +6,7 @@
             <mat-error>{{passwordInput.errors|error}}</mat-error>
         </mat-form-field>
         <mat-form-field class="full-width" [appearance]="appearance">
-            <input matInput #confirmPasswordInput="ngModel" [(ngModel)]="confirmPassword" name="confirmPassword" type="password" placeholder="{{'Confirm password' | text}}" required [equal]="password" />
+            <input matInput #confirmPasswordInput="ngModel" [(ngModel)]="confirmPassword" name="confirmPassword" type="password" placeholder="{{'Confirm password' | text}}" required />
             <mat-error>{{confirmPasswordInput.errors|error}}</mat-error>
         </mat-form-field>
     </fieldset>

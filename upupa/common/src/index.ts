@@ -14,6 +14,8 @@ export * from './lib/directives/long-press.directive';
 export * from './lib/directives/max.directive';
 export * from './lib/directives/min.directive';
 export * from './lib/directives/only-numbers.directive';
+export * from './lib/directives/focus.directive';
+export * from './lib/directives/error.directive';
 
 export * from './lib/utils.module';
 export * from './lib/counties-list';
@@ -39,3 +41,5 @@ export * from './lib/markdown.pipe'
 export * from './lib/upupa-dialog/upupa-dialog.component'
 
 export * from './lib/to-title-case.func'
+
+export * from './lib/theme.service';

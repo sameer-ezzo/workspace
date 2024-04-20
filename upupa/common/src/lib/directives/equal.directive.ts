@@ -3,6 +3,7 @@ import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@an
 
 @Directive({
     selector: '[equal][formControlName],[equal][formControl],[equal][ngModel]',
+    standalone: true,
     providers: [
         { provide: NG_VALIDATORS, useExisting: EqualValidator, multi: true }
     ]
