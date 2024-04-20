@@ -82,6 +82,16 @@ export class DataService {
         return this.fetch<T>(path, query).pipe(map(d => d.data));
     }
 
+    agg<T>(path: string, query?: QueryDescriptor) {
+        if (query) {
+            const qs = Object.keys(query).map(k => `${k}=${query[k]}`).join('&');
+            if (path.indexOf('?') > -1) path = path + '&' + qs;
+            else path = path + '?' + qs;
+        }
+
+        return this.api.agg<T>(path);
+    }
+
 
     async put(path: string, value: any): Promise<any> {
         let res = await this.api.put(path, value);
