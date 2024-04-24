@@ -14,7 +14,6 @@ export class TranslateService {
 
     constructor(
         public language_service: LanguageService,
-        public http: HttpClient,
         private dictionary: LanguagesDictionary,
         @Inject(DICTIONARIES_URL) private dictionariesUrl: string,
         @Optional() @Inject(SHOW_LOGS) private showLogs = false) {
@@ -85,28 +84,31 @@ export class TranslateService {
         return result
     }
 
-    private _loaded: { [lang: string]: boolean } = {}
+    private _loaded: { [lang: string]: Promise<any> } = {}
     private async get_dictionary(lang: string): Promise<void> {
 
         if (this._loaded[lang]) { return }
         if (!this.dictionariesUrl) {
             this.dictionary[lang] = {}
-            this._loaded[lang] = true
-            return
+            this._loaded[lang] = Promise.resolve({})
+            return this._loaded[lang]
         }
 
-        const dic = await firstValueFrom(this.http.get(`${this.dictionariesUrl}/${lang}.json`))
-        this.dictionaryLoaded$.next(dic)
-        this.dictionary[lang] = <any>dic
-        this._loaded[lang] = true
+        this._loaded[lang] = new Promise(async (resolve) => {
+            const url = `${this.dictionariesUrl}/${lang}.json`
+            let dic = {}
+            try {
+                dic = await fetch(url).then(r => r.ok ? r.json() : {})
+            } catch (error) {
+                console.error('Error fetching dictionary', error)
+            }
+
+            this.dictionaryLoaded$.next(dic)
+            this.dictionary[lang] = dic
+            resolve(dic)
+        })
+
+
+        return this._loaded[lang]
     }
 }
-
-
-/*
-sources = [placeHolder$, dictionary$]
-
-dictionary$ = (lang) =>
-
-index$.switchMap((idx) => sources[idx])
-*/

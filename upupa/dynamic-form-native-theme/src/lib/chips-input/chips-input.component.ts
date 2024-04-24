@@ -25,10 +25,11 @@ export class ChipsComponent extends SelectComponent {
     @Input() visible = true
     @Input() selectable = true
     @Input() removable = true
+    @Input() allowAdding = true
     @Input() override separatorKeysCodes: number[] = [ENTER, COMMA]
 
 
-    @Output() adding = new EventEmitter<{ chipKey: string, update: (chip: NormalizedItem) => void }>()
+    @Output() adding = new EventEmitter<string>()
 
 
     options = signal<NormalizedItem[]>([])
@@ -74,20 +75,20 @@ export class ChipsComponent extends SelectComponent {
         return this.errorMessages[key] ?? key
     }
 
-    handeled = false
+    handled = false
     async selectionChange(e: MatAutocompleteSelectedEvent): Promise<void> {
         if (e.option.value === null && this.filterInput.nativeElement.value.length > 0) {
             await this.onAdding(this.filterInput.nativeElement.value)
         }
 
-        setTimeout(() => { this.handeled = false }, 50)
-        this.handeled = true
+        setTimeout(() => { this.handled = false }, 50)
+        this.handled = true
 
         const item = e.option.value as NormalizedItem<any>
-
-
-        this.select(item.key)
-        this.value = [...(this.value ?? []).slice(), item.key]
+        if (item) {
+            this.select(item.key)
+            this.value = [...(this.value ?? []).slice(), item.value]
+        }
         this._clearFilter()
         this.control.markAsDirty()
         this.control.markAllAsTouched()
@@ -108,14 +109,10 @@ export class ChipsComponent extends SelectComponent {
 
 
     async onAdding(value: string): Promise<void> {
+        if (!this.allowAdding) return
+
         const chip = value
         if (this.isInValue(chip)) return
-        this.adding.emit({
-            chipKey: chip, update: (chip) => {
-                this.value = [...(this.value ?? []).slice(), chip.key]
-                this._clearFilter()
-                this.control.markAsDirty()
-            }
-        })
+        this.adding.emit(chip)
     }
 }

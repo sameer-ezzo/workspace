@@ -25,8 +25,7 @@
     </mat-error>
 </mat-form-field> -->
 @if(control){
-<mat-form-field [class.ng-dirty]="control.dirty" [appearance]="appearance" [floatLabel]="floatLabel"
-    style="width: 100%;">
+<mat-form-field [class.ng-dirty]="control.dirty" [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
     <input type="hidden" [formControl]="control">
     <mat-label *ngIf="label">{{label | text}}</mat-label>
     <mat-chip-grid #chipGrid aria-label="Fruit selection">
@@ -39,10 +38,7 @@
         </mat-chip-row>
         }
     </mat-chip-grid>
-    <input #filterInput [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput (input)="q = filterInput.value"
-        [required]="required" (blur)="onTouch()" [placeholder]="placeholder"
-        (matChipInputTokenEnd)="onAdding($event.value)">
+    <input #filterInput [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto" (focus)="openedChange(true)" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput (input)="q = filterInput.value" [required]="required" (blur)="onTouch()" [placeholder]="placeholder" (matChipInputTokenEnd)="onAdding($event.value)">
 
 
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event)">
@@ -55,10 +51,8 @@
             <span>{{opt.display}}</span>
         </mat-option>
         }
-        @if(filterInput.value.length > 0 && options().length === 0){
-        <mat-option [value]="null">
-            <span>Add</span>
-        </mat-option>
+        @if(allowAdding && filterInput.value.length > 0 && options().length === 0){
+        <mat-option [value]=""><span>Add</span></mat-option>
         }
 
     </mat-autocomplete>

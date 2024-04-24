@@ -2,11 +2,6 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    min-height: 130px;
-
-    .mbe-1 {
-        margin-block-end: 1rem;
-    }
 
     button {
         align-self: flex-start;
@@ -46,4 +41,23 @@
     .drop-zone.dragging {
         border-color: rgb(76, 76, 255);
     }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotate {
+    animation: spin 2s infinite linear;
+}
+
+.upload-button {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }

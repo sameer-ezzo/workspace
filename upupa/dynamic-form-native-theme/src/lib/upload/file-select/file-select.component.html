@@ -2,15 +2,26 @@
 <mat-label class="mbe-1">{{label}}</mat-label>
 }
 @if(!hideSelectButton){
-<button mat-raised-button class="mbe-1" type="button" (click)="selectFile();" [color]="color">
-    <mat-icon>upload_file</mat-icon> Upload
-</button>
+    <div class="upload-button">
+    <button mat-raised-button class="mbe-1" type="button" (click)="selectFile();" [color]="color">
+    @if(uploading){
+        <mat-icon class="rotate">loop</mat-icon>
+    }
+    @else {
+        <mat-icon>upload_file</mat-icon>
+    }
+    Upload
+    </button>
+    @for(file of files; track file){
+        <span>{{file.name}}</span>
+    }
+    </div>
 }
 
 @if(enableDragDrop === true){
 <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
 }
-@else{
+@else if(viewFiles){
 <ng-container *ngTemplateOutlet="content"></ng-container>
 }
 
@@ -21,15 +32,11 @@
 
 
 <ng-template #content>
-    <file-viewer [path]="path" [files]="viewModel" [view]="view" (click)="$event.stopPropagation()" [selectable]='false'
-        [includeAccess]="includeAccess" (event)="viewerEventsHandler($event)" [actions]="actions"
-        (action)="onAction($event)" (changed)="selectionChanged($event)"></file-viewer>
+    <file-viewer [path]="path" [files]="viewModel" [view]="view" (click)="$event.stopPropagation()" [selectable]='false' [includeAccess]="includeAccess" (event)="viewerEventsHandler($event)" [actions]="actions" (action)="onAction($event)" (changed)="selectionChanged($event)"></file-viewer>
 </ng-template>
 
 <ng-template #dragDropTemplate>
-    <div #dr class="drop-zone" [class.dragging]="dragging" data-role="drag-drop-container" tabindex="0"
-        (click)="selectFile()" (dragleave)="dragLeave($event)" (dragover)="$event.preventDefault();dragOver($event)"
-        (drop)="onDrop($event)">
+    <div #dr class="drop-zone" [class.dragging]="dragging" data-role="drag-drop-container" tabindex="0" (click)="selectFile()" (dragleave)="dragLeave($event)" (dragover)="$event.preventDefault();dragOver($event)" (drop)="onDrop($event)">
         @if(viewModel.length > 0){
         <ng-container *ngTemplateOutlet="content"></ng-container>
         }@else {
