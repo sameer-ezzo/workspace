@@ -106,19 +106,21 @@
                 </td>
             </ng-container>
 
-            <ng-container matColumnDef="{{descriptor.key}}"
-                *ngFor="let descriptor of _properties | keyvalue; let i = index"
-                [sticky]="descriptor.value?.sticky === 'start'" [stickyEnd]="descriptor.value?.sticky === 'end'">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header
-                    [disabled]="descriptor.value?.sortDisabled === false"
-                    [class.none]="descriptor.value?.visible === false" [style.width]="descriptor.value?.width">
+            @for(descriptor of _properties | keyvalue; track descriptor.key; let i = $index){
+            <ng-container matColumnDef="{{descriptor.key}}" [sticky]="descriptor.value?.sticky === 'start'"
+                [stickyEnd]="descriptor.value?.sticky === 'end'">
+                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="descriptor.value.sortId || descriptor.key"
+                    [disabled]="descriptor.value?.sortDisabled === true"
+                    [class.none]="descriptor.value?.visible === false" [ngStyle]="{width: descriptor.value?.width+'px'}">
                     {{(descriptor.value.header || descriptor.key) | text}}
                 </th>
-                <td mat-cell *matCellDef="let row;let i = index" [class.none]="descriptor.value?.visible === false">
+                <td mat-cell *matCellDef="let row;let i = index" [class.none]="descriptor.value?.visible === false"
+                    [ngStyle]="{width: descriptor.value?.width+'px'}">
                     <ng-container [ngTemplateOutlet]="templates[descriptor.key] || cellTemplate"
                         [ngTemplateOutletContext]="{descriptor:descriptor,element:row,index:i}"></ng-container>
                 </td>
             </ng-container>
+            }
 
             <ng-container matColumnDef="actions" [sticky]="columns['actions']?.sticky === 'start'"
                 [stickyEnd]="columns['actions']?.sticky === 'end'">
@@ -127,24 +129,28 @@
                     <div>
                         <ng-container [ngTemplateOutlet]="commandTemplate"
                             [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row.item]}"></ng-container>
-                        <button *ngIf="getMenuActions(row.item).length"
-                            (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button
+                        @if(getMenuActions(row.item).length){
+                        <button (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button
                             [matMenuTriggerFor]="actionsMenu" class="actions">
                             <mat-icon>more_vert</mat-icon>
                         </button>
+                        }
+                        @if(expandable !== 'none' && expandableTemplate){
+                        <button (click)="$event.stopPropagation(); toggleExpand(row, i)" mat-icon-button class="actions"
+                            aria-label="expand row">
+                            @if (expanded[row.key]?.()) {
+                            <mat-icon>keyboard_arrow_up</mat-icon>
+                            } @else {
+                            <mat-icon>keyboard_arrow_down</mat-icon>
+                            }
+                        </button>
+                        }
                     </div>
 
                 </td>
             </ng-container>
 
-            @if(expandable !== 'none' && expandedTemplate){
-            <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
-                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length">
-                    <ng-container [ngTemplateOutlet]="expandedTemplate"
-                        [ngTemplateOutletContext]="{element}"></ng-container>
-                </td>
-            </ng-container>
-            }
+
             <tr mat-header-row *matHeaderRowDef="_columns; sticky: true"
                 [class.selected]="selectionModel.selected.length > 1"></tr>
             <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true"
@@ -154,8 +160,21 @@
                 <td class="dd-placeholder" *cdkDragPlaceholder></td>
             </tr>
             <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc;"></tr>
-            @if(expandable !== 'none' && expandedTemplate){
-            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            @if(expandable !== 'none' && expandableTemplate){
+
+            <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length">
+                    <div class="example-element-detail"
+                        [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'">
+                        <ng-container [ngTemplateOutlet]="expandableTemplate"
+                            [ngTemplateOutletContext]="{element}"></ng-container>
+                    </div>
+                </td>
+            </ng-container>
+
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row"
+                [class.expanded]="expanded[row.key]?.()">
+            </tr>
             }
 
         </table>

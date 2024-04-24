@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core'
+import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal } from '@angular/core'
 import { takeUntil } from 'rxjs/operators'
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
@@ -24,6 +24,7 @@ export type ColumnDescriptor = {
     visible?: boolean,
     sticky?: 'start' | 'end'
     sortDisabled?: boolean,
+    sortId?: string,
     pipe?: PipeDescriptor | Type<any>
 }
 export type ColumnsDescriptor<T = any> = { [key in keyof T]: ColumnDescriptor | 1 | 0 }
@@ -36,7 +37,14 @@ type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DataTableComponent), multi: true },
     { provide: NG_VALIDATORS, useExisting: forwardRef(() => DataTableComponent), multi: true }
     ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed,void', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges, AfterViewInit {
 
@@ -70,9 +78,16 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     @Input() columns: string[] | ColumnsDescriptor | 'auto' = 'auto' //eventually columns are the container of all and it's a dictionary
     @Input() templates: any = {}
 
-    @Input() expandable: 'single' | 'multi' | 'none' = 'none'
-    @Input() expandedTemplate: any = null
 
+    expanded: { [key: string]: WritableSignal<boolean> } = {}
+    @Input() expandable: 'single' | 'multi' | 'none' = 'none'
+    @Input() expandableTemplate: any = null
+    toggleExpand(row, index) {
+        if (!this.expanded[row.key]) this.expanded[row.key] = signal(false)
+        const v = this.expanded[row.key]?.()
+        this.expanded[row.key].set(!v)
+        console.log(v);
+    }
 
     @Input() cellTemplate: any
     @ViewChild('defaultTemplate') defaultTemplate: any
