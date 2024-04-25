@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core'
-import { AbstractControl, ControlValueAccessor, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, forwardRef } from '@angular/core'
+import { AbstractControl, ControlValueAccessor, NG_VALIDATORS, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms'
 import { BehaviorSubject } from 'rxjs'
 
 @Component({
     selector: 'input-base',
     template: '',
-    // providers: [
-        // { provide: NG_VALIDATORS, useExisting: forwardRef(() => InputBaseComponent), multi: true }
-    // ]
+    providers: [
+        { provide: NG_VALIDATORS, useExisting: forwardRef(() => InputBaseComponent), multi: true }
+    ]
 })
 
 export class InputBaseComponent<T = any> implements ControlValueAccessor, Validator, OnChanges {

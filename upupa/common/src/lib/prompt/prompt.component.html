@@ -1,4 +1,8 @@
-<mat-form-field [appearance]="appearance" style="width: 100%">
-    <mat-label>{{promptText}}</mat-label>
-    <input matInput [placeholder]="placeholder" (input)="valueChange($event.target?.['value'])" [value]="value" [type]="type" [required]="required">
-</mat-form-field>
+<form (ngSubmit)="submit($event)">
+    <mat-form-field [appearance]="appearance" style="width: 100%">
+        <mat-label>{{promptText}}</mat-label>
+        <input matInput name="value" [placeholder]="placeholder" [formControl]="valueFormControl" [type]="type"
+            [required]="required" (keydown.enter)="submit($event)">
+    </mat-form-field>
+    <input type="submit" style="display: none">
+</form>

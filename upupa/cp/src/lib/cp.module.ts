@@ -88,12 +88,12 @@ const declarations = [
     exports: [...declarations],
 })
 export class ControlPanelModule {
-    public static register(viewModels:any, scaffoldingScheme?: ScaffoldingScheme, options: {
+    public static register(viewModels?: ScaffoldingScheme, options: {
         providers?: any[],
     } = {
             providers: [usreImageProvider]
         }): ModuleWithProviders<ControlPanelModule> {
-        const scaffolders = mergeScaffoldingScheme(scaffoldingScheme ?? {})
+        const scaffolders = mergeScaffoldingScheme(viewModels ?? {})
 
         return {
             ngModule: ControlPanelModule,

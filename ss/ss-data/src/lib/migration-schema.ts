@@ -1,14 +1,20 @@
-import { ObjectId } from "mongodb";
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const migrationSchema = new Schema({
-    _id: ObjectId,
+    __documentVersion: { type: Number, default: 1, required: true },
+    __lockVersion: { type: Number, default: 0, required: true },
+    _id: mongoose.Schema.Types.ObjectId,
+
     name: { type: String, required: true, unique: true, index: true },
     collectionName: { type: String, required: true, index: true },
     date: { type: Date, index: true }
 });
 
-export type MigrationModel = { _id: ObjectId, name: string, collectionName: string, date: Date };
+export type MigrationModel = {
+    _id: mongoose.Schema.Types.ObjectId, name: string, collectionName: string, date: Date, 
+    __documentVersion?: number,
+    __lockVersion?: number,
+};
 export type MigrationDocument = MigrationModel & Document
 
 

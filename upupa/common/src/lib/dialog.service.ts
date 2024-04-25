@@ -24,7 +24,9 @@ export type DialogServiceConfig<T = any> = MatDialogConfig<T> & {
     subTitle?: string;
     hideCloseBtn?: boolean;
     canEscape?: boolean;
+    dialogActions?: ActionsDescriptor;
     actions?: ActionsDescriptor;
+
     inputs?: { [inputName: string]: any };
     outputs?: {
         [outputName: string]: (
@@ -39,6 +41,7 @@ export type DialogServiceConfig<T = any> = MatDialogConfig<T> & {
 
     data?: T;
 };
+type DialogRefD<P> = { component: ComponentType<P> | TemplateRef<P>, data: any, dialogRef: MatDialogRef<any> } & Record<string, any>;
 
 @Injectable({ providedIn: "root" })
 export class DialogService {
@@ -66,7 +69,7 @@ export class DialogService {
     stack = 0;
 
     constructor(
-        private dialog: MatDialog,
+        private readonly dialog: MatDialog,
         @Inject(DOCUMENT) private document: any
     ) { }
 
@@ -88,11 +91,9 @@ export class DialogService {
         } as D;
 
         this._dialogOpened$.next(true);
-        return this.dialog.open<
-            UpupaDialogComponent,
-            D & { component: ComponentType<P> | TemplateRef<P> },
-            R
-        >(UpupaDialogComponent, dialogOptions);
+        const dialogRef = this.dialog.open<UpupaDialogComponent, D, R>(UpupaDialogComponent, dialogOptions);
+        dialogOptions['data'].dialogRef = dialogRef
+        return dialogRef;
     }
 
     open<T, D = any, R = any>(

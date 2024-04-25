@@ -22,7 +22,7 @@
 @if(actions?.length){
 <div class="toolbar footer">
     @for(descriptor of actions; track descriptor.action){
-    <mat-btn class="action" (action)="sendAction($event)" [descriptor]="descriptor"></mat-btn>
+    <mat-btn class="action" (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
     }
 </div>
 }

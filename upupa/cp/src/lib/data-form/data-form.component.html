@@ -10,9 +10,9 @@
     }
 </div>
 
-@if(formResolverResult.formViewModel.actions?.length){
+@if(actions(); as _actions){
 <div class="toolbar footer">
-    @for(descriptor of formResolverResult.formViewModel.actions; track descriptor.action){
+    @for(descriptor of _actions; track descriptor.action){
     <mat-btn (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
     }
 </div>

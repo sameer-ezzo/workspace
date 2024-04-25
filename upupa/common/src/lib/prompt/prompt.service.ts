@@ -8,29 +8,31 @@ import { PromptComponent } from "./prompt.component";
 
 @Injectable({ providedIn: "root" })
 export class PromptService {
-  constructor(private dialog: DialogService) {}
+  constructor(private dialog: DialogService) { }
 
-  open(options?: PromptOptions, dialogConfig?: MatDialogConfig): Promise<any> {
+  async open(options?: PromptOptions, dialogConfig?: MatDialogConfig): Promise<any> {
     const o = Object.assign(new PromptOptions(), options);
-    return firstValueFrom(
-      this.dialog
-        .openDialog(PromptComponent, {
-          hideCloseBtn: true,
-          actions: [
-            {
-              meta: { closeDialog: true },
-              action: "yes",
-              color: "primary",
-              variant: "raised",
-              text: o.yes ?? "Yes",
-            } as ActionDescriptor,
-          ],
-          ...o,
-          width: "auto",
-          ...(dialogConfig ?? {}),
-        })
-        .afterClosed()
-    );
+    const closable = o.required !== true;
+    const _options = {
+      hideCloseBtn: closable,
+      disableClose: !closable,
+      canEscape: closable,
+      ...o,
+      width: "auto",
+      ...(dialogConfig ?? {}),
+
+      dialogActions: [
+        {
+          action: "yes",
+          color: "primary",
+          variant: "raised",
+          text: o.yes ?? "Yes",
+          type: "submit",
+        } as ActionDescriptor,
+      ]
+    } as MatDialogConfig;
+
+    return await firstValueFrom(this.dialog.openDialog(PromptComponent, _options).afterClosed())
   }
 }
 

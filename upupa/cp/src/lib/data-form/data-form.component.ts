@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataFormResolverResult, FormSubmitResult } from '../../types';
 import { PathInfo } from '@noah-ark/path-matcher';
 import { MatDialogRef } from '@angular/material/dialog';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
@@ -18,10 +18,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     templateUrl: './data-form.component.html',
     styleUrls: ['./data-form.component.scss']
 })
-export class DataFormComponent implements UpupaDialogPortal {
+export class DataFormComponent implements UpupaDialogPortal<DataFormComponent> {
 
 
-    dialogRef?: MatDialogRef<UpupaDialogComponent>;
+    dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormComponent>>;
     private readonly destroyRef = inject(DestroyRef)
 
     private _form: DynamicFormComponent;
@@ -50,25 +50,16 @@ export class DataFormComponent implements UpupaDialogPortal {
     public set formResolverResult(value: DataFormResolverResult) {
         if (!value) return;
         this._formResolverResult = value;
+        this.actions.set(value.formViewModel.actions || [])
+
     }
 
     loading = signal(false)
-
+    actions = signal([])
     constructor(private ds: DataService,
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private snack: SnackBarService) {
-
-        effect(() => {
-            if (this.loading() === true) {
-                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
-                submitButton.disabled = true
-            }
-            else {
-                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
-                submitButton.disabled = false
-            }
-        })
     }
 
     ngAfterViewInit() {
@@ -80,9 +71,16 @@ export class DataFormComponent implements UpupaDialogPortal {
                     this.formResolverResult = scheme
                 });
         }
-
     }
 
+    setLoading(loading: boolean) {
+        this.loading.set(loading)
+        const actions = this.actions()
+        const submitButtonIdx = actions.findIndex(a => a.type === 'submit')
+        if (submitButtonIdx === -1) return
+        actions[submitButtonIdx] = { ...actions[submitButtonIdx], disabled: loading }
+        this.actions.set(actions.slice())
+    }
 
     async submit(value) {
         const form = this.form
@@ -97,7 +95,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                 // return
             }
         }
-        this.loading.set(true)
+        this.setLoading(true)
 
         const pathInfo = PathInfo.parse(this.formResolverResult.path, 1);
         const formViewModel = this.formResolverResult.formViewModel;
@@ -109,7 +107,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                 this.handleSubmitError(error)
             }
             finally {
-                this.loading.set(false)
+                this.setLoading(false)
             }
 
         let submitResult: FormSubmitResult;
@@ -121,7 +119,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                 this.handleSubmitError(error)
             }
             finally {
-                this.loading.set(false)
+                this.setLoading(false)
             }
         }
         else if (formViewModel.onSubmit === undefined) {
@@ -136,7 +134,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                     this.handleSubmitError(error)
                 }
                 finally {
-                    this.loading.set(false)
+                    this.setLoading(false)
                 }
             }
             else {
@@ -146,7 +144,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                     this.handleSubmitError(error)
                 }
                 finally {
-                    this.loading.set(false)
+                    this.setLoading(false)
                 }
             }
         }
@@ -159,7 +157,7 @@ export class DataFormComponent implements UpupaDialogPortal {
                 this.handleSubmitError(error)
             }
             finally {
-                this.loading.set(false)
+                this.setLoading(false)
             }
         }
     }

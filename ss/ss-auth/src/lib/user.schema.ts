@@ -1,14 +1,17 @@
 import { hashSync, compare } from 'bcryptjs';
 const bcrypt = { hashSync, compare }
 
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 import { User, randomString } from "@noah-ark/common";
-import { ObjectId } from 'mongodb';
+
 
 
 const userSchema = new Schema({
-    _id: ObjectId,
+    __documentVersion: { type: Number, default: 1, required: true },
+    __lockVersion: { type: Number, default: 0, required: true },
+    _id: mongoose.Schema.Types.ObjectId,
+    
     username: { type: String, required: true, index: true, unique: true },
 
     passwordHash: String,

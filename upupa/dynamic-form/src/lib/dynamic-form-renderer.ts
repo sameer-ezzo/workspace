@@ -1,7 +1,7 @@
 import { Renderer2 } from "@angular/core";
 import { AbstractControl, UntypedFormBuilder, ValidatorFn, UntypedFormGroup, UntypedFormControl } from "@angular/forms";
 import { EventBus, DialogService } from "@upupa/common";
-import { Subject, Subscription, debounceTime, filter, firstValueFrom } from "rxjs";
+import { Subject, Subscription, debounceTime, filter, firstValueFrom, skip } from "rxjs";
 import { _mergeFields } from "./dynamic-form.helper";
 import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Fieldset, FieldItem, ValidationTask, Validator } from "./types";
@@ -70,11 +70,10 @@ export class DynamicFormRenderer<T = any> {
         else throw 'scheme must be provided with at least one field.';
 
         if (this._sub) this._sub.unsubscribe();
-        this._sub = this.form.valueChanges.pipe(debounceTime(50)).subscribe(v => {
+        this._sub = this.form.valueChanges.pipe(debounceTime(200)).subscribe(v => {
             if (this._lockChange > 0) return;
-            let value = Object.assign({}, this.value ?? {}, v);
-            this._value = value;
-            this.value$.next(value);
+            this._value = Object.assign({}, this.value ?? {}, v);
+            this.value$.next(this._value);
         });
 
         this.writeValue(this._value);

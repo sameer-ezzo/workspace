@@ -12,8 +12,11 @@
 
     <!-- TABLE HEADER -->
     @if(hasHeader){
-    @if(!hasValue){
     <div class="table-header">
+        @if(label){
+        <h3>{{label | text}}</h3>
+        }
+        @if(!hasValue){
         @if(showSearch){
         <div id="search-box-wrapper">
             <input style="background: transparent;outline: none;border: none;display: flex;flex: 1;"
@@ -45,16 +48,18 @@
             }
 
         </mat-menu>
-    </div>
-    }
-    <div class="table-header" *ngIf="hasValue">
-        <div style="flex:1" *ngIf="maxAllowed === 1">{{'item-selected'|text}}</div>
-        <div style="flex:1" *ngIf="maxAllowed !== 1">{{value?.['length']}} {{'items-selected'|text}} </div>
+
+        }@else{
+        @if(maxAllowed === 1){
+        <div style="flex:1">{{'item-selected'|text}}</div>}@else{
+        <div style="flex:1">{{value?.['length']}} {{'items-selected'|text}} </div>
+        }
         <div style="display: flex;align-items: center;">
             <ng-container
                 *ngTemplateOutlet="commandTemplate; context:{actions:bulkActions,data:bulkActionsData(value)}">
             </ng-container>
         </div>
+        }
     </div>
     }
 
@@ -110,8 +115,10 @@
             <ng-container matColumnDef="{{descriptor.key}}" [sticky]="descriptor.value?.sticky === 'start'"
                 [stickyEnd]="descriptor.value?.sticky === 'end'">
                 <th mat-header-cell *matHeaderCellDef [mat-sort-header]="descriptor.value.sortId || descriptor.key"
+                    [arrowPosition]="descriptor.value?.sortArrowPosition || 'after'"
                     [disabled]="descriptor.value?.sortDisabled === true"
-                    [class.none]="descriptor.value?.visible === false" [ngStyle]="{width: descriptor.value?.width+'px'}">
+                    [class.none]="descriptor.value?.visible === false"
+                    [ngStyle]="{width: descriptor.value?.width+'px'}">
                     {{(descriptor.value.header || descriptor.key) | text}}
                 </th>
                 <td mat-cell *matCellDef="let row;let i = index" [class.none]="descriptor.value?.visible === false"

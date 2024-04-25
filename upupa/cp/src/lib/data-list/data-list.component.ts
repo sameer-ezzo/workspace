@@ -264,15 +264,19 @@ export class DataListComponent {
         })
         if (!res || (res['action'] && !res['data'])) return
 
+        await this.refreshData();
+
+    }
+
+    private async refreshData() {
         if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
-            const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path
+            const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path;
             await this.ds.refreshCache((dpath));
             this.dataListResolverResult.adapter.refresh();
         }
         else {
             this.dataListResolverResult.adapter.refresh();
         }
-
     }
 
     async onAction(x: ActionEvent) {

@@ -3,15 +3,15 @@ import { MatDialogRef, MatDialogState, MAT_DIALOG_DATA } from "@angular/material
 import { CdkPortalOutletAttachedRef, ComponentPortal } from "@angular/cdk/portal";
 import { Component } from "@angular/core";
 import { ActionEvent, ActionsDescriptor } from "../..";
-import { fromEvent, Subject } from "rxjs";
+import { fromEvent } from "rxjs";
 import { debounceTime, startWith, takeUntil } from "rxjs/operators";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { isPlatformBrowser } from "@angular/common";
 
 
-export interface UpupaDialogPortal {
-    dialogRef?: MatDialogRef<UpupaDialogComponent>;
-    onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>): Promise<any | ActionEvent>;
+export interface UpupaDialogPortal<C> {
+    dRef?: MatDialogRef<UpupaDialogComponent<C>>;
+    onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent<C>>): Promise<any | ActionEvent>;
 }
 
 @Component({
@@ -20,7 +20,7 @@ export interface UpupaDialogPortal {
     styleUrls: ["./upupa-dialog.component.scss"],
     encapsulation: ViewEncapsulation.None,
 })
-export class UpupaDialogComponent implements AfterViewInit {
+export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, AfterViewInit {
 
     @HostBinding("class")
     private _class = "upupa-dialog-container";
@@ -50,11 +50,13 @@ export class UpupaDialogComponent implements AfterViewInit {
         this.close();
     }
 
+    dialogRef: MatDialogRef<UpupaDialogComponent<C>>
+
     constructor(
-        @Optional() public dialogRef: MatDialogRef<UpupaDialogComponent>,
+        public readonly dRef: MatDialogRef<UpupaDialogComponent<C>>,
         @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any
     ) {
-        this.actions = dialogData.actions ?? [];
+        this.actions = dialogData.dialogActions || dialogData.actions || [];
         if (this.actions.length > 0) this._class += ' scroll-y'
         this.title = dialogData.title;
         this.subTitle = dialogData.subTitle;
@@ -62,9 +64,11 @@ export class UpupaDialogComponent implements AfterViewInit {
         this.componentPortal = new ComponentPortal(this.dialogData.component);
     }
 
+
     // inject platform id
     private readonly platformId = inject(PLATFORM_ID)
     ngAfterViewInit() {
+        this.dialogRef = this.dialogData.dialogRef ?? this.dRef;
 
         if (isPlatformBrowser(this.platformId))
             fromEvent(window, "resize")
@@ -136,20 +140,21 @@ export class UpupaDialogComponent implements AfterViewInit {
             this.component.action
                 ?.pipe(takeUntil(this.dialogRef.afterClosed()))
                 .subscribe(async (e) => {
-                    await this.sendAction(e);
+                    await this.onAction(e, this.dialogRef);
                 });
         }
     }
 
-    async sendAction(e: ActionEvent) {
-        let res = e
-        if (e.action.handler) res = await e.action.handler(e)
-        else if (this.component.onAction) res = await this.component.onAction(e, this.dialogRef)
+    async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent<C>, any>): Promise<any> {
+
+        let res = null
+        if (e.action.handler) res = await e['data']
+        else if (this.component.onAction) res = await this.component.onAction(e, ref)
 
 
-        if (this.dialogRef.getState() === MatDialogState.OPEN)
+        if (ref.getState() === MatDialogState.OPEN)
             if (e.action.meta?.closeDialog === true)
-                this.dialogRef.close(res === e || typeof res === typeof e ? null : res)
+                ref.close(res)
             else console.warn(`Action ${e.action.action} has no handler.`);
 
     }

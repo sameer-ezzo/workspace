@@ -13,6 +13,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox'
 import { firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
 import { animate, state, style, transition, trigger } from '@angular/animations'
+import { SortHeaderArrowPosition } from '@angular/material/sort'
 
 
 export type PipeDescriptor = { pipe: Type<any>, args: string[] }
@@ -25,6 +26,7 @@ export type ColumnDescriptor = {
     sticky?: 'start' | 'end'
     sortDisabled?: boolean,
     sortId?: string,
+    sortArrowPosition?: SortHeaderArrowPosition,
     pipe?: PipeDescriptor | Type<any>
 }
 export type ColumnsDescriptor<T = any> = { [key in keyof T]: ColumnDescriptor | 1 | 0 }
@@ -52,6 +54,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     showSearch = false // will be set to true if there are terms in the adapter
     hasHeader = false // will be set to true if showSearch is true or there are bulk actions or header actions
 
+    @Input() label: string
     @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = []
     @Input() dragDropDisabled = true
 

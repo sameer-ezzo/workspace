@@ -83,8 +83,10 @@ export class DataService {
                             _id: this.generateId(),
                             name: migrations[i].name,
                             date: new Date(),
-                            collectionName: migrations[i].collectionName
-                        } as MigrationModel);
+                            collectionName: migrations[i].collectionName,
+                            documentVersion: 1,
+                            lockVersion: 0
+                        } as unknown as MigrationModel);
                     }
                 }
             }

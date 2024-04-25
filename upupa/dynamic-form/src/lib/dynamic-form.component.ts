@@ -139,7 +139,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             this._fieldsChanged()
         }
 
-        if (changes['conditions'].firstChange === true) {
+        if (changes['conditions']?.firstChange === true) {
             const currentValue = changes['conditions'].currentValue as Condition[]
             const previousValue = changes['conditions'].previousValue as Condition[]
             console.log('conditions changed', currentValue, previousValue)

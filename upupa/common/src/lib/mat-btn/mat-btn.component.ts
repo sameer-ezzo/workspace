@@ -24,11 +24,12 @@ export class MatBtnComponent implements OnChanges {
   }
 
 
-  onAction(event) {
+  async onAction(event) {
     event.preventDefault();
     event.stopPropagation();
-    if (this.descriptor.handler) this.descriptor.handler({ ...event, action: this.descriptor, data: undefined } as ActionEvent);
-    this.action.emit({ ...event, action: this.descriptor, data: undefined } as ActionEvent);
+    let data = undefined
+    if (this.descriptor.handler) data = await this.descriptor.handler({ ...event, action: this.descriptor, data } as ActionEvent);
+    this.action.emit({ ...event, action: this.descriptor, data } as ActionEvent);
   }
 
 

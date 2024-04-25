@@ -23,9 +23,9 @@ type UserFormOptions = {
     templateUrl: './user-form.component.html',
     styleUrls: ['./user-form.component.scss']
 })
-export class UserFormComponent implements UpupaDialogPortal {
+export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     @ViewChild('userForm') form: any
-    dialogRef: MatDialogRef<UpupaDialogComponent>;
+    dRef: MatDialogRef<UpupaDialogComponent<UserFormComponent>>;
     private _loading = signal<boolean>(false)
     public get loading() { return this._loading() }
     public set loading(value) { this._loading.set(value) }
@@ -78,7 +78,7 @@ export class UserFormComponent implements UpupaDialogPortal {
 
     
     discard(){
-        this.dialogRef?.close()
+        this.dRef?.close()
     }
     async save(form: any) {
         if (!form.touched || form.invalid) return
@@ -89,7 +89,7 @@ export class UserFormComponent implements UpupaDialogPortal {
                 const v = form.getDirtyValue()
                 if (v) await this.data.put(`/user/${this.user._id}`, v);
             }
-            this.dialogRef.close(this.user)
+            this.dRef.close(this.user)
         } catch (error) {
             console.error(error);
             throw error;
