@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { IFieldInputResolver } from './ifield-input.resolver';
 import { ComponentInputs } from './types';
+import { SimpleDataAdapter } from './decorators/form-input.decorator';
 
 
 
@@ -16,11 +17,13 @@ export class AdapterInputResolverService implements IFieldInputResolver {
     resolve(inputs: ComponentInputs): Promise<ComponentInputs> {
         if (inputs['adapter']) return Promise.resolve(inputs); //if adapter is passed don't do anything
 
-        const _adapter = inputs['_adapter'];
+        const _adapter = inputs['_adapter'] as SimpleDataAdapter;
         let dataSource: TableDataSource;
+        let keyProperty: string = null
         switch (_adapter.dataSource) {
             case 'server':
                 dataSource = new ServerDataSource(this.dataService, _adapter.path, _adapter.selectedColumns);
+                keyProperty = _adapter.keyProperty ?? '_id'
                 break;
             case 'client':
                 dataSource = new ClientDataSource(_adapter.data);
@@ -30,7 +33,13 @@ export class AdapterInputResolverService implements IFieldInputResolver {
                 break;
         }
 
-        const adapter = new DataAdapter(dataSource, _adapter.keyProperty, _adapter.displayProperty, _adapter.valueProperty, _adapter.imageProperty, _adapter.providerOptions);
+        const adapter = new DataAdapter(dataSource,
+            keyProperty,
+            _adapter.displayProperty ?? keyProperty,
+            _adapter.valueProperty,
+            _adapter.imageProperty,
+            _adapter.providerOptions);
+
         inputs['adapter'] = adapter;
         return Promise.resolve(inputs);
     }

@@ -4,6 +4,7 @@ import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@an
 
 @Directive({
     selector: `[maximum]`,
+    standalone: true,
     providers: [
         { provide: NG_VALIDATORS, useExisting: MaxValidator, multi: true }
     ]

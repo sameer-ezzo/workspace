@@ -66,7 +66,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes)
-        if(changes['adapter']) this.firstLoaded = false
+        if (changes['adapter']) this.firstLoaded = false
         this.showSearch = this.adapter?.options?.terms?.length > 0
     }
 
@@ -103,13 +103,17 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     async openedChange(open: boolean, input?: { open: () => void }) {
         this.isPanelOpened = open
         if (!this.firstLoaded && open) {
-            this.refreshData()
-            this.viewDataSource$.next('adapter')
-            await firstValueFrom(this.adapter.normalized$)
+            this.loadData()
             input?.open()
         }
         // if (open) this.setScrollPaginator(selectInput)
         // else this.removeScrollPaginator(selectInput)
+    }
+
+    async loadData() {
+        this.refreshData()
+        this.viewDataSource$.next('adapter')
+        await firstValueFrom(this.adapter.normalized$)
     }
 
     async valueChanged(key: any | any[]) {

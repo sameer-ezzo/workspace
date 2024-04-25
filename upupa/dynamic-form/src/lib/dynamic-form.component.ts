@@ -143,7 +143,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             const currentValue = changes['conditions'].currentValue as Condition[]
             const previousValue = changes['conditions'].previousValue as Condition[]
             console.log('conditions changed', currentValue, previousValue)
-            
+
             if (previousValue?.length) previousValue.forEach(c => this.conditionalService.removeCondition(c))
             if (currentValue?.length) currentValue.forEach(c => this.subs.push(this.conditionalService.addCondition(c)))
         }

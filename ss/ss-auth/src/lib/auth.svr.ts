@@ -85,6 +85,8 @@ export class AuthService {
         // if (user.email === null) result.push('EMAIL_REQUIRED');
         // else user.email = user.email.toLowerCase();
 
+        //TODO validate user object size and nesting and maybe capatcha
+
         if (user.roles != null) result.push('ROLES_OVER_POST');
         if (user.phone && !user.phone.startsWith('+')) result.push('PHONE_MUST_STARTS_WITH_PLUS');
         return result;

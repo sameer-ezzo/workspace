@@ -1,7 +1,7 @@
 import { Component, HostBinding, HostListener, Input, OnDestroy, forwardRef } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActionDescriptor, ActionEvent, DialogService, EventBus, InputBaseComponent } from '@upupa/common';
-import { Subject, firstValueFrom, takeUntil, tap } from 'rxjs';
+import { Subject, firstValueFrom, lastValueFrom, takeUntil, tap } from 'rxjs';
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
 import { ThemePalette } from '@angular/material/core';
 import { AuthService } from '@upupa/auth';
@@ -49,7 +49,8 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     @Input() view: 'list' | 'grid' = 'list'
     @Input() fileSelector: 'browser' | 'system' = 'system'
     @Input() fileValidator: (file: File) => Promise<Record<string, string>>
-    @Input() enableDragDrop = true
+    @Input() enableDragDrop = false
+    @Input() viewFiles = false
 
     @Input() actions = [
         { action: 'download', variant: 'icon', text: 'Download', icon: 'get_app' } as ActionDescriptor,
@@ -103,9 +104,19 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
         else this.showFileExplorer()
     }
 
+    uploading = false
+    files: File[]
     private async showFileDialog() {
         const files = await openFileDialog(this.accept, this.maxAllowedFiles !== 1);
-        await this.uploadFileList(files)
+        this.files = Array.from(files);
+        try {
+            this.uploading = true
+            await this.uploadFileList(files)
+            this.uploading = false
+        }
+        catch (e) {
+            console.error(e)
+        }
     }
 
     private async showFileExplorer() {
@@ -159,12 +170,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
             });
 
 
-        for (const fvm of files) {
-            if (fvm.error) continue
-            this.setUploadTask(fvm);
-        }
+        const tasks = files.filter(f => !f.error)
+            .map(f => this.setUploadTask(f))
+            .map(f => lastValueFrom(f.uploadTask.response$))
 
         this.viewModel = [...this.viewModel, ...files]
+
+        await Promise.allSettled(tasks)
     }
 
     private setUploadTask(fvm: SelectInputFileVm) {
@@ -193,6 +205,8 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
                     this.value = [...(this.value ?? []), fvm.file as FileInfo]
             }
         });
+
+        return fvm
     }
 
     selectionChanged(e) {

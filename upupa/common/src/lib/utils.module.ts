@@ -10,12 +10,8 @@ import { LanguageModule, TranslationModule } from '@upupa/language';
 
 import { ErrorPipe } from './error.pipe';
 
-import { EqualValidator } from './directives/equal.directive';
-import { LongPressDirective } from './directives/long-press.directive';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MinValidator } from './directives/min.directive';
-import { MaxValidator } from './directives/max.directive';
 import { OnlyNumberDirective } from './directives/only-numbers.directive';
 import { PortalModule } from '@angular/cdk/portal';
 import { MatBtnModule } from './mat-btn/mat-btn.module';
@@ -28,10 +24,6 @@ import { MarkdownPipe } from './markdown.pipe';
 const declarations = [
     InputBaseComponent,
     BaseTextInputComponent,
-    LongPressDirective,
-    EqualValidator,
-    MinValidator,
-    MaxValidator,
     UpupaDialogComponent,
     OnlyNumberDirective,
     HtmlPipe, MarkdownPipe,

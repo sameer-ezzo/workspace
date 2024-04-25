@@ -74,9 +74,6 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         readonly options?: ProviderOptions<T>) {
         super(dataSource.data$)
 
-        if(!keyProperty) keyProperty = '_id' as keyof T
-
-
         if (options) {
             if (options.page) this.dataSource.page = options.page
             else this.dataSource.page = { pageIndex: 0 }

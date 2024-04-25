@@ -16,5 +16,5 @@
   ],
   "include": [
     "**/*.ts"
-, "../ss-auth/src/lib/role.schema.ts"  ]
+  ]
 }
