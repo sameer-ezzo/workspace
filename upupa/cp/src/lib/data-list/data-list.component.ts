@@ -140,7 +140,7 @@ export class DataListComponent {
             this.dialog.openDialog(DataFilterFormComponent, {
                 maxHeight: "90vh",
                 width: "90%",
-                maxWidth: "700px",
+                maxWidth: "450px",
                 closeOnNavigation: true,
                 disableClose: true,
                 direction: languageDir(this.languageService.language),
@@ -290,7 +290,7 @@ export class DataListComponent {
             case "delete": {
                 if (x.data.length === 0) return
                 const dialogData = {
-                    maxWidth: "320px",
+                    maxWidth: "450px",
                     title: "Delete",
                     confirmText: "Are you sure you want to delete this item?",
                     yes: 'Yes, delete',

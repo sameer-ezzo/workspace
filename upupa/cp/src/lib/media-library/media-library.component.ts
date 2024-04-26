@@ -59,7 +59,7 @@ export class MediaLibraryComponent implements OnDestroy {
     //         case "delete": {
     //             if (x.data.length === 0) return
     //             const dialogData = {
-    //                 maxWidth: "320px",
+    //                 maxWidth: "450px",
     //                 title: "Delete",
     //                 confirmText: "Are you sure you want to delete this item?",
     //                 yes: 'Yes, delete',

@@ -52,23 +52,21 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
 
     dialogRef: MatDialogRef<UpupaDialogComponent<C>>
 
-    constructor(
-        public readonly dRef: MatDialogRef<UpupaDialogComponent<C>>,
-        @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any
-    ) {
+    constructor(@Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any) {
+        this.dialogRef = this.dialogData.dialogRef ?? inject(MatDialogRef);
+        this.componentPortal = new ComponentPortal(this.dialogData.component);
+        
         this.actions = dialogData.dialogActions || dialogData.actions || [];
         if (this.actions.length > 0) this._class += ' scroll-y'
         this.title = dialogData.title;
         this.subTitle = dialogData.subTitle;
         this.showCloseBtn = dialogData.hideCloseBtn !== true;
-        this.componentPortal = new ComponentPortal(this.dialogData.component);
     }
 
 
     // inject platform id
     private readonly platformId = inject(PLATFORM_ID)
     ngAfterViewInit() {
-        this.dialogRef = this.dialogData.dialogRef ?? this.dRef;
 
         if (isPlatformBrowser(this.platformId))
             fromEvent(window, "resize")

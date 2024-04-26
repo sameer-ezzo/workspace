@@ -44,9 +44,7 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
   valueFormControl = new UntypedFormControl('', []);
   private readonly destroyRef = inject(DestroyRef)
   submitButton!: ActionDescriptor
-  constructor(@Optional() @Inject(MAT_DIALOG_DATA) public data: any) {
-
-  }
+  constructor(@Optional() @Inject(MAT_DIALOG_DATA) public data: any) { }
 
   ngOnInit(): void {
     const data = this.data;
@@ -59,11 +57,11 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
     if (data.type !== undefined) {
       this.type = data.type;
       if (this.type === 'number')
-        this.valueFormControl = new FormControl<number>(0, [...validators]);
+        this.valueFormControl = new FormControl<number>(+(data.value || '0'), [...validators]);
       else if (this.type === 'email')
-        this.valueFormControl = new FormControl<string>('', [...validators, Validators.email]);
+        this.valueFormControl = new FormControl<string>(data.value || '', [...validators, Validators.email]);
       else
-        this.valueFormControl = new FormControl<string>('', [...validators]);
+        this.valueFormControl = new FormControl<string>(data.value || '0', [...validators]);
     }
     this.submitButton = data.dialogActions[0];
 
@@ -75,8 +73,9 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
   }
 
   submit(e) {
-    e.stopPropagation();
     this.onAction({ action: this.submitButton, data: this.valueFormControl.value }, this.dialogRef)
+    e.stopPropagation();
+    e.preventDefault();
   }
   dialogRef?: MatDialogRef<UpupaDialogComponent>;
   async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>): Promise<any> {

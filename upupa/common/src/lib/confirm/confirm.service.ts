@@ -17,7 +17,7 @@ export class ConfirmService {
             this.dialog
                 .openDialog(ConfirmComponent, {
                     width: "auto",
-                    maxWidth: "320px",
+                    maxWidth: "450px",
                     ...o,
                     hideCloseBtn: true,
                     disableClose: true,

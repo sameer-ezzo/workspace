@@ -10,7 +10,7 @@ export class DynamicFormDialogService {
   open<D extends Record<string, unknown>, O = any, R = any>(scheme: FormScheme, value?: D, dialogOptions: DialogServiceConfig<O> = {}): MatDialogRef<UpupaDialogComponent, R> {
     const options = {
       width: "100%",
-      maxWidth: "700px",
+      maxWidth: "450px",
       maxHeight: "80vh",
       ...dialogOptions,
       actions: dialogOptions?.actions ?? [
