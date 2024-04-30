@@ -150,7 +150,8 @@ export class AuthService {
                     return principle
                 }
             } catch (error) {
-                console.error(error)
+                console.error('Signing out because: ',error)
+                this.signout()
                 return principle
             }
         }

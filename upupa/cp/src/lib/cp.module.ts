@@ -37,7 +37,7 @@ const usreImageProvider = {
     provide: USER_PICTURE_RESOLVER, useFactory: (auth: AuthService, data: DataService) => {
         return auth.user$.pipe(
             switchMap(u =>
-                data.get<{ picture: string }>(`/user/${u.sub}?select=picture`).pipe(
+                data.get<{ picture: string }>(`/user/${u?.sub}?select=picture`).pipe(
                     map(x => x.picture as string),
                     catchError(e => of(getUserInitialsImage(u.name ?? u.email)))
                 )
