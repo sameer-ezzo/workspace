@@ -14,7 +14,8 @@ export class ActionDescriptor {
     icon_url?: string;
 
     color?: 'primary' | 'accent' | 'warn' | string;
-    tip?: string;
+    tooltip?: string;
+    tooltipPosition?: 'left' | 'right' | 'above' | 'below' | 'before' | 'after' = 'above';
 
     bulk?: boolean;
     position?: 'menu' | 'header' | 'footer' | 'bulk' | string;

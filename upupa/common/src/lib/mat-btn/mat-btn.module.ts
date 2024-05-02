@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { TranslationModule } from '@upupa/language';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatBtnComponent } from './mat-btn.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const material = [MatButtonModule, MatBadgeModule, MatIconModule];
 
@@ -13,6 +14,7 @@ const material = [MatButtonModule, MatBadgeModule, MatIconModule];
   declarations: [MatBtnComponent],
   imports: [
     CommonModule,
+    MatTooltipModule,
     TranslationModule,
     ...material
   ],

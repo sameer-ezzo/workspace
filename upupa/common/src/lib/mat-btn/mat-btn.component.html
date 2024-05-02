@@ -1,8 +1,9 @@
 @switch (descriptor.variant) {
 @case ('raised') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)"
-    mat-raised-button>
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-raised-button>
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }
@@ -10,9 +11,10 @@
 </button>
 }
 @case ('flat') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)"
-    mat-flat-button>
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-flat-button>
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }
@@ -20,9 +22,10 @@
 </button>
 }
 @case ('stroked') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)"
-    mat-stroked-button>
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-stroked-button>
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }
@@ -30,9 +33,11 @@
 </button>
 }
 @case ('icon') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)"
-    mat-icon-button [attr.aria-labelledby]="descriptor.text || descriptor.action"
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-icon-button
+    [attr.aria-labelledby]="descriptor.text || descriptor.action"
     [attr.aria-label]="descriptor.text || descriptor.action">
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
@@ -40,25 +45,33 @@
 </button>
 }
 @case ('fab') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-fab
-    [attr.aria-labelledby]="descriptor.text || descriptor.action" [attr.aria-label]="descriptor.text || descriptor.action">
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-fab
+    [attr.aria-labelledby]="descriptor.text || descriptor.action"
+    [attr.aria-label]="descriptor.text || descriptor.action">
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }
 </button>
 }
 @case ('mini-fab') {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-mini-fab
-    [attr.aria-labelledby]="descriptor.text || descriptor.action" [attr.aria-label]="descriptor.text || descriptor.action">
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-mini-fab
+    [attr.aria-labelledby]="descriptor.text || descriptor.action"
+    [attr.aria-label]="descriptor.text || descriptor.action">
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }</button>
 }
 @default {
-<button [attr.type]="descriptor.type || 'button'" [attr.id]="descriptor.action" [disabled]="disabled" [color]="color"
-    [matBadge]="descriptor.matBadge" [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-button>
+<button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
+    [matTooltipPosition]="descriptor.tooltipPosition" [attr.type]="descriptor.type || 'button'"
+    [attr.id]="descriptor.action" [disabled]="disabled" [color]="color" [matBadge]="descriptor.matBadge"
+    [matBadgeColor]="descriptor.matBadgeColor" (click)="onAction($event)" mat-button>
     @if(descriptor.icon){
     <mat-icon [attr.disabled]="disabled">{{descriptor.icon}}</mat-icon>
     }

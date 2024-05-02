@@ -55,7 +55,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     constructor(@Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any) {
         this.dialogRef = this.dialogData.dialogRef ?? inject(MatDialogRef);
         this.componentPortal = new ComponentPortal(this.dialogData.component);
-        
+
         this.actions = dialogData.dialogActions || dialogData.actions || [];
         if (this.actions.length > 0) this._class += ' scroll-y'
         this.title = dialogData.title;
@@ -151,8 +151,9 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
 
 
         if (ref.getState() === MatDialogState.OPEN)
-            if (e.action.meta?.closeDialog === true)
-                ref.close(res)
+            if (e.action.type === 'submit' || e.action.meta?.closeDialog === true)
+                if (e.action.type === 'submit') ref.close(res || this.component)
+                else ref.close(res)
             else console.warn(`Action ${e.action.action} has no handler.`);
 
     }

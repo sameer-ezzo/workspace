@@ -54,14 +54,14 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
     this.required = data.required === true;
 
     const validators = this.required ? [Validators.required] : [];
-    if (data.type !== undefined) {
-      this.type = data.type;
+    this.type = data.type || 'text';
+    if (data.type != null) {
       if (this.type === 'number')
         this.valueFormControl = new FormControl<number>(+(data.value || '0'), [...validators]);
       else if (this.type === 'email')
         this.valueFormControl = new FormControl<string>(data.value || '', [...validators, Validators.email]);
       else
-        this.valueFormControl = new FormControl<string>(data.value || '0', [...validators]);
+        this.valueFormControl = new FormControl<string>(data.value || '', [...validators]);
     }
     this.submitButton = data.dialogActions[0];
 
