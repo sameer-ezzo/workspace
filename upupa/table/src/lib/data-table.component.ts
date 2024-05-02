@@ -157,7 +157,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
         if (changes['columns']) this.generateColumns()
 
-        this.hasHeader = this.showSearch === true || this.bulkActions?.length > 0 || this.headerActions?.length > 0
+        this.hasHeader = (this.label||'').length > 0 || this.showSearch === true || this.bulkActions?.length > 0 || this.headerActions?.length > 0
     }
 
     private generateColumns() {
