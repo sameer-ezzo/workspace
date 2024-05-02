@@ -1,2 +1,8 @@
-<dynamic-form *ngIf="fields" #userForm [fields]="fields" (submit)="save(userForm)" [(value)]="value">
-</dynamic-form>
+@if(fields) {
+
+    <dynamic-form #userForm [fields]="fields" (submit)="save(userForm)" [(value)]="value">
+    </dynamic-form>
+    <div class="toolbar footer">
+        <button mat-stroked-button color="primary" [disabled]="loading" (click)="save(userForm)" class="action" type="submit">Submit</button>
+    </div>
+}

@@ -29,6 +29,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AdminUserPasswordRestComponent } from './admin-userpwd-reset/admin-userpwd-reset.component';
 import { EditUserRolesComponent } from './edit-user-roles/edit-user-roles.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 const defaultOptions = new UsersManagementOptions();
@@ -47,6 +48,7 @@ const imports = [CommonModule,
     MatExpansionModule,
     HttpClientModule,
     MatDialogModule,
+    MatTooltipModule,
     TranslationModule,
     UtilsModule,
     DataTableModule,

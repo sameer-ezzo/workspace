@@ -1,10 +1,9 @@
 @if(fields){
 <div class="wrapper">
-  <dynamic-form #roleForm [fields]="fields" [(value)]="role" (submit)="save()"></dynamic-form>
+    <dynamic-form #roleForm [fields]="fields" [(value)]="role" (submit)="save()"></dynamic-form>
 </div>
 <div class="toolbar footer">
-  <button mat-button class="action" (click)="discard()" type="button">Discard</button>
-  <button mat-stroked-button color="primary" [disabled]="loading || !roleForm.touched || roleForm.invalid"
-    (click)="save()" class="action" type="submit">Submit</button>
+    <button mat-button class="action" (click)="discard()" type="button">Discard</button>
+    <button mat-stroked-button color="primary" [disabled]="loading || !roleForm.touched || roleForm.invalid" (click)="save()" class="action" type="submit">Submit</button>
 </div>
 }

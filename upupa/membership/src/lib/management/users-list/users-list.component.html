@@ -3,10 +3,10 @@
     (action)="onAction($event)"></data-table>
 
 <ng-template #emailTemplate let-descriptor="descriptor" let-element="element">
-    <div class="hoverable" style="display: flex; flex-flow: row nowrap; align-items: center;">
-        <span>{{element.item.email}}</span>
-        <mat-icon class="show-on-hover">{{element.item.email && element.item.emv === true ? 'check_circle' : 'error'}}</mat-icon>
-    </div>
+        <span>
+            {{element.item.email}}
+        </span>
+        <mat-icon style="opacity: 0.6;" matTooltip="Unverified">{{element.item.email && element.item.emv === true ? 'check_circle' : 'error'}}</mat-icon>
 </ng-template>
 
 <ng-template #phoneTemplate let-descriptor="descriptor" let-element="element">
