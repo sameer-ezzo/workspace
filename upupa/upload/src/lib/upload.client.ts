@@ -25,7 +25,7 @@ export class UploadClient {
     // if (!this._baseUrl.toLowerCase().includes('/storage')) {
     //   this._baseUrl = this.combine(this._baseUrl, 'storage');
     // }
-    
+
     // this._baseOrigin = new URL(this.baseUrl).origin + '/';
 
   }
@@ -33,6 +33,13 @@ export class UploadClient {
     return this.uploadService.upload(this.combine(this.baseUrl, path), file, filename, formData);
   }
   uploadContent(path: string, files:{ content: string, fieldname?: string, filename: string }[], formData?: any) {
+    return this.uploadService.uploadContent(this.baseUrl + path, files, formData);
+  }
+
+  uploadAsync(path: string, file: File, filename: string, formData?: any) {
+    return this.uploadService.uploadAsync(this.combine(this.baseUrl, path), file, filename, formData);
+  }
+  uploadContentAsync(path: string, files:{ content: string, fieldname?: string, filename: string }[], formData?: any) {
     return this.uploadService.uploadContent(this.baseUrl + path, files, formData);
   }
   delete(path: string, baseUrl?: string) {

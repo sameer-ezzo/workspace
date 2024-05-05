@@ -3,7 +3,7 @@
         <button mat-icon-button *ngIf="sideBarCommands?.length > 0" (click)="drawer.toggle()">
             <mat-icon>reorder</mat-icon>
         </button>
-        <img [src]="logo" class="logo" alt="">
+        <img [src]="logo" class="logo" >
         <span class="spacer"></span>
         <toolbar-user-menu [commands]="userMenuCommands"></toolbar-user-menu>
     </mat-toolbar>
@@ -14,7 +14,7 @@
                 @for(g of sideBarCommands; track g.action){
                 @if(g.items.length > 0){
                 <mat-expansion-panel expanded="true" class="mat-elevation-z0">
-                    
+
                     @if(g.action){
                     <mat-expansion-panel-header>
                         <mat-panel-title>{{g.text | text}}</mat-panel-title>
