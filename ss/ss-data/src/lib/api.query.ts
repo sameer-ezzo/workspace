@@ -10,7 +10,7 @@ type SpreadDate = [number, number, number, number, number, number, number];
 
 /*
 //FILTERING (WHERE)
-## SYNTAX: 
+## SYNTAX:
 ?field1=expression1&field2=expression2|field3=expression3 WHERE & is AND , | is OR WHERE expression={operator}value
 ## Types of {operator}
 General operators: {eq},{exists}, {ne} = exists means it's not null, ne is not equal
@@ -26,7 +26,7 @@ values will be automatically converted to corrosponding types
 '9' => 9
 'null' => null
 'undefined' => undefined
--- Note: 
+-- Note:
 If {operator} is not provided it's considred as {eq} but value conversion for number,array won't happen ex: model=9 will not convert 9 to number it will be treated as '9'
 */
 
@@ -45,9 +45,9 @@ SYNTAX: ?lookup=lookup1;lookup2 WHERE: lookup1=collection:foriegnField:localFiel
 * localField is the name of the field to match to inside the current collection
 * as is the name of the resulted data to be added as an array field to the current result
 * unwind (optional) if provided the as field will be converted from array to object by getting the first element (this is usful for one-to-one joins)
-Example:  /blogs?lookup=tag:name:category:categoryInfo:unwind,tag:name:tags:tagsInfo  
+Example:  /blogs?lookup=tag:name:category:categoryInfo:unwind,tag:name:tags:tagsInfo
 This will add 2 fields to the resulted 'blogs' the first field is called 'categoryInfo' containing the 'tag' object that is matched from 'tag' collection where tag.name=blog.category, and it's an object because of the 'unwind' operator passed ar the end.
-The second field is called 'tagsInfo' which is an array of 'tag' objects matched from 'tag' collection where tag.name=blog.tags* 
+The second field is called 'tagsInfo' which is an array of 'tag' objects matched from 'tag' collection where tag.name=blog.tags*
 This example shows the use of multiple lookups one demonstrating one-to-one association blog(1)<-[category]->(1)tag and the other demonstrating one-to-many association blog(1)<-[tags]->(*)tag.
 */
 
@@ -56,7 +56,7 @@ This example shows the use of multiple lookups one demonstrating one-to-one asso
 ## SYNTAX:
 ?select=field1,!field2,field2
 
-The simple select operator will include only fields specified. 
+The simple select operator will include only fields specified.
 This fields inclusion is performed after filtering/sorting so filtering/sorting can be performed on fields event when not selected.
 The field2 in this case is told to be excluded.
 */
@@ -86,8 +86,8 @@ In general limiting results come as the last operation but in the case of groupi
 One exception to this is the use of DISTINCT (grouping but not including group items)
 */
 
-/* 
-http://localhost:3001/agg/blogs?tags2.name={in}node1 
+/*
+http://localhost:3001/agg/blogs?tags2.name={in}node1
 http://localhost:3001/agg/item?campaigns={ne}null&lookup_match=branch:vendor:campaigns.vender:branches:location:{center}28.8640022277832,41.00006305078956,0.01
 */
 
@@ -293,8 +293,10 @@ export class QueryParser {
                 }
             }
             else if (x.key === 'sort_by' && x.value) {
-                const [field, direction] = x.value.split(',');
-                sort = { [field]: direction === 'desc' ? -1 : 1 };
+                const sort_by_array = x.value.split(',');
+                const [field, direction] = sort_by_array;
+                if(sort_by_array.length === 1 && field.startsWith('-')) sort = { [field.substring(1)]: -1 };
+                else sort = { [field]: direction === 'desc' ? -1 : 1 };
             }
             else if (x.key === 'select' && x.value) select = this._select(x.value);
             else if (x.key === 'fields1' && x.value) fields1 = this._fields(x.value);
@@ -345,7 +347,7 @@ export class QueryParser {
 
         if (group && group_fields) {
             Object.keys(group_fields).forEach(k => { group[k] = (<any>group_fields)[k] }); // { exta_field : {$operator:value} }
-            if (group.items) { //move items to last entry   
+            if (group.items) { //move items to last entry
                 const items = group.items;
                 delete group.items;
                 group.items = items;
