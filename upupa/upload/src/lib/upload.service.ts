@@ -8,6 +8,7 @@ import { FileInfo, UploadStream } from './model';
 @Injectable({ providedIn: 'root' })
 export class UploadService {
 
+
     constructor(public http: HttpClient) { }
 
     upload(url: string, file: File, fileName: string, formData?: Record<string, string>): UploadStream {
@@ -69,6 +70,14 @@ export class UploadService {
         return stream;
     }
 
+    uploadAsync(arg0: string, file: File, filename: string, formData: any) {
+        const rx = this.upload(arg0, file, filename, formData);
+        return firstValueFrom(rx.response$);
+    }
+    uploadContentAsync(arg0: string, files: { content: string; fieldname?: string; filename: string; }[], formData: any) {
+        const rx = this.uploadContent(arg0, files, formData);
+        return firstValueFrom(rx.response$);
+    }
 
     openFileDialog(accept: string = null, multiple = false) {
         return openFileDialog(accept, multiple)
