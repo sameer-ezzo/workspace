@@ -33,9 +33,8 @@ export type AppOptions = {
     applicationName?: string
     staticAssets?: { [path: string]: string }
     websocketServer?: Partial<ServerOptions>,
-    handlebarsConfig?: ConfigOptions
+    handlebarsConfig?: Partial<ConfigOptions>,
     middlewares?: NestMiddleware[]
-
 }
 
 const defaultSocketServerOptions: Partial<ServerOptions> = {
@@ -182,7 +181,8 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
     //VIEW ENGINE
     application.setBaseViewsDir(join(__dirname, 'views'))
     const hbs = create({
-        defaultLayout: 'main', layoutsDir: join(__dirname, 'views'),
+        defaultLayout: 'main',
+        layoutsDir: options.handlebarsConfig?.layoutsDir || join(__dirname, 'views'),
         helpers: options.handlebarsConfig?.helpers
     })
     if (options.handlebarsConfig?.helpers) {
@@ -190,8 +190,6 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
         hbs.handlebars.helpers = { ...hbsHelpers, ...options.handlebarsConfig?.helpers }
         application.engine('handlebars', hbs.engine)
     }
-
-
 
     if (options.websocketServer) {
         const socketServer = new Server(httpAdapter.getHttpServer(), { ...defaultSocketServerOptions, ...options.websocketServer })

@@ -96,6 +96,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     getItems(keys: (string | number | symbol) | (string | number | symbol)[]): Promise<NormalizedItem<T>[]> {
         //todo: What if keyProperty is undefiend?
         if (!keys) return Promise.resolve([])
+
         const KEYS = Array.isArray(keys) ? keys : [keys]
         const itemsInAdapter = this.normalized?.filter(n => KEYS.some(k => k === n.key)) ?? []
         const itemsNotInAdapter = KEYS.filter(k => itemsInAdapter.every(n => n.key != k))

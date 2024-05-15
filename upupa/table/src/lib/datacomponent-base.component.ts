@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from
 import { PageEvent } from '@angular/material/paginator'
 import { Sort } from '@angular/material/sort'
 import { Subscription, BehaviorSubject, Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, map, startWith, takeUntil } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, map, shareReplay, startWith, takeUntil } from 'rxjs/operators'
 import { ENTER } from '@angular/cdk/keycodes'
 import { DataAdapter, FilterDescriptor, NormalizedItem } from '@upupa/data'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
@@ -76,11 +76,11 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
 
 
-    @Input() filterdebounceTime = 200
+    @Input() filterDebounceTime = 200
 
     ngOnInit() {
         this.q$.pipe(startWith(''),
-            debounceTime(+this.filterdebounceTime),
+            debounceTime(+this.filterDebounceTime),
             takeUntil(this.destroy$)
         ).subscribe(x => this.filter$.next(x))
 
@@ -97,14 +97,19 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
-        if (this.adapter) {
-            if (!changes['adapter']?.firstChange && this._adapter !== this.adapter) {
+        super.ngOnChanges(changes)
+        if (changes['adapter']) {
+            if (!this.adapter) throw new Error('Adapter is required')
+
+            if (this._adapter !== this.adapter) {
                 this._adapter = this.adapter
                 Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
             }
 
             this.normalized$sub?.unsubscribe()
             this.normalized$sub = this.adapter?.normalized$.subscribe(data => this.onDataChange(data))
+            if ('all' in this.adapter.dataSource)
+                this.adapter.refresh() // if it's a client data source
             this._updateViewModel() //force update view model every time adapter changes to calculate the value data source
         }
         if (changes['maxAllowed']) this.maxAllowed = +this.maxAllowed
@@ -180,11 +185,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     onAdd() { this.add.emit() }
 
 
-    selectAllToggled(e) {
-        if (e.checked !== null || e.checked !== undefined) {
-            this.toggleSelectAll()
-        }
-    }
+
 
     //selection
     selectionModel = new SelectionModel<(string | number | symbol)>(true, [], true)
@@ -193,21 +194,19 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-        const _selected = this.adapter.normalized.filter(s => this.selectionModel.isSelected(s.key))
-        if (this.adapter.normalized.length === _selected.length) this.selectionModel.deselect(...(_selected.map(s => s.key)))
+
+        if (this.adapter.normalized.length === this.selected.length)
+            this.selectionModel.deselect(...(this.selected))
         else this.selectionModel.select(...this.adapter.normalized.map(n => n.key))
     }
 
 
     select(key: keyof T) {
-
         this.selectionModel.select(key)
-        this._selected = this.selectionModel.selected
     }
 
     deselect(key: keyof T) {
         this.selectionModel.deselect(key)
-        this._selected = this.selectionModel.selected
     }
     toggle(key: keyof T) {
         // const _key = this.adapter.getItems(key) .extract(value, this.adapter.keyProperty, value).key ?? value
@@ -252,21 +251,15 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
 
 
-    _selected: any | any[]
+
     get selected() {
-        return this._selected//this.selectionModel.selected.map(value => this.adapter.normalized.find(n => n.value === value))
+        return this.selectionModel.selected
     }
     set selected(n: any | any[]) {
-
-        this.selectionModel.clear()
-        this._selected = n
+        this.selectionModel.clear(false)
         if (!n) return
-        if (Array.isArray(n)) {
-            this.selectionModel.select(...this._selected as any[])
-        }
-        else {
-            if (this._selected) this.selectionModel.select(this._selected as any)
-        }
+        if (Array.isArray(n)) this.selectionModel.select(...n as any[])
+        else this.selectionModel.select(n as any)
     }
 
 
@@ -274,30 +267,23 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     //selection model only for key prop
     //value is valueDataSource.map(v=>v.value)
 
-    private readonly _valueDataSource$ = new BehaviorSubject<NormalizedItem<T> | NormalizedItem<T>[]>([])
+    private readonly _valueDataSource$ = new BehaviorSubject<NormalizedItem<T>[]>([])
+    valueDataSource$ = this._valueDataSource$.pipe(shareReplay(1))
 
-    public get valueDataSource(): NormalizedItem<T> | NormalizedItem<T>[] {
+    public get valueDataSource(): NormalizedItem<T>[] {
         return this._valueDataSource$.value;
     }
-    public set valueDataSource(v: NormalizedItem<T> | NormalizedItem<T>[]) {
-        if (Array.isArray(v)) this._valueDataSource$.next(v)
-        else this._valueDataSource$.next(v?.[0])
+    private set valueDataSource(v: NormalizedItem<T>[]) {
+        this._valueDataSource$.next(v)
     }
 
-    valueDataSource$ = this._valueDataSource$.pipe(map(v => {
-        if (Array.isArray(this._value)) return v
-        else return v?.[0]
-    }))
     override async _updateViewModel() {
-        const value = this._value
-        if (value) {
-            if (this.adapter) {
-                const keys = this.adapter.getKeysFromValue(value)
-                const v = await this.adapter.getItems(keys) ?? []
-                this._valueDataSource$.next(v)
-            }
-        }
-        else this._valueDataSource$.next([])
+        if (!this.adapter) return
+        const valueKeys = this.adapter.getKeysFromValue(this._value)
+        const fromValueDataSource = valueKeys.map(k => this.valueDataSource.find(v => v.key === k)).filter(n => n)
+        const fromDataAdapter = (await this.adapter.getItems(valueKeys) ?? []).filter(n => n)
+        const v = [...fromValueDataSource, ...fromDataAdapter].filter((v, i, a) => a.findIndex(t => (t.key === v.key)) === i)
+        this.valueDataSource = v
     }
 
 

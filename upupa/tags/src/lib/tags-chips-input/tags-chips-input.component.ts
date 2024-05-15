@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, Input, SimpleChanges, inject } from '@angular/core';
 import { EventBus } from '@upupa/common';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
 import { ChipsComponent } from '@upupa/dynamic-form-native-theme';
@@ -12,10 +12,20 @@ import { TagsService } from '../tags.service';
   styleUrls: ['./tags-chips-input.component.scss']
 })
 export class TagsChipsInputComponent extends ChipsComponent {
-  
-  @Input() canAdd = true
 
+  private readonly tagsService = inject(TagsService)
+  protected override  readonly bus = inject(EventBus)
   private _parentPath = '/'
+  private readonly tagsDs: ClientDataSource<Tag> = new ClientDataSource(this.tagsService.getTags(this._parentPath))
+  override readonly adapter = new DataAdapter<Tag>(this.tagsDs, '_id', 'name', undefined, undefined, {
+    terms: [{ field: '_id', type: 'like' },
+    { field: 'name', type: 'like' }],
+    page: {
+      pageSize: 25
+    }
+  })
+
+  @Input() canAdd = true
   @Input()
   public get parentPath(): string {
     return this._parentPath;
@@ -23,25 +33,16 @@ export class TagsChipsInputComponent extends ChipsComponent {
   public set parentPath(v: string) {
     if (this._parentPath === v) return
     this._parentPath = v
-    this.adapter?.destroy()
-    this.tagsDs?.destroy()
+    this._refresh()
+  }
 
-    this.tagsDs = new ClientDataSource(this.tagsService.getTags(v))
-    this.adapter = new DataAdapter<Tag>(this.tagsDs, '_id', 'name', undefined, undefined, {
-      terms: [{ field: '_id', type: 'like' },
-      { field: 'name', type: 'like' }],
-      page: {
-        pageSize: 25
-      }
+  private readonly _refresh = () => {
+    this.tagsService.getTags(this.parentPath).subscribe(tags => {
+      this.tagsDs.all = tags
+      this.adapter.refresh()
     })
   }
 
-
-  tagsDs: ClientDataSource<Tag>
-
-  constructor(private readonly tagsService: TagsService, protected override  readonly bus: EventBus) {
-    super(bus)
-  }
 
 
   override async onAdding(value: string): Promise<void> {
@@ -49,13 +50,13 @@ export class TagsChipsInputComponent extends ChipsComponent {
 
     const chip = value
 
-    if (this.isInValue(chip)) return
+    if (this.findKeyInValue(chip)) return
     const tag = await this.tagsService.createTag({ _id: chip }, this.parentPath)
     const nTag = this.adapter.normalize(tag)
-    this.value = [...((this.value ?? []) as string[]), nTag.key]
+    this.value = [...((this.value ?? []) as string[]), nTag.value]
     this._clearFilter()
     this.control.markAsDirty()
-    this.tagsService.getTags(this.parentPath).subscribe(tags => this.tagsDs.all = tags)
+    this._refresh()
   }
 }
 

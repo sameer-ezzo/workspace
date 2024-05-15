@@ -113,22 +113,40 @@ export class DataService {
 
     private async _connect(url: string, options: ConnectOptions = { autoIndex: true }): Promise<mongoose.Connection> {
         try {
+            const s = url.substring(10) //skip scheme
+
+
+
+            const [fqdn, rest] = s.split('/')
+            const [dbName, optionsStr] = rest.split('?')
+            const cnnStrOptions = optionsStr.split('&').reduce((acc, x) => {
+                const [key, value] = x.split('=')
+                acc[key] = value
+                return acc
+            }, {})
+
+
+            const [user, pass] = fqdn.indexOf('@') > -1 ? fqdn.split('@')[0].split(':') : [undefined, undefined]
+            const hostsStr = fqdn.indexOf('@') > -1 ? fqdn.split('@')[1] : fqdn
+            const hosts = hostsStr.indexOf(',') > -1 ? hostsStr.split(',').map(h => h.split(':')) : [hostsStr.split(':')]
+
+
+            this._db = dbName || 'test'
+            this._host = hosts[0]?.[0] ?? '127.0.0.1'
+            this._port = hosts[0]?.[1] ?? '27017'
 
             const _options = {
                 ...defaultMongoDbConnectionOptions,
-                ...options
+                ...options,
+                ...cnnStrOptions,
+                dbName: this._db,
+                user,
+                pass
             } as ConnectOptions
 
             // mongoose.set('debug', true);
             const connection = await mongoose.createConnection(url, _options)
 
-            const s = url.substring(10) //skip scheme
-            const [fqdn, db] = s.split('/')
-            const [host, port] = fqdn.split(':')
-
-            this._db = db ?? 'test'
-            this._host = host ?? 'localhost'
-            this._port = port ?? '27017'
 
             return connection
         }
@@ -136,6 +154,7 @@ export class DataService {
             if (error + "" !== "MongoError: Topology closed") {
                 logger.error(`DB Connection error URI:${url}`, error)
             }
+            throw error
         }
     }
 
@@ -153,12 +172,30 @@ export class DataService {
             this._connection = await this._connecting
             this._connecting = null
 
+            try {
 
-            logger.warn(`DS:CONNECTED ${this.name} @ mongo://${this.host}:${this.port}/${this.db}`)
+                await new Promise(async (resolve, reject) => {
+                    await this._connection.addListener('connected', async () => {
+                        try {
+                            const admin = this._connection.db.admin()
+                            const result = await admin.serverStatus()
+                            resolve(result)
+                        }
+                        catch (error) {
+                            reject(error)
+                        }
+                    })
+                })
+
+                logger.warn(`DS:CONNECTED ${this.name} @ mongo://${this.host}:${this.port}/${this.db}`)
 
 
-            await this._initCollections(this.collections)
-            await this._migrate(this, this.migrations)
+                await this._initCollections(this.collections)
+                await this._migrate(this, this.migrations)
+            } catch (error) {
+                logger.error(`Error on connection: ${this.name}`, error)
+                throw error
+            }
         }
         return this._connecting
     }

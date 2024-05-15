@@ -159,16 +159,25 @@ tr {
 }
 
 /* create button */
-
-.fab {
-  position: fixed;
-  bottom: 2em;
-  right: 2em;
+.table-container {
+  .fab {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    opacity: 0;
+    z-index: -10;
+  }
+  &:hover .fab {
+    transition: opacity 0.3s;
+    display: inline-block;
+    opacity: 1;
+    z-index: 10;
+  }
 }
 
 [dir='rtl'] .fab {
   right: auto;
-  left: 2em;
+  left: 1rem;
 }
 
 .dd-list {

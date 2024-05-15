@@ -41,8 +41,7 @@
             <button [disabled]="loading" mat-menu-item (click)="openColumnsSelectDialog()">{{'columns'|text}}</button>
             }
             @for (haim of headerActionsInMenu; track haim.action) {
-            <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled"
-                (click)="onAction(haim,selected)">
+            <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, null)">
                 <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) | text}}
             </button>
             }
@@ -91,23 +90,20 @@
             <ng-container matColumnDef="select" [sticky]="columns['select']?.sticky === 'start'"
                 [stickyEnd]="columns['select']?.sticky === 'end'">
                 <th mat-header-cell *matHeaderCellDef>
-                    <mat-checkbox *ngIf="maxAllowed !== 1" (change)="selectAllToggled($event)"
-                        [checked]="value?.['length'] > 0 && value?.['length'] === adapter.normalized?.length"
-                        [indeterminate]="value?.['length'] > 0 && value?.['length'] < adapter.normalized?.length">
+                    @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
+                    <mat-checkbox (change)="toggleSelectAll()" [checked]="selected.length === adapter.normalized.length"
+                        [indeterminate]="selected.length > 0 && selected.length !== adapter.normalized.length">
                     </mat-checkbox>
+                    }
                 </th>
                 <td mat-cell *matCellDef="let row">
                     @if(adapter.imageProperty){
-
                     <img [src]="row.image" [attr.alt]="row.display || row.key" class="avatar" />
-                    <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.value)"
+                    }
+
+                    <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.key)"
                         (change)="toggleSelection($event,row)"></mat-checkbox>
 
-                    }
-                    @else {
-                    <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.value)"
-                        (change)="toggleSelection($event,row)"></mat-checkbox>
-                    }
                 </td>
             </ng-container>
 
@@ -135,7 +131,7 @@
                 <td mat-cell *matCellDef="let row; let i = index" class="actions">
                     <div>
                         <ng-container [ngTemplateOutlet]="commandTemplate"
-                            [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row.item]}"></ng-container>
+                            [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row]}"></ng-container>
                         @if(getMenuActions(row.item).length){
                         <button (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button
                             [matMenuTriggerFor]="actionsMenu" class="actions">
@@ -158,11 +154,10 @@
             </ng-container>
 
 
-            <tr mat-header-row *matHeaderRowDef="_columns; sticky: true"
-                [class.selected]="selectionModel.selected.length > 1"></tr>
+            <tr mat-header-row *matHeaderRowDef="_columns; sticky: true" [class.selected]="selected.length > 0"></tr>
             <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true"
                 [cdkDragData]="row" class="dd-item {{rowClass(row)}}" [class.focused]="focusedItem === row"
-                [class.selected]="selectionModel.isSelected(row.value)" (click)="onClick(row)" (touch)="onClick(row)"
+                [class.selected]="selectionModel.isSelected(row.key)" (click)="onClick(row)" (touch)="onClick(row)"
                 (long-press)="onLongPress(row)">
                 <td class="dd-placeholder" *cdkDragPlaceholder></td>
             </tr>
@@ -170,12 +165,11 @@
             @if(expandable !== 'none' && expandableTemplate){
 
             <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
-                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length">
-                    <div class="example-element-detail"
-                        [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'">
-                        <ng-container [ngTemplateOutlet]="expandableTemplate"
-                            [ngTemplateOutletContext]="{element}"></ng-container>
-                    </div>
+                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length" class="example-element-detail"
+                    [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'">
+                    <ng-container [ngTemplateOutlet]="expandableTemplate"
+                        [ngTemplateOutletContext]="{element}"></ng-container>
+
                 </td>
             </ng-container>
 
@@ -186,30 +180,35 @@
 
         </table>
 
-        <div *ngIf="(firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0" id="no-data"
-            style="text-align: center; padding: 2rem">
-            <ng-container *ngIf="noDataImage">
-                <img style="width: 100%; max-width: 320px;" [src]="noDataImage" alt="no data">
-            </ng-container>
-            <p>{{'no-data'|text}}</p>
+        @if((firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0){
+        <div id="no-data" style="text-align: center; padding: 2rem">
+            @if(noDataImage){
+            <img style="width: 100%; max-width: 320px;" [src]="noDataImage" alt="no data">
+            }
+            <p>No Data</p>
         </div>
-        <div *ngIf="(loading$ | async) === true" style="text-align: center; padding: 2rem">
-            <p>{{'loading'|text}}</p>
+        }
+        @if((loading$ | async) === true ){
+        <div style="text-align: center; padding: 2rem">
+            <p>Loading</p>
         </div>
-
+        }
+        @if(addUrl || showAdd){
+        <a [routerLink]="addUrl" class="fab" mat-mini-fab (click)="onAdd()">
+            <mat-icon>add</mat-icon>
+        </a>
+        }
     </div>
 
-    <mat-paginator *ngIf="adapter && adapter.page && adapter.page.pageSize" [disabled]="(loading$ | async) === true"
-        [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length" [pageSize]="adapter.page.pageSize"
-        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+    @if(adapter && adapter.page && adapter.page.pageSize){
+    <mat-paginator [disabled]="(loading$ | async) === true" [pageIndex]="adapter.page.pageIndex"
+        [length]="adapter.page.length" [pageSize]="adapter.page.pageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+    }
 
 </div>
 
-@if(addUrl || showAdd){
-<a [routerLink]="addUrl" class="fab" mat-fab (click)="onAdd()">
-    <mat-icon>add</mat-icon>
-</a>
-}
+
 
 <ng-template #commandTemplate let-actions="actions" let-data="data">
     @for (a of actions; track a.name) {

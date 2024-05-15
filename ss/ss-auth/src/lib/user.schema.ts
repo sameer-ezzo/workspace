@@ -9,7 +9,6 @@ import { User, randomString } from "@noah-ark/common";
 
 const userSchema = new Schema({
     __documentVersion: { type: Number, default: 1, required: true },
-    __lockVersion: { type: Number, default: 0, required: true },
     _id: mongoose.Schema.Types.ObjectId,
     
     username: { type: String, required: true, index: true, unique: true },

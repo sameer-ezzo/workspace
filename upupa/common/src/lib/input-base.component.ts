@@ -10,18 +10,10 @@ import { BehaviorSubject } from 'rxjs'
     ]
 })
 
-export class InputBaseComponent<T = any> implements ControlValueAccessor, Validator, OnChanges {
+export class InputBaseComponent<T = any, C = UntypedFormControl> implements ControlValueAccessor, Validator, OnChanges {
 
     @Input() name = `${Date.now()}`
-    private _control: UntypedFormControl = new UntypedFormControl()
-    @Input()
-    public get control(): UntypedFormControl {
-        return this._control
-    }
-    public set control(value: UntypedFormControl) {
-        this._control = value
-
-    }
+    @Input() control: UntypedFormControl = new UntypedFormControl()
     @Output() valueChange = new EventEmitter<T | T[]>()
     value1$ = new BehaviorSubject<T>(undefined)
 

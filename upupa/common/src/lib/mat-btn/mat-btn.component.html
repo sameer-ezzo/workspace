@@ -1,3 +1,4 @@
+@if(descriptor){
 @switch (descriptor.variant) {
 @case ('raised') {
 <button matTooltip="{{descriptor.tooltip}}" [matTooltipDisabled]="descriptor.tooltip === ''"
@@ -77,5 +78,6 @@
     }
     {{descriptor.text}}
 </button>
+}
 }
 }

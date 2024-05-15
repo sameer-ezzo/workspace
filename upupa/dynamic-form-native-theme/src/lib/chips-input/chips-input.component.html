@@ -1,49 +1,30 @@
-<!-- <mat-form-field [class.ng-dirty]="control.dirty" [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
-    <input type="hidden" [formControl]="control">
-    <mat-label *ngIf="label">{{label | text}}</mat-label>
-    <mat-chip-list #chipList>
-        <mat-chip *ngFor="let item of valueDataSource$ | async" [selectable]="selectable" [removable]="removable" (removed)="remove(item)">
-            {{item?.display}}
-            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-        </mat-chip>
-        <input type="text" #filterInput matInput [matAutocomplete]="auto" (input)="q = filterInput.value" [required]="required" (blur)="onTouch()" [placeholder]="placeholder | text" [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-            (matChipInputTokenEnd)="onAdding($event)">
-    </mat-chip-list>
-
-    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="selectionChange($event)">
-        <ng-container *ngIf="options$">
-            <mat-option *ngFor="let item of options$ | async" [value]="item">
-                <img *ngIf="item.image" [src]="item.image">
-                <span>{{item.display | text}}</span>
-            </mat-option>
-            <mat-option [value]="null">
-                <span>{{'add-new-chip' | text}}</span>
-            </mat-option>
-        </ng-container>
-    </mat-autocomplete>
-    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}
-    </mat-error>
-</mat-form-field> -->
 @if(control){
-<mat-form-field [class.ng-dirty]="control.dirty" [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
+<mat-form-field [class.ng-dirty]="control.dirty" [appearance]="appearance" [floatLabel]="floatLabel"
+    style="width: 100%;">
     <input type="hidden" [formControl]="control">
-    <mat-label *ngIf="label">{{label | text}}</mat-label>
-    <mat-chip-grid #chipGrid aria-label="Fruit selection">
-        @for (item of valueDataSource$ | async; track item.key) {
+    @if(label){
+    <mat-label>{{label}}</mat-label>
+    }
+    <mat-chip-grid #chipGrid [attr.aria-label]="label">
+        @for (item of valueDataSource$ | async; track item) {
         <mat-chip-row (removed)="remove(item)">
             {{item.display}}
-            <button matChipRemove [attr.aria-label]="'remove ' + item.key">
+            <button matChipRemove [attr.aria-label]="'remove ' + item.display">
                 <mat-icon>cancel</mat-icon>
             </button>
         </mat-chip-row>
         }
     </mat-chip-grid>
-    <input #filterInput [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto" (focus)="openedChange(true)" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput (input)="q = filterInput.value" [required]="required" (blur)="onTouch()" [placeholder]="placeholder" (matChipInputTokenEnd)="onAdding($event.value)">
+    <input #filterInput [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
+        (focus)="openedChange(true)" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput
+        (input)="q = filterInput.value" [required]="required" (blur)="onTouch()" [placeholder]="placeholder"
+        (matChipInputTokenEnd)="onAdding($event.value)">
 
 
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event)">
+    <mat-autocomplete #auto="matAutocomplete"
+        (optionSelected)="selectionChange($event.option.value)">
 
-        @for (opt of options(); track opt) {
+        @for (opt of items$|async; track opt) {
         <mat-option [value]="opt">
             @if(opt.image){
             <img [src]="opt.image" [attr.alt]="opt.value">

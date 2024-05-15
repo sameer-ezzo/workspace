@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 
 const migrationSchema = new Schema({
     __documentVersion: { type: Number, default: 1, required: true },
-    __lockVersion: { type: Number, default: 0, required: true },
     _id: mongoose.Schema.Types.ObjectId,
 
     name: { type: String, required: true, unique: true, index: true },
@@ -11,9 +10,8 @@ const migrationSchema = new Schema({
 });
 
 export type MigrationModel = {
-    _id: mongoose.Schema.Types.ObjectId, name: string, collectionName: string, date: Date, 
-    __documentVersion?: number,
-    __lockVersion?: number,
+    _id: mongoose.Schema.Types.ObjectId, name: string, collectionName: string, date: Date,
+    __documentVersion?: number
 };
 export type MigrationDocument = MigrationModel & Document
 

@@ -19,7 +19,7 @@ export class AdapterInputResolverService implements IFieldInputResolver {
 
         const _adapter = inputs['_adapter'] as SimpleDataAdapter;
         let dataSource: TableDataSource;
-        let keyProperty: string = null
+        let keyProperty: string = _adapter.keyProperty
         switch (_adapter.dataSource) {
             case 'server':
                 dataSource = new ServerDataSource(this.dataService, _adapter.path, _adapter.selectedColumns);

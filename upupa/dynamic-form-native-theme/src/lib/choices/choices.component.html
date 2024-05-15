@@ -2,13 +2,13 @@
 <ng-container *ngIf="template === 'normal';else thumbsTemplate">
     <div *ngIf="!maxAllowed || maxAllowed > 1; else singleChoiceTemplate" class="{{direction}} {{template}} choices" (focusleave)="onTouch()">
         <mat-checkbox class="choice" *ngFor="let item of items$ | async" (change)="toggle(item.key);valueChanged(selectionModel.selected)" [checked]="selectionModel.isSelected(item.key)">
-            <paragraph [text]="item.display" [renderer]="renderer"></paragraph>
+            <paragraph [text]="item.display + ''" [renderer]="renderer"></paragraph>
         </mat-checkbox>
     </div>
     <ng-template #singleChoiceTemplate>
         <mat-radio-group (focusleave)="onTouch()" class="{{direction}} {{template}} choices" [(ngModel)]="selected" (ngModelChange)="valueChanged($event)">
             <mat-radio-button class="choice" *ngFor="let item of items$ | async" [value]="item.key">
-                <paragraph [text]="item.display" [renderer]="renderer"></paragraph>
+                <paragraph [text]="item.display + ''" [renderer]="renderer"></paragraph>
             </mat-radio-button>
         </mat-radio-group>
     </ng-template>

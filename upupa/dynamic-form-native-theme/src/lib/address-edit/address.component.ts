@@ -1,7 +1,7 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { Component, Input, SimpleChanges, forwardRef } from '@angular/core';
 
-import { NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, UntypedFormGroup, UntypedFormControl, Validators, FormControl } from '@angular/forms';
 import { countries, InputBaseComponent } from '@upupa/common';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
 
@@ -69,8 +69,8 @@ export class AddressComponent extends InputBaseComponent<AddressModel> implement
     //     this.addressFormGroup = new UntypedFormGroup(components)
     // }
 
-    getControl(name: string): UntypedFormControl {
-        return this.addressFormGroup.get(name) as UntypedFormControl
+    getControl(name: string): FormControl {
+        return this.addressFormGroup.get(name) as FormControl
     }
 
     countryAdapter = new DataAdapter(new ClientDataSource(Object.values(countries)), 'alpha_2', 'native_name', undefined, undefined, {

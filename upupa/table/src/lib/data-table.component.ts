@@ -51,7 +51,7 @@ type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges, AfterViewInit {
 
 
-    showSearch = false // will be set to true if there are terms in the adapter
+    @Input() showSearch = undefined // will be set to true if there are terms in the adapter
     hasHeader = false // will be set to true if showSearch is true or there are bulk actions or header actions
 
     @Input() label: string
@@ -89,7 +89,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         if (!this.expanded[row.key]) this.expanded[row.key] = signal(false)
         const v = this.expanded[row.key]?.()
         this.expanded[row.key].set(!v)
-        console.log(v);
     }
 
     @Input() cellTemplate: any
@@ -100,8 +99,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     get hasValue() {
         return !this.value ? false : Array.isArray(this.value) ? this.value?.length > 0 : true
     }
-
-
 
 
     ngAfterViewInit(): void {
@@ -143,21 +140,15 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes)
-        if (this.adapter) {
+        if (this.adapter && this.showSearch === undefined) {
             this.showSearch = this.adapter?.options?.terms?.length > 0
         }
-        if (changes['actions']) {
-            this.generateColumns()
-            if (this.actions === null) this.actions = []
-            const actions = Array.isArray(this.actions) ? this.actions : this.actions(null)
-            this.bulkActions = actions?.length ? actions.filter(a => ActionDescriptor._bulk(a)) : []
-            this.headerActions = actions?.length ? actions.filter(a => ActionDescriptor._header(a)) : []
-
-            this._updateHeaderBulkActionsDisableState()
-        }
         if (changes['columns']) this.generateColumns()
-
-        this.hasHeader = (this.label||'').length > 0 || this.showSearch === true || this.bulkActions?.length > 0 || this.headerActions?.length > 0
+        const actions: ActionDescriptor[] = ((Array.isArray(this.actions)) ? this.actions : this.actions(null)) || []
+        this.bulkActions = actions?.length ? actions.filter(a => ActionDescriptor._bulk(a)) : []
+        this.headerActions = actions?.length ? actions.filter(a => ActionDescriptor._header(a)) : []
+        this._updateHeaderBulkActionsDisableState()
+        this.hasHeader = this.showSearch === true || (this.label || '').length > 0 || this.bulkActions?.length > 0 || this.headerActions?.length > 0
     }
 
     private generateColumns() {
@@ -251,9 +242,15 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
         return actions
     }
+    get selectedValue() {
+        if (!this.adapter) return []
+        return this.selected.map(x => this.adapter.normalized.find(n => n.key === x))
+    }
     onAction(descriptor: ActionDescriptor, data: NormalizedItem[] | any[]) {
         //TODO should action set loading automatically just like filter?
-        const d = (data ?? []).map(x => x.item ?? x)
+        if (descriptor.header === true) data = this.selectedValue
+
+        const d = (data || []).map(x => x.item)
         const e = { action: descriptor, data: d }
         if (descriptor.handler) descriptor.handler(e)
         this.action.emit(e)
@@ -275,8 +272,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         for (const r of rows) {
-            if (event.checked) this.select(r.value)
-            else this.deselect(r.value)
+            if (event.checked) this.select(r.key)
+            else this.deselect(r.key)
         }
 
         this.setFocusedItem(row)

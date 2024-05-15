@@ -1,8 +1,8 @@
-import { TemplateRef, Inject, ViewChild, Optional, ComponentRef, SimpleChange, SimpleChanges, AfterViewInit, reflectComponentType, HostBinding, Input, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID } from "@angular/core";
+import { TemplateRef, Inject, ViewChild, Optional, ComponentRef, SimpleChange, SimpleChanges, AfterViewInit, reflectComponentType, HostBinding, Input, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, WritableSignal } from "@angular/core";
 import { MatDialogRef, MatDialogState, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { CdkPortalOutletAttachedRef, ComponentPortal } from "@angular/cdk/portal";
 import { Component } from "@angular/core";
-import { ActionEvent, ActionsDescriptor } from "../..";
+import { ActionDescriptor, ActionEvent, ActionsDescriptor } from "../..";
 import { fromEvent } from "rxjs";
 import { debounceTime, startWith, takeUntil } from "rxjs/operators";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -10,8 +10,9 @@ import { isPlatformBrowser } from "@angular/common";
 
 
 export interface UpupaDialogPortal<C> {
-    dRef?: MatDialogRef<UpupaDialogComponent<C>>;
-    onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent<C>>): Promise<any | ActionEvent>;
+    dialogRef?: MatDialogRef<UpupaDialogComponent<C>>;
+    dialogActions?: WritableSignal<ActionDescriptor[]>;
+    onAction?(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent<C>>): Promise<any | ActionEvent>;
 }
 
 @Component({
@@ -37,8 +38,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     templatePortalContent: TemplateRef<unknown>;
     component;
     componentPortal: ComponentPortal<any>;
-    actions: ActionsDescriptor = [];
-
+    dialogActions = signal([])
     title: string;
     subTitle: string;
     showCloseBtn = true;
@@ -56,8 +56,9 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
         this.dialogRef = this.dialogData.dialogRef ?? inject(MatDialogRef);
         this.componentPortal = new ComponentPortal(this.dialogData.component);
 
-        this.actions = dialogData.dialogActions || dialogData.actions || [];
-        if (this.actions.length > 0) this._class += ' scroll-y'
+        const actions = (this.dialogData.actions || this.dialogData.dialogActions || []) as ActionsDescriptor[];
+        this.dialogActions.set(actions);
+        if (actions.length > 0) this._class += ' scroll-y'
         this.title = dialogData.title;
         this.subTitle = dialogData.subTitle;
         this.showCloseBtn = dialogData.hideCloseBtn !== true;
@@ -86,6 +87,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
         portalOutletRef = portalOutletRef as ComponentRef<any>;
         this.component = portalOutletRef.instance;
         this.component.dialogRef = this.dialogRef;
+        this.component.dialogActions = this.dialogActions;
 
         const meta = reflectComponentType(this.dialogData.component);
         const { inputs, outputs } = meta;

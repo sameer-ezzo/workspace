@@ -262,7 +262,7 @@ export class DataListComponent {
             direction: languageDir(this.languageService.language),
             title: toTitleCase(`${payload.action.action} ${collection}`),
         })
-        if (!res || (res['action'] && !res['data'])) return
+        if (!res) return
 
         await this.refreshData();
 

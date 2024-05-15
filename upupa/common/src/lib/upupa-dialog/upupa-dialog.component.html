@@ -19,10 +19,12 @@
 <div class="body">
     <ng-template [cdkPortalOutlet]="componentPortal" (attached)="onAttached($event)"></ng-template>
 </div>
-@if(actions?.length){
+@if(dialogActions(); as actions){
+@if(actions.length > 0){
 <div class="toolbar footer">
-    @for(descriptor of actions; track descriptor.action){
+    @for(descriptor of actions; track descriptor; let i = $index){
     <mat-btn class="action" (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
     }
 </div>
+}
 }

@@ -2,6 +2,7 @@ import { Controller, Inject } from "@nestjs/common"
 import { EndPoint } from "@ss/common"
 import { NotificationService } from "./notification.svr"
 import { DataService } from "@ss/data"
+import { Schema } from "mongoose"
 
 
 @Controller('notification')
@@ -12,7 +13,7 @@ export class NotificationController {
 
 
     constructor(public notification: NotificationService, @Inject("DB_NOTIFICATION") public data: DataService) {
-        data.addModel('notification')
+        data.addModel('notification', new Schema({}, { strict: false }))
     }
 
     @EndPoint({ http: { path: "public-key" } })
