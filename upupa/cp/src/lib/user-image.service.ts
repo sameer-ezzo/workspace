@@ -12,32 +12,50 @@ export class UserImageService {
 
 
 
-export function getInitials(text: string) {
-    return text?.split(' ').map(x => x.trim()).filter(x => x.length > 0).map(x => x[0].toLocaleUpperCase()).join('');
+export function getInitials(text: string): string {
+    if (!text) return '';
+    return text
+        .split(' ')
+        .map(word => word.trim())
+        .filter(word => word.length > 0)
+        .map(word => word[0].toLocaleUpperCase())
+        .join('');
 }
-export function textToImage(text: string, color: string = '#fff', bgColor: string = '#2e7d32dd') {
 
-    var canvas = document.createElement("canvas");
-    var context = canvas.getContext("2d");
-    canvas.width = canvas.height = 65;
+export function textToImage(
+    text: string,
+    color: string = '#fff',
+    bgColor: string = '#2e7d32dd'
+): string {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const size = 128;
 
+    canvas.width = canvas.height = size;
+
+    // Draw background
     context.fillStyle = bgColor;
-    context.beginPath();
-    context.rect(0, 0, canvas.width, canvas.height);
-    context.fill();
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-    // context.font = (canvas.height / 2) + "px";
+    // Set text properties
+    const fontSize = canvas.height / text.length;
+    context.font = `ultra-condensed small-caps ${fontSize}px "Sans", sans-serif`;
     context.fillStyle = color;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.font = `ultra-condensed small-caps ${canvas.height / 2}px "Sans", sans-serif`
-    // set letter spacing to 0.1 of font size
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
 
-    
-    context.fillText(text, canvas.width / 2, canvas.height / 2, 0.9 * canvas.width);
+    // Draw text
+    context.fillText(text, canvas.width / 2, canvas.height / 2, 0.75 * canvas.width);
+
     return canvas.toDataURL();
 }
 
-export function getUserInitialsImage(name: string, color: string = '#fff', bgColor: string = '#2e7d32dd') {
-    return textToImage(getInitials(name), color, bgColor)
+
+export function getUserInitialsImage(
+    name: string,
+    color: string = '#fff',
+    bgColor: string = '#2e7d32dd'
+): string {
+    const initials = getInitials(name);
+    return textToImage(initials, color, bgColor);
 }

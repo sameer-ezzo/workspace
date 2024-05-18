@@ -140,11 +140,17 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes)
-        if (this.adapter && this.showSearch === undefined) {
-            this.showSearch = this.adapter?.options?.terms?.length > 0
+        if (changes['adapter'] && this.showSearch === undefined) {
+            this.showSearch = this.adapter.options?.terms?.length > 0
         }
         if (changes['columns']) this.generateColumns()
-        const actions: ActionDescriptor[] = ((Array.isArray(this.actions)) ? this.actions : this.actions(null)) || []
+
+        if (changes['actions']) {
+            this.actionsMap = new Map<any, ActionDescriptor[]>()
+            this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
+        }
+        const actions: ActionDescriptor[] = (Array.isArray(this.actions) ? this.actions : this.actions(null)) || []
+
         this.bulkActions = actions?.length ? actions.filter(a => ActionDescriptor._bulk(a)) : []
         this.headerActions = actions?.length ? actions.filter(a => ActionDescriptor._header(a)) : []
         this._updateHeaderBulkActionsDisableState()

@@ -27,7 +27,7 @@ export class PermissionController {
     }
 
 
-    @EndPoint({ http: { method: "GET", path: "user-permessions/:id" } })
+    @EndPoint({ http: { method: "GET", path: "user-permissions/:id" } })
     async getPermissionsForUser(@Message() msg: IncomingMessage<any>) {
         const userId = msg.query.id as string;
         const principle = msg.principle as Principle;

@@ -20,7 +20,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     inlineError = true
     showSearch = false
 
-    @Input() required = false
+    @Input() required = true
     @Input() appearance = InputDefaults.appearance
     @Input() floatLabel = InputDefaults.floatLabel
     @Input() label: string

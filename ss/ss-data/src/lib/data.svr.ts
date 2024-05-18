@@ -409,7 +409,7 @@ export class DataService {
         const queryInfo = q.length ? this.queryParser.parse(q) : null;
         const query: any = queryInfo ? queryInfo.filter : {};
 
-        if (pathInfo.id) { query["_id"] = pathInfo.id; }
+        if (pathInfo.id) { query["_id"] = convertToModelId(pathInfo.id, model); }
 
 
         switch (f) {
@@ -433,9 +433,10 @@ export class DataService {
         if (!model) return Promise.resolve([])
         const query = q ? this.queryParser.parse(<any>q) : ({} as any);
         const pipeline = [];
-
+        let _id = undefined
         if (pathInfo.id) {
-            pipeline.push({ $match: { _id: pathInfo.id } })
+            _id = convertToModelId(pathInfo.id, model);
+            pipeline.push({ $match: { _id } })
             if (query.select) pipeline.push({ $project: query.select });
         }
         else {
@@ -673,3 +674,9 @@ export class DataService {
         return new mongoose.Types.ObjectId()
     }
 }
+function convertToModelId(id: string, model: mongoose.Model<any, {}, {}, {}, any, any>): any {
+    if (model.schema.paths._id.instance === 'String') return id
+    if (model.schema.paths._id.instance === 'Number') return +id
+    return new mongoose.Types.ObjectId(id)
+}
+

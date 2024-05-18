@@ -1,5 +1,6 @@
 // https://github.com/surfer77/mongoose-string-query
 
+import { ObjectId } from "mongodb";
 import { logger } from "./logger";
 
 
@@ -99,6 +100,7 @@ export class QueryParser {
 
     private dateOperators = ['year', 'month', 'date', 'hour', 'minute', 'second'];
     private dateMethods = [(d: Date) => d.getFullYear(), (d: Date) => d.getMonth(), (d: Date) => d.getDate(), (d: Date) => d.getHours(), (d: Date) => d.getMinutes(), (d: Date) => d.getSeconds()];
+    private objectIdPattern = /^[0-9a-fA-F]{24}$/; // Regular expression for ObjectId
 
     _operator(s: string) {
 
@@ -224,6 +226,8 @@ export class QueryParser {
             case 'false': return false;
             default:
                 if ((!config || config.date) && dateFormat.exec(value)) return new Date(value);
+                else if (this.objectIdPattern.test(value)) 
+                    return new ObjectId(value);
                 else if ((!config || config.number) && !isNaN(+value)) return +value;
                 else if ((!config || config.array) && value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x));
                 else return value;

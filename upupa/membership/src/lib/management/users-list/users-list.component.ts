@@ -9,6 +9,8 @@ import {
   OnChanges,
   AfterViewInit,
   inject,
+  ChangeDetectorRef,
+  signal,
 } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { DataService, ServerDataSource, DataAdapter } from "@upupa/data";
@@ -82,6 +84,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
     this._usersManagementOptions = inject(USERS_MANAGEMENT_OPTIONS);
   }
 
+  readonly dataAdapter = signal(null);
   userSelect = []
   private _setOptions(options: UsersManagementOptions) {
     const usersOptions = options.lists?.users ?? {
@@ -104,11 +107,14 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       this.adapter.destroy();
       this.adapter = null;
     }
+    if(this.adapter) this.adapter.destroy();
+    
     this.adapter = new DataAdapter(this.usersDataSource, "_id", "email", "_id", null, {
       page: { pageIndex: 0, pageSize: 100 },
       sort: { active: "date", direction: "desc" },
       terms: [{ field: "email", type: "like" }],
     });
+    this.dataAdapter.set(this.adapter);
     this.adapter.refresh();
   }
 

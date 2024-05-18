@@ -25,24 +25,25 @@ export class PermissionsService {
     private readonly http = inject(HttpClient)
 
     constructor() {
-        if (!this.roles$) this.roles$ = this.data.get<any>(`/v2/role?select=name`).pipe(
+
+        this.roles$ = this.data.get<any>(`/v2/role?select=name`).pipe(
             map(x => x.data),
-            map(roles => roles || []),
+            map(roles => (roles || []).filter(x => x._id !== 'super-admin')),
             shareReplay(1)
         )
         this.getRules().subscribe()
     }
 
-    userPersmissions = new Map<string, Promise<SimplePermission[]>>();
-    getUserPersmissions(userId: string): Promise<SimplePermission[]> {
+    userPermissions = new Map<string, Promise<SimplePermission[]>>();
+    getUserPermissions(userId: string): Promise<SimplePermission[]> {
         if (!userId) return Promise.resolve([])
-        if (this.userPersmissions.has(userId)) return this.userPersmissions.get(userId)
-        this.userPersmissions.set(userId, firstValueFrom(this.http.get<SimplePermission[]>(`${this.base}/user-permessions/${userId}`).pipe(
+        if (this.userPermissions.has(userId)) return this.userPermissions.get(userId)
+        this.userPermissions.set(userId, firstValueFrom(this.http.get<SimplePermission[]>(`${this.base}/user-permissions/${userId}`).pipe(
             startWith([]),
             catchError((err) => of([]))),
             // shareReplay(1)
         ))
-        return this.userPersmissions.get(userId)
+        return this.userPermissions.get(userId)
     }
 
     getRules(): Observable<NodeModel[]> {

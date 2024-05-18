@@ -81,7 +81,7 @@ export function getByPath(obj: any, path: string) {
     let result = obj;
     while (segments.length) {
         const s = segments.shift();
-        result = result[s];
+        result = result?.[s];
     }
     return result;
 }
