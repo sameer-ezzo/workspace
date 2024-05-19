@@ -63,17 +63,27 @@ export class AuthService {
         await this.data.addModel('role', roleSchema)
     }
     async signUp(user: Partial<User>, password: string): Promise<{ _id: string } & Partial<User>> {
-        const payload = { ...user }
+        const payload = {
+            ...user,
+            _id: new mongoose.Types.ObjectId(),
+        } as any
         if (password) payload.passwordHash = await bcrypt.hash(password, 10)
 
-        delete payload.password
+        delete payload['password']
         payload.securityCode = randomString(5)
 
         const errors = this.verifyUser(payload)
         if (errors.length) throw new AuthException(AuthExceptions.InvalidSignup, errors)
 
-        const { _id } = await this.data.post("user", payload)
-        return { _id, ...payload }
+        const userModel = await this.data.getModel('user')
+        try {
+            await userModel.create(payload)
+            // const { _id } = await this.data.post("user", payload)
+            return { ...payload }
+        }
+        catch (err) {
+            throw new AuthException(AuthExceptions.InvalidSignup, err)
+        }
     }
 
 
@@ -175,8 +185,10 @@ export class AuthService {
         const claims = { ...user.claims, ...additionalClaims }
         if (Object.keys(claims).length) payload.claims = claims
 
+        const sub = (user._id as any)?.toHexString?.() || user._id
+
         options = {
-            subject: user._id as string,
+            subject: sub,
             expiresIn: this.options.accessTokenExpiry || "20m",
             ...options
         }
@@ -190,8 +202,10 @@ export class AuthService {
         if (!user) { throw new AuthException(AuthExceptions.InvalidUserData) }
         const payload: TokenBase = { t: TokenTypes.refresh, sec: user.securityCode }
         if (additionalClaims) payload.claims = additionalClaims
+        const sub = (user._id as any)?.toHexString?.() || user._id
+
         options = {
-            subject: user._id as string,
+            subject: sub,
             expiresIn: this.options.refreshTokenExpiry || "20m",
             ...options
         }
@@ -203,8 +217,10 @@ export class AuthService {
     async issueResetPasswordToken(user: User, options?: SignOptions) {
         if (!user) { throw new AuthException(AuthExceptions.InvalidUserData) }
         const payload: TokenBase = { t: TokenTypes.reset, sec: user.securityCode };
+        const sub = (user._id as any)?.toHexString?.() || user._id
+
         options = {
-            subject: user._id as string,
+            subject: sub,
             expiresIn: this.options.resetTokenExpiry || "20m",
             ...options
         };
@@ -233,9 +249,10 @@ export class AuthService {
                 }
             }
         });
+        const sub = (user._id as any)?.toHexString?.() || user._id
 
         options = {
-            subject: user._id,
+            subject: sub,
             expiresIn: this.options.verifyTokenExpiry || "20m",
             ...options
         };
@@ -314,7 +331,9 @@ export class AuthService {
     async signInUserByRefreshToken(refreshToken: string): Promise<UserDocument> {
         const token = await this.verifyToken(refreshToken)
         if (token && token.t === "rfs") {
-            const user = await this.findUserById(token.sub)
+            const model = await this.data.getModel('user')
+            const id = this.data.convertToModelId(token.sub, '_id', model)
+            const user = await this.findUserById(id)
             if (!user) throw new AuthException(AuthExceptions.UserNotFound)
             if (user && user.securityCode !== token.sec) throw new AuthException(AuthExceptions.InvalidSecurityCode)
 

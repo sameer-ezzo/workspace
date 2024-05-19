@@ -154,11 +154,6 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
     if (env.NODE_ENV === 'development') {
         application.enableCors({ origin: '*' })
     }
-    // application.enableCors({
-    //     allowedHeaders: ['X-Get-Count'],
-    //     credentials: true,
-    //     origin: 'http://localhost:4205'
-    // })
 
 
     application.useGlobalInterceptors()

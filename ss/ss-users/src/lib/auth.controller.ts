@@ -303,7 +303,7 @@ export class AuthController {
         }
 
         let userRecord: User = await this.auth.findUserByEmail(googleUser.email);
-        const google_client_regesterateion_enabled = (process.env.GOOGLE_CLIENT_REGESTERATEION_ENABLED || 'false').toLowerCase() === 'true'
+        const GOOGLE_CLIENT_REGISTRATION_ENABLED = (process.env.GOOGLE_CLIENT_REGISTRATION_ENABLED || 'false').toLowerCase() === 'true'
 
         const user = {
             hd: googleUser.hd,
@@ -319,13 +319,17 @@ export class AuthController {
         } as unknown as User
 
         if (!userRecord || userRecord.external?.google !== googleUser.sub) {
-            if (google_client_regesterateion_enabled === true) {
+            if (GOOGLE_CLIENT_REGISTRATION_ENABLED === true) {
                 const external = userRecord?.external ?? {}
-                await this.auth.signUp({
-                    ...user,
-                    external: { ...external, ['google']: googleUser.sub }
-                } as User, '')
-                userRecord = await this.auth.findUserByEmail(user.email);
+                try {
+                    const res = await this.auth.signUp({
+                        ...user,
+                        external: { ...external, ['google']: googleUser.sub }
+                    } as User, '')
+                    userRecord = await this.auth.findUserByEmail(res.email);
+                } catch (error) {
+                    throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
+                }
             }
             else userRecord = { _id: googleUser.sub, ...user }
         }
@@ -583,7 +587,7 @@ export class AuthController {
     }
 
     @EndPoint({ http: { method: 'GET', path: 'whoami' } })
-    @Authorize({by:'anonymous'})
+    @Authorize({ by: 'anonymous' })
     public async whoami(@Message() msg: IncomingMessage) {
         return msg.principle ?? {}
     }

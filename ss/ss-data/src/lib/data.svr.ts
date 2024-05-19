@@ -409,7 +409,7 @@ export class DataService {
         const queryInfo = q.length ? this.queryParser.parse(q) : null;
         const query: any = queryInfo ? queryInfo.filter : {};
 
-        if (pathInfo.id) { query["_id"] = convertToModelId(pathInfo.id, model); }
+        if (pathInfo.id) { query["_id"] = this.convertToModelId(pathInfo.id, '_id', model); }
 
 
         switch (f) {
@@ -435,7 +435,7 @@ export class DataService {
         const pipeline = [];
         let _id = undefined
         if (pathInfo.id) {
-            _id = convertToModelId(pathInfo.id, model);
+            _id = this.convertToModelId(pathInfo.id, '_id', model);
             pipeline.push({ $match: { _id } })
             if (query.select) pipeline.push({ $project: query.select });
         }
@@ -673,10 +673,21 @@ export class DataService {
     generateId() {
         return new mongoose.Types.ObjectId()
     }
-}
-function convertToModelId(id: string, model: mongoose.Model<any, {}, {}, {}, any, any>): any {
-    if (model.schema.paths._id.instance === 'String') return id
-    if (model.schema.paths._id.instance === 'Number') return +id
-    return new mongoose.Types.ObjectId(id)
-}
 
+    // pass path to check instance of
+    convertToModelId(value: string, path = '_id', model: mongoose.Model<any, {}, {}, {}, any, any>): any {
+        const instance = model.schema.paths[path]?.instance || 'ObjectId'
+        logger.info(`convertToModelId: ${model.modelName}.${path}:${value} => ${instance}`)
+
+        if (instance === 'String') return value
+        if (instance === 'Number') return +value
+        if (instance === 'ObjectId')
+            try {
+                return new mongoose.Types.ObjectId(value)
+            } catch (error) {
+                logger.error(`convertToModelId: ${model.modelName}.${path}:${value} => ${instance}`, error)
+                return value
+            }
+        return value
+    }
+}		

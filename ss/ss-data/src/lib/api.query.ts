@@ -181,7 +181,7 @@ export class QueryParser {
             if (val === undefined) return { [key]: { $exists: false } };
             else if (typeof val === "string" && val.indexOf('*') > -1) {
                 const purified = this.escapeRegex(value);
-                return { [key]: new RegExp(purified,'gi') }
+                return { [key]: new RegExp(purified, 'gi') }
             }
             else return { [key]: val }
         }
@@ -212,7 +212,7 @@ export class QueryParser {
             }
 
         }
-        purified = purified.endsWith('*') ? purified.substring(0, purified.length - 1) : purified ;
+        purified = purified.endsWith('*') ? purified.substring(0, purified.length - 1) : purified;
         return purified;
     }
 
@@ -226,8 +226,15 @@ export class QueryParser {
             case 'false': return false;
             default:
                 if ((!config || config.date) && dateFormat.exec(value)) return new Date(value);
-                else if (this.objectIdPattern.test(value)) 
-                    return new ObjectId(value);
+                else if (this.objectIdPattern.test(value)) {
+                    try {
+                        return new ObjectId(value);
+                    }
+                    catch (e) {
+                        logger.error(e);
+                        return value;
+                    }
+                }
                 else if ((!config || config.number) && !isNaN(+value)) return +value;
                 else if ((!config || config.array) && value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x));
                 else return value;
@@ -299,7 +306,7 @@ export class QueryParser {
             else if (x.key === 'sort_by' && x.value) {
                 const sort_by_array = x.value.split(',');
                 const [field, direction] = sort_by_array;
-                if(sort_by_array.length === 1 && field.startsWith('-')) sort = { [field.substring(1)]: -1 };
+                if (sort_by_array.length === 1 && field.startsWith('-')) sort = { [field.substring(1)]: -1 };
                 else sort = { [field]: direction === 'desc' ? -1 : 1 };
             }
             else if (x.key === 'select' && x.value) select = this._select(x.value);
