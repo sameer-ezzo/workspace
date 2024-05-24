@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataFormResolverResult, FormSubmitResult } from '../../types';
 import { PathInfo } from '@noah-ark/path-matcher';
 import { MatDialogRef } from '@angular/material/dialog';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
@@ -24,20 +24,8 @@ export class DataFormComponent implements UpupaDialogPortal<DataFormComponent> {
     dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormComponent>>;
     private readonly destroyRef = inject(DestroyRef)
 
-    private _form: DynamicFormComponent;
-    @ViewChild('dynForm')
-    public get form(): DynamicFormComponent {
-        return this._form;
-    }
-    public set form(value: DynamicFormComponent) {
-        this._form = value;
-        this.form.formElement.statusChanges
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(status => {
-                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
-                submitButton.disabled = status !== 'VALID'
-            })
-    }
+    @ViewChild('dynForm') form: DynamicFormComponent;
+
 
 
 
@@ -61,8 +49,7 @@ export class DataFormComponent implements UpupaDialogPortal<DataFormComponent> {
         private router: Router,
         private snack: SnackBarService) {
     }
-
-    ngAfterViewInit() {
+    ngOnInit() {
         if (!this.formResolverResult) {
             this.activatedRoute.data.pipe(
                 switchMap(s => s['scheme']),
@@ -71,6 +58,18 @@ export class DataFormComponent implements UpupaDialogPortal<DataFormComponent> {
                     this.formResolverResult = scheme
                 });
         }
+    }
+    async ngAfterViewInit() {
+
+
+        this.form.formElement.statusChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(status => {
+                console.log('dynForm.status', status);
+
+                const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
+                submitButton.disabled = status !== 'VALID'
+            })
     }
 
     setLoading(loading: boolean) {

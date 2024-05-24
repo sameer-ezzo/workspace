@@ -49,6 +49,7 @@ export type TokenBase = { t: TokenTypes } & Record<string, any>;
 export class AuthService {
 
     #secret = new TextEncoder().encode(this.options.secret)
+    model: mongoose.Model<any, {}, {}, {}, any, any>
 
     constructor(@Inject('AUTH_DB') public readonly data: DataService,
         private readonly broker: Broker,
@@ -61,12 +62,11 @@ export class AuthService {
     private async _addAuthModels(): Promise<void> {
         await this.data.addModel('user', userSchema, undefined, ["attempts", "passwordHash", "securityCode"])
         await this.data.addModel('role', roleSchema)
+        this.model = await this.data.getModel('user')
     }
     async signUp(user: Partial<User>, password: string): Promise<{ _id: string } & Partial<User>> {
-        const payload = {
-            ...user,
-            _id: new mongoose.Types.ObjectId(),
-        } as any
+        const payload = { ...user } as any
+
         if (password) payload.passwordHash = await bcrypt.hash(password, 10)
 
         delete payload['password']
@@ -75,11 +75,9 @@ export class AuthService {
         const errors = this.verifyUser(payload)
         if (errors.length) throw new AuthException(AuthExceptions.InvalidSignup, errors)
 
-        const userModel = await this.data.getModel('user')
         try {
-            await userModel.create(payload)
-            // const { _id } = await this.data.post("user", payload)
-            return { ...payload }
+            const { _id } = await this.data.post("user", payload)
+            return { _id, ...payload }
         }
         catch (err) {
             throw new AuthException(AuthExceptions.InvalidSignup, err)
@@ -273,7 +271,7 @@ export class AuthService {
         const secret = randomString(20);
         const secrethash = crypto.createHash('sha256').update(key + secret).digest().toString('base64');
 
-        await model.create({
+        await this.model.create({
             _id: new mongoose.Types.ObjectId(),
             userId: user._id,
             name,
@@ -287,20 +285,20 @@ export class AuthService {
 
 
     async findUserById(id: string): Promise<UserDocument> {
-        const model = await this.userModel();
-        return model.findOne({ _id: id });
+
+        return this.model.findOne({ _id: id });
     }
     async findUserByUsername(username: string): Promise<UserDocument> {
-        const model = await this.userModel();
-        return model.findOne({ username });
+
+        return this.model.findOne({ username });
     }
     async findUserByEmail(email: string): Promise<UserDocument> {
-        const model = await this.userModel();
-        return model.findOne({ email });
+
+        return this.model.findOne({ email });
     }
     async findUserByPhone(phone: string): Promise<UserDocument> {
-        const model = await this.userModel();
-        return model.findOne({ phone });
+
+        return this.model.findOne({ phone });
     }
 
     async signInUserByUsernameAndPassword(username: string, password: string, device: UserDevice): Promise<UserDocument> {
@@ -331,9 +329,7 @@ export class AuthService {
     async signInUserByRefreshToken(refreshToken: string): Promise<UserDocument> {
         const token = await this.verifyToken(refreshToken)
         if (token && token.t === "rfs") {
-            const model = await this.data.getModel('user')
-            const id = this.data.convertToModelId(token.sub, '_id', model)
-            const user = await this.findUserById(id)
+            const user = await this.findUserById(token.sub)
             if (!user) throw new AuthException(AuthExceptions.UserNotFound)
             if (user && user.securityCode !== token.sec) throw new AuthException(AuthExceptions.InvalidSecurityCode)
 
@@ -378,8 +374,8 @@ export class AuthService {
 
 
     async signOut(user: User | Pick<User, '_id'>): Promise<void> {
-        const model = await this.userModel();
-        const _user = await model.findOne({ _id: user._id });
+
+        const _user = await this.model.findOne({ _id: user._id });
         if (!_user) throw new AuthException(AuthExceptions.USER_NO_LONGER_EXISTS);
         await _user.updateOne({ $set: { securityCode: randomString(5) } })
     }
@@ -387,8 +383,7 @@ export class AuthService {
     async resetPassword(resetToken: string, newPassword: string, forceChange = false) {
         const token = await this.verifyToken(resetToken)
         if (token && token.t === TokenTypes.reset) {
-            const model = await this.userModel()
-            const user = await model.findOne({ _id: token.sub })
+            const user = await this.model.findOne({ _id: token.sub })
             if (!user) throw new AuthException(AuthExceptions.USER_NO_LONGER_EXISTS)
             if (token.sec && token.sec != user.securityCode)
                 throw new AuthException(AuthExceptions.TOKEN_ALREADY_USED)
@@ -468,10 +463,6 @@ export class AuthService {
     }
 
 
-    userModel(): Promise<Model<UserDocument>> {
-        // return this.data.getModel("user");
-        return this.data.getModel('user');
-    }
     private _registerFailedAttempt(user: UserDocument) {
         user.attempts = user.attempts + 1;
         user.lastAttempt = new Date();
@@ -516,7 +507,7 @@ async function authCallback(accessToken: any, refreshToken: any, profile: any, d
     const model: Model<UserDocument> = await this.data.getModel("user");
     try {
         const email = profile.emails[0].value;
-        const document = await model.findOne({ email }).lean();
+        const document = await this.model.findOne({ email }).lean();
         //TODO even if user already exists the doc should be edited (provider.id + emailVerified + displayName) => findOrUpdate(upsert)?
         if (document) {
             return done(null, document);
@@ -531,7 +522,7 @@ async function authCallback(accessToken: any, refreshToken: any, profile: any, d
                 }
             } as any
             await this.signUp(user, randomString(20));
-            const doc = await model.findOne({ email }).lean();
+            const doc = await this.model.findOne({ email }).lean();
             return done(null, doc);
         }
     } catch (err) {

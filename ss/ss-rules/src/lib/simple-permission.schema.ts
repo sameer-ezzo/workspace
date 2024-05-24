@@ -6,7 +6,7 @@ export const SimplePermissionSchema = new Schema(
         name: { type: String, required: true, index: true },
         rule: { type: String, required: true, index: true },
         action: { type: String, required: true, index: true },
-        createDate: { type: Date, default: new Date() },
+        createDate: { type: Date, required: true },
         builtIn: { type: Boolean, default: false },
         type: { type: String, required: false, index: true },
         value: { type: String, required: false },

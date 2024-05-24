@@ -19,10 +19,10 @@
         (matChipInputTokenEnd)="onAdding($event.value)">
 
 
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event)">
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
         @if(options().length > 0 || filterInput.value.length > 0){
         @for (opt of options(); track opt) {
-        <mat-option [value]="opt">
+        <mat-option [value]="opt.key">
             @if(opt.image){
             <img [src]="opt.image" [attr.alt]="opt.value">
             }

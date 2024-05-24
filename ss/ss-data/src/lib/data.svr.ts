@@ -1,4 +1,4 @@
-import mongoose, { ConnectOptions } from "mongoose";
+import mongoose, { ConnectOptions, ObjectId } from "mongoose";
 import { Model, Document } from "mongoose";
 
 import mongooseUniqueValidator from "mongoose-unique-validator";
@@ -409,7 +409,7 @@ export class DataService {
         const queryInfo = q.length ? this.queryParser.parse(q) : null;
         const query: any = queryInfo ? queryInfo.filter : {};
 
-        if (pathInfo.id) { query["_id"] = this.convertToModelId(pathInfo.id, '_id', model); }
+        if (pathInfo.id) query["_id"] = this.convertToModelId(pathInfo.id, '_id', model, `func(${f}) ${path} ${q}`)
 
 
         switch (f) {
@@ -435,7 +435,7 @@ export class DataService {
         const pipeline = [];
         let _id = undefined
         if (pathInfo.id) {
-            _id = this.convertToModelId(pathInfo.id, '_id', model);
+            _id = this.convertToModelId(pathInfo.id, '_id', model, `agg ${path} ${q}`);
             pipeline.push({ $match: { _id } })
             if (query.select) pipeline.push({ $project: query.select });
         }
@@ -499,7 +499,7 @@ export class DataService {
     }
 
 
-    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<{ _id: string, result: WriteResult<T> }> {
+    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<{ _id: ObjectId, result: WriteResult<T> }> {
         let segments: PathInfo;
         try { segments = typeof path === 'string' ? PathInfo.parse(path) : path; }
         catch (error) { throw { status: 400, body: "INVALID_PATH" }; }
@@ -675,9 +675,9 @@ export class DataService {
     }
 
     // pass path to check instance of
-    convertToModelId(value: string, path = '_id', model: mongoose.Model<any, {}, {}, {}, any, any>): any {
+    convertToModelId(value: string, path = '_id', model: mongoose.Model<any, {}, {}, {}, any, any>, fromWhere: string): any {
         const instance = model.schema.paths[path]?.instance || 'ObjectId'
-        logger.info(`convertToModelId: ${model.modelName}.${path}:${value} => ${instance}`)
+        logger.info(`convertToModelId ${fromWhere}: ${model.modelName}.${path}:${value} => ${instance}`)
 
         if (instance === 'String') return value
         if (instance === 'Number') return +value
@@ -690,4 +690,4 @@ export class DataService {
             }
         return value
     }
-}		
+}

@@ -63,7 +63,7 @@ export class ChipsComponent extends SelectComponent {
     }
 
 
-    async selectionChange(v: any): Promise<void> {
+    async selectionChange(v: string): Promise<void> {
         this.control.markAllAsTouched()
         this.control.markAsDirty()
 
@@ -71,7 +71,8 @@ export class ChipsComponent extends SelectComponent {
             return this.onAdding(this.filterInput.nativeElement.value)
         }
 
-        const item = v as NormalizedItem<any>
+        const values = await this.adapter.getItems([v])
+        const item = values?.[0]
         if (!item) return
         this._select(item)
     }
@@ -86,6 +87,7 @@ export class ChipsComponent extends SelectComponent {
 
 
     onAdding(value: string) {
+
         const chip = value
         if (this.findKeyInValue(chip)) return
 

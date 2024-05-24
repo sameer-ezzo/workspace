@@ -4,6 +4,7 @@ import { ClientDataSource, DataAdapter } from '@upupa/data';
 import { ChipsComponent } from '@upupa/dynamic-form-native-theme';
 import { Tag } from '../tag.model';
 import { TagsService } from '../tags.service';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 
 @Component({
@@ -44,8 +45,14 @@ export class TagsChipsInputComponent extends ChipsComponent {
   }
 
 
+  optionSelected(event: MatAutocompleteSelectedEvent) {
+    const v = event.option.value
+    super.selectionChange(v)
+  }
+
 
   override async onAdding(value: string): Promise<void> {
+    debugger
     if (this.canAdd !== true) return
 
     const chip = value

@@ -13,6 +13,7 @@ import { Axios } from "axios";
 import { logger } from "./logger";
 import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
+import mongoose from "mongoose";
 
 
 
@@ -327,11 +328,12 @@ export class AuthController {
                         external: { ...external, ['google']: googleUser.sub }
                     } as User, '')
                     userRecord = await this.auth.findUserByEmail(res.email);
+
                 } catch (error) {
                     throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
                 }
             }
-            else userRecord = { _id: googleUser.sub, ...user }
+            else userRecord = { _id: new mongoose.Types.ObjectId(), ...user } as any
         }
 
         const access_token = await this.auth.issueAccessToken(userRecord);
@@ -434,8 +436,7 @@ export class AuthController {
             throw new HttpException('INVALID_LOCK_VALUE', HttpStatus.BAD_REQUEST);
         }
 
-        const model = await this.auth.userModel();
-        const user = await model.findById(id);
+        const user = await this.auth.model.findById(id);
         if (user) {
             user.disabled = lock;
             await user.save();

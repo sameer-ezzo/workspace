@@ -226,15 +226,7 @@ export class QueryParser {
             case 'false': return false;
             default:
                 if ((!config || config.date) && dateFormat.exec(value)) return new Date(value);
-                else if (this.objectIdPattern.test(value)) {
-                    try {
-                        return new ObjectId(value);
-                    }
-                    catch (e) {
-                        logger.error(e);
-                        return value;
-                    }
-                }
+                else if (this.objectIdPattern.test(value) && ObjectId.isValid(value)) return new ObjectId(value);
                 else if ((!config || config.number) && !isNaN(+value)) return +value;
                 else if ((!config || config.array) && value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x));
                 else return value;

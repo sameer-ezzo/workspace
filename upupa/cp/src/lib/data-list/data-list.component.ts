@@ -85,7 +85,7 @@ export class DataListComponent {
             const [active, direction] = sort_by.split(',')
             value.adapter.sort = { active, direction }
         }
-
+        if (value.adapter.options.sort) this.updateSortInfo(value.adapter.options.sort)
         this.filterFormVm = value.listViewModel.filterForm
         this._listViewModelActions = value.listViewModel.actions
         this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions
@@ -177,11 +177,9 @@ export class DataListComponent {
     }
 
     updateSortInfo($event) {
-
-        const { qps_sort } = this.route.snapshot.queryParams
-        if (qps_sort === this.sort_by) return
+        const { sort_by = '' } = $event.direction ? { sort_by: `${$event.active},${$event.direction}` } : {}
         this.router.navigate([], {
-            queryParams: { sort_by: this.sort_by },
+            queryParams: { sort_by },
             queryParamsHandling: "merge",
             relativeTo: this.route
         })

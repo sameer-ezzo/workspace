@@ -19,7 +19,7 @@ export const Auth = () => UseInterceptors(AuthenticatedInterceptor);
 export class AuthenticatedInterceptor implements NestInterceptor {
     intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
         const msg = ExtractIncomingMessage(ctx);
-        if (!msg.principle) throw new HttpException('not authenticated', HttpStatus.FORBIDDEN);
+        if (!msg.principle) throw new HttpException('Unauthenticated', HttpStatus.UNAUTHORIZED);
         return next.handle();
     }
 }

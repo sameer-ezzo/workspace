@@ -146,7 +146,6 @@ export class AuthService {
                     this.setTokens(tokens)
                     principle = this.jwt(tokens.access_token) as Principle
                     this.refreshed$.next(Date.now())
-                    this.triggerNext(principle)
                     return principle
                 }
             } catch (error) {
@@ -155,6 +154,7 @@ export class AuthService {
                 return principle
             }
         }
+        this.triggerNext(principle)
         return principle
     }
 

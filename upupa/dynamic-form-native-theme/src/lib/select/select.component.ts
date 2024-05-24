@@ -46,8 +46,6 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
 
     singleSelected = signal(null)
     override async _updateViewModel(): Promise<void> {
-        if (this.name === 'year')
-            console.log(this.name, ' value ', this.value);
         await super._updateViewModel()
         this.selected = this.valueDataSource.map(v => v.key)
         if (this.value !== undefined && !Array.isArray(this.value)) this.singleSelected.set(this.selected?.[0])

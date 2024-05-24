@@ -1,4 +1,4 @@
-import { Component, OnInit, Optional, Inject, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, Optional, Inject, DestroyRef, inject, WritableSignal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { ActionDescriptor, ActionEvent } from '../mat-btn/action-descriptor';
@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs';
+import { debounceTime, filter, startWith } from 'rxjs';
 import { UpupaDialogComponent, UpupaDialogPortal } from '../upupa-dialog/upupa-dialog.component';
 
 
@@ -39,11 +39,13 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
 
   type = 'text';
   required = false;
+  dialogRef?: MatDialogRef<UpupaDialogComponent>;
+  dialogActions?: WritableSignal<ActionDescriptor[]>;
 
   appearance: MatFormFieldAppearance = 'outline';
   valueFormControl = new UntypedFormControl('', []);
   private readonly destroyRef = inject(DestroyRef)
-  submitButton!: ActionDescriptor
+
   constructor(@Optional() @Inject(MAT_DIALOG_DATA) public data: any) { }
 
   ngOnInit(): void {
@@ -63,23 +65,35 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
       else
         this.valueFormControl = new FormControl<string>(data.value || '', [...validators]);
     }
-    this.submitButton = data.dialogActions[0];
-
     this.valueFormControl.updateValueAndValidity();
 
-    this.valueFormControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef), filter(() => this.valueFormControl.valid || !this.valueFormControl.touched)).subscribe(v => {
-      this.submitButton = { ...this.submitButton, disabled: this.valueFormControl.invalid && this.valueFormControl.touched }
+    this.valueFormControl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      startWith(this.valueFormControl.value),
+      debounceTime(100),
+    ).subscribe(v => {
+      this.updateActionsState()
     })
+  }
+  private updateActionsState() {
+    const actions = this.dialogActions().map(a => {
+      const action = { ...a, disabled: false }
+      if (a.type === 'submit') action.disabled = this.valueFormControl.invalid
+      return action
+    });
+    this.dialogActions.set(actions);
   }
 
   submit(e) {
-    this.onAction({ action: this.submitButton, data: this.valueFormControl.value }, this.dialogRef)
     e.stopPropagation();
     e.preventDefault();
+    if (this.valueFormControl.invalid) return
+    this.dialogRef.close(this.valueFormControl.value)
   }
-  dialogRef?: MatDialogRef<UpupaDialogComponent>;
+
   async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>): Promise<any> {
-    ref ??= this.dialogRef
-    ref.close(this.valueFormControl.value)
+    // ref ??= this.dialogRef
+    // ref.close(this.valueFormControl.value)
   }
+
 }
