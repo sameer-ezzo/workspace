@@ -57,8 +57,9 @@ export class AuthenticationInterceptor implements NestInterceptor {
             const principle = await provider.authenticate(req)
             if (principle) {
                 // fill out context object
-                if (req._context) req._context.principle = req.principle
-                else req._context = { principle: req.principle }
+                if (!req._context) req._context = {}
+                req._context.principle = req.principle
+                req._context.authProvider = provider
                 return principle
             }
         }
@@ -76,6 +77,7 @@ import { __secret } from '@ss/common'
 
 export interface HttpAuthenticationProvider {
     authenticate(req: Request): Promise<Principle>
+    shouldCreateUser(principle: Principle): boolean
 }
 
 
@@ -110,6 +112,10 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
         }
     }
 
+    shouldCreateUser(): boolean {
+        return false
+    }
+
 
 }
 
@@ -127,7 +133,7 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
         const cookies = cookie.split(';').map(c => c.split('=').map(x => x.trim()))
         const token = cookies.find(c => c[0] === this.cookieName)?.[1]
         if (!token) return null
-        
+
         const claims = jose.decodeJwt(token)
         if (!claims) return null
 
@@ -155,6 +161,10 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
         }
 
         return req.principle
+    }
+
+    shouldCreateUser(): boolean {
+        return true
     }
 }
 

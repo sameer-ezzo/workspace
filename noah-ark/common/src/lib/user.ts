@@ -1,5 +1,3 @@
-export type SocialProvider = 'google' | 'facebook' | 'twitter' | 'github' | 'microsoft' | 'apple' | 'linkedin' | 'yahoo' | 'yandex' | 'vk' | 'ok' | 'mailru' | 'twitch' | 'discord' | 'spotify' | 'reddit' | 'pinterest' | 'line' | 'kakao' | 'instagram';
-
 export type UserClaims = Record<string, string | number | boolean>
 export type User = {
     _id?: string
@@ -22,9 +20,7 @@ export type User = {
     name?: string
     devices?: { [deviceId: string]: UserDevice }
 } & Record<string, unknown> & {
-    external: Partial<{
-        [k in SocialProvider]: string
-    }>
+    external: Record<string, any>
 }
 
 

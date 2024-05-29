@@ -258,17 +258,42 @@ export class AuthController {
             case "refresh":
                 {
                     const token = await this.auth.verifyToken(msg.payload.refresh_token)
-                    if (!token) throw new HttpException('INVALID_TOKEN', HttpStatus.BAD_REQUEST)
+                    let user: User | null = null
+                    if (token) {
 
-                    const user = await this.auth.signInUserByRefreshToken(msg.payload.refresh_token)
-                    if (token.d) {
-                        const currentDevice = user.devices?.[token.d]
-                        if (!currentDevice || currentDevice.active === false) throw new HttpException('INVALID_DEVICE', HttpStatus.BAD_REQUEST)
+                        user = await this.auth.signInUserByRefreshToken(msg.payload.refresh_token)
+                        if (token.d) {
+                            const currentDevice = user.devices?.[token.d]
+                            if (!currentDevice || currentDevice.active === false) throw new HttpException('INVALID_DEVICE', HttpStatus.BAD_REQUEST)
+                        }
+                    } else if (msg.principle) {
+                        try {
+                            user = await this.auth.signInUserByPrinciple(msg.principle)
+                        } catch (error) {
+                            if (error.code == AuthExceptions.UserNotFound && msg.ctx.authProvider?.shouldCreateUser(msg.principle)) {
+                                await this.auth.signUp({
+                                    email: msg.principle.email,
+                                    username: msg.principle.email,
+                                    external: {
+                                        ...msg.principle,
+                                        provider: msg.ctx.authProvider.constructor.name
+                                    }
+                                })
+                                user = await this.auth.findUserByEmail(msg.principle.email)
+                                if (!user) throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND)
+                            }
+                            else throw error
+                        }
+
                     }
+                    else throw new HttpException('INVALID_TOKEN', HttpStatus.BAD_REQUEST)
+
                     return {
                         access_token: await this.auth.issueAccessToken(user),
                         refresh_token: await this.auth.issueRefreshToken(user, null, token.claims, token.d),
                     }
+
+
                 }
             //QUESTION: What if user deleted or wanted to change an api key?
             //there is no login with api key because api_key should never expire
