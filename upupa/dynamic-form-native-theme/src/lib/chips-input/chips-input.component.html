@@ -25,9 +25,9 @@
         (optionSelected)="selectionChange($event.option.value)">
 
         @for (opt of items$|async; track opt) {
-        <mat-option [value]="opt">
+        <mat-option [value]="opt.key">
             @if(opt.image){
-            <img [src]="opt.image" [attr.alt]="opt.value">
+            <img [src]="opt.image" [attr.alt]="opt.display">
             }
             <span>{{opt.display}}</span>
         </mat-option>

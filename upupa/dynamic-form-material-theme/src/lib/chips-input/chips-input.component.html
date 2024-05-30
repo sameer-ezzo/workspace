@@ -22,9 +22,9 @@
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event.option.value)">
         @if(options().length > 0 || filterInput.value.length > 0){
         @for (opt of options(); track opt) {
-        <mat-option [value]="opt">
+        <mat-option [value]="opt.key">
             @if(opt.image){
-            <img [src]="opt.image" [attr.alt]="opt.value">
+            <img [src]="opt.image" [attr.alt]="opt.display">
             }
             <span>{{opt.display}}</span>
         </mat-option>

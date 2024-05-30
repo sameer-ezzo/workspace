@@ -65,8 +65,6 @@ export class DataFormComponent implements UpupaDialogPortal<DataFormComponent> {
         this.form.formElement.statusChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(status => {
-                console.log('dynForm.status', status);
-
                 const submitButton = this.formResolverResult.formViewModel.actions.find(a => a.type === 'submit')
                 submitButton.disabled = status !== 'VALID'
             })

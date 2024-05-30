@@ -1,6 +1,13 @@
-form,
-fieldset,
-mat-dialog-container {
+:host {
+  .wrapper {
+    padding: 1rem;
     display: flex;
-    flex-direction: column !important;
+    flex-direction: column;
+    form,
+    fieldset,
+    mat-dialog-container {
+      display: flex;
+      flex-direction: column !important;
+    }
+  }
 }

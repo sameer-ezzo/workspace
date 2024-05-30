@@ -11,13 +11,16 @@ import { Tag } from './tag.model'
 @Injectable({ providedIn: 'root' })
 export class TagsService {
 
-  private readonly idTtagMap: Map<string, Tag> = new Map()
+  private readonly idTagMap: Map<string, Tag> = new Map()
   private readonly tagsMap: Map<string, Tag[]> = new Map()
 
-  constructor(private dataService: DataService) { }
+  constructor(private dataService: DataService) { 
+    this.getTags().subscribe()
+  }
 
   getTags(parentPath?: string): Observable<Tag[]> {
     const filter = {}
+    parentPath = (parentPath || '').trim().split('/').filter(x => x.length).join('/')
     parentPath = '/' + parentPath?.split('/').filter(x => x.length).join('/')
     const tags = this.tagsMap.get(parentPath)
     if (tags?.length) return of(tags)
@@ -26,12 +29,19 @@ export class TagsService {
       map(res => res.data as Tag[]),
       tap(tags => {
         this.tagsMap.set(parentPath, tags)
-        tags.forEach(t => this.idTtagMap.set(t._id, t))
-      })
+        tags.forEach(t => this.idTagMap.set(t._id, t))        
+      }),
+      shareReplay(1)
     )
   }
 
 
+  getTagById(id: string) {
+    return this.idTagMap.get(id)
+  }
+  getTagsByIds(ids: string[]) {
+    return ids.map(id => this.getTagById(id))
+  }
 
   getTagByName(name: string) {
     return this.tagsMap.get(name)
@@ -62,7 +72,7 @@ export class TagsService {
     try {
       await this.dataService.post(`/tag`, post)
       this.tagsMap.set(parentPath, [...(this.tagsMap.get(parentPath) ?? []), post])
-      this.idTtagMap.set(post._id, post)
+      this.idTagMap.set(post._id, post)
 
     } catch (error) {
       console.error(error)
@@ -84,7 +94,7 @@ export class TagsService {
       await this.dataService.put(`/tag/${_id}`, post)
       post._id = _id
       this.tagsMap.set(parentPath, [...(this.tagsMap.get(parentPath) ?? []), post])
-      this.idTtagMap.set(post._id, post)
+      this.idTagMap.set(post._id, post)
     } catch (error) {
       console.error(error)
     }

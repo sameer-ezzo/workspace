@@ -32,8 +32,8 @@ export class JsonPointer {
         delete parent[s];
     }
 
-    static get<T = any>(doc: any, path: string): T | undefined {
-        const segments = path.split("/").filter(s => s);
+    static get<T = any>(doc: any, path: string, separator = '/'): T | undefined {
+        const segments = path.split(separator).filter(s => s);
         if (segments.length === 0) return doc;
         const property = segments.pop()!;
         let x = doc;

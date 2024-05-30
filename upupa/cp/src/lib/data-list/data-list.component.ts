@@ -1,24 +1,21 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, Injector, Input, ViewChild, inject, signal } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, Injector, Input, OnDestroy, ViewChild, inject, signal } from "@angular/core";
 import { languageDir, LanguageService } from "@upupa/language";
 import { ActionDescriptor, ActionEvent, ConfirmOptions, toTitleCase } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { DataService, FilterDescriptor, ServerDataSource } from "@upupa/data";
-import { firstValueFrom, isObservable, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { DialogService, SnackBarService } from "@upupa/common";
-import { DataFormComponent } from "../data-form/data-form.component";
 import { ConfirmService } from "@upupa/common";
 import { EventBus } from "@upupa/common";
 import { ScaffoldingService } from "../scaffolding.service";
 import {
-    DataFormResolverResult,
     DataListFilterForm,
     DataListResolverResult,
 } from "../../types";
 import { PathInfo } from "@noah-ark/path-matcher";
 import { DataListResolverService } from "../list-resolver.service";
-import { defaultFormActions } from "../../defaults";
 
 import { DataFilterFormComponent, formSchemeToDynamicFormFilter } from "../data-filter-form/data-filter-form.component";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -29,7 +26,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
     styleUrls: ["./data-list.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataListComponent {
+export class DataListComponent implements AfterViewInit, OnDestroy {
 
     private readonly destroyRef = inject(DestroyRef)
     private _filterFormValue: any;
@@ -122,6 +119,11 @@ export class DataListComponent {
             if (this.collection !== params["collection"])
                 this.collection = params["collection"]
         })
+    }
+
+    ngOnDestroy() {
+        this.ds.refreshCache(this.dataListResolverResult.path);
+        this.dataListResolverResult.adapter.destroy()
     }
 
     filterDrawerStatus = 'closed'

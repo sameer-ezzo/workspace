@@ -52,7 +52,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
 
 
   override async onAdding(value: string): Promise<void> {
-    debugger
+
     if (this.canAdd !== true) return
 
     const chip = value

@@ -1,17 +1,18 @@
+import { JsonPointer } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, SortDescriptor, Term, FilterDescriptor } from "./model";
 
 export function filterNormalized<T>(normalized: NormalizedItem<T>[], filter: FilterDescriptor, sort: SortDescriptor, page: PageDescriptor, terms: Key<T>): NormalizedItem<T>[] {
     let result = normalized;
 
     //FILTER
-    const term = (filter && filter.terms && filter.terms.length) ? filter.terms.join(" ").toLocaleLowerCase() : '';
+    const term = (filter && filter.terms && filter.terms.length) ? filter.terms.join('{}').toLocaleLowerCase() : '';
 
     if (term) {
         result = normalized.filter(norm => {
             const item = norm.item;
             if (norm.defaultSearchTerm === undefined) {
                 const t = Array.isArray(terms) ? terms : [terms];
-                const defaultSearchTerm = typeof item !== 'object' ? (item + '') : t.map(k => item[k]).join(' ').trim();
+                const defaultSearchTerm = typeof item !== 'object' ? (item + '') : t.map(k => getByPath(item, k as string)).join('{}').trim();
                 norm.defaultSearchTerm = defaultSearchTerm.toLocaleLowerCase();
             }
             return norm.defaultSearchTerm?.indexOf(term) > -1;
@@ -45,11 +46,14 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     let result = all;
     if (!result) return [];
     //FILTER
-    const term = (filter && filter.terms && filter.terms.length) ? filter.terms.join(" ").toLocaleLowerCase() : '';
+    const _terms = filter?.terms || []
+    const term = _terms.join('{}').toLocaleLowerCase();
 
     if (term) {
         result = all.filter(item => {
-            const itemTerm: string = typeof item !== 'object' ? (item + '') : terms.map(t => item[t.field]).join(' ').trim();
+            const itemTerm: string =
+                typeof item !== 'object' ? (item + '') :
+                    terms.map(t => getByPath(item, t.field as string)).join('{}').trim();
             return itemTerm.toLocaleLowerCase().indexOf(term) > -1;
         });
     }
@@ -77,13 +81,7 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
 
 
 export function getByPath(obj: any, path: string) {
-    const segments = path.split('.');
-    let result = obj;
-    while (segments.length) {
-        const s = segments.shift();
-        result = result?.[s];
-    }
-    return result;
+    return JsonPointer.get(obj, path, '.')
 }
 
 export function compare(a, b): number {
