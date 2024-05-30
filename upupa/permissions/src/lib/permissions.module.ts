@@ -13,7 +13,7 @@ import { PermissionsRoutingModule } from './permissions-routing.module';
 import { DynamicFormModule } from '@upupa/dynamic-form';
 import { DataModule } from '@upupa/data';
 import { DataTableModule } from '@upupa/table';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { AuthModule } from '@upupa/auth';
 import { RuleFormComponent } from './rule-form/rule-form.component';
@@ -31,9 +31,8 @@ const components = [
     PermissionsPageComponent, PermissionsSideBarComponent, RuleFormComponent, RulePermissionsTableComponent
 ];
 
-@NgModule({
-    imports: [
-        CommonModule,
+@NgModule({ declarations: [...components],
+    exports: [...components], imports: [CommonModule,
         FormsModule,
         RouterModule,
         MatFormFieldModule,
@@ -46,16 +45,13 @@ const components = [
         DynamicFormModule,
         AuthModule,
         MatExpansionModule,
-        HttpClientModule,
         DataTableModule,
         MatProgressBarModule,
-        DataModule],
-    declarations: [...components],
-    exports: [...components],
-    providers: [
-        { provide: PERMISSIONS_BASE_URL, useValue: '/permissions' }
-    ]
-})
+        DataModule], 
+        providers: [
+        { provide: PERMISSIONS_BASE_URL, useValue: '/permissions' },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class PermissionsModule {
     static forRoot(options: { baseUrl: string }): ModuleWithProviders<RouterModule> {
         return {

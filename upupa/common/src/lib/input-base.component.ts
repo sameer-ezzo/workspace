@@ -77,9 +77,13 @@ export class InputBaseComponent<T = any, C = UntypedFormControl> implements Cont
 @Component({
     selector: 'input-base',
     template: `
-    <label *ngIf="label">label</label>
+    @if (label) {
+      <label>label</label>
+    }
     <input #input [type]="type" [value]="value || ''" (input)="value = $event.target?.['value']; _propagateChange();control.markAsDirty()" (blur)="onTouch();" [readonly]="readonly" [placeholder]="placeholder" [required]="required">
-    <span class="error" *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key}}</span>
+    @for (error of control?.errors | keyvalue; track error) {
+      <span class="error">{{errorMessages[error.key+''] || error.key}}</span>
+    }
     `
 })
 

@@ -1,11 +1,25 @@
+@if(adapter){
 <mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
-    <mat-label *ngIf="label">{{label | text}}</mat-label>
-    <input type="text" matInput [matAutocomplete]="auto" #input [formControl]="control" [value]="_value" [required]="required" (input)="_valueChanged($event.target?.['value'])" (blur)="onTouch()" [placeholder]="placeholder | text">
-    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
-        <mat-option *ngFor="let item of adapter?.normalized$ | async" [value]="item.display">
-            <img *ngIf="item.image" [src]="item.image"><span>{{item.display | text}}</span>
-        </mat-option>
-    </mat-autocomplete>
-    <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
-    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}</mat-error>
+  @if (label) {
+  <mat-label>{{label }}</mat-label>
+  }
+  <input type="text" matInput [matAutocomplete]="auto" #input [formControl]="control" [value]="_value"
+    [required]="required" (input)="_valueChanged($event.target?.['value'])" (blur)="onTouch()"
+    [placeholder]="placeholder ">
+  <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
+    @for (item of adapter.normalized$ | async; track item) {
+    <mat-option [value]="item.display">
+      @if (item.image) {
+      <img [src]="item.image">
+      }<span>{{item.display }}</span>
+    </mat-option>
+    }
+  </mat-autocomplete>
+  @if (hint?.length > 0) {
+  <mat-hint>{{hint }}</mat-hint>
+  }
+  @for (error of control?.errors | keyvalue; track error) {
+  <mat-error>{{errorMessages[error.key+''] || error.key}} </mat-error>
+  }
 </mat-form-field>
+}

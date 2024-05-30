@@ -16,7 +16,7 @@ export class TemplateBase<T = any> {
 @Component({
     selector: 'upupa-template',
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     template: ``,
 })
 export class TemplateComponent<T = any> implements OnDestroy {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { TagsComponent } from './tags.component';
 import { TagFormComponent } from '../lib/tag-form/tag-form.component';
@@ -18,9 +18,7 @@ const declarations = [TagsComponent, TagsChipsInputComponent, TagFormComponent];
 
 @NgModule({
   declarations,
-  imports: [
-    CommonModule,
-    HttpClientModule,
+  exports: [...declarations, MatDialogModule], imports: [CommonModule,
     MatDialogModule,
     DataTableModule,
     FormsModule,
@@ -31,7 +29,7 @@ const declarations = [TagsComponent, TagsChipsInputComponent, TagFormComponent];
     MatChipsModule,
     MatIconModule
   ],
-  exports: [...declarations, MatDialogModule]
+  providers: [provideHttpClient(withInterceptorsFromDi())]
 })
 export class TagsModule {
 

@@ -1,6 +1,6 @@
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBtnModule, UtilsModule } from '@upupa/common';
@@ -88,7 +88,6 @@ const imports = [
     ...materialModules,
     MatBtnModule,
     CommonModule,
-    HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
     UploadModule,
@@ -104,6 +103,7 @@ const imports = [
     imports: [...imports],
     declarations: [...declarations],
     providers: [
+        provideHttpClient(withInterceptorsFromDi()),
         // FileUploadService,
         // FileIconPerTypePipe
     ],

@@ -7,7 +7,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, filter, startWith } from 'rxjs';
 import { UpupaDialogComponent, UpupaDialogPortal } from '../upupa-dialog/upupa-dialog.component';
@@ -26,7 +26,7 @@ import { UpupaDialogComponent, UpupaDialogPortal } from '../upupa-dialog/upupa-d
   }
   `],
   standalone: true,
-  imports: [MatDialogModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule, CommonModule],
+  imports: [MatDialogModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
 export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnInit {
 

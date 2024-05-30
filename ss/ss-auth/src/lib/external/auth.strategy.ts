@@ -3,7 +3,7 @@ import { Model } from "mongoose"
 import { Profile } from "passport-facebook"
 import { UserDocument } from "../user.document"
 import { AuthService } from "../auth.svr";
-import { SocialProvider, User, randomString } from "@noah-ark/common"
+import { User, randomString } from "@noah-ark/common"
 
 
 
@@ -39,7 +39,7 @@ export function AuthStrategy(Strategy: any, name?: string | undefined) {
                         language: 'en',
                         roles: null,
                         external: {
-                            [profile.provider as SocialProvider]: profile.id
+                            [profile.provider]: profile.id
                         }
                     }
                     await this.authService.signUp(user, randomString(20))

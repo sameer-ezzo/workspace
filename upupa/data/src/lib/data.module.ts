@@ -1,15 +1,12 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { APIBASE } from './di.token';
 import { DataConfig } from './model';
 
 
 
 
-@NgModule({
-  imports: [HttpClientModule],
-  exports: [HttpClientModule]
-})
+@NgModule({ imports: [], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class DataModule {
 
   constructor() {

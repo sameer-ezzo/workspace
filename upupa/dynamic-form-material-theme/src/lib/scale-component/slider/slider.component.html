@@ -1,3 +1,7 @@
-<mat-label *ngIf="label">{{label | text}}</mat-label>
+@if (label) {
+  <mat-label>{{label }}</mat-label>
+}
 <!-- <ngx-slider [(value)]="value" [options]="_options" (valueChange)="_propagateChange()"></ngx-slider> -->
-<mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
+@if (hint?.length > 0) {
+  <mat-hint>{{hint }}</mat-hint>
+}

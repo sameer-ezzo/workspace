@@ -1,7 +1,13 @@
-<div *ngIf="avatarName" style="display: flex;justify-content: center;">
+@if (avatarName) {
+  <div style="display: flex;justify-content: center;">
     <change-avatar (changed)="changed.emit('avatar')"></change-avatar>
-</div>
+  </div>
+}
 <br />
-<change-email *ngIf="emailName" [appearance]="appearance" [name]="emailName" (changed)="changed.emit('email')"></change-email>
+@if (emailName) {
+  <change-email [appearance]="appearance" [name]="emailName" (changed)="changed.emit('email')"></change-email>
+}
 <br />
-<change-phone *ngIf="phoneName" [appearance]="appearance" [name]="phoneName" (changed)="changed.emit('phone')"></change-phone>
+@if (phoneName) {
+  <change-phone [appearance]="appearance" [name]="phoneName" (changed)="changed.emit('phone')"></change-phone>
+}

@@ -1,21 +1,25 @@
-<mat-label *ngIf="label">{{label | text}}</mat-label>
+@if (label) {
+  <mat-label>{{label }}</mat-label>
+}
 <div style="display: flex; width: 100%;">
-    <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
-        <input type="number" placeholder="{{'min'|text}}" matInput [(ngModel)]="from" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
-    </mat-form-field>
-    <span style="min-width: 5px"></span>
-    <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
-        <input type="number" placeholder="{{'max'|text}}" matInput [(ngModel)]="to" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
-    </mat-form-field>
+  <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
+    <input type="number" placeholder="min'}}" matInput [(ngModel)]="from" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
+  </mat-form-field>
+  <span style="min-width: 5px"></span>
+  <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
+    <input type="number" placeholder="max'}}" matInput [(ngModel)]="to" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
+  </mat-form-field>
 </div>
-<mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
-<!-- 
+@if (hint?.length > 0) {
+  <mat-hint>{{hint }}</mat-hint>
+}
+<!--
 <ng-container *ngIf="template === 'thumbs'">
 
-    <div class="{{direction}} choices {{template}}">
-        <a [style.width]="thumbSize+'px'" [style.height]="thumbSize+'px'" class="choice" [class.checked]="value >= item" (blur)="onTouch()" *ngFor="let item of _items" (click)="value = item; _propagateChange()">
-            <img style="width: 100%; height: 100%; object-fit: contain; object-position: center;" [src]="item.image" alt="{{item.key}}">
-            <mat-icon>check</mat-icon>
-        </a>
-    </div>
+  <div class="{{direction}} choices {{template}}">
+    <a [style.width]="thumbSize+'px'" [style.height]="thumbSize+'px'" class="choice" [class.checked]="value >= item" (blur)="onTouch()" *ngFor="let item of _items" (click)="value = item; _propagateChange()">
+      <img style="width: 100%; height: 100%; object-fit: contain; object-position: center;" [src]="item.image" alt="{{item.key}}">
+      <mat-icon>check</mat-icon>
+    </a>
+  </div>
 </ng-container> -->

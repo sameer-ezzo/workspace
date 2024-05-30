@@ -4,7 +4,7 @@ import { DynamicFormComponent } from './dynamic-form.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FocusLeaveDirective } from './focusleave.dir';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CollectorComponent } from './collector/collector.component';
@@ -30,23 +30,20 @@ const declarations = [
 
 @NgModule({
     declarations: [...declarations],
-    imports: [
-        CommonModule,
-        HttpClientModule,
+    exports: [...declarations, ScrollingModule],
+    bootstrap: [DynamicFormComponent], imports: [CommonModule,
         MatBtnModule,
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
         DynamicFormNativeThemeModule,
-        UtilsModule
-    ],
+        UtilsModule],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
         { provide: DYNAMIC_COMPONENT_MAPPER, useValue: { NATIVE_THEME_NAME: DF_NATIVE_THEME_INPUTS } },
-        { provide: DYNAMIC_FORM_OPTIONS, useValue: { enableLogs: false } }
-    ],
-    exports: [...declarations, ScrollingModule],
-    bootstrap: [DynamicFormComponent]
+        { provide: DYNAMIC_FORM_OPTIONS, useValue: { enableLogs: false } },
+        provideHttpClient(withInterceptorsFromDi())
+    ]
 })
 export class DynamicFormModule {
     static forRoot(providers?: Provider[],

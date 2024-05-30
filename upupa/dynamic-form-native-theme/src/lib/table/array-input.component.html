@@ -1,2 +1,4 @@
-<mat-label *ngIf="label?.length > 0">{{label}}</mat-label>
+@if (label?.length > 0) {
+  <mat-label>{{label}}</mat-label>
+}
 <data-table [name]="name" [adapter]="adapter" [columns]="columns" [actions]="actions" (action)="control.markAsDirty();action.emit($event);"></data-table>

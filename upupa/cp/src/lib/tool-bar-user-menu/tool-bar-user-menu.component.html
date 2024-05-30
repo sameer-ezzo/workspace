@@ -1,41 +1,43 @@
 @if(auth.user$ | async; as _user){
-@if(_user){
-<div id="avatar-wrapper" [class.active]="menuTrigger.menuOpen ||  _user['claims']?.['imps']">
-    <button mat-icon-button (click)="unimpersonate()" *ngIf="_user['claims']?.['imps']" style="flex: 0 0 25px;">
-        <mat-icon style="color: rgba(255, 68, 0, 0.575);font-size: 25pt;">supervised_user_circle
-        </mat-icon>
-    </button>
-    <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
+  @if(_user){
+    <div id="avatar-wrapper" [class.active]="menuTrigger.menuOpen ||  _user['claims']?.['imps']">
+      @if (_user['claims']?.['imps']) {
+        <button mat-icon-button (click)="unimpersonate()" style="flex: 0 0 25px;">
+          <mat-icon style="color: rgba(255, 68, 0, 0.575);font-size: 25pt;">supervised_user_circle
+          </mat-icon>
+        </button>
+      }
+      <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
         @if(userImageService.resolver| async; as userIamge){
-        @if(userIamge){
-        <img [src]="userIamge" [attr.alt]="auth.user.name || auth.user.email">
-        <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
+          @if(userIamge){
+            <img [src]="userIamge" [attr.alt]="auth.user.name || auth.user.email">
+            <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
+          }
+          @else {
+          <mat-icon style="flex: 0 0 25px;">person</mat-icon>
         }
-        @else {
-        <mat-icon style="flex: 0 0 25px;">person</mat-icon>
-        }
-        }
+      }
     </div>
-</div>
-<mat-menu #menu="matMenu">
+  </div>
+  <mat-menu #menu="matMenu">
     <button (click)="umcClicked({action:{name: 'user-profile'}}); menuTrigger.closeMenu()" mat-menu-item>
-        <span style="display: flex; flex-direction: column; flex: 1 1 auto; font-size: 10pt; line-height: 1rem;">
-            {{username$ | async}}
-        </span>
+      <span style="display: flex; flex-direction: column; flex: 1 1 auto; font-size: 10pt; line-height: 1rem;">
+        {{username$ | async}}
+      </span>
     </button>
     <mat-divider></mat-divider>
 
     @if(commands?.length > 0){
-    @for (umc of commands; track $index) {
-    <mat-btn auth-action [path]="umc.path" [action]="umc.action" [descriptor]="umc"
+      @for (umc of commands; track $index) {
+        <mat-btn auth-action [path]="umc.path" [action]="umc.action" [descriptor]="umc"
         (action)="umcClicked($event); menuTrigger.closeMenu()"></mat-btn>
-    }
-    <mat-divider></mat-divider>
+      }
+      <mat-divider></mat-divider>
     }
     <button (click)="signout()" mat-menu-item>
-        <mat-icon>logout</mat-icon>
-        Sign out
+      <mat-icon>logout</mat-icon>
+      Sign out
     </button>
-</mat-menu>
+  </mat-menu>
 }
 }

@@ -1,6 +1,5 @@
 import { Principle } from "./user";
 import { File } from "./file";
-import type { HttpAuthenticationProvider } from "@ss/auth";
 
 export type IncomingMessage<TPayload = unknown> = {
     /**
@@ -25,7 +24,7 @@ export type IncomingMessage<TPayload = unknown> = {
     ctx: {
         transport?: 'http' | 'rpc' | 'ws'
         route?: string
-        authProvider?: HttpAuthenticationProvider
+        authProvider?: any, // HttpAuthenticationProvider from @ss/auth
     } & Record<string, unknown>
 }
 

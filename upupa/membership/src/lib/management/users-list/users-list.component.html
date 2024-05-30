@@ -1,17 +1,21 @@
 @if(dataAdapter()){
-<data-table name="users-list" [templates]="_templates" [(focusedItem)]="focusedUser" [adapter]="adapter"
-    [columns]="columns" [actions]="actions" (action)="onAction($event)"></data-table>
+  <data-table name="users-list" [templates]="_templates" [(focusedItem)]="focusedUser" [adapter]="adapter"
+  [columns]="columns" [actions]="actions" (action)="onAction($event)"></data-table>
 }
 <ng-template #emailTemplate let-descriptor="descriptor" let-element="element">
-    <span>
-        {{element.item.email}}
-    </span>
-    <mat-icon style="opacity: 0.6;" matTooltip="Unverified">{{element.item.email && element.item.emv === true ?
-        'check_circle' : 'error'}}</mat-icon>
+  <span>
+    {{element.item.email}}
+  </span>
+  <mat-icon style="opacity: 0.6;" matTooltip="Unverified">{{element.item.email && element.item.emv === true ?
+  'check_circle' : 'error</mat-icon>
 </ng-template>
 
 <ng-template #phoneTemplate let-descriptor="descriptor" let-element="element">
-    <mat-icon *ngIf="element.item.phone && element.item.phv">check</mat-icon>
-    <mat-icon *ngIf="element.item.phone && !element.item.phv">error</mat-icon>
-    {{element.item.phone}}
+  @if (element.item.phone && element.item.phv) {
+    <mat-icon>check</mat-icon>
+  }
+  @if (element.item.phone && !element.item.phv) {
+    <mat-icon>error</mat-icon>
+  }
+  {{element.item.phone}}
 </ng-template>

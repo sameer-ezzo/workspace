@@ -1,115 +1,125 @@
 <div class="content {{view}}">
-    <ng-container *ngFor="let f of viewModel; trackBy:fileId">
-        <ng-container *ngTemplateOutlet="fileTemplate; context:{ fileVm: f }"></ng-container>
-    </ng-container>
+  @for (f of viewModel; track fileId($index, f)) {
+    <ng-container *ngTemplateOutlet="fileTemplate; context:{ fileVm: f }"></ng-container>
+  }
 </div>
 
 
 <ng-template #fileTemplate let-fileVm="fileVm">
-    <div class="file hoverable" (click)="focused = fileVm" [class.selectable]="selectable === true"
-        [class.loading]="fileVm.uploadTask">
+  <div class="file hoverable" (click)="focused = fileVm" [class.selectable]="selectable === true"
+    [class.loading]="fileVm.uploadTask">
 
-        <div class="progress">
-            <strong *ngIf="fileVm.uploadTask;">
-                {{fileVm.uploadTask.progress$ | async}}%
-            </strong>
-        </div>
-
-        <div class="checkbox">
-            <mat-checkbox *ngIf="selectable" #chkBox [checked]="selectionModel.isSelected(fileVm.file._id)"
-                (change)="selectionModel.toggle(fileVm.file._id); changed.emit(selectionModel.selected)"></mat-checkbox>
-        </div>
-
-
-
-        <div class="thumb flex centered selection">
-            <ng-container *ngTemplateOutlet="fileImageTemplate; context:{ fileVm: fileVm }"></ng-container>
-        </div>
-
-        <div class="name">
-            {{fileVm.file?.originalname}}
-            <ng-container *ngIf="fileVm.error">
-                <br>
-                <small style="color: red;">
-                    {{fileVm.error}}
-                </small>
-            </ng-container>
-        </div>
-        <div class="size">{{fileVm.file.size | fileSize}} </div>
-        <div class="date">{{fileVm.file.date | date:dateFormat}}</div>
-        <div class="actions hover-container">
-            <ng-container *ngTemplateOutlet="fileMenuTemplate; context:{ fileVm: fileVm }"></ng-container>
-        </div>
+    <div class="progress">
+      @if (fileVm.uploadTask;) {
+        <strong>
+          {{fileVm.uploadTask.progress$ | async}}%
+        </strong>
+      }
     </div>
 
-</ng-template>
+    <div class="checkbox">
+      @if (selectable) {
+        <mat-checkbox #chkBox [checked]="selectionModel.isSelected(fileVm.file._id)"
+        (change)="selectionModel.toggle(fileVm.file._id); changed.emit(selectionModel.selected)"></mat-checkbox>
+      }
+    </div>
 
-<ng-template let-fileVm="fileVm" #fileMenuTemplate>
-    <mat-btn class="action onhover" *ngFor="let a of fileVm.actions" (action)="onMenuAction(a,fileVm)"
-        [descriptor]="a"></mat-btn>
-    <ng-container *ngIf="fileVm.menuActions?.length > 0">
-        <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">
-            <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #menu="matMenu">
-            <button type="button" mat-menu-item *ngFor="let a of fileVm.menuActions" (click)="onMenuAction(a,fileVm)">
-                <mat-icon *ngIf="a.icon">{{a.icon}}</mat-icon>
-                {{a.text}}
-            </button>
-        </mat-menu>
-    </ng-container>
-</ng-template>
 
-<ng-template let-fileVm="fileVm" #fileImageTemplate>
-    <ng-container *ngIf="fileVm.error; else imageTemplate">
-        <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
-            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" version="1.1">
 
-            <g>
-                <path id="path870" d="M 32,48 V 207.9236"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path id="path874" d="M 224,96 V 208"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path id="path880" d="m 64,16 h 80"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path id="path882" d="M 64,240 H 192"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-                    d="m 224,208 c 0.0874,15.98169 -16,32 -32,32" id="path886" />
-                <path transform="scale(-1,1)"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-                    d="m -32,208 c -10e-7,16 -16,32 -32,32" id="path886-3" />
-                <path transform="scale(-1)"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-                    d="M -32,-47.976784 C -32,-32 -48,-16.356322 -63.999997,-16.000002" id="path886-3-6" />
-                <path id="path933" d="M 223.91257,96.071779 144,16"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path transform="scale(-1,1)"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-                    d="m -144,64 c -0.0492,15.912926 -16.06452,31.999995 -32,32" id="path886-5" />
-                <path id="path950" d="M 144,64 V 16"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path id="path952" d="m 176,96 h 48"
-                    style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-                <path
-                    style="fill:none;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-                    d="m 64,208 48,-64" id="path827" />
-                <path
-                    style="fill:none;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-                    d="m 64,144 48,64" id="path829" />
-            </g>
-        </svg>
-    </ng-container>
-    <ng-template #imageTemplate>
+    <div class="thumb flex centered selection">
+      <ng-container *ngTemplateOutlet="fileImageTemplate; context:{ fileVm: fileVm }"></ng-container>
+    </div>
 
-        <image *ngIf="fileVm.fileType === 'image'" [width]="imageDim" [height]="imageDim"
-            [src]="fileVm.file.path ? base+fileVm.file.path : fileVm.file"
-            [includeAccess]="fileVm.file.path && includeAccess" [alt]="fileVm.file.originalname || fileVm.file.name">
+    <div class="name">
+      {{fileVm.file?.originalname}}
+      @if (fileVm.error) {
+        <br>
+          <small style="color: red;">
+            {{fileVm.error}}
+          </small>
+        }
+      </div>
+      <div class="size">{{fileVm.file.size | fileSize}} </div>
+      <div class="date">{{fileVm.file.date | date:dateFormat}}</div>
+      <div class="actions hover-container">
+        <ng-container *ngTemplateOutlet="fileMenuTemplate; context:{ fileVm: fileVm }"></ng-container>
+      </div>
+    </div>
+
+  </ng-template>
+
+  <ng-template let-fileVm="fileVm" #fileMenuTemplate>
+    @for (a of fileVm.actions; track a) {
+      <mat-btn class="action onhover" (action)="onMenuAction(a,fileVm)"
+      [descriptor]="a"></mat-btn>
+    }
+    @if (fileVm.menuActions?.length > 0) {
+      <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        @for (a of fileVm.menuActions; track a) {
+          <button type="button" mat-menu-item (click)="onMenuAction(a,fileVm)">
+            @if (a.icon) {
+              <mat-icon>{{a.icon}}</mat-icon>
+            }
+            {{a.text}}
+          </button>
+        }
+      </mat-menu>
+    }
+  </ng-template>
+
+  <ng-template let-fileVm="fileVm" #fileImageTemplate>
+    @if (fileVm.error) {
+      <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" version="1.1">
+        <g>
+          <path id="path870" d="M 32,48 V 207.9236"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path id="path874" d="M 224,96 V 208"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path id="path880" d="m 64,16 h 80"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path id="path882" d="M 64,240 H 192"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+            d="m 224,208 c 0.0874,15.98169 -16,32 -32,32" id="path886" />
+          <path transform="scale(-1,1)"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+            d="m -32,208 c -10e-7,16 -16,32 -32,32" id="path886-3" />
+          <path transform="scale(-1)"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+            d="M -32,-47.976784 C -32,-32 -48,-16.356322 -63.999997,-16.000002" id="path886-3-6" />
+          <path id="path933" d="M 223.91257,96.071779 144,16"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path transform="scale(-1,1)"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+            d="m -144,64 c -0.0492,15.912926 -16.06452,31.999995 -32,32" id="path886-5" />
+          <path id="path950" d="M 144,64 V 16"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path id="path952" d="m 176,96 h 48"
+            style="fill:none;stroke:#000000;stroke-width:15.9923439;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+          <path
+            style="fill:none;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+            d="m 64,208 48,-64" id="path827" />
+          <path
+            style="fill:none;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+            d="m 64,144 48,64" id="path829" />
+        </g>
+      </svg>
+    } @else {
+      @if (fileVm.fileType === 'image') {
+        <image [width]="imageDim" [height]="imageDim"
+          [src]="fileVm.file.path ? base+fileVm.file.path : fileVm.file"
+          [includeAccess]="fileVm.file.path && includeAccess" [alt]="fileVm.file.originalname || fileVm.file.name">
         </image>
-        <img *ngIf="fileVm.fileType !== 'image'" width="{{imageDim}}px" height="{{imageDim}}px"
-            src="/assets/upload/files-icons/{{fileVm.file | fileIcon}}.svg" alt="{{fileVm.file.originalname}}">
-
+      }
+      @if (fileVm.fileType !== 'image') {
+        <img width="{{imageDim}}px" height="{{imageDim}}px"
+          src="/assets/upload/files-icons/{{fileVm.file | fileIcon}}.svg" alt="{{fileVm.file.originalname}}">
+        }
+      }
     </ng-template>
-</ng-template>

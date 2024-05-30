@@ -1,16 +1,9 @@
 <div class="avatar-container">
-    <ng-container *ngIf="error === false;else default">
-        <img class="avatar" [src]="avatar" (error)="this.error = true">
-    </ng-container>
-</div>
-<div id="avatar-actions">
-    <button mat-icon-button (click)="changeAvatar()" color="accent" [disabled]="disabled"><mat-icon>edit</mat-icon></button>
-    <button mat-icon-button *ngIf="userAvatars?.length" (click)="removeAvatar(userAvatars[0].path); auth.refresh()" color="warn" [disabled]="disabled"><mat-icon>close</mat-icon></button>
-</div>
-
-<ng-template #default>
+  @if (error === false) {
+    <img class="avatar" [src]="avatar" (error)="this.error = true">
+  } @else {
     <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;width:100%" xml:space="preserve">
-        <circle style="fill:#ECEFF1;" cx="256" cy="256" r="256" />
+      <circle style="fill:#ECEFF1;" cx="256" cy="256" r="256" />
         <path style="fill:#455A64;" d="M442.272,405.696c-11.136-8.8-24.704-15.136-39.424-18.208l-70.176-14.08
 	c-7.36-1.408-12.672-8-12.672-15.68v-16.096c4.512-6.336,8.768-14.752,13.216-23.552c3.456-6.816,8.672-17.088,11.264-19.744
 	c14.208-14.272,27.936-30.304,32.192-50.976c3.968-19.392,0.064-29.568-4.512-37.76c0-20.448-0.64-46.048-5.472-64.672
@@ -22,5 +15,12 @@
 	C115.648,481.728,184.224,512,256,512s140.384-30.24,188.16-83.008c2.976-3.296,4.48-7.648,4.096-12.064
 	C447.904,412.512,445.728,408.448,442.272,405.696z" />
     </svg>
+  }
+</div>
+<div id="avatar-actions">
+  <button mat-icon-button (click)="changeAvatar()" color="accent" [disabled]="disabled"><mat-icon>edit</mat-icon></button>
+  @if (userAvatars?.length) {
+    <button mat-icon-button (click)="removeAvatar(userAvatars[0].path); auth.refresh()" color="warn" [disabled]="disabled"><mat-icon>close</mat-icon></button>
+  }
+</div>
 
-</ng-template>

@@ -1,10 +1,16 @@
 <mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
-    <mat-label *ngIf="label && appearance === 'outline'">{{label | text}}</mat-label>
-    <textarea matInput #input [value]="value" (input)="value = $event.target?.['value'];control.markAsDirty()" (blur)="onTouch()" [readonly]="readonly" [placeholder]="placeholder | text" [formControl]="control" #autosize="cdkTextareaAutosize" [cdkAutosizeMinRows]="cdkAutosizeMinRows || 3"
-        [cdkAutosizeMaxRows]="cdkAutosizeMaxRows || 5" [cdkTextareaAutosize]="cdkTextareaAutosize">
-    </textarea>
-    <mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
-    <mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}</mat-error>
+  @if (label && appearance === 'outline') {
+    <mat-label>{{label }}</mat-label>
+  }
+  <textarea matInput #input [value]="value" (input)="value = $event.target?.['value'];control.markAsDirty()" (blur)="onTouch()" [readonly]="readonly" [placeholder]="placeholder " [formControl]="control" #autosize="cdkTextareaAutosize" [cdkAutosizeMinRows]="cdkAutosizeMinRows || 3"
+    [cdkAutosizeMaxRows]="cdkAutosizeMaxRows || 5" [cdkTextareaAutosize]="cdkTextareaAutosize">
+  </textarea>
+  @if (hint?.length > 0) {
+    <mat-hint>{{hint }}</mat-hint>
+  }
+  @for (error of control?.errors | keyvalue; track error) {
+    <mat-error>{{errorMessages?.[error.key+''] || error.key }}</mat-error>
+  }
 
 
 </mat-form-field>

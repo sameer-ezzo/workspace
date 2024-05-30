@@ -25,7 +25,7 @@ import { RoleFormComponent } from './role-form/role-form.component';
 import { UserManagementRoutingModule } from './users-management-routing.module';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AdminUserPasswordRestComponent } from './admin-userpwd-reset/admin-userpwd-reset.component';
 import { EditUserRolesComponent } from './edit-user-roles/edit-user-roles.component';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -34,7 +34,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 const defaultOptions = new UsersManagementOptions();
 
-const imports = [CommonModule,
+const imports = [
+    CommonModule,
     UserManagementRoutingModule,
     FormsModule,
     RouterModule,
@@ -46,7 +47,6 @@ const imports = [CommonModule,
     MatButtonModule,
     MatSelectModule,
     MatExpansionModule,
-    HttpClientModule,
     MatDialogModule,
     MatTooltipModule,
     TranslationModule,
@@ -63,7 +63,10 @@ const declarations = [UsersComponent,
 @NgModule({
     declarations: declarations,
     imports: imports,
-    providers: [{ provide: USERS_MANAGEMENT_OPTIONS, useValue: defaultOptions }],
+    providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        { provide: USERS_MANAGEMENT_OPTIONS, useValue: defaultOptions }
+    ],
     exports: [...declarations]
 })
 export class UsersManagementModule {

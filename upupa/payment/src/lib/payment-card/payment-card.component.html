@@ -1,45 +1,47 @@
 <mat-form-field appearance="fill" style="width: 100%;">
-    <mat-icon matPrefix>person</mat-icon>
-    <input matInput placeholder="{{'card-holder'|text}}" maxlength="30" placeholder="" [(ngModel)]="holder" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required">
+  <mat-icon matPrefix>person</mat-icon>
+  <input matInput placeholder="card-holder" maxlength="30" placeholder="" [(ngModel)]="holder" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required">
 </mat-form-field>
 
 <div style="display: flex; border-inline-start: solid transparent 3px;" [style.border-inline-start-color]="bank?.color || 'transparent'">
-    <mat-form-field style="flex:1" floatLabel="never" appearance="fill">
+  <mat-form-field style="flex:1" floatLabel="never" appearance="fill">
 
-        <div matPrefix style="width: 25px;margin: 0 5px;" [ngSwitch]="type">
-            <ng-container *ngSwitchCase="'mastercard'">
-                <ng-container *ngTemplateOutlet="masterCard"></ng-container>
-            </ng-container>
-            <ng-container *ngSwitchCase="'visa'">
-                <ng-container *ngTemplateOutlet="visa"></ng-container>
-            </ng-container>
-            <ng-container *ngSwitchCase="'amex'">
-                <ng-container *ngTemplateOutlet="amex"></ng-container>
-            </ng-container>
-            <ng-container *ngSwitchCase="'maestro'">
-                <ng-container *ngTemplateOutlet="maestro"></ng-container>
-            </ng-container>
-            <ng-container *ngSwitchDefault>
-                <ng-container *ngTemplateOutlet="card"></ng-container>
-            </ng-container>
-        </div>
+    <div matPrefix style="width: 25px;margin: 0 5px;">
+      @switch (type) {
+        @case ('mastercard') {
+          <ng-container *ngTemplateOutlet="masterCard"></ng-container>
+        }
+        @case ('visa') {
+          <ng-container *ngTemplateOutlet="visa"></ng-container>
+        }
+        @case ('amex') {
+          <ng-container *ngTemplateOutlet="amex"></ng-container>
+        }
+        @case ('maestro') {
+          <ng-container *ngTemplateOutlet="maestro"></ng-container>
+        }
+        @default {
+          <ng-container *ngTemplateOutlet="card"></ng-container>
+        }
+      }
+    </div>
 
-        <input matInput [(ngModel)]="numberDisplayed" maxlength="16" placeholder="0000 0000 0000 0000" only-numbers (ngModelChange)="number = numberDisplayed; triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required" >
-        <mat-hint>{{bank?.code}}</mat-hint>
-        <mat-hint align="end">{{number?.length || 0}} / 16</mat-hint>
-    </mat-form-field>
-    <mat-form-field style="width:6ch" floatLabel="never" appearance="fill" ><input matInput minlength="2" maxlength="2" size="4" placeholder="MM" only-numbers minimum="0" maximum="12" [(ngModel)]="month" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
-    <mat-form-field style="width:6ch" floatLabel="never" appearance="fill" ><input matInput minlength="2" maxlength="2" size="4" placeholder="YY" only-numbers [(ngModel)]="year" [minimum]="thisYear" [maximum]="thisYear + 10" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
-    <mat-form-field style="width:7ch" floatLabel="never" appearance="fill" ><input matInput minlength="3" maxlength="3" size="6" placeholder="Code" only-numbers [(ngModel)]="code" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
+    <input matInput [(ngModel)]="numberDisplayed" maxlength="16" placeholder="0000 0000 0000 0000" only-numbers (ngModelChange)="number = numberDisplayed; triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required" >
+    <mat-hint>{{bank?.code}}</mat-hint>
+    <mat-hint align="end">{{number?.length || 0}} / 16</mat-hint>
+  </mat-form-field>
+  <mat-form-field style="width:6ch" floatLabel="never" appearance="fill" ><input matInput minlength="2" maxlength="2" size="4" placeholder="MM" only-numbers minimum="0" maximum="12" [(ngModel)]="month" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
+  <mat-form-field style="width:6ch" floatLabel="never" appearance="fill" ><input matInput minlength="2" maxlength="2" size="4" placeholder="YY" only-numbers [(ngModel)]="year" [minimum]="thisYear" [maximum]="thisYear + 10" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
+  <mat-form-field style="width:7ch" floatLabel="never" appearance="fill" ><input matInput minlength="3" maxlength="3" size="6" placeholder="Code" only-numbers [(ngModel)]="code" (ngModelChange)="triggerChange()" (focus)="triggerTouch()" [disabled]="disabled" [required]="required"></mat-form-field>
 </div>
 
 <ng-template #masterCard>
-    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
+  <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
         <path style="fill:#FFB600;" d="M504,252c0,83.2-67.2,151.2-151.2,151.2c-83.2,0-151.2-68-151.2-151.2l0,0
 	c0-83.2,67.2-151.2,150.4-151.2C436.8,100.8,504,168.8,504,252L504,252z" />
         <path style="fill:#F7981D;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2
 	c-83.2,0-151.2-68-151.2-151.2" />
-        <path style="fill:#FF8500;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2" />
+    <path style="fill:#FF8500;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2" />
         <path style="fill:#FF5050;" d="M149.6,100.8C67.2,101.6,0,168.8,0,252s67.2,151.2,151.2,151.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0
 	c5.6-4.8,10.4-10.4,15.2-16h-31.2c-4-4.8-8-10.4-11.2-15.2h53.6c3.2-4.8,6.4-10.4,8.8-16h-71.2c-2.4-4.8-4.8-10.4-6.4-16h83.2
 	c4.8-15.2,8-31.2,8-48c0-11.2-1.6-21.6-3.2-32h-92.8c0.8-5.6,2.4-10.4,4-16h83.2c-1.6-5.6-4-11.2-6.4-16H216
@@ -53,7 +55,7 @@
 	c-4-4.8-8-10.4-11.2-15.2h53.6c3.2-4.8,6.4-10.4,8.8-16h-71.2c-2.4-4.8-4.8-10.4-6.4-16h83.2c4.8-15.2,8-31.2,8-48
 	c0-11.2-1.6-21.6-3.2-32h-92.8c0.8-5.6,2.4-10.4,4-16h83.2c-1.6-5.6-4-11.2-6.4-16H216c2.4-5.6,5.6-10.4,8.8-16h53.6
 	c-3.2-5.6-7.2-11.2-12-16h-29.6c4.8-5.6,9.6-10.4,15.2-15.2c-26.4-24.8-62.4-39.2-101.6-39.2h-0.8" />
-        <g>
+    <g>
             <path style="fill:#FFFFFF;" d="M204.8,290.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8c-5.6,0-6.4-3.2-5.6-4.8l4.8-28h8.8l2.4-15.2h-8l1.6-9.6
 		h-16c0,0-9.6,52.8-9.6,59.2c0,9.6,5.6,13.6,12.8,13.6C199.2,292.8,203.2,291.2,204.8,290.4z" />
             <path style="fill:#FFFFFF;" d="M210.4,264.8c0,22.4,15.2,28,28,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
@@ -82,8 +84,8 @@
 		C380,263.2,380,263.2,380.8,263.2z" />
             <path style="fill:#FFFFFF;" d="M412,291.2c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8h-15.2L394.4,292H412V291.2z" />
-        </g>
-        <g>
+    </g>
+    <g>
             <path style="fill:#DCE5E5;" d="M180,279.2c0,9.6,5.6,13.6,12.8,13.6c5.6,0,10.4-1.6,12-2.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8
 		c-5.6,0-6.4-3.2-5.6-4.8l4.8-28h8.8l2.4-15.2h-8l1.6-9.6" />
             <path style="fill:#DCE5E5;" d="M218.4,264.8c0,22.4,7.2,28,20,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
@@ -109,41 +111,41 @@
 		 M388,263.2c0,2.4-9.6,15.2-19.2,15.2c-4.8,0-6.4-4-6.4-6.4c0-4,2.4-9.6,14.4-9.6C380,263.2,388,263.2,388,263.2z" />
             <path style="fill:#DCE5E5;" d="M395.2,291.2H412c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 </ng-template>
 <ng-template #maestro>
-    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
+  <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
         <path style="fill:#07A9E2;" d="M252,364c30.4-27.2,49.6-67.2,49.6-112s-19.2-84-49.6-112c-26.4-24-62.4-39.2-100.8-39.2
         C68,100.8,0,168.8,0,252s68,150.4,151.2,150.4C189.6,403.2,225.6,388,252,364L252,364z" />
         <path style="fill:#009DDD;" d="M0,252c0,83.2,68,150.4,151.2,150.4c39.2,0,74.4-14.4,100.8-39.2l0,0c30.4-27.2,49.6-67.2,49.6-112
@@ -159,7 +161,7 @@
         c4,4.8,8,10.4,11.2,16h-53.6c-3.2,5.6-6.4,10.4-8.8,16h71.2c2.4,5.6,4.8,10.4,6.4,16h-83.2c-1.6,5.6-3.2,10.4-4.8,16h92.8
         c2.4,10.4,3.2,20.8,3.2,32c0,16.8-2.4,32.8-8,48h-83.2c1.6,5.6,4,10.4,6.4,16H288c-2.4,5.6-5.6,11.2-8.8,16h-53.6
         c3.2,5.6,7.2,11.2,11.2,16h30.4c-4.8,5.6-9.6,11.2-15.2,16c27.2,24,62.4,39.2,101.6,39.2c83.2,0,150.4-67.2,150.4-150.4" />
-        <path style="fill:#0466B5;" d="M252,364c30.4-27.2,49.6-67.2,49.6-112s-19.2-84-49.6-112V364L252,364z" />
+    <path style="fill:#0466B5;" d="M252,364c30.4-27.2,49.6-67.2,49.6-112s-19.2-84-49.6-112V364L252,364z" />
         <path style="fill:#FFFFFF;" d="M452,284.8c0-2.4,2.4-4.8,4.8-4.8s4.8,2.4,4.8,4.8s-2.4,4.8-4.8,4.8C454.4,289.6,452,287.2,452,284.8
         L452,284.8z M456.8,288.8c2.4,0,3.2-1.6,3.2-4s-1.6-3.2-3.2-3.2c-2.4,0-4,1.6-4,3.2S455.2,288.8,456.8,288.8L456.8,288.8z
          M456.8,286.4H456v-4h1.6c0.8,0,0.8,0,0.8,0l0.8,0.8c0,0.8,0,0.8-0.8,0.8l0.8,1.6h-0.8l-0.8-1.6h-0.8L456.8,286.4L456.8,286.4z
@@ -171,7 +173,7 @@
         C314.4,100.8,279.2,116,252,140z" />
         <polygon style="fill:#FFFFFF;" points="132,289.6 112.8,289.6 124,231.2 98.4,289.6 81.6,289.6 78.4,231.2 67.2,289.6 50.4,289.6 
         64.8,212.8 94.4,212.8 96,260.8 116.8,212.8 147.2,212.8 " />
-        <g>
+    <g>
             <path style="fill:#DCE5E5;" d="M113.6,256l11.2-24.8l-8.8,46.4c0.8,4,1.6,8.8,3.2,12.8H132l14.4-76.8h-28
             c-3.2,12-5.6,25.6-5.6,39.2C113.6,253.6,113.6,254.4,113.6,256z" />
             <path style="fill:#DCE5E5;" d="M341.6,288.8c-5.6,1.6-8.8,2.4-13.6,2.4c-9.6,0-14.4-4.8-14.4-13.6c0-1.6,0-3.2,0.8-5.6l0.8-6.4
@@ -190,51 +192,51 @@
             <path style="fill:#DCE5E5;" d="M254.4,288c-6.4,1.6-12.8,2.4-19.2,2.4c-20.8,0-32-9.6-32-28c0-21.6,13.6-36.8,32.8-36.8
             c15.2,0,24.8,8.8,24.8,22.4c0,4.8-0.8,8.8-2.4,15.2h-37.6c0,0.8,0,1.6,0,2.4c0,7.2,5.6,11.2,16,11.2c7.2,0,12.8-0.8,19.2-4
             L254.4,288L254.4,288z M244.8,251.2c0-0.8,0-2.4,0-3.2c0-4.8-3.2-8-8.8-8s-10.4,4-12,11.2H244.8L244.8,251.2z" />
-        </g>
-        <g>
+    </g>
+    <g>
             <path style="fill:#FFFFFF;" d="M455.2,261.6c-3.2,20.8-17.6,29.6-36.8,29.6c-20.8,0-29.6-12.8-29.6-28.8
             c0-21.6,14.4-36.8,36.8-36.8c19.2,0,29.6,12.8,29.6,28C455.2,257.6,455.2,257.6,455.2,261.6L455.2,261.6z M435.2,253.6
             c0-6.4-2.4-12-10.4-12c-9.6,0-15.2,11.2-15.2,21.6c0,8,4,13.6,10.4,13.6c4,0,12.8-5.6,14.4-15.2C435.2,258.4,435.2,256,435.2,253.6
             L435.2,253.6z" />
             <path style="fill:#FFFFFF;" d="M389.6,269.6c0.8-5.6,1.6-12,1.6-17.6c0-0.8,0-1.6,0-1.6c-0.8,4-1.6,8-1.6,12.8
             C388.8,264.8,388.8,267.2,389.6,269.6z" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 </ng-template>
 <ng-template #visa>
-    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
-        <polygon style="fill:#3C58BF;" points="184.8,324.4 210.4,180.4 250.4,180.4 225.6,324.4 " />
-        <polygon style="fill:#293688;" points="184.8,324.4 217.6,180.4 250.4,180.4 225.6,324.4 " />
+  <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
+    <polygon style="fill:#3C58BF;" points="184.8,324.4 210.4,180.4 250.4,180.4 225.6,324.4 " />
+    <polygon style="fill:#293688;" points="184.8,324.4 217.6,180.4 250.4,180.4 225.6,324.4 " />
         <path style="fill:#3C58BF;" d="M370.4,182c-8-3.2-20.8-6.4-36.8-6.4c-40,0-68.8,20-68.8,48.8c0,21.6,20,32.8,36,40
         s20.8,12,20.8,18.4c0,9.6-12.8,14.4-24,14.4c-16,0-24.8-2.4-38.4-8l-5.6-2.4l-5.6,32.8c9.6,4,27.2,8,45.6,8
         c42.4,0,70.4-20,70.4-50.4c0-16.8-10.4-29.6-34.4-40c-14.4-7.2-23.2-11.2-23.2-18.4c0-6.4,7.2-12.8,23.2-12.8
@@ -247,55 +249,55 @@
          M420.8,276.4c2.4-7.2,16-42.4,16-42.4s3.2-8.8,5.6-14.4l2.4,13.6c0,0,8,36,9.6,44h-33.6V276.4z" />
         <path style="fill:#293688;" d="M448.8,180.4c-9.6,0-16.8,0.8-20.8,10.4l-69.6,133.6h43.2l8-24h51.2l4.8,24H504l-33.6-144H448.8z
          M420.8,276.4c3.2-8,16-42.4,16-42.4s3.2-8.8,5.6-14.4l2.4,13.6c0,0,8,36,9.6,44h-33.6V276.4z" />
-        <path style="fill:#3C58BF;" d="M111.2,281.2l-4-20.8c-7.2-24-30.4-50.4-56-63.2l36,128h43.2l64.8-144H152L111.2,281.2z" />
-        <path style="fill:#293688;" d="M111.2,281.2l-4-20.8c-7.2-24-30.4-50.4-56-63.2l36,128h43.2l64.8-144H160L111.2,281.2z" />
-        <path style="fill:#FFBC00;" d="M0,180.4l7.2,1.6c51.2,12,86.4,42.4,100,78.4l-14.4-68c-2.4-9.6-9.6-12-18.4-12H0z" />
-        <path style="fill:#F7981D;" d="M0,180.4L0,180.4c51.2,12,93.6,43.2,107.2,79.2l-13.6-56.8c-2.4-9.6-10.4-15.2-19.2-15.2L0,180.4z" />
-        <path style="fill:#ED7C00;" d="M0,180.4L0,180.4c51.2,12,93.6,43.2,107.2,79.2l-9.6-31.2c-2.4-9.6-5.6-19.2-16.8-23.2L0,180.4z" />
-        <g>
-            <path style="fill:#051244;" d="M151.2,276.4L124,249.2l-12.8,30.4l-3.2-20c-7.2-24-30.4-50.4-56-63.2l36,128h43.2L151.2,276.4z" />
-            <polygon style="fill:#051244;" points="225.6,324.4 191.2,289.2 184.8,324.4 	" />
+    <path style="fill:#3C58BF;" d="M111.2,281.2l-4-20.8c-7.2-24-30.4-50.4-56-63.2l36,128h43.2l64.8-144H152L111.2,281.2z" />
+    <path style="fill:#293688;" d="M111.2,281.2l-4-20.8c-7.2-24-30.4-50.4-56-63.2l36,128h43.2l64.8-144H160L111.2,281.2z" />
+    <path style="fill:#FFBC00;" d="M0,180.4l7.2,1.6c51.2,12,86.4,42.4,100,78.4l-14.4-68c-2.4-9.6-9.6-12-18.4-12H0z" />
+    <path style="fill:#F7981D;" d="M0,180.4L0,180.4c51.2,12,93.6,43.2,107.2,79.2l-13.6-56.8c-2.4-9.6-10.4-15.2-19.2-15.2L0,180.4z" />
+    <path style="fill:#ED7C00;" d="M0,180.4L0,180.4c51.2,12,93.6,43.2,107.2,79.2l-9.6-31.2c-2.4-9.6-5.6-19.2-16.8-23.2L0,180.4z" />
+    <g>
+      <path style="fill:#051244;" d="M151.2,276.4L124,249.2l-12.8,30.4l-3.2-20c-7.2-24-30.4-50.4-56-63.2l36,128h43.2L151.2,276.4z" />
+      <polygon style="fill:#051244;" points="225.6,324.4 191.2,289.2 184.8,324.4 	" />
             <path style="fill:#051244;" d="M317.6,274.8L317.6,274.8c3.2,3.2,4.8,5.6,4,8.8c0,9.6-12.8,14.4-24,14.4c-16,0-24.8-2.4-38.4-8
             l-5.6-2.4l-5.6,32.8c9.6,4,27.2,8,45.6,8c25.6,0,46.4-7.2,58.4-20L317.6,274.8z" />
             <path style="fill:#051244;" d="M364,324.4h37.6l8-24h51.2l4.8,24H504L490.4,266l-48-46.4l2.4,12.8c0,0,8,36,9.6,44h-33.6
             c3.2-8,16-42.4,16-42.4s3.2-8.8,5.6-14.4" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 
 </ng-template>
 <ng-template #amex>
-    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 291.764 291.764" style="enable-background:new 0 0 291.764 291.764;" xml:space="preserve">
-        <g>
+  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 291.764 291.764" style="enable-background:new 0 0 291.764 291.764;" xml:space="preserve">
+    <g>
             <path style="fill:#26A6D1;" d="M18.235,41.025h255.294c10.066,0,18.235,8.169,18.235,18.244v173.235
             c0,10.066-8.169,18.235-18.235,18.235H18.235C8.16,250.74,0,242.57,0,232.505V59.269C0,49.194,8.169,41.025,18.235,41.025z" />
             <path style="fill:#FFFFFF;" d="M47.047,113.966l-28.812,63.76h34.492l4.276-10.166h9.774l4.276,10.166h37.966v-7.759l3.383,7.759
@@ -306,41 +308,41 @@
              M164.956,123.02h45.342L224.166,138l14.315-14.98h13.868l-21.071,22.995l21.071,22.73h-14.497l-13.868-15.154l-14.388,15.154
             h-44.64L164.956,123.02L164.956,123.02z M61.9,130.761l-7.741,18.272h15.473L61.9,130.761z M176.153,132.493v8.352h24.736v9.309
             h-24.736v9.118h27.745l12.892-13.43l-12.345-13.357h-28.292L176.153,132.493z" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 </ng-template>
 <ng-template #card>
-    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512.001 512.001" style="enable-background:new 0 0 512.001 512.001;" xml:space="preserve">
+  <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512.001 512.001" style="enable-background:new 0 0 512.001 512.001;" xml:space="preserve">
         <path style="fill:#146AA8;" d="M481.53,347.033l30.015-191.649c3.121-19.448-10.112-37.747-29.561-40.877l0,0L76.973,49.501
 	C57.525,46.38,39.227,59.613,36.106,79.061l-14.392,89.627v177.23L481.53,347.033z" />
         <path style="fill:#126099;" d="M481.985,114.507L366.953,96.049C289.694,214.264,164.799,296.142,69.019,346.034l412.511,0.999
@@ -350,52 +352,52 @@
 	" />
         <path style="fill:#3E8CC7;" d="M445.861,159.771h-7.134c-84.179,149.444-241.469,251.956-337.49,303.185h344.624
 	c19.698,0,35.669-15.971,35.669-35.669V195.44C481.53,175.742,465.559,159.771,445.861,159.771z" />
-        <rect x="44.586" y="204.357" style="fill:#FDB62F;" width="89.172" height="71.338" />
-        <g>
-            <rect x="44.586" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
-            <rect x="107.007" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
-        </g>
-        <circle style="fill:#FDB62F;" cx="392.358" cy="373.784" r="44.586" />
-        <circle style="fill:#DE4C3C;" cx="338.854" cy="373.784" r="44.586" />
-        <g>
-            <rect x="35.669" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="124.841" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="214.013" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="35.669" y="391.619" style="fill:#87CED9;" width="231.848" height="17.834" />
-            <rect x="312.103" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="347.772" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="383.44" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="419.109" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+    <rect x="44.586" y="204.357" style="fill:#FDB62F;" width="89.172" height="71.338" />
+    <g>
+      <rect x="44.586" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
+      <rect x="107.007" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
+    </g>
+    <circle style="fill:#FDB62F;" cx="392.358" cy="373.784" r="44.586" />
+    <circle style="fill:#DE4C3C;" cx="338.854" cy="373.784" r="44.586" />
+    <g>
+      <rect x="35.669" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="124.841" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="214.013" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="35.669" y="391.619" style="fill:#87CED9;" width="231.848" height="17.834" />
+      <rect x="312.103" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="347.772" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="383.44" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="419.109" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 </ng-template>

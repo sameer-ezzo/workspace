@@ -10,7 +10,7 @@
     <ng-template #editableTemplate>
         <select [ngModel]="permission.item.by" (change)="changeType(permission.item, $event.target)">
             <option *ngFor="let pt of permissionTypes" [value]="pt.value">
-                {{ pt.display | text }}
+                {{ pt.display  }}
             </option>
         </select>
     </ng-template>
@@ -23,8 +23,8 @@
     <ng-template #editableTemplate>
     <select [ngModel]="permission.item.access" (change)="changeAccess(permission.item, $event.target)">
         <option value=""></option>
-        <option [value]="'deny'">{{ 'Deny' | text }}</option>
-        <option [value]="'grant'">{{ 'Grant' | text }}</option>
+        <option value="deny">Deny</option>
+        <option value="grant">Grant</option>
     </select>
     </ng-template>
 </ng-template>

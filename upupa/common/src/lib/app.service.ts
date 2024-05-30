@@ -2,7 +2,7 @@ import { Inject, PLATFORM_ID, Optional } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { Injectable } from '@angular/core';
-import { isPlatformBrowser, isPlatformServer, isPlatformWorkerApp, isPlatformWorkerUi } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { BreakpointObserver } from '@angular/cdk/layout';
 
 @Injectable({ 
@@ -29,8 +29,8 @@ export class AppService {
     set title(value: string) { this.titleService.setTitle(value); }
     get isPlatformBrowser() { return isPlatformBrowser(this.platformId); }
     get isPlatformServer() { return isPlatformServer(this.platformId); }
-    get isPlatformWorkerApp() { return isPlatformWorkerApp(this.platformId); }
-    get isPlatformWorkerUi() { return isPlatformWorkerUi(this.platformId); }
+    // get isPlatformWorkerApp() { return isPlatformWorkerApp(this.platformId); }
+    // get isPlatformWorkerUi() { return isPlatformWorkerUi(this.platformId); }
     get dir(): string { return this.doc ? this.doc.dir : null; }
     set dir(dir: string) { if (this.doc) { this.doc.dir = dir; } }
     get unloadMessage(): string { return this._unloadMessage; }

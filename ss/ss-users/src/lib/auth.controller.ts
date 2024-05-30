@@ -380,14 +380,15 @@ export class AuthController {
         }
         let userRecord = await this.auth.findUserByEmail(fbuser.data.email);
         if (!userRecord) {
-            const facebook_client_regesterateion_enabled = (process.env.FACEBOOK_CLIENT_REGESTERATEION_ENABLED || 'false').toLowerCase() === 'true'
+            const facebook_client_regeneration_enabled = (process.env.FACEBOOK_CLIENT_REGENERATION_ENABLED || 'false').toLowerCase() === 'true'
             if (!userRecord || userRecord.external?.facebook !== fbuser.data.email) {
-                if (facebook_client_regesterateion_enabled === true) {
+                if (facebook_client_regeneration_enabled === true) {
                     const external = userRecord?.external ?? {}
                     await this.auth.signUp({
                         ...user,
                         external: { ...external, ['facebook']: fbuser.data.email }
-                    } as User, '')
+                    } as unknown as User,
+                        '')
                 }
                 else userRecord = { _id: fbuser.data.email, ...user } as any
             }

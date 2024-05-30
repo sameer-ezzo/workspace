@@ -275,11 +275,11 @@ export class DataService {
         logger.info(`Adding schema: [${collectionName}] overwrite:${overwrite}`)
         schema.plugin(mongooseUniqueValidator)
 
-        const extstingCollection = await this.connection.collection(collectionName).findOne({});
-        if (extstingCollection && extstingCollection._id) {
+        const existingCollection = await this.connection.collection(collectionName).findOne({});
+        if (existingCollection && existingCollection._id) {
 
             let schemaIdType = 'String'
-            const typeOfId = typeof extstingCollection._id
+            const typeOfId = typeof existingCollection._id
             switch (typeOfId) {
                 case 'string': schemaIdType = 'String'; break;
                 case 'number': schemaIdType = 'Number'; break;
@@ -287,7 +287,7 @@ export class DataService {
             }
 
             if (schemaIdType !== schema.paths._id.instance) {
-                logger.error(`Schema: [${collectionName}] has different _id type. The existing id ${extstingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`)
+                logger.error(`Schema: [${collectionName}] has different _id type. The existing id ${existingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`)
                 return null
             }
         }

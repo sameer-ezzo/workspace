@@ -1,9 +1,11 @@
 <ng-template>
-    <div class="popover-panel" role="dialog" [class.popover-overlap]="overlapTrigger" [ngClass]="_classList" [ngStyle]="popoverPanelStyles" (keydown)="_handleKeydown($event)" (click)="onClick()" (mouseover)="onMouseOver()" (mouseleave)="onMouseLeave()" [@.disabled]="disableAnimation"
-        [@transformPopover]="'enter'">
-        <div class="popover-direction-arrow" [ngStyle]="popoverArrowStyles" *ngIf="!overlapTrigger"></div>
-        <div class="popover-content" [ngStyle]="popoverContentStyles" [cdkTrapFocus]="focusTrapEnabled" [cdkTrapFocusAutoCapture]="focusTrapAutoCaptureEnabled">
-            <ng-content></ng-content>
-        </div>
+  <div class="popover-panel" role="dialog" [class.popover-overlap]="overlapTrigger" [ngClass]="_classList" [ngStyle]="popoverPanelStyles" (keydown)="_handleKeydown($event)" (click)="onClick()" (mouseover)="onMouseOver()" (mouseleave)="onMouseLeave()" [@.disabled]="disableAnimation"
+    [@transformPopover]="'enter'">
+    @if (!overlapTrigger) {
+      <div class="popover-direction-arrow" [ngStyle]="popoverArrowStyles"></div>
+    }
+    <div class="popover-content" [ngStyle]="popoverContentStyles" [cdkTrapFocus]="focusTrapEnabled" [cdkTrapFocusAutoCapture]="focusTrapAutoCaptureEnabled">
+      <ng-content></ng-content>
     </div>
+  </div>
 </ng-template>

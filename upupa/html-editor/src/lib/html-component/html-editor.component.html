@@ -1,15 +1,20 @@
-<fieldset *ngIf="label; else noLabelTemplate">
+@if (label) {
+  <fieldset>
     <legend>{{label}}</legend>
     <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
-</fieldset>
-<ng-template #noLabelTemplate>
-    <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
-</ng-template>
-<mat-hint *ngIf="hint?.length > 0">{{hint | text}}</mat-hint>
-<mat-error *ngFor="let error of control?.errors | keyvalue;">{{errorMessages[error.key] || error.key | text}}
-</mat-error>
+  </fieldset>
+} @else {
+  <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
+}
+@if (hint?.length > 0) {
+  <mat-hint>{{hint }}</mat-hint>
+}
+@for (error of control?.errors | keyvalue; track error) {
+  <mat-error>{{errorMessages[error.key+''] || error.key }}
+  </mat-error>
+}
 
 <ng-template #htmlEditorTemplate>
-    <ckeditor #ckEditor [editor]="editor" [config]="config" [data]="model.data" [disabled]="disabled || readonly"
-        (change)="htmlChanged($event)" (blur)="markAsTouched()" (ready)="onReady($event, ckEditor)"></ckeditor>
+  <ckeditor #ckEditor [editor]="editor" [config]="config" [data]="model.data" [disabled]="disabled || readonly"
+  (change)="htmlChanged($event)" (blur)="markAsTouched()" (ready)="onReady($event, ckEditor)"></ckeditor>
 </ng-template>

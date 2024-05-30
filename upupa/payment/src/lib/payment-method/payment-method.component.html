@@ -1,392 +1,480 @@
 <form #mainForm="ngForm" style="padding: 0.125rem;">
-    <mat-form-field [appearance]="appearance" class="amount-class">
-        <mat-label>{{'amount'|text}}</mat-label>
-        <input #amountInput="ngModel" matInput [(ngModel)]="amount" [disabled]="!customAmount" name="amount" [minimum]="minAmountMethod[method] || minAmount" [maximum]="maxAmountMethod[method] || maxAmount" only-numbers required>
-        <span *ngIf="!customCurrency; else customCurrencyTemp" matSuffix>{{currency}}</span>
+  <mat-form-field [appearance]="appearance" class="amount-class">
+    <mat-label>unt</mat-label>
+    <input #amountInput="ngModel" matInput [(ngModel)]="amount" [disabled]="!customAmount" name="amount"
+      [minimum]="minAmountMethod[method] || minAmount" [maximum]="maxAmountMethod[method] || maxAmount" only-numbers
+      required>
+    @if (!customCurrency) {
+    <span matSuffix>{{currency}}</span>
+    } @else {
+    <button mat-icon-button [matMenuTriggerFor]="menu" matSuffix>{{currency}}</button>
+    <mat-menu #menu="matMenu">
+      @for (cur of currencies; track cur) {
+      <button (click)="currency = cur.code; currencyChange.emit(currency)" mat-menu-item>{{cur.code}}</button>
+      }
+    </mat-menu>
+    }
 
-        <ng-template #customCurrencyTemp>
-            <button mat-icon-button [matMenuTriggerFor]="menu" matSuffix>{{currency}}</button>
-            <mat-menu #menu="matMenu">
-                <button *ngFor="let cur of currencies" (click)="currency = cur.code; currencyChange.emit(currency)" mat-menu-item>{{cur.code}}</button>
-            </mat-menu>
-        </ng-template>
-        <mat-error>{{amountInput.errors|error}}</mat-error>
-    </mat-form-field>
+    <mat-error>{{amountInput.errors|error}}</mat-error>
+  </mat-form-field>
 
-    <mat-accordion id="payment-method">
-        <mat-expansion-panel hideToggle *ngFor="let m of methods; let i = index" [expanded]="m === method" (opened)="selectMethod(m,i)">
-            <mat-expansion-panel-header class="heigh">
-                <mat-panel-title>{{m.method | text}}</mat-panel-title>
-
-                <span class="spacer"></span>
-                <span style="max-width: 55px; width: 100%; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; justify-content: center;">
-                    <img *ngIf="m.image" [src]="m.image" />
-                    <ng-container *ngIf="m.icon && this[m.icon];else customIcon" [ngTemplateOutlet]="this[m.icon]"></ng-container>
-                    <ng-template #customIcon>
-                        <img [src]="m.icon">
-                    </ng-template>
-                </span>
-            </mat-expansion-panel-header>
-
-            <form #detailsForm="ngForm">
-                <fieldset [disabled]="disabled">
-                    <div *ngIf="type =='transferin'" [ngSwitch]="method">
-                        <div style="display: flex; flex-direction: column; max-width: 700px;" *ngSwitchCase="'skrill'">
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'skrill-id'|text}}</mat-label>
-                                <input matInput #_email="ngModel" name="email" [(ngModel)]="model.paymentInfo.email" placeholder="{{'email' | text}}" required>
-                            </mat-form-field>
-                        </div>
-
-                        <div style="display: flex; flex-direction: row; " *ngSwitchCase="'neteller'">
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'netller-id' | text}}</mat-label>
-                                <input matInput #_emailOrAID="ngModel" name="netller-id" [(ngModel)]="model.paymentInfo.id" required>
-                            </mat-form-field>
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'netller-code' | text}}</mat-label>
-                                <input matInput type="password" #_sIDOrAC="ngModel" name="netller-code" [(ngModel)]="model.paymentInfo.code" required>
-                            </mat-form-field>
-                        </div>
-
-                        <div *ngSwitchCase="'card'">
-                            <payment-card [(ngModel)]="model.paymentInfo" (ngModelChange)="methodChange.emit(method)" name="paymentCard" required>
-                            </payment-card>
-                        </div>
-
-                        <mat-radio-group class="flex row wrap bank-type" *ngSwitchCase="'bank'" [(ngModel)]="model.bank" name="selectedBank" required>
-                            <div *ngFor="let b of banks" class="bk-item" [class.selected]="model.paymentInfo === b">
-                                <mat-radio-button [value]="b"></mat-radio-button>
-                                <div *ngFor="let x of b | keyvalue" class="bk-detail">
-                                    <strong>{{x.key|text}}</strong>
-                                    <span *ngIf="!x.edit" #s (click)="copyToClipboard(s)">{{x.value}}</span>
-                                    <input *ngIf="x.edit" [(ngModel)]="x.value" />
-                                </div>
-                            </div>
-                            <div *ngIf="banks === null || banks.length === 0">
-                                {{'no-banks'|text}}
-                            </div>
-                        </mat-radio-group>
-
-                        <div *ngSwitchCase="'local-transfer'">
-
-                            <div class="hint justify-start" style="display: flex; flex-direction: column; margin: 0; margin-top: 1rem;">
-                                <h3 style="margin: 0; margin-bottom: 0.5rem; display: flex; align-items: center;">
-                                    <mat-icon>report_problem</mat-icon>{{'hint-local-transfer-deposit-0'|text}}
-                                </h3>
-                                <ul>
-                                    <li>{{'hint-local-transfer-deposit-1'|text}}</li>
-                                    <li>{{'hint-local-transfer-deposit-2'|text}}</li>
-                                    <li>{{'hint-local-transfer-deposit-3'|text}}</li>
-                                    <li>{{'hint-local-transfer-deposit-4'|text}}</li>
-                                    <li>{{'hint-local-transfer-deposit-5'|text}}</li>
-                                </ul>
-                            </div>
-                            <p>{{'local-transfer-get-info'|text}} <a href="#chat" (click)="localTransferRequest()">{{'request-info'|text}}</a></p>
-
-
-                            <div>
-                                <mat-form-field [appearance]="appearance">
-                                    <mat-label>{{'local-transfer-no'|text}}</mat-label>
-                                    <input matInput #_transferNo="ngModel" name="localTransferNo" [(ngModel)]="model.paymentInfo.confirmCode" placeholder="{{'local-transfer-no' | text}}" required>
-                                </mat-form-field>
-                            </div>
-
-                            <div>
-                                <mat-form-field [appearance]="appearance">
-                                    <mat-label>{{'local-transfer-sender'|text}}</mat-label>
-                                    <input matInput #_sender="ngModel" name="localTransferSender" [(ngModel)]="model.paymentInfo.sender" placeholder="{{'local-transfer-sender' | text}}" required>
-                                </mat-form-field>
-                            </div>
-
-                            <div>
-                                <mat-form-field [appearance]="appearance">
-                                    <mat-label>{{'local-transfer-notes'|text}}</mat-label>
-                                    <input matInput #_notes="ngModel" name="localTransferNotes" [(ngModel)]="model.paymentInfo.notes" placeholder="{{'local-transfer-notes' | text}}">
-                                </mat-form-field>
-                            </div>
-
-
-
-                            <!-- <mat-radio-group class="flex row wrap bank-type" [(ngModel)]="model.transfer.provider" name="selectedTransfer" required>
-                                <div *ngFor="let b of transfers" class="bk-item" [class.selected]="model.bank === b">
-                                    <mat-radio-button [value]="b"></mat-radio-button>
-                                    <div *ngFor="let x of b | keyvalue" class="bk-detail">
-                                        <strong>{{x.key|text}}</strong>
-                                        <span *ngIf="!x.edit" #s (click)="copyToClipboard(s)">{{x.value}}</span>
-                                        <input *ngIf="x.edit" [(ngModel)]="x.value" />
-                                    </div>
-                                </div>
-                                <div *ngIf="banks === null || banks.length === 0">{{'no-transfers'|text}}</div>
-                            </mat-radio-group> -->
-                        </div>
-
-                        <div *ngSwitchCase="'crypto'">
-                            <dynamic-form [fields]="cryptoForm" [(value)]="model.paymentInfo" [conditions]="cryptoConditions"></dynamic-form>
-                        </div>
-                    </div>
-
-                    <div *ngIf="type =='transferout'" style="display: flex; flex-direction: column;" [ngSwitch]="method">
-
-                        <div *ngSwitchCase="'skrill'" style="max-width: 700px">
-
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'email'|text}}</mat-label>
-                                <input matInput #_email="ngModel" name="email" email [(ngModel)]="model.paymentInfo.email" placeholder="{{'email' | text}}" required>
-                            </mat-form-field>
-                        </div>
-
-                        <div *ngSwitchCase="'neteller'" style="max-width: 700px">
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'netller-id' | text}}</mat-label>
-                                <input matInput #_emailOrAID="ngModel" name="netller-id" [(ngModel)]="model.paymentInfo.id" required>
-                            </mat-form-field>
-                        </div>
-
-                        <div *ngSwitchCase="'card'" style="max-width: 700px">
-                            <mat-form-field [appearance]="appearance">
-                                <mat-label>{{'card-last4' | text}}</mat-label>
-                                <input matInput #_cardNo="ngModel" name="card-number" [(ngModel)]="model.paymentInfo.no" required only-numbers minlength="4" maxlength="4" placeholder="0000">
-                            </mat-form-field>
-                        </div>
-                        <div *ngSwitchCase="'bank'">
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="iban" [(ngModel)]="model.paymentInfo.iban" required placeholder="{{'iban' | text}}"></mat-form-field>
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="holderName" [(ngModel)]="model.paymentInfo.holderName" required placeholder="{{'holderName' | text}}"></mat-form-field>
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bankName" [(ngModel)]="model.paymentInfo.bankName" required placeholder="{{'bankName' | text}}"></mat-form-field>
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bankAddress" [(ngModel)]="model.paymentInfo.bankAddress" required placeholder="{{'bankAddress' | text}}"></mat-form-field>
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bic" [(ngModel)]="model.paymentInfo.bic" required placeholder="{{'bic' | text}}"></mat-form-field>
-                            <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="accountNumber" [(ngModel)]="model.paymentInfo.accountNumber" required placeholder="{{'accountNumber' | text}}"></mat-form-field>
-
-                        </div>
-
-
-                        <div *ngSwitchCase="'local-transfer'">
-                            <div>
-                                <p>{{'local-transfer-withdraw'|text}}</p>
-                                <mat-form-field [appearance]="appearance">
-                                    <mat-label>{{'local-transfer-branch'|text}}</mat-label>
-                                    <input matInput #_email="ngModel" name="localTransferBranch" [(ngModel)]="model.paymentInfo.branch" placeholder="{{'local-transfer-branch' | text}}" required>
-                                    <mat-hint>{{'local-transfer-hint'|text}}</mat-hint>
-                                </mat-form-field>
-                            </div>
-                        </div>
-
-                        <div *ngSwitchCase="'crypto'">
-                            <dynamic-form [fields]="cryptoForm" [(value)]="model.paymentInfo" [conditions]="cryptoConditions"></dynamic-form>
-                        </div>
-
-                    </div>
-                </fieldset>
-            </form>
-
-
-        </mat-expansion-panel>
-    </mat-accordion>
-    <!-- <div *ngIf="method != 'local-transfer'">
-        <mat-checkbox #selectAddress>{{'select-address' | text}}</mat-checkbox>
-        <mat-radio-group *ngIf="selectAddress.checked" class="flex row wrap" [(ngModel)]="model.address" name="selectedAddress" required>
-            <div *ngFor="let b of addresses" class="bk-item address-detalis" [class.selected]="model.address === b">
+  <mat-accordion id="payment-method">
+    @for (m of methods; track m; let i = $index) {
+    <mat-expansion-panel hideToggle [expanded]="m === method" (opened)="selectMethod(m,i)">
+      <mat-expansion-panel-header class="heigh">
+        <mat-panel-title>{{m.method }}</mat-panel-title>
+        <span class="spacer"></span>
+        <span
+          style="max-width: 55px; width: 100%; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; justify-content: center;">
+          @if (m.image) {
+          <img [src]="m.image" />
+          }
+          @if (m.icon && this[m.icon]) {
+          <ng-container [ngTemplateOutlet]="this[m.icon]"></ng-container>
+          } @else {
+          <img [src]="m.icon">
+          }
+        </span>
+      </mat-expansion-panel-header>
+      <form #detailsForm="ngForm">
+        <fieldset [disabled]="disabled">
+          @if (type =='transferin') {
+          <div>
+            @switch (method) {
+            @case ('skrill') {
+            <div style="display: flex; flex-direction: column; max-width: 700px;">
+              <mat-form-field [appearance]="appearance">
+                <mat-label>ill-id</mat-label>
+                <input matInput #_email="ngModel" name="email" [(ngModel)]="model.paymentInfo.email"
+                  placeholder="il " required>
+              </mat-form-field>
+            </div>
+            }
+            @case ('neteller') {
+            <div style="display: flex; flex-direction: row; ">
+              <mat-form-field [appearance]="appearance">
+                <mat-label>ller-id </mat-label>
+                <input matInput #_emailOrAID="ngModel" name="netller-id" [(ngModel)]="model.paymentInfo.id" required>
+              </mat-form-field>
+              <mat-form-field [appearance]="appearance">
+                <mat-label>ller-code </mat-label>
+                <input matInput type="password" #_sIDOrAC="ngModel" name="netller-code"
+                  [(ngModel)]="model.paymentInfo.code" required>
+              </mat-form-field>
+            </div>
+            }
+            @case ('card') {
+            <div>
+              <payment-card [(ngModel)]="model.paymentInfo" (ngModelChange)="methodChange.emit(method)"
+                name="paymentCard" required>
+              </payment-card>
+            </div>
+            }
+            @case ('bank') {
+            <mat-radio-group class="flex row wrap bank-type" [(ngModel)]="model.bank" name="selectedBank" required>
+              @for (b of banks; track b) {
+              <div class="bk-item" [class.selected]="model.paymentInfo === b">
                 <mat-radio-button [value]="b"></mat-radio-button>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: .5em;">
-                    <span>
-                        <h4>{{'country' | text}}</h4>
-                        <span>{{b.country}}</span>
-                    </span>
-                    <span>
-                        <h4>{{'state' | text}}</h4>
-                        <span>{{b.state}}</span>
-                    </span>
-                    <span>
-                        <h4>{{'city' | text}}</h4>
-                        <span>{{b.city}}</span>
-                    </span>
-                    <span>
-                        <h4>{{'zip-code' | text}}</h4>
-                        <span>{{b.zipCode}}</span>
-                    </span>
+                @for (x of b | keyvalue; track x) {
+                <div class="bk-detail">
+                  <strong>{{x.key}}</strong>
+                  @if (!x.edit) {
+                  <span #s (click)="copyToClipboard(s)">{{x.value}}</span>
+                  }
+                  @if (x.edit) {
+                  <input [(ngModel)]="x.value" />
+                  }
                 </div>
-                <div style="margin-top: .5em;">
-                    <h4>{{'address-line-1' | text}}</h4>
-                    <span>{{b.addressLine1}}</span>
-                </div>
-                <div style="margin-top: .5em;">
-                    <h4>{{'address-line-1' | text}}</h4>
-                    <span>{{b.addressLine2}}</span>
-                </div>
+                }
+              </div>
+              }
+              @if (banks === null || banks.length === 0) {
+              <div>
+                banks
+              </div>
+              }
+            </mat-radio-group>
+            }
+            @case ('local-transfer') {
+
+            <div class="hint justify-start" style="display: flex; flex-direction: column; margin: 0; margin-top: 1rem;">
+              <h3 style="margin: 0; margin-bottom: 0.5rem; display: flex; align-items: center;">
+                <mat-icon>report_problem</mat-icon>Hint local transfer deposit
+              </h3>
+              <ul>
+                <li>Hint local transfer deposit</li>
+                <li>Hint local transfer deposit</li>
+                <li>Hint local transfer deposit</li>
+                <li>Hint local transfer deposit</li>
+                <li>Hint local transfer deposit</li>
+              </ul>
             </div>
-            <div style="height: 340px;" class="justify-center align-center" *ngIf="!addressEditor;else addressEditorTemplate">
-                <button role="button" mat-stroked-button color="accent" style="width: 150px;height: 150px;" (click)="addAddress()">
-                    <mat-icon>add</mat-icon>
-                </button>
+            <p>Local transfer get info <a href="#chat" (click)="localTransferRequest()">Request Info</a></p>
+
+            <mat-form-field [appearance]="appearance">
+              <mat-label>Local Transfer No</mat-label>
+              <input matInput #_transferNo="ngModel" name="localTransferNo" [(ngModel)]="model.paymentInfo.confirmCode"
+                placeholder="al-transfer-no " required>
+            </mat-form-field>
+            <mat-form-field [appearance]="appearance">
+              <mat-label>al-transfer-sender</mat-label>
+              <input matInput #_sender="ngModel" name="localTransferSender" [(ngModel)]="model.paymentInfo.sender"
+                placeholder="al-transfer-sender " required>
+            </mat-form-field>
+            <mat-form-field [appearance]="appearance">
+              <mat-label>al-transfer-notes</mat-label>
+              <input matInput #_notes="ngModel" name="localTransferNotes" [(ngModel)]="model.paymentInfo.notes"
+                placeholder="al-transfer-notes ">
+            </mat-form-field>
+
+            <!-- <mat-radio-group class="flex row wrap bank-type" [(ngModel)]="model.transfer.provider" name="selectedTransfer" required>
+                      <div *ngFor="let b of transfers" class="bk-item" [class.selected]="model.bank === b">
+                        <mat-radio-button [value]="b"></mat-radio-button>
+                        <div *ngFor="let x of b | keyvalue" class="bk-detail">
+                          <strong>{{x.key}}</strong>
+                          <span *ngIf="!x.edit" #s (click)="copyToClipboard(s)">{{x.value}}</span>
+                          <input *ngIf="x.edit" [(ngModel)]="x.value" />
+                        </div>
+                      </div>
+                      <div *ngIf="banks === null || banks.length === 0">transfers</div>
+                    </mat-radio-group> -->
+
+            }
+            @case ('crypto') {
+            <div>
+              <dynamic-form [fields]="cryptoForm" [(value)]="model.paymentInfo"
+                [conditions]="cryptoConditions"></dynamic-form>
             </div>
-        </mat-radio-group>
-        <ng-template #addressEditorTemplate>
-            <div class="bk-item new-address">
-                <div class="address-nav">
-                    <button mat-icon-button (click)="addressEditor=false;model.address=addresses[0]">
-                        <mat-icon>clear</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="model.address=null">
-                        <mat-icon>refresh</mat-icon>
-                    </button>
-                </div>
-                <div class="fields">
-                    <address-edit [(ngModel)]="model.address" name="address" display="name" appearance="outline"></address-edit>
-                </div>
+            }
+            }
+          </div>
+          }
+          @if (type =='transferout') {
+          <div style="display: flex; flex-direction: column;">
+            @switch (method) {
+            @case ('skrill') {
+            <div style="max-width: 700px">
+              <mat-form-field [appearance]="appearance">
+                <mat-label>il</mat-label>
+                <input matInput #_email="ngModel" name="email" email [(ngModel)]="model.paymentInfo.email"
+                  placeholder="il " required>
+              </mat-form-field>
             </div>
-        </ng-template>
-    </div> -->
+            }
+            @case ('neteller') {
+            <div style="max-width: 700px">
+              <mat-form-field [appearance]="appearance">
+                <mat-label>ller-id </mat-label>
+                <input matInput #_emailOrAID="ngModel" name="netller-id" [(ngModel)]="model.paymentInfo.id" required>
+              </mat-form-field>
+            </div>
+            }
+            @case ('card') {
+            <div style="max-width: 700px">
+              <mat-form-field [appearance]="appearance">
+                <mat-label>d-last4 </mat-label>
+                <input matInput #_cardNo="ngModel" name="card-number" [(ngModel)]="model.paymentInfo.no" required
+                  only-numbers minlength="4" maxlength="4" placeholder="0000">
+              </mat-form-field>
+            </div>
+            }
+            @case ('bank') {
+            <div>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="iban"
+                  [(ngModel)]="model.paymentInfo.iban" required placeholder="n "></mat-form-field>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="holderName"
+                  [(ngModel)]="model.paymentInfo.holderName" required placeholder="derName "></mat-form-field>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bankName"
+                  [(ngModel)]="model.paymentInfo.bankName" required placeholder="kName "></mat-form-field>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bankAddress"
+                  [(ngModel)]="model.paymentInfo.bankAddress" required
+                  placeholder="kAddress "></mat-form-field>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="bic"
+                  [(ngModel)]="model.paymentInfo.bic" required placeholder=" "></mat-form-field>
+              <mat-form-field [appearance]="appearance"><input matInput #_bankInfo="ngModel" name="accountNumber"
+                  [(ngModel)]="model.paymentInfo.accountNumber" required
+                  placeholder="ountNumber "></mat-form-field>
+            </div>
+            }
+            @case ('local-transfer') {
+            <div>
+              <div>
+                <p>al-transfer-withdraw</p>
+                <mat-form-field [appearance]="appearance">
+                  <mat-label>al-transfer-branch</mat-label>
+                  <input matInput #_email="ngModel" name="localTransferBranch" [(ngModel)]="model.paymentInfo.branch"
+                    placeholder="al-transfer-branch " required>
+                  <mat-hint>al-transfer-hint</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+            }
+            @case ('crypto') {
+            <div>
+              <dynamic-form [fields]="cryptoForm" [(value)]="model.paymentInfo"
+                [conditions]="cryptoConditions"></dynamic-form>
+            </div>
+            }
+            }
+          </div>
+          }
+        </fieldset>
+      </form>
+    </mat-expansion-panel>
+    }
+  </mat-accordion>
+  <!-- <div *ngIf="method != 'local-transfer'">
+<mat-checkbox #selectAddress>ect-address </mat-checkbox>
+<mat-radio-group *ngIf="selectAddress.checked" class="flex row wrap" [(ngModel)]="model.address" name="selectedAddress" required>
+  <div *ngFor="let b of addresses" class="bk-item address-detalis" [class.selected]="model.address === b">
+    <mat-radio-button [value]="b"></mat-radio-button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: .5em;">
+      <span>
+        <h4>ntry </h4>
+        <span>{{b.country}}</span>
+      </span>
+      <span>
+        <h4>te </h4>
+        <span>{{b.state}}</span>
+      </span>
+      <span>
+        <h4>y </h4>
+        <span>{{b.city}}</span>
+      </span>
+      <span>
+        <h4>-code </h4>
+        <span>{{b.zipCode}}</span>
+      </span>
+    </div>
+    <div style="margin-top: .5em;">
+      <h4>ress-line-1 </h4>
+      <span>{{b.addressLine1}}</span>
+    </div>
+    <div style="margin-top: .5em;">
+      <h4>ress-line-1 </h4>
+      <span>{{b.addressLine2}}</span>
+    </div>
+  </div>
+  <div style="height: 340px;" class="justify-center align-center" *ngIf="!addressEditor;else addressEditorTemplate">
+    <button role="button" mat-stroked-button color="accent" style="width: 150px;height: 150px;" (click)="addAddress()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+</mat-radio-group>
+<ng-template #addressEditorTemplate>
+  <div class="bk-item new-address">
+    <div class="address-nav">
+      <button mat-icon-button (click)="addressEditor=false;model.address=addresses[0]">
+        <mat-icon>clear</mat-icon>
+      </button>
+      <button mat-icon-button (click)="model.address=null">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+    <div class="fields">
+      <address-edit [(ngModel)]="model.address" name="address" display="name" appearance="outline"></address-edit>
+    </div>
+  </div>
+</ng-template>
+</div> -->
 </form>
 
-<mat-error *ngIf="amountCurrencyNotDefined">{{'amount-currency-not-defined'|text}}</mat-error>
+@if (amountCurrencyNotDefined) {
+<mat-error>unt-currency-not-defined</mat-error>
+}
 
 <ng-template #bankTransferIcon>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-        <path d="m132.454 219.554h117.943v7.383h-117.943z" fill="#63bce7" />
-        <path d="m136.74 212.171h109.37v7.383h-109.37z" fill="#63bce7" />
-        <rect fill="#63bce7" height="9.575" rx="3.533" width="120.012" x="131.419" y="140.211" />
-        <path d="m142.431 140.211 48.994-40.568 48.994 40.568z" fill="#63bce7" />
-        <path d="m97.278 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" transform="matrix(-1 0 0 -1 210.847 416.55)" />
-        <path d="m97.278 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" />
-        <path d="m15.581 140.211 48.994-40.568 48.994 40.568z" fill="#63bce7" />
-        <path d="m64.575 99.643-48.994 40.568h15.5l41.244-34.151z" fill="#6377e7" />
-        <path d="m191.425 99.643 48.994 40.568h-15.5l-41.244-34.151z" fill="#63e2e7" />
-        <rect fill="#63bce7" height="9.575" rx="3.533" width="120.012" x="4.569" y="140.211" />
-        <path d="m20.069 146.253v-2.509a3.544 3.544 0 0 1 3.533-3.533h-15.502a3.544 3.544 0 0 0 -3.533 3.533v2.509a3.544 3.544 0 0 0 3.533 3.533h15.5a3.544 3.544 0 0 1 -3.531-3.533z" fill="#6377e7" />
-        <path d="m235.931 146.253v-2.509a3.544 3.544 0 0 0 -3.533-3.533h15.5a3.544 3.544 0 0 1 3.533 3.533v2.509a3.544 3.544 0 0 1 -3.533 3.533h-15.498a3.544 3.544 0 0 0 3.531-3.533z" fill="#63e2e7" />
-        <path d="m56.43 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" />
-        <path d="m56.43 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" transform="matrix(-1 0 0 -1 129.149 416.55)" />
-        <path d="m60.296 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
-        <path d="m15.581 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f43075" />
-        <path d="m15.581 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f43075" transform="matrix(-1 0 0 -1 47.451 416.55)" />
-        <path d="m19.447 157.577h8.868v46.803h-8.868z" fill="#707070" />
-        <path d="m101.145 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
-        <path d="m9.89 212.171h109.37v7.383h-109.37z" fill="#63bce7" />
-        <path d="m9.89 212.171h15.5v7.383h-15.5z" fill="#6377e7" />
-        <path d="m230.61 212.171h15.5v7.383h-15.5z" fill="#63e2e7" />
-        <path d="m5.603 219.554h117.943v7.383h-117.943z" fill="#63bce7" />
-        <path d="m5.603 219.554h15.5v7.383h-15.5z" fill="#6377e7" />
-        <path d="m234.897 219.554h15.5v7.383h-15.5z" fill="#63e2e7" />
-        <path d="m224.129 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f48875" transform="matrix(-1 0 0 -1 464.549 416.55)" />
-        <path d="m224.129 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f48875" />
-        <path d="m183.28 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" />
-        <path d="m183.28 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" transform="matrix(-1 0 0 -1 382.851 416.55)" />
-        <path d="m187.147 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
-        <path d="m142.431 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" />
-        <path d="m142.431 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z" fill="#f46275" transform="matrix(-1 0 0 -1 301.153 416.55)" />
-        <path d="m146.298 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
-        <path d="m227.996 157.577h8.868v46.803h-8.868z" fill="#cecece" />
-        <circle cx="64.575" cy="53.538" fill="#f8af23" r="35.448" />
-        <path d="m44.627 53.538a35.454 35.454 0 0 1 27.7-34.588 35.448 35.448 0 1 0 0 69.176 35.454 35.454 0 0 1 -27.7-34.588z" fill="#f87023" />
-        <path d="m79.588 53.52v10.3a2.828 2.828 0 0 1 -.9 2.089 2.956 2.956 0 0 1 -2.142.885h-9.068v7.258a2.842 2.842 0 0 1 -.885 2.107 2.886 2.886 0 0 1 -2.089.867 2.968 2.968 0 0 1 -2.16-.867 2.84 2.84 0 0 1 -.885-2.107v-7.324h-8.993a2.882 2.882 0 0 1 -2.089-.867 2.84 2.84 0 0 1 -.885-2.107 2.961 2.961 0 0 1 2.974-2.974h21.034v-4.285h-20.964a2.9 2.9 0 0 1 -2.106-.85 2.849 2.849 0 0 1 -.868-2.125v-10.267a2.962 2.962 0 0 1 2.974-2.974h8.922v-7.259a2.937 2.937 0 0 1 3.081-2.974 2.829 2.829 0 0 1 2.071.867 2.87 2.87 0 0 1 .867 2.107v7.258h9.135a2.958 2.958 0 0 1 2.142.885 2.831 2.831 0 0 1 .9 2.089 3.084 3.084 0 0 1 -3.041 3.048h-21.032v4.248h20.961a2.959 2.959 0 0 1 2.142.885 2.83 2.83 0 0 1 .904 2.087z" fill="#3f3679" />
-        <circle cx="191.425" cy="53.538" fill="#f8af23" r="35.448" />
-        <path d="m191.425 18.09a35.541 35.541 0 0 0 -7.75.86 35.445 35.445 0 0 1 0 69.176 35.447 35.447 0 1 0 7.75-70.036z" fill="#f8d323" />
-        <path d="m206.438 53.52v10.3a2.828 2.828 0 0 1 -.9 2.089 2.956 2.956 0 0 1 -2.142.885h-9.064v7.258a2.842 2.842 0 0 1 -.885 2.107 2.886 2.886 0 0 1 -2.089.867 2.968 2.968 0 0 1 -2.16-.867 2.84 2.84 0 0 1 -.885-2.107v-7.324h-8.993a2.882 2.882 0 0 1 -2.089-.867 2.84 2.84 0 0 1 -.885-2.107 2.961 2.961 0 0 1 2.974-2.974h21.032v-4.285h-20.965a2.9 2.9 0 0 1 -2.106-.85 2.849 2.849 0 0 1 -.868-2.125v-10.267a2.962 2.962 0 0 1 2.974-2.974h8.922v-7.259a2.937 2.937 0 0 1 3.081-2.974 2.829 2.829 0 0 1 2.071.867 2.87 2.87 0 0 1 .867 2.107v7.258h9.135a2.958 2.958 0 0 1 2.142.885 2.831 2.831 0 0 1 .9 2.089 3.084 3.084 0 0 1 -3.045 3.045h-21.028v4.248h20.961a2.959 2.959 0 0 1 2.142.885 2.83 2.83 0 0 1 .903 2.09z" fill="#3f3679" />
-        <path d="m137.9 37.669h-44.3a1.1 1.1 0 0 0 -1.1 1.1v29.531a1.1 1.1 0 0 0 1.1 1.1h44.3a1.1 1.1 0 0 1 1.1 1.1v5.317a1.1 1.1 0 0 0 1.882.78l22.288-22.288a1.1 1.1 0 0 0 0-1.559l-22.283-22.28a1.1 1.1 0 0 0 -1.882.78v5.317a1.1 1.1 0 0 1 -1.105 1.102z" fill="#f46275" />
-        <g fill="#3f3679">
-            <path d="m241.92 152.577v-1.291h5.98a5.039 5.039 0 0 0 5.033-5.033v-2.509a5.039 5.039 0 0 0 -5.033-5.033h-6.938l-48.58-40.223a1.5 1.5 0 0 0 -1.914 0l-48.578 40.223h-6.938a5.039 5.039 0 0 0 -5.033 5.033v2.509a5.039 5.039 0 0 0 5.033 5.033h5.979v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291h-4.19a1.5 1.5 0 0 0 -1.5 1.5v5.883h-2.786a1.5 1.5 0 0 0 -1.5 1.5v5.883h-5.908v-5.883a1.5 1.5 0 0 0 -1.5-1.5h-2.787v-5.885a1.5 1.5 0 0 0 -1.5-1.5h-4.19v-1.29a6.5 6.5 0 0 0 -3.557-5.788v-45.227a6.5 6.5 0 0 0 3.557-5.788v-1.291h5.979a5.039 5.039 0 0 0 5.033-5.033v-2.509a5.039 5.039 0 0 0 -5.033-5.033h-6.939l-48.578-40.223a1.5 1.5 0 0 0 -1.914 0l-48.579 40.223h-6.939a5.039 5.039 0 0 0 -5.033 5.033v2.509a5.039 5.039 0 0 0 5.033 5.033h5.98v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291h-4.19a1.5 1.5 0 0 0 -1.5 1.5v5.883h-2.79a1.5 1.5 0 0 0 -1.5 1.5v7.383a1.5 1.5 0 0 0 1.5 1.5h244.8a1.5 1.5 0 0 0 1.5-1.5v-7.383a1.5 1.5 0 0 0 -1.5-1.5h-2.79v-5.885a1.5 1.5 0 0 0 -1.5-1.5h-4.19v-1.29a6.5 6.5 0 0 0 -3.557-5.788v-45.227a6.5 6.5 0 0 0 3.557-5.788zm-3 0a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.291zm-3.557 50.3h-5.863v-43.8h5.867zm-12.734 6.5v1.291h-21.559v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.559v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.937zm-62.407 1.291v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.558v1.291a6.506 6.506 0 0 0 3.866 5.937v44.928a6.506 6.506 0 0 0 -3.866 5.937v1.291zm-12.422-51.591h5.868v43.8h-5.868zm40.849 0h5.868v43.8h-5.868zm5.924-3h-6.29a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.29v1.291a3.5 3.5 0 0 1 -3.503 3.5zm-9.79 53.3a3.5 3.5 0 0 1 3.5-3.5h6.29a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.293zm6.645-107.79 44.831 37.121h-89.665zm-58.506 44.663v-2.509a2.036 2.036 0 0 1 2.033-2.033h112.945a2.036 2.036 0 0 1 2.033 2.033v2.509a2.036 2.036 0 0 1 -2.033 2.033h-112.948a2.036 2.036 0 0 1 -2.033-2.03zm11.012 5.033h13.291v1.291a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5zm0 58.094a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.294zm-31.861 1.291h-13.295v-1.288a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5zm-37.85 0v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.555v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291zm-40.849 0v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.556v1.291a6.506 6.506 0 0 0 3.866 5.937v44.928a6.506 6.506 0 0 0 -3.866 5.937v1.291zm-12.427-51.591h5.868v43.8h-5.868zm40.849 0h5.868v43.8h-5.864zm5.924-3h-6.29a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.29v1.291a3.5 3.5 0 0 1 -3.5 3.5zm-9.79 53.3a3.5 3.5 0 0 1 3.5-3.5h6.29a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.29zm50.583-6.5h-5.867v-43.8h5.867zm3.557-50.3a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.291zm-47.495-50.987 44.831 37.121h-89.662zm-58.507 44.663v-2.509a2.036 2.036 0 0 1 2.032-2.033h112.948a2.036 2.036 0 0 1 2.033 2.033v2.509a2.036 2.036 0 0 1 -2.033 2.033h-112.948a2.036 2.036 0 0 1 -2.032-2.033zm11.012 5.033h13.291v1.291a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5zm0 58.094a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.291zm-5.69 4.291h106.37v4.383h-106.37zm-2.07 11.766h-2.22v-4.383h114.946v4.383zm239.576 0h-114.942v-4.383h114.946zm-4.286-7.383h-106.37v-4.384h106.37zm-5.69-7.383h-13.291v-1.291a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5z" />
-            <path d="m64.575 90.486a36.832 36.832 0 0 0 32.6-19.579h40.325v4.919a2.6 2.6 0 0 0 4.443 1.84l13.962-13.956a36.948 36.948 0 1 0 0-20.343l-13.957-13.958a2.6 2.6 0 0 0 -4.448 1.841v4.919h-40.318a36.947 36.947 0 1 0 -32.607 54.317zm126.85-70.9a33.948 33.948 0 1 1 -33.061 41.661l5.873-5.873a2.6 2.6 0 0 0 0-3.68l-5.872-5.872a34.117 34.117 0 0 1 33.06-26.232zm-53.525 19.583a2.606 2.606 0 0 0 2.6-2.6v-4.361l21.329 21.33-21.329 21.33v-4.358a2.606 2.606 0 0 0 -2.6-2.6h-43.9v-28.741zm-73.325-19.579a33.849 33.849 0 0 1 29.161 16.579h-.136a2.606 2.606 0 0 0 -2.6 2.6v29.531a2.606 2.606 0 0 0 2.6 2.6h.135a33.946 33.946 0 1 1 -29.16-51.31z" />
-            <path d="m27.323 236.41h-18a1.5 1.5 0 0 0 0 3h18a1.5 1.5 0 0 0 0-3z" />
-            <path d="m246.68 236.41h-18a1.5 1.5 0 0 0 0 3h18a1.5 1.5 0 0 0 0-3z" />
-            <path d="m218.479 236.41h-180.958a1.5 1.5 0 0 0 0 3h180.958a1.5 1.5 0 0 0 0-3z" />
-        </g>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+    <path d="m132.454 219.554h117.943v7.383h-117.943z" fill="#63bce7" />
+    <path d="m136.74 212.171h109.37v7.383h-109.37z" fill="#63bce7" />
+    <rect fill="#63bce7" height="9.575" rx="3.533" width="120.012" x="131.419" y="140.211" />
+    <path d="m142.431 140.211 48.994-40.568 48.994 40.568z" fill="#63bce7" />
+    <path d="m97.278 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" transform="matrix(-1 0 0 -1 210.847 416.55)" />
+    <path d="m97.278 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" />
+    <path d="m15.581 140.211 48.994-40.568 48.994 40.568z" fill="#63bce7" />
+    <path d="m64.575 99.643-48.994 40.568h15.5l41.244-34.151z" fill="#6377e7" />
+    <path d="m191.425 99.643 48.994 40.568h-15.5l-41.244-34.151z" fill="#63e2e7" />
+    <rect fill="#63bce7" height="9.575" rx="3.533" width="120.012" x="4.569" y="140.211" />
+    <path
+      d="m20.069 146.253v-2.509a3.544 3.544 0 0 1 3.533-3.533h-15.502a3.544 3.544 0 0 0 -3.533 3.533v2.509a3.544 3.544 0 0 0 3.533 3.533h15.5a3.544 3.544 0 0 1 -3.531-3.533z"
+      fill="#6377e7" />
+    <path
+      d="m235.931 146.253v-2.509a3.544 3.544 0 0 0 -3.533-3.533h15.5a3.544 3.544 0 0 1 3.533 3.533v2.509a3.544 3.544 0 0 1 -3.533 3.533h-15.498a3.544 3.544 0 0 0 3.531-3.533z"
+      fill="#63e2e7" />
+    <path d="m56.43 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" />
+    <path d="m56.43 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" transform="matrix(-1 0 0 -1 129.149 416.55)" />
+    <path d="m60.296 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
+    <path d="m15.581 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f43075" />
+    <path d="m15.581 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f43075" transform="matrix(-1 0 0 -1 47.451 416.55)" />
+    <path d="m19.447 157.577h8.868v46.803h-8.868z" fill="#707070" />
+    <path d="m101.145 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
+    <path d="m9.89 212.171h109.37v7.383h-109.37z" fill="#63bce7" />
+    <path d="m9.89 212.171h15.5v7.383h-15.5z" fill="#6377e7" />
+    <path d="m230.61 212.171h15.5v7.383h-15.5z" fill="#63e2e7" />
+    <path d="m5.603 219.554h117.943v7.383h-117.943z" fill="#63bce7" />
+    <path d="m5.603 219.554h15.5v7.383h-15.5z" fill="#6377e7" />
+    <path d="m234.897 219.554h15.5v7.383h-15.5z" fill="#63e2e7" />
+    <path d="m224.129 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f48875" transform="matrix(-1 0 0 -1 464.549 416.55)" />
+    <path d="m224.129 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f48875" />
+    <path d="m183.28 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" />
+    <path d="m183.28 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" transform="matrix(-1 0 0 -1 382.851 416.55)" />
+    <path d="m187.147 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
+    <path d="m142.431 149.786h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" />
+    <path d="m142.431 204.38h16.29a0 0 0 0 1 0 0v2.791a5 5 0 0 1 -5 5h-6.29a5 5 0 0 1 -5-5v-2.791a0 0 0 0 1 0 0z"
+      fill="#f46275" transform="matrix(-1 0 0 -1 301.153 416.55)" />
+    <path d="m146.298 157.577h8.868v46.803h-8.868z" fill="#9e9e9e" />
+    <path d="m227.996 157.577h8.868v46.803h-8.868z" fill="#cecece" />
+    <circle cx="64.575" cy="53.538" fill="#f8af23" r="35.448" />
+    <path
+      d="m44.627 53.538a35.454 35.454 0 0 1 27.7-34.588 35.448 35.448 0 1 0 0 69.176 35.454 35.454 0 0 1 -27.7-34.588z"
+      fill="#f87023" />
+    <path
+      d="m79.588 53.52v10.3a2.828 2.828 0 0 1 -.9 2.089 2.956 2.956 0 0 1 -2.142.885h-9.068v7.258a2.842 2.842 0 0 1 -.885 2.107 2.886 2.886 0 0 1 -2.089.867 2.968 2.968 0 0 1 -2.16-.867 2.84 2.84 0 0 1 -.885-2.107v-7.324h-8.993a2.882 2.882 0 0 1 -2.089-.867 2.84 2.84 0 0 1 -.885-2.107 2.961 2.961 0 0 1 2.974-2.974h21.034v-4.285h-20.964a2.9 2.9 0 0 1 -2.106-.85 2.849 2.849 0 0 1 -.868-2.125v-10.267a2.962 2.962 0 0 1 2.974-2.974h8.922v-7.259a2.937 2.937 0 0 1 3.081-2.974 2.829 2.829 0 0 1 2.071.867 2.87 2.87 0 0 1 .867 2.107v7.258h9.135a2.958 2.958 0 0 1 2.142.885 2.831 2.831 0 0 1 .9 2.089 3.084 3.084 0 0 1 -3.041 3.048h-21.032v4.248h20.961a2.959 2.959 0 0 1 2.142.885 2.83 2.83 0 0 1 .904 2.087z"
+      fill="#3f3679" />
+    <circle cx="191.425" cy="53.538" fill="#f8af23" r="35.448" />
+    <path d="m191.425 18.09a35.541 35.541 0 0 0 -7.75.86 35.445 35.445 0 0 1 0 69.176 35.447 35.447 0 1 0 7.75-70.036z"
+      fill="#f8d323" />
+    <path
+      d="m206.438 53.52v10.3a2.828 2.828 0 0 1 -.9 2.089 2.956 2.956 0 0 1 -2.142.885h-9.064v7.258a2.842 2.842 0 0 1 -.885 2.107 2.886 2.886 0 0 1 -2.089.867 2.968 2.968 0 0 1 -2.16-.867 2.84 2.84 0 0 1 -.885-2.107v-7.324h-8.993a2.882 2.882 0 0 1 -2.089-.867 2.84 2.84 0 0 1 -.885-2.107 2.961 2.961 0 0 1 2.974-2.974h21.032v-4.285h-20.965a2.9 2.9 0 0 1 -2.106-.85 2.849 2.849 0 0 1 -.868-2.125v-10.267a2.962 2.962 0 0 1 2.974-2.974h8.922v-7.259a2.937 2.937 0 0 1 3.081-2.974 2.829 2.829 0 0 1 2.071.867 2.87 2.87 0 0 1 .867 2.107v7.258h9.135a2.958 2.958 0 0 1 2.142.885 2.831 2.831 0 0 1 .9 2.089 3.084 3.084 0 0 1 -3.045 3.045h-21.028v4.248h20.961a2.959 2.959 0 0 1 2.142.885 2.83 2.83 0 0 1 .903 2.09z"
+      fill="#3f3679" />
+    <path
+      d="m137.9 37.669h-44.3a1.1 1.1 0 0 0 -1.1 1.1v29.531a1.1 1.1 0 0 0 1.1 1.1h44.3a1.1 1.1 0 0 1 1.1 1.1v5.317a1.1 1.1 0 0 0 1.882.78l22.288-22.288a1.1 1.1 0 0 0 0-1.559l-22.283-22.28a1.1 1.1 0 0 0 -1.882.78v5.317a1.1 1.1 0 0 1 -1.105 1.102z"
+      fill="#f46275" />
+    <g fill="#3f3679">
+      <path
+        d="m241.92 152.577v-1.291h5.98a5.039 5.039 0 0 0 5.033-5.033v-2.509a5.039 5.039 0 0 0 -5.033-5.033h-6.938l-48.58-40.223a1.5 1.5 0 0 0 -1.914 0l-48.578 40.223h-6.938a5.039 5.039 0 0 0 -5.033 5.033v2.509a5.039 5.039 0 0 0 5.033 5.033h5.979v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291h-4.19a1.5 1.5 0 0 0 -1.5 1.5v5.883h-2.786a1.5 1.5 0 0 0 -1.5 1.5v5.883h-5.908v-5.883a1.5 1.5 0 0 0 -1.5-1.5h-2.787v-5.885a1.5 1.5 0 0 0 -1.5-1.5h-4.19v-1.29a6.5 6.5 0 0 0 -3.557-5.788v-45.227a6.5 6.5 0 0 0 3.557-5.788v-1.291h5.979a5.039 5.039 0 0 0 5.033-5.033v-2.509a5.039 5.039 0 0 0 -5.033-5.033h-6.939l-48.578-40.223a1.5 1.5 0 0 0 -1.914 0l-48.579 40.223h-6.939a5.039 5.039 0 0 0 -5.033 5.033v2.509a5.039 5.039 0 0 0 5.033 5.033h5.98v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291h-4.19a1.5 1.5 0 0 0 -1.5 1.5v5.883h-2.79a1.5 1.5 0 0 0 -1.5 1.5v7.383a1.5 1.5 0 0 0 1.5 1.5h244.8a1.5 1.5 0 0 0 1.5-1.5v-7.383a1.5 1.5 0 0 0 -1.5-1.5h-2.79v-5.885a1.5 1.5 0 0 0 -1.5-1.5h-4.19v-1.29a6.5 6.5 0 0 0 -3.557-5.788v-45.227a6.5 6.5 0 0 0 3.557-5.788zm-3 0a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.291zm-3.557 50.3h-5.863v-43.8h5.867zm-12.734 6.5v1.291h-21.559v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.559v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.937zm-62.407 1.291v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.558v1.291a6.506 6.506 0 0 0 3.866 5.937v44.928a6.506 6.506 0 0 0 -3.866 5.937v1.291zm-12.422-51.591h5.868v43.8h-5.868zm40.849 0h5.868v43.8h-5.868zm5.924-3h-6.29a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.29v1.291a3.5 3.5 0 0 1 -3.503 3.5zm-9.79 53.3a3.5 3.5 0 0 1 3.5-3.5h6.29a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.293zm6.645-107.79 44.831 37.121h-89.665zm-58.506 44.663v-2.509a2.036 2.036 0 0 1 2.033-2.033h112.945a2.036 2.036 0 0 1 2.033 2.033v2.509a2.036 2.036 0 0 1 -2.033 2.033h-112.948a2.036 2.036 0 0 1 -2.033-2.03zm11.012 5.033h13.291v1.291a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5zm0 58.094a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.294zm-31.861 1.291h-13.295v-1.288a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5zm-37.85 0v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.555v1.291a6.506 6.506 0 0 0 3.867 5.938v44.928a6.506 6.506 0 0 0 -3.867 5.938v1.291zm-40.849 0v-1.288a6.5 6.5 0 0 0 -3.556-5.787v-45.229a6.5 6.5 0 0 0 3.556-5.787v-1.291h21.556v1.291a6.506 6.506 0 0 0 3.866 5.937v44.928a6.506 6.506 0 0 0 -3.866 5.937v1.291zm-12.427-51.591h5.868v43.8h-5.868zm40.849 0h5.868v43.8h-5.864zm5.924-3h-6.29a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.29v1.291a3.5 3.5 0 0 1 -3.5 3.5zm-9.79 53.3a3.5 3.5 0 0 1 3.5-3.5h6.29a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.29zm50.583-6.5h-5.867v-43.8h5.867zm3.557-50.3a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5v-1.291h13.291zm-47.495-50.987 44.831 37.121h-89.662zm-58.507 44.663v-2.509a2.036 2.036 0 0 1 2.032-2.033h112.948a2.036 2.036 0 0 1 2.033 2.033v2.509a2.036 2.036 0 0 1 -2.033 2.033h-112.948a2.036 2.036 0 0 1 -2.032-2.033zm11.012 5.033h13.291v1.291a3.5 3.5 0 0 1 -3.5 3.5h-6.291a3.5 3.5 0 0 1 -3.5-3.5zm0 58.094a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5v1.291h-13.291zm-5.69 4.291h106.37v4.383h-106.37zm-2.07 11.766h-2.22v-4.383h114.946v4.383zm239.576 0h-114.942v-4.383h114.946zm-4.286-7.383h-106.37v-4.384h106.37zm-5.69-7.383h-13.291v-1.291a3.5 3.5 0 0 1 3.5-3.5h6.291a3.5 3.5 0 0 1 3.5 3.5z" />
+      <path
+        d="m64.575 90.486a36.832 36.832 0 0 0 32.6-19.579h40.325v4.919a2.6 2.6 0 0 0 4.443 1.84l13.962-13.956a36.948 36.948 0 1 0 0-20.343l-13.957-13.958a2.6 2.6 0 0 0 -4.448 1.841v4.919h-40.318a36.947 36.947 0 1 0 -32.607 54.317zm126.85-70.9a33.948 33.948 0 1 1 -33.061 41.661l5.873-5.873a2.6 2.6 0 0 0 0-3.68l-5.872-5.872a34.117 34.117 0 0 1 33.06-26.232zm-53.525 19.583a2.606 2.606 0 0 0 2.6-2.6v-4.361l21.329 21.33-21.329 21.33v-4.358a2.606 2.606 0 0 0 -2.6-2.6h-43.9v-28.741zm-73.325-19.579a33.849 33.849 0 0 1 29.161 16.579h-.136a2.606 2.606 0 0 0 -2.6 2.6v29.531a2.606 2.606 0 0 0 2.6 2.6h.135a33.946 33.946 0 1 1 -29.16-51.31z" />
+      <path d="m27.323 236.41h-18a1.5 1.5 0 0 0 0 3h18a1.5 1.5 0 0 0 0-3z" />
+      <path d="m246.68 236.41h-18a1.5 1.5 0 0 0 0 3h18a1.5 1.5 0 0 0 0-3z" />
+      <path d="m218.479 236.41h-180.958a1.5 1.5 0 0 0 0 3h180.958a1.5 1.5 0 0 0 0-3z" />
+    </g>
+  </svg>
 </ng-template>
 <ng-template #skrillIcon>
-    <svg viewBox="0 0 227 78" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <defs>
-            <linearGradient x1="27.0439582%" y1="0%" x2="79.2629133%" y2="100%" id="linearGradient-1">
-                <stop stop-color="#6B195F" offset="0%"></stop>
-                <stop stop-color="#4C255B" offset="100%"></stop>
-            </linearGradient>
-        </defs>
-        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g id="skrill-logo-web-1-rgb" fill="url(#linearGradient-1)">
-                <path d="M162.891,19.153 C168.032,19.153 172.199,14.988 172.199,9.852 C172.199,4.713 168.032,0.544 162.891,0.544 C157.756,0.544 153.591,4.713 153.591,9.852 C153.591,14.988 157.756,19.153 162.891,19.153 L162.891,19.153 Z M91.604,24.176 C91.184,25.231 88.161,33.77 80.85,42.62 L80.85,4.779 L61.37,8.629 L61.37,77.22 L80.85,77.22 L80.85,56.018 C86.492,64.48 89.278,77.22 89.278,77.22 L112.611,77.22 C110.303,67.625 100.207,49.933 100.207,49.933 C109.268,38.445 113.248,26.204 113.881,24.176 L91.604,24.176 L91.604,24.176 Z M142.816,23.46 C125.368,24.02 116.511,31.848 116.511,47.409 L116.511,77.22 L135.546,77.22 L135.546,52.91 C135.546,43.592 136.766,39.598 147.823,39.217 L147.823,23.733 C145.962,23.338 142.816,23.46 142.816,23.46 L142.816,23.46 Z M28.7,31.729 C26.314,31.572 20.79,31.215 20.79,26.242 C20.79,20.241 28.743,20.241 31.726,20.241 C36.971,20.241 43.764,21.791 48.615,23.242 C48.615,23.242 51.321,24.196 53.624,25.173 L53.838,25.231 L53.838,8.796 L53.544,8.709 C47.819,6.706 41.162,4.779 28.82,4.779 C7.54,4.779 0,17.176 0,27.796 C0,33.918 2.624,48.326 26.995,49.988 C29.061,50.115 34.544,50.431 34.544,55.57 C34.544,59.813 30.055,62.315 22.505,62.315 C14.231,62.315 6.205,60.205 1.33,58.204 L1.33,75.131 C8.628,77.044 16.855,78 26.497,78 C47.304,78 56.623,66.271 56.623,54.646 C56.623,41.465 46.195,32.901 28.7,31.729 L28.7,31.729 Z M153.455,77.22 L172.336,77.22 L172.336,24.236 L153.455,24.236 L153.455,77.22 Z M207.888,8.157 L207.888,77.22 L226.772,77.22 L226.772,4.779 L207.888,8.157 L207.888,8.157 Z M180.334,8.157 L199.2,4.779 L199.2,77.22 L180.334,77.22 L180.334,8.157 L180.334,8.157 Z" id="Fill-1"></path>
-            </g>
-        </g>
-    </svg>
+  <svg viewBox="0 0 227 78" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <linearGradient x1="27.0439582%" y1="0%" x2="79.2629133%" y2="100%" id="linearGradient-1">
+        <stop stop-color="#6B195F" offset="0%"></stop>
+        <stop stop-color="#4C255B" offset="100%"></stop>
+      </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+      <g id="skrill-logo-web-1-rgb" fill="url(#linearGradient-1)">
+        <path
+          d="M162.891,19.153 C168.032,19.153 172.199,14.988 172.199,9.852 C172.199,4.713 168.032,0.544 162.891,0.544 C157.756,0.544 153.591,4.713 153.591,9.852 C153.591,14.988 157.756,19.153 162.891,19.153 L162.891,19.153 Z M91.604,24.176 C91.184,25.231 88.161,33.77 80.85,42.62 L80.85,4.779 L61.37,8.629 L61.37,77.22 L80.85,77.22 L80.85,56.018 C86.492,64.48 89.278,77.22 89.278,77.22 L112.611,77.22 C110.303,67.625 100.207,49.933 100.207,49.933 C109.268,38.445 113.248,26.204 113.881,24.176 L91.604,24.176 L91.604,24.176 Z M142.816,23.46 C125.368,24.02 116.511,31.848 116.511,47.409 L116.511,77.22 L135.546,77.22 L135.546,52.91 C135.546,43.592 136.766,39.598 147.823,39.217 L147.823,23.733 C145.962,23.338 142.816,23.46 142.816,23.46 L142.816,23.46 Z M28.7,31.729 C26.314,31.572 20.79,31.215 20.79,26.242 C20.79,20.241 28.743,20.241 31.726,20.241 C36.971,20.241 43.764,21.791 48.615,23.242 C48.615,23.242 51.321,24.196 53.624,25.173 L53.838,25.231 L53.838,8.796 L53.544,8.709 C47.819,6.706 41.162,4.779 28.82,4.779 C7.54,4.779 0,17.176 0,27.796 C0,33.918 2.624,48.326 26.995,49.988 C29.061,50.115 34.544,50.431 34.544,55.57 C34.544,59.813 30.055,62.315 22.505,62.315 C14.231,62.315 6.205,60.205 1.33,58.204 L1.33,75.131 C8.628,77.044 16.855,78 26.497,78 C47.304,78 56.623,66.271 56.623,54.646 C56.623,41.465 46.195,32.901 28.7,31.729 L28.7,31.729 Z M153.455,77.22 L172.336,77.22 L172.336,24.236 L153.455,24.236 L153.455,77.22 Z M207.888,8.157 L207.888,77.22 L226.772,77.22 L226.772,4.779 L207.888,8.157 L207.888,8.157 Z M180.334,8.157 L199.2,4.779 L199.2,77.22 L180.334,77.22 L180.334,8.157 L180.334,8.157 Z"
+          id="Fill-1"></path>
+      </g>
+    </g>
+  </svg>
 </ng-template>
 
 <ng-template #netellerIcon>
-    <svg version="1.1" viewBox="0 0 300 51.841892" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-        <path d="m294.51 3.94c-3.8228-2.6191-9.6088-3.94-17.193-3.94h-19.862l-7.3841 40.087h-26.02l1.6724-9.0949h15.674l1.8573-10.215-15.665 0.02254 1.677-9.0543h16.145l2.1481-11.743h-32.787l-7.0099 38.025h-12.032l7.0573-38.027h-17.139l-7.0099 38.025h-11.721l7.064-38.025h-17.13l-7.3931 40.087h-26.207l1.6567-9.0949h15.737l1.8596-10.157-15.722-0.01577 1.668-9.0723h16.326l2.1345-11.748h-102.17l-5.8153 31.766-11.581-31.766h-17.782l-9.5705 51.842h16.982l5.7928-32.642 11.238 32.642h60.862l7.3999-40.099h9.5186l-7.3998 40.099h160.14l4.6432-25.312 7.5103 25.312h16.991l-7.783-20.683 1.7807-0.38318c3.9219-0.84074 6.9806-2.6462 9.1106-5.3532 2.1278-2.7318 3.212-6.2391 3.212-10.452 0-4.9047-1.7942-8.5133-5.4862-11.033zm-214.42 36.147h-25.995l1.6792-9.0949h16.305l1.8483-10.244h-16.148l1.5553-9.0002h25.957l-5.2067 28.339zm200.42-17.462c-1.7085 1.1946-4.1857 1.7761-7.5734 1.7761h-3.3585l2.5763-13.912h2.4704c2.813 0 4.8641 0.4508 6.2796 1.3704 1.1045 0.72128 2.4185 2.1481 2.4185 4.8461-4e-3 3.2638-1.5327 5.0174-2.8175 5.919z" fill="#83ba3b" stroke-width="2.254" />
-    </svg>
+  <svg version="1.1" viewBox="0 0 300 51.841892" xmlns="http://www.w3.org/2000/svg"
+    xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <path
+      d="m294.51 3.94c-3.8228-2.6191-9.6088-3.94-17.193-3.94h-19.862l-7.3841 40.087h-26.02l1.6724-9.0949h15.674l1.8573-10.215-15.665 0.02254 1.677-9.0543h16.145l2.1481-11.743h-32.787l-7.0099 38.025h-12.032l7.0573-38.027h-17.139l-7.0099 38.025h-11.721l7.064-38.025h-17.13l-7.3931 40.087h-26.207l1.6567-9.0949h15.737l1.8596-10.157-15.722-0.01577 1.668-9.0723h16.326l2.1345-11.748h-102.17l-5.8153 31.766-11.581-31.766h-17.782l-9.5705 51.842h16.982l5.7928-32.642 11.238 32.642h60.862l7.3999-40.099h9.5186l-7.3998 40.099h160.14l4.6432-25.312 7.5103 25.312h16.991l-7.783-20.683 1.7807-0.38318c3.9219-0.84074 6.9806-2.6462 9.1106-5.3532 2.1278-2.7318 3.212-6.2391 3.212-10.452 0-4.9047-1.7942-8.5133-5.4862-11.033zm-214.42 36.147h-25.995l1.6792-9.0949h16.305l1.8483-10.244h-16.148l1.5553-9.0002h25.957l-5.2067 28.339zm200.42-17.462c-1.7085 1.1946-4.1857 1.7761-7.5734 1.7761h-3.3585l2.5763-13.912h2.4704c2.813 0 4.8641 0.4508 6.2796 1.3704 1.1045 0.72128 2.4185 2.1481 2.4185 4.8461-4e-3 3.2638-1.5327 5.0174-2.8175 5.919z"
+      fill="#83ba3b" stroke-width="2.254" />
+  </svg>
 </ng-template>
 
 <ng-template #paypalIcon>
-    <svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#253B80" d="M46.211 6.749h-6.839a.95.95 0 0 0-.939.802l-2.766 17.537a.57.57 0 0 0 .564.658h3.265a.95.95 0 0 0 .939-.803l.746-4.73a.95.95 0 0 1 .938-.803h2.165c4.505 0 7.105-2.18 7.784-6.5.306-1.89.013-3.375-.872-4.415-.972-1.142-2.696-1.746-4.985-1.746zM47 13.154c-.374 2.454-2.249 2.454-4.062 2.454h-1.032l.724-4.583a.57.57 0 0 1 .563-.481h.473c1.235 0 2.4 0 3.002.704.359.42.469 1.044.332 1.906zM66.654 13.075h-3.275a.57.57 0 0 0-.563.481l-.145.916-.229-.332c-.709-1.029-2.29-1.373-3.868-1.373-3.619 0-6.71 2.741-7.312 6.586-.313 1.918.132 3.752 1.22 5.031.998 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .562.66h2.95a.95.95 0 0 0 .939-.803l1.77-11.209a.568.568 0 0 0-.561-.658zm-4.565 6.374c-.316 1.871-1.801 3.127-3.695 3.127-.951 0-1.711-.305-2.199-.883-.484-.574-.668-1.391-.514-2.301.295-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.499.589.697 1.411.554 2.317zM84.096 13.075h-3.291a.954.954 0 0 0-.787.417l-4.539 6.686-1.924-6.425a.953.953 0 0 0-.912-.678h-3.234a.57.57 0 0 0-.541.754l3.625 10.638-3.408 4.811a.57.57 0 0 0 .465.9h3.287a.949.949 0 0 0 .781-.408l10.946-15.8a.57.57 0 0 0-.468-.895z" />
-        <path fill="#179BD7" d="M94.992 6.749h-6.84a.95.95 0 0 0-.938.802l-2.766 17.537a.569.569 0 0 0 .562.658h3.51a.665.665 0 0 0 .656-.562l.785-4.971a.95.95 0 0 1 .938-.803h2.164c4.506 0 7.105-2.18 7.785-6.5.307-1.89.012-3.375-.873-4.415-.971-1.142-2.694-1.746-4.983-1.746zm.789 6.405c-.373 2.454-2.248 2.454-4.062 2.454h-1.031l.725-4.583a.568.568 0 0 1 .562-.481h.473c1.234 0 2.4 0 3.002.704.359.42.468 1.044.331 1.906zM115.434 13.075h-3.273a.567.567 0 0 0-.562.481l-.145.916-.23-.332c-.709-1.029-2.289-1.373-3.867-1.373-3.619 0-6.709 2.741-7.311 6.586-.312 1.918.131 3.752 1.219 5.031 1 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .564.66h2.949a.95.95 0 0 0 .938-.803l1.771-11.209a.571.571 0 0 0-.565-.658zm-4.565 6.374c-.314 1.871-1.801 3.127-3.695 3.127-.949 0-1.711-.305-2.199-.883-.484-.574-.666-1.391-.514-2.301.297-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.501.589.699 1.411.554 2.317zM119.295 7.23l-2.807 17.858a.569.569 0 0 0 .562.658h2.822c.469 0 .867-.34.939-.803l2.768-17.536a.57.57 0 0 0-.562-.659h-3.16a.571.571 0 0 0-.562.482z" />
-        <path fill="#253B80" d="M7.266 29.154l.523-3.322-1.165-.027H1.061L4.927 1.292a.316.316 0 0 1 .314-.268h9.38c3.114 0 5.263.648 6.385 1.927.526.6.861 1.227 1.023 1.917.17.724.173 1.589.007 2.644l-.012.077v.676l.526.298a3.69 3.69 0 0 1 1.065.812c.45.513.741 1.165.864 1.938.127.795.085 1.741-.123 2.812-.24 1.232-.628 2.305-1.152 3.183a6.547 6.547 0 0 1-1.825 2c-.696.494-1.523.869-2.458 1.109-.906.236-1.939.355-3.072.355h-.73c-.522 0-1.029.188-1.427.525a2.21 2.21 0 0 0-.744 1.328l-.055.299-.924 5.855-.042.215c-.011.068-.03.102-.058.125a.155.155 0 0 1-.096.035H7.266z" />
-        <path fill="#179BD7" d="M23.048 7.667c-.028.179-.06.362-.096.55-1.237 6.351-5.469 8.545-10.874 8.545H9.326c-.661 0-1.218.48-1.321 1.132L6.596 26.83l-.399 2.533a.704.704 0 0 0 .695.814h4.881c.578 0 1.069-.42 1.16-.99l.048-.248.919-5.832.059-.32c.09-.572.582-.992 1.16-.992h.73c4.729 0 8.431-1.92 9.513-7.476.452-2.321.218-4.259-.978-5.622a4.667 4.667 0 0 0-1.336-1.03z" />
-        <path fill="#222D65" d="M21.754 7.151a9.757 9.757 0 0 0-1.203-.267 15.284 15.284 0 0 0-2.426-.177h-7.352a1.172 1.172 0 0 0-1.159.992L8.05 17.605l-.045.289a1.336 1.336 0 0 1 1.321-1.132h2.752c5.405 0 9.637-2.195 10.874-8.545.037-.188.068-.371.096-.55a6.594 6.594 0 0 0-1.017-.429 9.045 9.045 0 0 0-.277-.087z" />
-        <path fill="#253B80" d="M9.614 7.699a1.169 1.169 0 0 1 1.159-.991h7.352c.871 0 1.684.057 2.426.177a9.757 9.757 0 0 1 1.481.353c.365.121.704.264 1.017.429.368-2.347-.003-3.945-1.272-5.392C20.378.682 17.853 0 14.622 0h-9.38c-.66 0-1.223.48-1.325 1.133L.01 25.898a.806.806 0 0 0 .795.932h5.791l1.454-9.225 1.564-9.906z" />
-    </svg>
+  <svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#253B80"
+      d="M46.211 6.749h-6.839a.95.95 0 0 0-.939.802l-2.766 17.537a.57.57 0 0 0 .564.658h3.265a.95.95 0 0 0 .939-.803l.746-4.73a.95.95 0 0 1 .938-.803h2.165c4.505 0 7.105-2.18 7.784-6.5.306-1.89.013-3.375-.872-4.415-.972-1.142-2.696-1.746-4.985-1.746zM47 13.154c-.374 2.454-2.249 2.454-4.062 2.454h-1.032l.724-4.583a.57.57 0 0 1 .563-.481h.473c1.235 0 2.4 0 3.002.704.359.42.469 1.044.332 1.906zM66.654 13.075h-3.275a.57.57 0 0 0-.563.481l-.145.916-.229-.332c-.709-1.029-2.29-1.373-3.868-1.373-3.619 0-6.71 2.741-7.312 6.586-.313 1.918.132 3.752 1.22 5.031.998 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .562.66h2.95a.95.95 0 0 0 .939-.803l1.77-11.209a.568.568 0 0 0-.561-.658zm-4.565 6.374c-.316 1.871-1.801 3.127-3.695 3.127-.951 0-1.711-.305-2.199-.883-.484-.574-.668-1.391-.514-2.301.295-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.499.589.697 1.411.554 2.317zM84.096 13.075h-3.291a.954.954 0 0 0-.787.417l-4.539 6.686-1.924-6.425a.953.953 0 0 0-.912-.678h-3.234a.57.57 0 0 0-.541.754l3.625 10.638-3.408 4.811a.57.57 0 0 0 .465.9h3.287a.949.949 0 0 0 .781-.408l10.946-15.8a.57.57 0 0 0-.468-.895z" />
+    <path fill="#179BD7"
+      d="M94.992 6.749h-6.84a.95.95 0 0 0-.938.802l-2.766 17.537a.569.569 0 0 0 .562.658h3.51a.665.665 0 0 0 .656-.562l.785-4.971a.95.95 0 0 1 .938-.803h2.164c4.506 0 7.105-2.18 7.785-6.5.307-1.89.012-3.375-.873-4.415-.971-1.142-2.694-1.746-4.983-1.746zm.789 6.405c-.373 2.454-2.248 2.454-4.062 2.454h-1.031l.725-4.583a.568.568 0 0 1 .562-.481h.473c1.234 0 2.4 0 3.002.704.359.42.468 1.044.331 1.906zM115.434 13.075h-3.273a.567.567 0 0 0-.562.481l-.145.916-.23-.332c-.709-1.029-2.289-1.373-3.867-1.373-3.619 0-6.709 2.741-7.311 6.586-.312 1.918.131 3.752 1.219 5.031 1 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .564.66h2.949a.95.95 0 0 0 .938-.803l1.771-11.209a.571.571 0 0 0-.565-.658zm-4.565 6.374c-.314 1.871-1.801 3.127-3.695 3.127-.949 0-1.711-.305-2.199-.883-.484-.574-.666-1.391-.514-2.301.297-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.501.589.699 1.411.554 2.317zM119.295 7.23l-2.807 17.858a.569.569 0 0 0 .562.658h2.822c.469 0 .867-.34.939-.803l2.768-17.536a.57.57 0 0 0-.562-.659h-3.16a.571.571 0 0 0-.562.482z" />
+    <path fill="#253B80"
+      d="M7.266 29.154l.523-3.322-1.165-.027H1.061L4.927 1.292a.316.316 0 0 1 .314-.268h9.38c3.114 0 5.263.648 6.385 1.927.526.6.861 1.227 1.023 1.917.17.724.173 1.589.007 2.644l-.012.077v.676l.526.298a3.69 3.69 0 0 1 1.065.812c.45.513.741 1.165.864 1.938.127.795.085 1.741-.123 2.812-.24 1.232-.628 2.305-1.152 3.183a6.547 6.547 0 0 1-1.825 2c-.696.494-1.523.869-2.458 1.109-.906.236-1.939.355-3.072.355h-.73c-.522 0-1.029.188-1.427.525a2.21 2.21 0 0 0-.744 1.328l-.055.299-.924 5.855-.042.215c-.011.068-.03.102-.058.125a.155.155 0 0 1-.096.035H7.266z" />
+    <path fill="#179BD7"
+      d="M23.048 7.667c-.028.179-.06.362-.096.55-1.237 6.351-5.469 8.545-10.874 8.545H9.326c-.661 0-1.218.48-1.321 1.132L6.596 26.83l-.399 2.533a.704.704 0 0 0 .695.814h4.881c.578 0 1.069-.42 1.16-.99l.048-.248.919-5.832.059-.32c.09-.572.582-.992 1.16-.992h.73c4.729 0 8.431-1.92 9.513-7.476.452-2.321.218-4.259-.978-5.622a4.667 4.667 0 0 0-1.336-1.03z" />
+    <path fill="#222D65"
+      d="M21.754 7.151a9.757 9.757 0 0 0-1.203-.267 15.284 15.284 0 0 0-2.426-.177h-7.352a1.172 1.172 0 0 0-1.159.992L8.05 17.605l-.045.289a1.336 1.336 0 0 1 1.321-1.132h2.752c5.405 0 9.637-2.195 10.874-8.545.037-.188.068-.371.096-.55a6.594 6.594 0 0 0-1.017-.429 9.045 9.045 0 0 0-.277-.087z" />
+    <path fill="#253B80"
+      d="M9.614 7.699a1.169 1.169 0 0 1 1.159-.991h7.352c.871 0 1.684.057 2.426.177a9.757 9.757 0 0 1 1.481.353c.365.121.704.264 1.017.429.368-2.347-.003-3.945-1.272-5.392C20.378.682 17.853 0 14.622 0h-9.38c-.66 0-1.223.48-1.325 1.133L.01 25.898a.806.806 0 0 0 .795.932h5.791l1.454-9.225 1.564-9.906z" />
+  </svg>
 </ng-template>
 
 <ng-template #paymentCardIcon>
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 512.001 512.001" style="enable-background:new 0 0 512.001 512.001;" xml:space="preserve">
-        <path style="fill:#146AA8;" d="M481.53,347.033l30.015-191.649c3.121-19.448-10.112-37.747-29.561-40.877l0,0L76.973,49.501  C57.525,46.38,39.227,59.613,36.106,79.061l-14.392,89.627v177.23L481.53,347.033z" />
-        <path style="fill:#126099;" d="M481.985,114.507L366.953,96.049C289.694,214.264,164.799,296.142,69.019,346.034l412.511,0.999  l30.015-191.649C514.666,135.935,501.433,117.637,481.985,114.507L481.985,114.507z" />
-        <path style="fill:#4398D1;" d="M35.669,159.771h410.192c19.698,0,35.669,15.971,35.669,35.669v231.848  c0,19.698-15.971,35.669-35.669,35.669H35.669C15.971,462.956,0,446.986,0,427.288V195.44C0,175.742,15.971,159.771,35.669,159.771z  " />
-        <path style="fill:#3E8CC7;" d="M445.861,159.771h-7.134c-84.179,149.444-241.469,251.956-337.49,303.185h344.624  c19.698,0,35.669-15.971,35.669-35.669V195.44C481.53,175.742,465.559,159.771,445.861,159.771z" />
-        <rect x="44.586" y="204.357" style="fill:#FDB62F;" width="89.172" height="71.338" />
-        <g>
-            <rect x="44.586" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
-            <rect x="107.007" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
-        </g>
-        <circle style="fill:#FDB62F;" cx="392.358" cy="373.784" r="44.586" />
-        <circle style="fill:#DE4C3C;" cx="338.854" cy="373.784" r="44.586" />
-        <g>
-            <rect x="35.669" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="124.841" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="214.013" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
-            <rect x="35.669" y="391.619" style="fill:#87CED9;" width="231.848" height="17.834" />
-            <rect x="312.103" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="347.772" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="383.44" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-            <rect x="419.109" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-        <g>
-        </g>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px"
+    viewBox="0 0 512.001 512.001" style="enable-background:new 0 0 512.001 512.001;" xml:space="preserve">
+    <path style="fill:#146AA8;"
+      d="M481.53,347.033l30.015-191.649c3.121-19.448-10.112-37.747-29.561-40.877l0,0L76.973,49.501  C57.525,46.38,39.227,59.613,36.106,79.061l-14.392,89.627v177.23L481.53,347.033z" />
+    <path style="fill:#126099;"
+      d="M481.985,114.507L366.953,96.049C289.694,214.264,164.799,296.142,69.019,346.034l412.511,0.999  l30.015-191.649C514.666,135.935,501.433,117.637,481.985,114.507L481.985,114.507z" />
+    <path style="fill:#4398D1;"
+      d="M35.669,159.771h410.192c19.698,0,35.669,15.971,35.669,35.669v231.848  c0,19.698-15.971,35.669-35.669,35.669H35.669C15.971,462.956,0,446.986,0,427.288V195.44C0,175.742,15.971,159.771,35.669,159.771z  " />
+    <path style="fill:#3E8CC7;"
+      d="M445.861,159.771h-7.134c-84.179,149.444-241.469,251.956-337.49,303.185h344.624  c19.698,0,35.669-15.971,35.669-35.669V195.44C481.53,175.742,465.559,159.771,445.861,159.771z" />
+    <rect x="44.586" y="204.357" style="fill:#FDB62F;" width="89.172" height="71.338" />
+    <g>
+      <rect x="44.586" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
+      <rect x="107.007" y="231.109" style="fill:#FD7B2F;" width="26.752" height="17.834" />
+    </g>
+    <circle style="fill:#FDB62F;" cx="392.358" cy="373.784" r="44.586" />
+    <circle style="fill:#DE4C3C;" cx="338.854" cy="373.784" r="44.586" />
+    <g>
+      <rect x="35.669" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="124.841" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="214.013" y="338.115" style="fill:#87CED9;" width="53.503" height="17.834" />
+      <rect x="35.669" y="391.619" style="fill:#87CED9;" width="231.848" height="17.834" />
+      <rect x="312.103" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="347.772" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="383.44" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+      <rect x="419.109" y="204.357" style="fill:#87CED9;" width="17.834" height="35.669" />
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+    <g>
+    </g>
+  </svg>
 </ng-template>
 
 <ng-template #visaCardIcon>
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 291.764 291.764" style="enable-background:new 0 0 291.764 291.764;" xml:space="preserve">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px"
+    y="0px" viewBox="0 0 291.764 291.764" style="enable-background:new 0 0 291.764 291.764;" xml:space="preserve">
+    <g>
+      <g>
         <g>
-            <g>
-                <g>
-                    <path style="fill:#2394BC;" d="M119.259,100.23l-14.643,91.122h23.405l14.634-91.122
+          <path style="fill:#2394BC;" d="M119.259,100.23l-14.643,91.122h23.405l14.634-91.122
 				C142.655,100.23,119.259,100.23,119.259,100.23z M189.857,137.348c-8.179-4.039-13.193-6.765-13.193-10.896
 				c0.1-3.756,4.24-7.604,13.485-7.604c7.604-0.191,13.193,1.596,17.433,3.374l2.124,0.948l3.182-19.065
 				c-4.623-1.787-11.953-3.756-21.007-3.756c-23.113,0-39.388,12.017-39.489,29.204c-0.191,12.683,11.652,19.721,20.515,23.943
@@ -396,115 +484,137 @@
 				h24.563l6.765-18.08h27.481l3.51,18.153h21.664L272.891,100.512z M245.921,155.026c0.474,0.046,9.428-29.514,9.428-29.514
 				l7.13,29.514C262.479,155.026,250.544,155.026,245.921,155.026z M85.059,100.23l-22.931,61.909L59.63,149.93
 				c-4.24-14.087-17.533-29.395-32.368-36.999l20.998,78.33h24.764l36.799-91.021H85.059V100.23z" />
-                </g>
-            </g>
-            <path style="fill:#EFC75E;" d="M51.916,111.982c-1.787-6.948-7.486-11.634-15.226-11.734H0.374L0,101.934
-		c28.329,6.984,52.107,28.474,59.821,48.688L51.916,111.982z" />
         </g>
-    </svg>
+      </g>
+      <path style="fill:#EFC75E;" d="M51.916,111.982c-1.787-6.948-7.486-11.634-15.226-11.734H0.374L0,101.934
+		c28.329,6.984,52.107,28.474,59.821,48.688L51.916,111.982z" />
+    </g>
+  </svg>
 
 </ng-template>
 
 <ng-template #masterCardIcon>
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
-        <path style="fill:#FFB600;" d="M504,252c0,83.2-67.2,151.2-151.2,151.2c-83.2,0-151.2-68-151.2-151.2l0,0
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+    viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve">
+    <path style="fill:#FFB600;" d="M504,252c0,83.2-67.2,151.2-151.2,151.2c-83.2,0-151.2-68-151.2-151.2l0,0
 	c0-83.2,67.2-151.2,150.4-151.2C436.8,100.8,504,168.8,504,252L504,252z" />
-        <path style="fill:#F7981D;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2
+    <path style="fill:#F7981D;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2
 	c-83.2,0-151.2-68-151.2-151.2" />
-        <path style="fill:#FF8500;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2" />
-        <path style="fill:#FF5050;" d="M149.6,100.8C67.2,101.6,0,168.8,0,252s67.2,151.2,151.2,151.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0
+    <path style="fill:#FF8500;" d="M352.8,100.8c83.2,0,151.2,68,151.2,151.2l0,0c0,83.2-67.2,151.2-151.2,151.2" />
+    <path style="fill:#FF5050;" d="M149.6,100.8C67.2,101.6,0,168.8,0,252s67.2,151.2,151.2,151.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0
 	c5.6-4.8,10.4-10.4,15.2-16h-31.2c-4-4.8-8-10.4-11.2-15.2h53.6c3.2-4.8,6.4-10.4,8.8-16h-71.2c-2.4-4.8-4.8-10.4-6.4-16h83.2
 	c4.8-15.2,8-31.2,8-48c0-11.2-1.6-21.6-3.2-32h-92.8c0.8-5.6,2.4-10.4,4-16h83.2c-1.6-5.6-4-11.2-6.4-16H216
 	c2.4-5.6,5.6-10.4,8.8-16h53.6c-3.2-5.6-7.2-11.2-12-16h-29.6c4.8-5.6,9.6-10.4,15.2-15.2c-26.4-24.8-62.4-39.2-101.6-39.2
 	C150.4,100.8,150.4,100.8,149.6,100.8z" />
-        <path style="fill:#E52836;" d="M0,252c0,83.2,67.2,151.2,151.2,151.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0
+    <path style="fill:#E52836;"
+      d="M0,252c0,83.2,67.2,151.2,151.2,151.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0
 	c5.6-4.8,10.4-10.4,15.2-16h-31.2c-4-4.8-8-10.4-11.2-15.2h53.6c3.2-4.8,6.4-10.4,8.8-16h-71.2c-2.4-4.8-4.8-10.4-6.4-16h83.2
 	c4.8-15.2,8-31.2,8-48c0-11.2-1.6-21.6-3.2-32h-92.8c0.8-5.6,2.4-10.4,4-16h83.2c-1.6-5.6-4-11.2-6.4-16H216
 	c2.4-5.6,5.6-10.4,8.8-16h53.6c-3.2-5.6-7.2-11.2-12-16h-29.6c4.8-5.6,9.6-10.4,15.2-15.2c-26.4-24.8-62.4-39.2-101.6-39.2h-0.8" />
-        <path style="fill:#CB2026;" d="M151.2,403.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0c5.6-4.8,10.4-10.4,15.2-16h-31.2
+    <path style="fill:#CB2026;" d="M151.2,403.2c39.2,0,74.4-15.2,101.6-39.2l0,0l0,0c5.6-4.8,10.4-10.4,15.2-16h-31.2
 	c-4-4.8-8-10.4-11.2-15.2h53.6c3.2-4.8,6.4-10.4,8.8-16h-71.2c-2.4-4.8-4.8-10.4-6.4-16h83.2c4.8-15.2,8-31.2,8-48
 	c0-11.2-1.6-21.6-3.2-32h-92.8c0.8-5.6,2.4-10.4,4-16h83.2c-1.6-5.6-4-11.2-6.4-16H216c2.4-5.6,5.6-10.4,8.8-16h53.6
 	c-3.2-5.6-7.2-11.2-12-16h-29.6c4.8-5.6,9.6-10.4,15.2-15.2c-26.4-24.8-62.4-39.2-101.6-39.2h-0.8" />
-        <g>
-            <path style="fill:#FFFFFF;" d="M204.8,290.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8c-5.6,0-6.4-3.2-5.6-4.8l4.8-28h8.8l2.4-15.2h-8l1.6-9.6
+    <g>
+      <path style="fill:#FFFFFF;" d="M204.8,290.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8c-5.6,0-6.4-3.2-5.6-4.8l4.8-28h8.8l2.4-15.2h-8l1.6-9.6
 		h-16c0,0-9.6,52.8-9.6,59.2c0,9.6,5.6,13.6,12.8,13.6C199.2,292.8,203.2,291.2,204.8,290.4z" />
-            <path style="fill:#FFFFFF;" d="M210.4,264.8c0,22.4,15.2,28,28,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
+      <path style="fill:#FFFFFF;" d="M210.4,264.8c0,22.4,15.2,28,28,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
 		c-17.6,0-14.4-12.8-14.4-12.8H260c0,0,2.4-10.4,2.4-14.4c0-10.4-5.6-23.2-23.2-23.2C222.4,227.2,210.4,244.8,210.4,264.8z
 		 M238.4,241.6c8.8,0,7.2,10.4,7.2,11.2H228C228,252,229.6,241.6,238.4,241.6z" />
-            <path style="fill:#FFFFFF;" d="M340,290.4l3.2-17.6c0,0-8,4-13.6,4c-11.2,0-16-8.8-16-18.4c0-19.2,9.6-29.6,20.8-29.6
+      <path style="fill:#FFFFFF;" d="M340,290.4l3.2-17.6c0,0-8,4-13.6,4c-11.2,0-16-8.8-16-18.4c0-19.2,9.6-29.6,20.8-29.6
 		c8,0,14.4,4.8,14.4,4.8l2.4-16.8c0,0-9.6-4-18.4-4c-18.4,0-36.8,16-36.8,46.4c0,20,9.6,33.6,28.8,33.6
 		C331.2,292.8,340,290.4,340,290.4z" />
-            <path style="fill:#FFFFFF;" d="M116.8,227.2c-11.2,0-19.2,3.2-19.2,3.2L95.2,244c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6
+      <path style="fill:#FFFFFF;" d="M116.8,227.2c-11.2,0-19.2,3.2-19.2,3.2L95.2,244c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6
 		c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0c-13.6,0-28.8,5.6-28.8,24c0,14.4,9.6,17.6,15.2,17.6c11.2,0,16-7.2,16.8-7.2l-0.8,6.4H132l6.4-44
 		C138.4,228,122.4,227.2,116.8,227.2z M120,263.2c0,2.4-1.6,15.2-11.2,15.2c-4.8,0-6.4-4-6.4-6.4c0-4,2.4-9.6,14.4-9.6
 		C119.2,263.2,120,263.2,120,263.2z" />
-            <path style="fill:#FFFFFF;" d="M153.6,292c4,0,24,0.8,24-20.8c0-20-19.2-16-19.2-24c0-4,3.2-5.6,8.8-5.6c2.4,0,11.2,0.8,11.2,0.8
+      <path style="fill:#FFFFFF;" d="M153.6,292c4,0,24,0.8,24-20.8c0-20-19.2-16-19.2-24c0-4,3.2-5.6,8.8-5.6c2.4,0,11.2,0.8,11.2,0.8
 		l2.4-14.4c0,0-5.6-1.6-15.2-1.6c-12,0-24,4.8-24,20.8c0,18.4,20,16.8,20,24c0,4.8-5.6,5.6-9.6,5.6c-7.2,0-14.4-2.4-14.4-2.4
 		l-2.4,14.4C136,290.4,140,292,153.6,292z" />
-            <path style="fill:#FFFFFF;" d="M472.8,214.4l-3.2,21.6c0,0-6.4-8-15.2-8c-14.4,0-27.2,17.6-27.2,38.4c0,12.8,6.4,26.4,20,26.4
+      <path style="fill:#FFFFFF;" d="M472.8,214.4l-3.2,21.6c0,0-6.4-8-15.2-8c-14.4,0-27.2,17.6-27.2,38.4c0,12.8,6.4,26.4,20,26.4
 		c9.6,0,15.2-6.4,15.2-6.4l-0.8,5.6h16l12-76.8L472.8,214.4z M465.6,256.8c0,8.8-4,20-12.8,20c-5.6,0-8.8-4.8-8.8-12.8
 		c0-12.8,5.6-20.8,12.8-20.8C462.4,243.2,465.6,247.2,465.6,256.8z" />
-            <path style="fill:#FFFFFF;" d="M29.6,291.2l9.6-57.6l1.6,57.6H52l20.8-57.6L64,291.2h16.8l12.8-76.8H67.2l-16,47.2l-0.8-47.2H27.2
+      <path style="fill:#FFFFFF;" d="M29.6,291.2l9.6-57.6l1.6,57.6H52l20.8-57.6L64,291.2h16.8l12.8-76.8H67.2l-16,47.2l-0.8-47.2H27.2
 		l-12.8,76.8H29.6z" />
-            <path style="fill:#FFFFFF;" d="M277.6,291.2c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
+      <path style="fill:#FFFFFF;" d="M277.6,291.2c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8h-15.2L260,292h17.6V291.2z" />
-            <path style="fill:#FFFFFF;" d="M376.8,227.2c-11.2,0-19.2,3.2-19.2,3.2l-2.4,13.6c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6
+      <path style="fill:#FFFFFF;" d="M376.8,227.2c-11.2,0-19.2,3.2-19.2,3.2l-2.4,13.6c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6
 		c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0c-13.6,0-28.8,5.6-28.8,24c0,14.4,9.6,17.6,15.2,17.6c11.2,0,16-7.2,16.8-7.2l-0.8,6.4H392l6.4-44
 		C399.2,228,382.4,227.2,376.8,227.2z M380.8,263.2c0,2.4-1.6,15.2-11.2,15.2c-4.8,0-6.4-4-6.4-6.4c0-4,2.4-9.6,14.4-9.6
 		C380,263.2,380,263.2,380.8,263.2z" />
-            <path style="fill:#FFFFFF;" d="M412,291.2c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
+      <path style="fill:#FFFFFF;" d="M412,291.2c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8h-15.2L394.4,292H412V291.2z" />
-        </g>
-        <g>
-            <path style="fill:#DCE5E5;" d="M180,279.2c0,9.6,5.6,13.6,12.8,13.6c5.6,0,10.4-1.6,12-2.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8
+    </g>
+    <g>
+      <path style="fill:#DCE5E5;" d="M180,279.2c0,9.6,5.6,13.6,12.8,13.6c5.6,0,10.4-1.6,12-2.4l2.4-13.6c-0.8,0-2.4,0.8-4,0.8
 		c-5.6,0-6.4-3.2-5.6-4.8l4.8-28h8.8l2.4-15.2h-8l1.6-9.6" />
-            <path style="fill:#DCE5E5;" d="M218.4,264.8c0,22.4,7.2,28,20,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
+      <path style="fill:#DCE5E5;" d="M218.4,264.8c0,22.4,7.2,28,20,28c12,0,16.8-2.4,16.8-2.4l3.2-15.2c0,0-8.8,4-16.8,4
 		c-17.6,0-14.4-12.8-14.4-12.8H260c0,0,2.4-10.4,2.4-14.4c0-10.4-5.6-23.2-23.2-23.2C222.4,227.2,218.4,244.8,218.4,264.8z
 		 M238.4,241.6c8.8,0,10.4,10.4,10.4,11.2H228C228,252,229.6,241.6,238.4,241.6z" />
-            <path style="fill:#DCE5E5;" d="M340,290.4l3.2-17.6c0,0-8,4-13.6,4c-11.2,0-16-8.8-16-18.4c0-19.2,9.6-29.6,20.8-29.6
+      <path style="fill:#DCE5E5;" d="M340,290.4l3.2-17.6c0,0-8,4-13.6,4c-11.2,0-16-8.8-16-18.4c0-19.2,9.6-29.6,20.8-29.6
 		c8,0,14.4,4.8,14.4,4.8l2.4-16.8c0,0-9.6-4-18.4-4c-18.4,0-28.8,16-28.8,46.4c0,20,1.6,33.6,20.8,33.6
 		C331.2,292.8,340,290.4,340,290.4z" />
-            <path style="fill:#DCE5E5;" d="M95.2,244.8c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0
+      <path style="fill:#DCE5E5;" d="M95.2,244.8c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0
 		c-13.6,0-28.8,5.6-28.8,24c0,14.4,9.6,17.6,15.2,17.6c11.2,0,16-7.2,16.8-7.2l-0.8,6.4H132l6.4-44c0-18.4-16-19.2-22.4-19.2
 		 M128,263.2c0,2.4-9.6,15.2-19.2,15.2c-4.8,0-6.4-4-6.4-6.4c0-4,2.4-9.6,14.4-9.6C119.2,263.2,128,263.2,128,263.2z" />
-            <path style="fill:#DCE5E5;" d="M136,290.4c0,0,4.8,1.6,18.4,1.6c4,0,24,0.8,24-20.8c0-20-19.2-16-19.2-24c0-4,3.2-5.6,8.8-5.6
+      <path style="fill:#DCE5E5;"
+        d="M136,290.4c0,0,4.8,1.6,18.4,1.6c4,0,24,0.8,24-20.8c0-20-19.2-16-19.2-24c0-4,3.2-5.6,8.8-5.6
 		c2.4,0,11.2,0.8,11.2,0.8l2.4-14.4c0,0-5.6-1.6-15.2-1.6c-12,0-16,4.8-16,20.8c0,18.4,12,16.8,12,24c0,4.8-5.6,5.6-9.6,5.6" />
-            <path style="fill:#DCE5E5;" d="M469.6,236c0,0-6.4-8-15.2-8c-14.4,0-19.2,17.6-19.2,38.4c0,12.8-1.6,26.4,12,26.4
+      <path style="fill:#DCE5E5;" d="M469.6,236c0,0-6.4-8-15.2-8c-14.4,0-19.2,17.6-19.2,38.4c0,12.8-1.6,26.4,12,26.4
 		c9.6,0,15.2-6.4,15.2-6.4l-0.8,5.6h16l12-76.8 M468.8,256.8c0,8.8-7.2,20-16,20c-5.6,0-8.8-4.8-8.8-12.8c0-12.8,5.6-20.8,12.8-20.8
 		C462.4,243.2,468.8,247.2,468.8,256.8z" />
-            <path style="fill:#DCE5E5;" d="M29.6,291.2l9.6-57.6l1.6,57.6H52l20.8-57.6L64,291.2h16.8l12.8-76.8h-20l-22.4,47.2l-0.8-47.2h-8.8
+      <path style="fill:#DCE5E5;" d="M29.6,291.2l9.6-57.6l1.6,57.6H52l20.8-57.6L64,291.2h16.8l12.8-76.8h-20l-22.4,47.2l-0.8-47.2h-8.8
 		l-27.2,76.8H29.6z" />
-            <path style="fill:#DCE5E5;" d="M260.8,291.2h16.8c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
+      <path style="fill:#DCE5E5;" d="M260.8,291.2h16.8c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8" />
-            <path style="fill:#DCE5E5;" d="M355.2,244.8c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0
+      <path style="fill:#DCE5E5;" d="M355.2,244.8c0,0,7.2-3.2,17.6-3.2c5.6,0,10.4,0.8,10.4,5.6c0,3.2-0.8,4-0.8,4s-4.8,0-7.2,0
 		c-13.6,0-28.8,5.6-28.8,24c0,14.4,9.6,17.6,15.2,17.6c11.2,0,16-7.2,16.8-7.2l-0.8,6.4H392l6.4-44c0-18.4-16-19.2-22.4-19.2
 		 M388,263.2c0,2.4-9.6,15.2-19.2,15.2c-4.8,0-6.4-4-6.4-6.4c0-4,2.4-9.6,14.4-9.6C380,263.2,388,263.2,388,263.2z" />
-            <path style="fill:#DCE5E5;" d="M395.2,291.2H412c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
+      <path style="fill:#DCE5E5;" d="M395.2,291.2H412c4.8-26.4,5.6-48,16.8-44c1.6-10.4,4-14.4,5.6-18.4c0,0-0.8,0-3.2,0
 		c-7.2,0-12.8,9.6-12.8,9.6l1.6-8.8" />
-        </g>
-    </svg>
+    </g>
+  </svg>
 
 </ng-template>
 
 <ng-template #localTransferIcon>
-    <svg enable-background="new 0 0 512.002 512.002" viewBox="0 0 512.002 512.002" x="0px" y="0px" xmlns="http://www.w3.org/2000/svg">
-        <g>
-            <circle cx="253.545" cy="256.002" fill="#f6e266" r="139.502" />
-            <path d="m253.545 116.5c-3.455 0-6.88.131-10.272.378 72.248 5.259 129.23 65.535 129.23 139.125s-56.982 133.866-129.23 139.125c3.392.247 6.817.377 10.272.377 77.045 0 139.502-62.457 139.502-139.502 0-77.046-62.457-139.503-139.502-139.503z" fill="#ecbe6b" />
-            <path d="m457.499 102.523 47.003-47.51-47.003-47.51v20.936c0 2.735-2.217 4.952-4.952 4.952h-156.215v43.245h156.215c2.735 0 4.952 2.217 4.952 4.952z" fill="#78c2a4" />
-            <path d="m504.501 55.012-47.003-47.51v20.936c0 .297-.037.584-.087.866l20.011 20.227c3.004 3.037 3.004 7.926 0 10.963l-20.011 20.226c.05.282.087.569.087.866v20.936z" fill="#66b394" />
-            <path d="m54.504 409.481-47.003 47.51 47.003 47.51v-20.936c0-2.735 2.217-4.952 4.952-4.952h156.215v-43.245h-156.215c-2.735 0-4.952-2.217-4.952-4.952z" fill="#78c2a4" />
-            <path d="m7.501 456.991 47.003 47.51v-20.936c0-.297.037-.584.087-.866l-20.011-20.227c-3.004-3.037-3.004-7.926 0-10.963l20.011-20.227c-.05-.282-.087-.569-.087-.866v-20.936z" fill="#66b394" />
-            <g>
-                <path d="m253.545 366.262c60.798 0 110.26-49.462 110.26-110.26s-49.462-110.261-110.26-110.261-110.261 49.463-110.261 110.261 49.463 110.26 110.261 110.26zm0-205.521c52.526 0 95.26 42.733 95.26 95.261 0 52.526-42.733 95.26-95.26 95.26s-95.261-42.733-95.261-95.26 42.734-95.261 95.261-95.261z" />
-                <path d="m227.845 296.235c6.7 4.382 11.581 6.076 17.694 6.647v4.41c0 4.143 3.357 7.5 7.5 7.5s7.5-3.357 7.5-7.5v-5.116c12.171-3.147 19.972-13.567 21.7-23.845 2.232-13.279-4.978-25.279-17.94-29.861-1.238-.438-2.498-.892-3.76-1.359v-23.602c4.613.979 7.777 2.843 7.908 2.922 3.499 2.173 8.103 1.123 10.304-2.367 2.211-3.504 1.162-8.135-2.341-10.345-.399-.251-6.757-4.182-15.871-5.428v-3.581c0-4.143-3.357-7.5-7.5-7.5s-7.5 3.357-7.5 7.5v4.435c-.414.109-.827.219-1.244.345-8.747 2.635-15.278 10.101-17.047 19.482-1.623 8.615 1.177 16.954 7.309 21.764 2.86 2.243 6.341 4.3 10.982 6.434v30.634c-3.191-.481-5.632-1.603-9.481-4.121-3.467-2.267-8.115-1.296-10.383 2.17s-1.296 8.115 2.17 10.382zm39.601-20.39c-.646 3.841-2.991 7.873-6.907 10.231v-22.959c7.56 3.331 7.377 9.937 6.907 12.728zm-23.631-36.912c-1.683-1.319-2.399-4.14-1.826-7.183.4-2.122 1.527-4.554 3.551-6.237v14.646c-.615-.402-1.196-.81-1.725-1.226z" />
-                <path d="m420.992 93.349c-2.586-3.235-7.304-3.764-10.541-1.178-3.236 2.585-3.764 7.305-1.178 10.541l7.522 9.415h-47.695c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h47.695l-7.522 9.415c-2.586 3.236-2.059 7.956 1.178 10.541 3.257 2.601 7.973 2.037 10.541-1.178l17.254-21.597c2.188-2.738 2.188-6.625 0-9.363z" />
-                <path d="m91.011 418.654c2.578 3.226 7.295 3.771 10.541 1.178 3.236-2.585 3.764-7.305 1.178-10.541l-7.522-9.415h47.694c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-47.695l7.522-9.415c2.586-3.236 2.059-7.956-1.178-10.541-3.237-2.586-7.957-2.059-10.541 1.178l-17.255 21.597c-2.188 2.738-2.188 6.625 0 9.363z" />
-                <path d="m59.456 442.869h156.215c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-153.667v-18.389c0-3.041-1.836-5.78-4.648-6.937-2.815-1.159-6.045-.5-8.184 1.662l-47.003 47.512c-2.891 2.922-2.891 7.627 0 10.549l47.003 47.511c2.127 2.151 5.36 2.825 8.184 1.662 2.812-1.156 4.648-3.896 4.648-6.937v-18.388h153.667c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-156.215c-6.866 0-12.452 5.586-12.452 12.451v2.691l-28.953-29.266 28.953-29.266v2.691c0 6.868 5.586 12.454 12.452 12.454z" />
-                <path d="m253.545 109c-81.058 0-147.002 65.944-147.002 147.002 0 29.575 8.75 58.094 25.303 82.474 2.327 3.427 6.992 4.318 10.418 1.992 3.427-2.327 4.318-6.991 1.992-10.418-14.859-21.884-22.713-47.489-22.713-74.048 0-72.786 59.216-132.002 132.002-132.002s132.002 59.216 132.002 132.002-59.216 132.002-132.002 132.002c-33.963 0-66.229-12.873-90.856-36.247-3.004-2.853-7.752-2.729-10.603.276-2.852 3.004-2.729 7.751.276 10.603 27.426 26.032 63.359 40.368 101.183 40.368 81.058 0 147.002-65.944 147.002-147.002s-65.944-147.002-147.002-147.002z" />
-                <path d="m509.833 49.738-47.003-47.511c-2.139-2.162-5.37-2.822-8.184-1.662-2.812 1.156-4.648 3.896-4.648 6.937v18.388h-34.588c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h37.137c6.865 0 12.451-5.586 12.451-12.451v-2.691l28.953 29.266-28.953 29.265v-2.69c0-6.866-5.586-12.452-12.451-12.452h-156.216c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h153.667v18.388c0 3.041 1.836 5.78 4.648 6.937 2.829 1.165 6.06.485 8.184-1.662l47.003-47.51c2.891-2.925 2.891-7.63 0-10.552z" />
-                <path d="m296.331 40.89h89.092c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-89.092c-4.143 0-7.5 3.357-7.5 7.5s3.358 7.5 7.5 7.5z" />
-            </g>
-        </g>
-    </svg>
+  <svg enable-background="new 0 0 512.002 512.002" viewBox="0 0 512.002 512.002" x="0px" y="0px"
+    xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <circle cx="253.545" cy="256.002" fill="#f6e266" r="139.502" />
+      <path
+        d="m253.545 116.5c-3.455 0-6.88.131-10.272.378 72.248 5.259 129.23 65.535 129.23 139.125s-56.982 133.866-129.23 139.125c3.392.247 6.817.377 10.272.377 77.045 0 139.502-62.457 139.502-139.502 0-77.046-62.457-139.503-139.502-139.503z"
+        fill="#ecbe6b" />
+      <path
+        d="m457.499 102.523 47.003-47.51-47.003-47.51v20.936c0 2.735-2.217 4.952-4.952 4.952h-156.215v43.245h156.215c2.735 0 4.952 2.217 4.952 4.952z"
+        fill="#78c2a4" />
+      <path
+        d="m504.501 55.012-47.003-47.51v20.936c0 .297-.037.584-.087.866l20.011 20.227c3.004 3.037 3.004 7.926 0 10.963l-20.011 20.226c.05.282.087.569.087.866v20.936z"
+        fill="#66b394" />
+      <path
+        d="m54.504 409.481-47.003 47.51 47.003 47.51v-20.936c0-2.735 2.217-4.952 4.952-4.952h156.215v-43.245h-156.215c-2.735 0-4.952-2.217-4.952-4.952z"
+        fill="#78c2a4" />
+      <path
+        d="m7.501 456.991 47.003 47.51v-20.936c0-.297.037-.584.087-.866l-20.011-20.227c-3.004-3.037-3.004-7.926 0-10.963l20.011-20.227c-.05-.282-.087-.569-.087-.866v-20.936z"
+        fill="#66b394" />
+      <g>
+        <path
+          d="m253.545 366.262c60.798 0 110.26-49.462 110.26-110.26s-49.462-110.261-110.26-110.261-110.261 49.463-110.261 110.261 49.463 110.26 110.261 110.26zm0-205.521c52.526 0 95.26 42.733 95.26 95.261 0 52.526-42.733 95.26-95.26 95.26s-95.261-42.733-95.261-95.26 42.734-95.261 95.261-95.261z" />
+        <path
+          d="m227.845 296.235c6.7 4.382 11.581 6.076 17.694 6.647v4.41c0 4.143 3.357 7.5 7.5 7.5s7.5-3.357 7.5-7.5v-5.116c12.171-3.147 19.972-13.567 21.7-23.845 2.232-13.279-4.978-25.279-17.94-29.861-1.238-.438-2.498-.892-3.76-1.359v-23.602c4.613.979 7.777 2.843 7.908 2.922 3.499 2.173 8.103 1.123 10.304-2.367 2.211-3.504 1.162-8.135-2.341-10.345-.399-.251-6.757-4.182-15.871-5.428v-3.581c0-4.143-3.357-7.5-7.5-7.5s-7.5 3.357-7.5 7.5v4.435c-.414.109-.827.219-1.244.345-8.747 2.635-15.278 10.101-17.047 19.482-1.623 8.615 1.177 16.954 7.309 21.764 2.86 2.243 6.341 4.3 10.982 6.434v30.634c-3.191-.481-5.632-1.603-9.481-4.121-3.467-2.267-8.115-1.296-10.383 2.17s-1.296 8.115 2.17 10.382zm39.601-20.39c-.646 3.841-2.991 7.873-6.907 10.231v-22.959c7.56 3.331 7.377 9.937 6.907 12.728zm-23.631-36.912c-1.683-1.319-2.399-4.14-1.826-7.183.4-2.122 1.527-4.554 3.551-6.237v14.646c-.615-.402-1.196-.81-1.725-1.226z" />
+        <path
+          d="m420.992 93.349c-2.586-3.235-7.304-3.764-10.541-1.178-3.236 2.585-3.764 7.305-1.178 10.541l7.522 9.415h-47.695c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h47.695l-7.522 9.415c-2.586 3.236-2.059 7.956 1.178 10.541 3.257 2.601 7.973 2.037 10.541-1.178l17.254-21.597c2.188-2.738 2.188-6.625 0-9.363z" />
+        <path
+          d="m91.011 418.654c2.578 3.226 7.295 3.771 10.541 1.178 3.236-2.585 3.764-7.305 1.178-10.541l-7.522-9.415h47.694c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-47.695l7.522-9.415c2.586-3.236 2.059-7.956-1.178-10.541-3.237-2.586-7.957-2.059-10.541 1.178l-17.255 21.597c-2.188 2.738-2.188 6.625 0 9.363z" />
+        <path
+          d="m59.456 442.869h156.215c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-153.667v-18.389c0-3.041-1.836-5.78-4.648-6.937-2.815-1.159-6.045-.5-8.184 1.662l-47.003 47.512c-2.891 2.922-2.891 7.627 0 10.549l47.003 47.511c2.127 2.151 5.36 2.825 8.184 1.662 2.812-1.156 4.648-3.896 4.648-6.937v-18.388h153.667c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-156.215c-6.866 0-12.452 5.586-12.452 12.451v2.691l-28.953-29.266 28.953-29.266v2.691c0 6.868 5.586 12.454 12.452 12.454z" />
+        <path
+          d="m253.545 109c-81.058 0-147.002 65.944-147.002 147.002 0 29.575 8.75 58.094 25.303 82.474 2.327 3.427 6.992 4.318 10.418 1.992 3.427-2.327 4.318-6.991 1.992-10.418-14.859-21.884-22.713-47.489-22.713-74.048 0-72.786 59.216-132.002 132.002-132.002s132.002 59.216 132.002 132.002-59.216 132.002-132.002 132.002c-33.963 0-66.229-12.873-90.856-36.247-3.004-2.853-7.752-2.729-10.603.276-2.852 3.004-2.729 7.751.276 10.603 27.426 26.032 63.359 40.368 101.183 40.368 81.058 0 147.002-65.944 147.002-147.002s-65.944-147.002-147.002-147.002z" />
+        <path
+          d="m509.833 49.738-47.003-47.511c-2.139-2.162-5.37-2.822-8.184-1.662-2.812 1.156-4.648 3.896-4.648 6.937v18.388h-34.588c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h37.137c6.865 0 12.451-5.586 12.451-12.451v-2.691l28.953 29.266-28.953 29.265v-2.69c0-6.866-5.586-12.452-12.451-12.452h-156.216c-4.143 0-7.5 3.357-7.5 7.5s3.357 7.5 7.5 7.5h153.667v18.388c0 3.041 1.836 5.78 4.648 6.937 2.829 1.165 6.06.485 8.184-1.662l47.003-47.51c2.891-2.925 2.891-7.63 0-10.552z" />
+        <path
+          d="m296.331 40.89h89.092c4.143 0 7.5-3.357 7.5-7.5s-3.357-7.5-7.5-7.5h-89.092c-4.143 0-7.5 3.357-7.5 7.5s3.358 7.5 7.5 7.5z" />
+      </g>
+    </g>
+  </svg>
 </ng-template>

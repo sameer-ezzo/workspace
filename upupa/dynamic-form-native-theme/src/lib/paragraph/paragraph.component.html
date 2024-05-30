@@ -1,3 +1,9 @@
-<p *ngIf="renderer === 'markdown'" [innerHTML]="text | markdown"> </p>
-<p *ngIf="renderer === 'html'" [innerHTML]="text | html"> </p>
-<p *ngIf="renderer === 'none'">{{text | text}} </p>
+@if (renderer === 'markdown') {
+  <p [innerHTML]="text | markdown"> </p>
+}
+@if (renderer === 'html') {
+  <p [innerHTML]="text | html"> </p>
+}
+@if (renderer === 'none') {
+  <p>{{text }} </p>
+}

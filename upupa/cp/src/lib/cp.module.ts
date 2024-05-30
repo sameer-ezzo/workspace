@@ -33,7 +33,7 @@ import { getUserInitialsImage } from "./user-image.service";
 import { catchError, map, of, switchMap } from "rxjs";
 
 
-const usreImageProvider = {
+const userImageProvider = {
     provide: USER_PICTURE_RESOLVER, useFactory: (auth: AuthService, data: DataService) => {
         return auth.user$.pipe(
             switchMap(u =>
@@ -83,7 +83,7 @@ const declarations = [
     providers: [
         ScaffoldersProvider,
         { provide: CP_OPTIONS, useValue: { userAvatarMode: 'avatar' } },
-        usreImageProvider,
+        userImageProvider,
     ],
     exports: [...declarations],
 })
@@ -91,7 +91,7 @@ export class ControlPanelModule {
     public static register(viewModels?: ScaffoldingScheme, options: {
         providers?: any[],
     } = {
-            providers: [usreImageProvider]
+            providers: [userImageProvider]
         }): ModuleWithProviders<ControlPanelModule> {
         const scaffolders = mergeScaffoldingScheme(viewModels ?? {})
 
@@ -106,7 +106,7 @@ export class ControlPanelModule {
                     provide: CP_OPTIONS,
                     useValue: options ?? {},
                 },
-                usreImageProvider,
+                userImageProvider,
                 ...(options.providers ?? [])
             ],
         };

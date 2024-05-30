@@ -54,7 +54,7 @@
                 <ng-template #btnWithTextTemplate>
                     <button (click)="emitter.emit({name: action.name, data: data})" mat-button>
                         <mat-icon>{{action?.icon}}</mat-icon>
-                        {{action.text | text}}
+                        {{action.text }}
                     </button>
                 </ng-template>
 

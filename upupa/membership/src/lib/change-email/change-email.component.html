@@ -11,11 +11,11 @@ align-content: flex-start;">
             <button mat-icon-button (click)="readonly=true;email=user.email" ><mat-icon>clear</mat-icon></button>
         </span>
     <mat-form-field [appearance]="appearance" style="width:100%">
-        <mat-label>{{'email'|text}}</mat-label>
+        <mat-label>email</mat-label>
         <input matInput #_email="ngModel" [name]="name" [readonly]="readonly" [(ngModel)]="email" required [pattern]="emailPattern" [disabled]="disabled">
         <mat-error>{{_email.errors|error}}</mat-error>
     </mat-form-field>
 </div> -->
 
 
-<change-user-prop [prop]="'email'" [(value)]="email" [label]="'Email'|text"></change-user-prop>
+<change-user-prop prop="email" [(value)]="email" label="Email"></change-user-prop>
