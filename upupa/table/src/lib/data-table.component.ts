@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal } from '@angular/core'
+import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef } from '@angular/core'
 import { takeUntil } from 'rxjs/operators'
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
@@ -28,6 +28,7 @@ export type ColumnDescriptor = {
     sortId?: string,
     sortArrowPosition?: SortHeaderArrowPosition,
     pipe?: PipeDescriptor | Type<any>
+    component?: Type<any>
 }
 export type ColumnsDescriptor<T = any> = { [key in keyof T]: ColumnDescriptor | 1 | 0 }
 type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
@@ -101,9 +102,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
 
-    ngAfterViewInit(): void {
-        if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate
-    }
 
     constructor(protected host: ElementRef<HTMLElement>,
         private bus: EventBus,
@@ -137,9 +135,13 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.cdRef.markForCheck()
     }
 
+    ngAfterViewInit(): void {
+        if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate
+    }
 
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes)
+        if(changes['showSearch']) this.showSearch = this.showSearch !== "false" || !this.showSearch
         if (changes['adapter'] && this.showSearch === undefined) {
             this.showSearch = this.adapter.options?.terms?.length > 0
         }
