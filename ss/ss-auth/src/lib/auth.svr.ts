@@ -13,7 +13,7 @@ import { AuthOptions } from './auth-options'
 import { Broker } from '@ss/common'
 import { logger } from "./logger";
 
-import { User, randomString, randomDigits, UserDevice } from '@noah-ark/common'
+import { User, randomString, randomDigits, UserDevice, Principle } from '@noah-ark/common'
 import { UserDocument } from './user.document'
 import userSchema from './user.schema'
 import { roleSchema } from './role.schema'
@@ -64,7 +64,7 @@ export class AuthService {
         await this.data.addModel('role', roleSchema)
         this.model = await this.data.getModel('user')
     }
-    async signUp(user: Partial<User>, password: string): Promise<{ _id: string } & Partial<User>> {
+    async signUp(user: Partial<User>, password?: string): Promise<{ _id: string } & Partial<User>> {
         const payload = { ...user } as any
 
         if (password) payload.passwordHash = await bcrypt.hash(password, 10)
@@ -340,6 +340,18 @@ export class AuthService {
             return user
         }
         throw new AuthException(AuthExceptions.InvalidToken)
+    }
+
+
+    async signInUserByPrinciple(principle: Principle, key: keyof User = 'email'): Promise<UserDocument> {
+        if (!principle) throw new AuthException(AuthExceptions.InvalidUserData)
+        const user = await this.model.findOne({ [key]: principle[key] })
+        if (!user) throw new AuthException(AuthExceptions.UserNotFound)
+        if (user && user.securityCode !== principle.sec) throw new AuthException(AuthExceptions.InvalidSecurityCode)
+
+        this.signInUser(user, null, true, null)
+        user.claims ??= {}
+        return user
     }
 
     async signInUser(user: UserDocument, password?: string, registerAttempt = true, device?: UserDevice) {

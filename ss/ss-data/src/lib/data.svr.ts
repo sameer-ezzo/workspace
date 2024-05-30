@@ -113,7 +113,8 @@ export class DataService {
 
     private async _connect(url: string, options: ConnectOptions = { autoIndex: true }): Promise<mongoose.Connection> {
         try {
-            const s = url.substring(10) //skip scheme
+            const i = url.indexOf('://')
+            const s = url.substring(i + 3) //remove protocol
 
 
 
