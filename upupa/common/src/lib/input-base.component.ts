@@ -17,6 +17,8 @@ export class InputBaseComponent<T = any, C = UntypedFormControl> implements Cont
     @Output() valueChange = new EventEmitter<T | T[]>()
     value1$ = new BehaviorSubject<T>(undefined)
 
+    @Input() required: boolean
+    @Input() disabled: boolean
     @Input()
     public get value(): T { return this.value1$.value }
     public set value(v: T) { this.writeValue(v, true) }
@@ -104,7 +106,6 @@ export class BaseTextInputComponent<T = any> extends InputBaseComponent<T>{
         this.setDisabledState(value === true)
     }
     @Input() errorMessages: { [errorCode: string]: string } = {};
-    @Input() required: boolean;
 
     override ngOnChanges(changes: SimpleChanges): void {
         super.ngOnChanges(changes)
