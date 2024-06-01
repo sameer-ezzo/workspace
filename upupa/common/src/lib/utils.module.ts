@@ -20,6 +20,7 @@ import { HtmlPipe } from './html.pipe';
 import { InputBaseComponent, BaseTextInputComponent } from './input-base.component';
 import { LazyLoadDirective } from './lazy-load.directive';
 import { MarkdownPipe } from './markdown.pipe';
+import { FocusDirective } from './directives/focus.directive';
 
 const declarations = [
     InputBaseComponent,
@@ -28,6 +29,7 @@ const declarations = [
     OnlyNumberDirective,
     HtmlPipe, MarkdownPipe,
     LazyLoadDirective,
+    FocusDirective,
     ErrorPipe];
 
 const imports = [MatFormFieldModule,

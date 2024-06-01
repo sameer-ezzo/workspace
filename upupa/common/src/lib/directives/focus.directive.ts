@@ -6,7 +6,7 @@ import { Directive, ElementRef, Inject, Input, NgZone, PLATFORM_ID } from '@angu
 
 @Directive({
     selector: '[focus]',
-    standalone: true
+    // standalone: true
 })
 export class FocusDirective {
     @Input() focus = false
@@ -22,12 +22,26 @@ export class FocusDirective {
     }
 
 
+    observer: IntersectionObserver | undefined
     ngAfterViewInit() {
         if (!isPlatformBrowser(this.platformId)) return
-        if (!this.focus) return
-        this.zone.runOutsideAngular(() => { this.doFocus() })
+        if (!this.focus) {
+            this.observer?.disconnect()
+            return
+        }
+        this.observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.zone.runOutsideAngular(() => { this.doFocus() })
+                }
+            });
+        });
+        this.observer.observe(this.elementRef.nativeElement);
     }
 
+    ngOnDestroy() {
+        this.observer?.disconnect()
+    }
 
     doFocus() {
         setTimeout(() => {
