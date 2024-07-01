@@ -1,6 +1,6 @@
-@if(scheme){
+@if(scheme(); as _scheme){
 <div class="wrapper">
-    <dynamic-form #userForm [fields]="scheme" [conditions]="conditions" (submit)="save(userForm)" [(value)]="user">
+    <dynamic-form #userForm [fields]="_scheme" [conditions]="conditions()" (submit)="save(userForm)" [(value)]="user">
     </dynamic-form>
 </div>
 <div class="toolbar footer">

@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, Input, SimpleChanges, ViewChild, signal } from '@angular/core';
 
 import { AuthService } from '@upupa/auth';
 
@@ -7,14 +7,16 @@ import { DataAdapter, DataService, ObjectId, ServerDataSource } from '@upupa/dat
 import { MatDialogRef } from '@angular/material/dialog';
 import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
 import { HttpClient } from '@angular/common/http';
-import { ActionDescriptor, ActionEvent, UpupaDialogComponent } from '@upupa/common';
+import { ActionDescriptor, ActionEvent, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
 @Component({
     selector: 'edit-user-roles',
     templateUrl: './edit-user-roles.component.html',
     styleUrls: ['./edit-user-roles.component.scss']
 })
-export class EditUserRolesComponent {
+export class EditUserRolesComponent implements UpupaDialogPortal<EditUserRolesComponent> {
     @ViewChild('userForm') form: DynamicFormComponent
+    dialogRef: MatDialogRef<UpupaDialogComponent<EditUserRolesComponent>>;
+
     loading = false;
 
     @Input() user: any = { _id: ObjectId.generate() };
@@ -23,17 +25,17 @@ export class EditUserRolesComponent {
     @Input() mode: 'edit' | 'create' = 'create'
 
 
-    fields: FormScheme;
+    scheme = signal<FormScheme>(null);
     constructor(
         public auth: AuthService,
         public data: DataService,
         private http: HttpClient) {
-        this.fields = {
+        this.scheme.set({
             roles: selectField('roles', 'Roles', new DataAdapter(
                 new ServerDataSource(this.data, 'role', ['_id', 'name']),
                 '_id', 'name', undefined, undefined
             ), 'User roles', undefined, 'outline', 10000, [{ name: 'required' }])
-        }
+        })
     }
 
     value: { roles: string[] } = { roles: [] }
@@ -50,21 +52,15 @@ export class EditUserRolesComponent {
 
         if (!form.getDirtyValue()) return []
         try {
-            return await firstValueFrom(this.http.post<{ userId: string, roles: string[] }>(`${this.auth.baseUrl}/updateusertoroles`, { userId: this.user._id, roles: this.value.roles })).then(x => x.roles)
+            const res = await firstValueFrom(
+                this.http.post<{ userId: string, roles: string[] }>(`${this.auth.baseUrl}/updateusertoroles`,
+                    { userId: this.user._id, roles: this.value.roles })
+            )
+            this.dialogRef.close(res.roles)
         } catch (err) {
             console.error(err)
         }
         return []
-    }
-
-
-
-    private async onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent>) {
-        let roles = this.value.roles
-        if (e.action.action === 'save') {
-            roles = await this.save(this.form)
-        }
-        dialogRef.close(roles)
     }
 
 }

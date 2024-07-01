@@ -53,7 +53,7 @@ export class FocusDirective {
                     this.elementRef.nativeElement.focus();
                     break;
             }
-        }, 200);
+        }, 50);
     }
 
 }

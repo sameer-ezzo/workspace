@@ -38,7 +38,6 @@ export class InputComponent extends InputBaseComponent {
         this.setDisabledState(value === true)
     }
     @Input() errorMessages: { [errorCode: string]: string } = {};
-    @Input() required: boolean;
 
     override ngOnChanges(changes: SimpleChanges): void {
         super.ngOnChanges(changes)

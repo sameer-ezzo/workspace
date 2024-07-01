@@ -10,6 +10,11 @@
   transition: all 200ms ease-in;
   user-select: none;
   cursor: pointer;
+
+  &.impersonated {
+    border: 1px solid var(--warn-lighter);
+    border-radius: 8px;
+  }
   &:hover,
   &.active,
   &:focus-within {
@@ -20,6 +25,6 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    max-height: 40px;
+    max-height: 35px;
   }
 }

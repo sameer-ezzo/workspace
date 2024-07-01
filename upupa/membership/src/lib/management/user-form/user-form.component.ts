@@ -25,31 +25,31 @@ type UserFormOptions = {
 })
 export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     @ViewChild('userForm') form: any
-    dRef: MatDialogRef<UpupaDialogComponent<UserFormComponent>>;
+    dialogRef: MatDialogRef<UpupaDialogComponent<UserFormComponent>>;
     private _loading = signal<boolean>(false)
     public get loading() { return this._loading() }
     public set loading(value) { this._loading.set(value) }
 
-    scheme: Record<string, any>
-    conditions: any[]
+    scheme = signal<FormScheme>(null)
+    conditions = signal<Condition[]>([])
 
     private _updateInputs(mode: 'editUser' | 'createUser' = 'createUser') {
         this.loading = true
 
-        this.scheme = this.options?.scheme
-        this.conditions = this.options?.conditions
+        this.scheme.set(this.options?.scheme)
+        this.conditions.set(this.options?.conditions || [])
         this.loading = false
     }
 
 
-    private _user: Partial<User>;
+    _userValue = signal<Partial<User>>(null);
     @Input()
     public get user(): Partial<User> {
-        return this._user;
+        return this._userValue();
     }
     public set user(v: Partial<User>) {
         this.getUser(v).then(u => {
-            this._user = v
+            this._userValue.set(u)
             this._updateInputs()
         })
     }
@@ -76,20 +76,23 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     }
 
 
-    
-    discard(){
-        this.dRef?.close()
+
+    discard() {
+        this.dialogRef?.close()
     }
     async save(form: any) {
         if (!form.touched || form.invalid) return
         try {
 
-            if (!this.user?._id) this._user = await this._createUser(form.value)
+            if (!this.user?._id) {
+                const res = await this._createUser(form.value)
+                this._userValue.set(res)
+            }
             else {
                 const v = form.getDirtyValue()
                 if (v) await this.data.put(`/user/${this.user._id}`, v);
             }
-            this.dRef.close(this.user)
+            this.dialogRef.close(this.user)
         } catch (error) {
             console.error(error);
             throw error;

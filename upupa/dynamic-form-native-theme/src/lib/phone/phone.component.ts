@@ -40,7 +40,7 @@ export class PhoneInputComponent extends InputBaseComponent implements Validator
     @Input() hint: string
     @Input() readonly = false
     @Input() errorMessages: { [errorCode: string]: string } = {}
-    @Input() required: boolean
+
 
     countriesService = new FilterService(countries, ["name", "name", "phone_code"])
 

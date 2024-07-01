@@ -29,10 +29,6 @@ export class AddressComponent extends InputBaseComponent<AddressModel> implement
 
     @Input() label = 'Address';
 
-
-    @Input() required = true;
-    @Input() disabled = false;
-
     @Input() display = 'native_name';
     @Input() readonly = false;
     @Input() errorMessages: { [errorCode: string]: string } = {};

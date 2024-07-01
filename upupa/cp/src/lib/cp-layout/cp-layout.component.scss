@@ -1,3 +1,9 @@
+html,body{
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden;
+}
+
 main {
   height: 100vh;
   display: flex;
@@ -16,11 +22,6 @@ main {
   .spacer {
     flex: 1 1 auto;
   }
-  // .upupa-dialog-container {
-  //   .body {
-  //     padding: 1rem;
-  //   }
-  // }
 
   .cp-item-link {
     display: flex;
@@ -30,11 +31,17 @@ main {
     width: 100%;
     padding: 6px 24px;
     color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    box-sizing: border-box;
+
+    &:hover {
+      background-color: var(--bg-hover);
+    }
 
     &.active,
-    &:hover,
     &:focus-within {
-      background-color: var(--bg-hover);
+      background-color: var(--bg-focused-button);
     }
   }
 

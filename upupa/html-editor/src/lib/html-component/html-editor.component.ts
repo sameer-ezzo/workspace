@@ -30,7 +30,6 @@ import { AuthService } from '@upupa/auth';
 export class HtmlEditorComponent extends InputBaseComponent<string> implements OnChanges {
     public Editor = DecoupledEditor
     @Input() readonly = false;
-    @Input() disabled = false;
     @Input() language: string;
     @Input()
     private _placeholder: string;

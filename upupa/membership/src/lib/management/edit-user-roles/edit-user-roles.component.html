@@ -1,4 +1,4 @@
-@if(fields) {
+@if(scheme(); as fields) {
 <div class="wrapper">
 
     <dynamic-form #userForm [fields]="fields" (submit)="save(userForm)" [(value)]="value">

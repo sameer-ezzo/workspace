@@ -27,8 +27,6 @@ export class NumberComponent extends InputBaseComponent {
   @Input() readonly = false;
   @Input() errorMessages: { [errorCode: string]: string } = {};
 
-  @Input() required: boolean;
-
   @Input() min: number = null;
   @Input() max: number = null;
 

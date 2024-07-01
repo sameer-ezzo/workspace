@@ -6,6 +6,7 @@ import { ActionDescriptor } from "@upupa/common";
 import { FieldItem, FormScheme } from "@upupa/dynamic-form";
 import { ColumnsDescriptor } from "@upupa/table";
 import { defaultEmailField, userFullNameField, userNameField } from "../default-values";
+import { TagsPipe } from "@upupa/tags";
 
 export const defaultRolesListActions: ActionDescriptor[] = [
     { variant: 'stroked', header: true, action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },

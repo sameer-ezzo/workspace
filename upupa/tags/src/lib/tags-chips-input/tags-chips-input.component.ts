@@ -1,11 +1,10 @@
 import { Component, Input, SimpleChanges, inject } from '@angular/core';
 import { EventBus } from '@upupa/common';
-import { ClientDataSource, DataAdapter } from '@upupa/data';
+import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
 import { ChipsComponent } from '@upupa/dynamic-form-native-theme';
 import { Tag } from '../tag.model';
 import { TagsService } from '../tags.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-
 
 @Component({
   selector: 'tags-chips-input',
@@ -14,13 +13,16 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 })
 export class TagsChipsInputComponent extends ChipsComponent {
 
+  @Input() readonly = false
   private readonly tagsService = inject(TagsService)
   protected override  readonly bus = inject(EventBus)
-  private _parentPath = '/'
-  private readonly tagsDs: ClientDataSource<Tag> = new ClientDataSource(this.tagsService.getTags(this._parentPath))
-  override readonly adapter = new DataAdapter<Tag>(this.tagsDs, '_id', 'name', undefined, undefined, {
-    terms: [{ field: '_id', type: 'like' },
-    { field: 'name', type: 'like' }],
+  private _parentPath = undefined
+  private readonly tagsDs = new ClientDataSource([])
+  override readonly adapter = new DataAdapter<Tag>(this.tagsDs, '_id', 'name', '_id', undefined, {
+    terms: [
+      { field: '_id', type: 'like' },
+      { field: 'name', type: 'like' }
+    ],
     page: {
       pageSize: 25
     }
@@ -39,12 +41,20 @@ export class TagsChipsInputComponent extends ChipsComponent {
 
   private readonly _refresh = () => {
     this.tagsService.getTags(this.parentPath).subscribe(tags => {
-      this.tagsDs.all = tags
+      this.tagsDs.all = tags.slice()
       this.adapter.refresh()
     })
   }
 
+  override remove(item: NormalizedItem): void {
+    this.value = this.value.filter(v => v === item.key)
+    this.control.markAllAsTouched()
+    this.control.markAsDirty()
+  }
 
+  updateFilter(f: string) {
+    this.q = f
+  }
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const v = event.option.value
     super.selectionChange(v)

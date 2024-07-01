@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatBtnModule, UtilsModule } from '@upupa/common';
+import { FocusDirective, MatBtnModule, UtilsModule } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
 import { TranslationModule } from '@upupa/language';
 import { DataTableModule } from '@upupa/table';
@@ -77,7 +77,7 @@ const declarations = [
     MatSwitchComponent, MatColorInputComponent, MatAutoCompleteTextComponent,
     MatAddressComponent,
     MatSliderComponent,
-    MatReviewScaleComponent, MatDateRangeComponent, MatNumbersRangeComponent,
+    MatReviewScaleComponent, MatDateRangeComponent, MatNumbersRangeComponent
     // FileIconPerTypePipe, 
     // MatAttachmentsComponent, MatLocalFileInputComponent, MatFileBrowserComponent,
     // MatFilesViewerComponent, MatFileSelectComponent, FileIconPerTypePipe,

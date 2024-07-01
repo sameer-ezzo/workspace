@@ -3,7 +3,7 @@ import { Subscription, Observable, ReplaySubject, of, firstValueFrom } from "rxj
 import { ClientDataSource } from "./client.data.source"
 import { filterNormalized } from "./filter.fun"
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model"
-import { map} from 'rxjs/operators'
+import { map } from 'rxjs/operators'
 import { HttpServerDataSourceOptions } from "./http-server-data-source"
 
 export type DataAdapterType = 'server' | 'client' | 'http'
@@ -24,6 +24,7 @@ export class Normalizer<S = any, N = any> {
     private _normalized$ = new ReplaySubject<N[]>(1)
     normalized$ = this._normalized$.asObservable()
     private _normalized: N[]
+
     get normalized(): N[] { return this._normalized }
     set normalized(v: N[]) {
         this._normalized = v
@@ -94,7 +95,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
 
 
     getItems(keys: (string | number | symbol) | (string | number | symbol)[]): Promise<NormalizedItem<T>[]> {
-        //todo: What if keyProperty is undefiend?
+        //todo: What if keyProperty is undefined?
         if (!keys) return Promise.resolve([])
 
         const KEYS = Array.isArray(keys) ? keys : [keys]
@@ -138,13 +139,13 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
 
 
 
-    extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, faltten = false) {
+    extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {
         if (property && item) {
             if (Array.isArray(property)) {
                 if (property.length === 1) return this.__extract(item, property[0])
                 const result: Partial<T> = {}
                 property.forEach(k => result[k] = this.__extract(item, k as string))
-                if (faltten) return Object.values(result).join(' ')
+                if (flatten) return Object.values(result).join(' ')
                 else return result
             }
             else return this.__extract(item, property as string) ?? item
@@ -211,9 +212,6 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     public static fromKeys(keys: string[]): DataAdapter {
         return new DataAdapter(new ClientDataSource(keys))
     }
-
-
-
 }
 
 export class SmartMap<V> {

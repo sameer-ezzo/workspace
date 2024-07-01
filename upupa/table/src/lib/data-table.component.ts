@@ -1,5 +1,5 @@
-import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef } from '@angular/core'
-import { takeUntil } from 'rxjs/operators'
+import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef, computed } from '@angular/core'
+import { debounceTime, takeUntil } from 'rxjs/operators'
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
 import { MatDialog } from '@angular/material/dialog'
@@ -10,11 +10,11 @@ import { NormalizedItem } from '@upupa/data'
 
 import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
-import { firstValueFrom } from 'rxjs'
+import { ReplaySubject, firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { SortHeaderArrowPosition } from '@angular/material/sort'
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export type PipeDescriptor = { pipe: Type<any>, args: string[] }
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> }
@@ -53,7 +53,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
 
     @Input() showSearch = undefined // will be set to true if there are terms in the adapter
-    hasHeader = false // will be set to true if showSearch is true or there are bulk actions or header actions
+    hasHeader = computed(() => {
+        return this.showSearch === true || (this.label || '').length > 0 || this.bulkActions().length > 0 || this.headerActions().length > 0
+    }) // will be set to true if showSearch is true or there are bulk actions or header actions
 
     @Input() label: string
     @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = []
@@ -62,18 +64,26 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Output() action = new EventEmitter<ActionEvent>()
 
-    bulkActions: ActionDescriptor[]
-    headerActions: ActionDescriptor[]
+    private _actions = signal<ActionDescriptor[]>([])
+    bulkActions = computed(() => {
+        const actions = this._actions() ?? []
+        const selected = this.selectedNormalized()
+        actions.forEach(a => { a.disabled = selected.length === 0 })
+        return actions.filter(a => ActionDescriptor._bulk(a))
+    })
 
-    _headerActionsInMenu = undefined
-    get headerActionsInMenu() {
-        if (this._headerActionsInMenu === undefined)
-            this._headerActionsInMenu = this.headerActions?.filter(a => ActionDescriptor._header(a) && ActionDescriptor._menu(a))
-        return this._headerActionsInMenu
-    }
-    get hasHeaderActionsMenu() {
-        return this.headerActionsInMenu?.length > 0 || this.allowChangeColumnsVisibility
-    }
+    headerActions = computed(() => {
+        const actions = this._actions() ?? []
+        return actions.filter(a => ActionDescriptor._header(a))
+    })
+
+    headerActionsInMenu = computed(() => {
+        const actions = this.headerActions() ?? []
+        return actions.filter(a => ActionDescriptor._menu(a))
+    })
+
+    hasHeaderActionsMenu = computed(() => { return this.headerActionsInMenu().length > 0 || this._allowChangeColumnsOptions() === true })
+
     @Input() pageSizeOptions = [10, 25, 50, 100]
 
 
@@ -95,13 +105,18 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     @Input() cellTemplate: any
     @ViewChild('defaultTemplate') defaultTemplate: any
 
-    @Input() allowChangeColumnsVisibility = false
-
-    get hasValue() {
-        return !this.value ? false : Array.isArray(this.value) ? this.value?.length > 0 : true
+    readonly _allowChangeColumnsOptions = signal(true)
+    @Input()
+    public get allowChangeColumnsOptions() {
+        return this._allowChangeColumnsOptions()
+    }
+    public set allowChangeColumnsOptions(value) {
+        this._allowChangeColumnsOptions.set(value)
     }
 
-
+    // _updateViewModel(): Promise<void> {
+    //     this.selected = this.value
+    // }
 
     constructor(protected host: ElementRef<HTMLElement>,
         private bus: EventBus,
@@ -112,7 +127,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
 
     handset: boolean
-    @Output() selectionChange = new EventEmitter<(string | number | symbol)[]>()
+    @Output() selectionChange = new EventEmitter<NormalizedItem<T>[]>()
+    selectedNormalized = signal<NormalizedItem<T>[]>([])
     override ngOnInit() {
         super.ngOnInit()
 
@@ -121,19 +137,17 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.breakpointObserver.observe([Breakpoints.Handset]).pipe(takeUntil(this.destroy$))
             .subscribe(result => { this.handset = result.matches })
 
-        this.selectionModel.changed.subscribe(x => {
-            this.selectionChange.emit(x.source.selected)
-            this._updateHeaderBulkActionsDisableState()
-        })
+        this.selectionModel.changed.pipe(
+            takeUntilDestroyed(this.destroyRef),
+            debounceTime(this.filterDebounceTime))
+            .subscribe(x => {
+                const normalized = x.source.selected.map(s => this.adapter.normalized.find(n => n.key === s))
+                this.selectedNormalized.set(normalized)
+                this.selectionChange.emit(normalized)
+            })
     }
 
 
-    private readonly cdRef = inject(ChangeDetectorRef)
-    private _updateHeaderBulkActionsDisableState() {
-        const bulkActionsDisabled = this.selectionModel.selected.length === 0
-        this.bulkActions.forEach(a => { a.disabled = bulkActionsDisabled })
-        this.cdRef.markForCheck()
-    }
 
     ngAfterViewInit(): void {
         if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate
@@ -141,7 +155,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes)
-        if(changes['showSearch']) this.showSearch = this.showSearch !== "false" || !this.showSearch
+        if (changes['showSearch']) {
+            this.showSearch = changes['showSearch'].currentValue === true
+        }
         if (changes['adapter'] && this.showSearch === undefined) {
             this.showSearch = this.adapter.options?.terms?.length > 0
         }
@@ -151,12 +167,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             this.actionsMap = new Map<any, ActionDescriptor[]>()
             this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
         }
-        const actions: ActionDescriptor[] = (Array.isArray(this.actions) ? this.actions : this.actions(null)) || []
+        this._actions.set((Array.isArray(this.actions) ? this.actions : this.actions(null)) || [])
 
-        this.bulkActions = actions?.length ? actions.filter(a => ActionDescriptor._bulk(a)) : []
-        this.headerActions = actions?.length ? actions.filter(a => ActionDescriptor._header(a)) : []
-        this._updateHeaderBulkActionsDisableState()
-        this.hasHeader = this.showSearch === true || (this.label || '').length > 0 || this.bulkActions?.length > 0 || this.headerActions?.length > 0
     }
 
     private generateColumns() {
@@ -182,11 +194,15 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         if (this.name && localStorage) {
-            const selectedColumnsStr = localStorage.getItem(`table#${this.name}`)
-            if (selectedColumnsStr) {
-                const selectedColumns = selectedColumnsStr.split(',')
+            const storageColumnsInfoStr = localStorage.getItem(`table#${this.name}`)
+            const storageColumnsInfo = storageColumnsInfoStr ? JSON.parse(storageColumnsInfoStr) : []
+            this._allowChangeColumnsOptions.set(storageColumnsInfo.length > 0)
+            if (storageColumnsInfo.length > 0) {
                 for (const prop in this._properties) {
-                    this._properties[prop].visible = selectedColumns.includes(prop)
+                    const colInfo = storageColumnsInfo.find(x => x.name === prop) ?? { visible: true, sticky: false }
+
+                    this._properties[prop].visible = colInfo.visible
+                    this._properties[prop].sticky = colInfo.sticky
                 }
             }
         }
@@ -223,7 +239,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     actionsMap = new Map<any, ActionDescriptor[]>()
     actionsMenuMap = new Map<any, ActionDescriptor[]>()
     getActions(item: any): ActionDescriptor[] {
-        // console.log(this.calls++)
 
         let actions = this.actionsMap.get(item)
         if (!actions) {
@@ -250,13 +265,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
         return actions
     }
-    get selectedValue() {
-        if (!this.adapter) return []
-        return this.selected.map(x => this.adapter.normalized.find(n => n.key === x))
-    }
+
     onAction(descriptor: ActionDescriptor, data: NormalizedItem[] | any[]) {
         //TODO should action set loading automatically just like filter?
-        if (descriptor.header === true) data = this.selectedValue
+        if (descriptor.header === true && descriptor.bulk === true) data = this.selectedNormalized()
 
         const d = (data || []).map(x => x.item)
         const e = { action: descriptor, data: d }
@@ -265,7 +277,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.bus.emit(`${this.name?.trim().length > 0 ? this.name + '-' : ''}${descriptor.action}`, e, this)
     }
 
-    bulkActionsData = (value: any | any[]) => this.adapter.normalized.filter(n => value.includes(n.key))
 
 
 

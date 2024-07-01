@@ -4,7 +4,7 @@
     <mat-label>{{label}}</mat-label>
   }
   @if(maxAllowed !== 1){
-    <mat-select #selectInput [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
+    <mat-select #selectInput [disabled]="disabled" [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
       (keydown)="keyDown($event, selectInput)"
       (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" multiple
       [panelClass]="panelClass" [value]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()"
@@ -62,7 +62,7 @@
       }
     </mat-select>
     }@else{
-    <mat-select #selectInput [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
+    <mat-select #selectInput [disabled]="disabled" [class.ng-dirty]="control.dirty" (openedChange)="openedChange($event,selectInput)"
       (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" [panelClass]="panelClass"
       [value]="singleSelected()" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
       [required]="required">
@@ -116,8 +116,8 @@
 @if(loading){
   <mat-progress-spinner matSuffix [diameter]="20" mode="indeterminate"></mat-progress-spinner>
 }
-@if(selected.length > 0 && !loading){
-  <button matSuffix mat-icon-button (click)="$event.stopPropagation(); selected=[]; valueChanged(undefined)">
+@if(selected.length > 0 && !loading && !disabled){
+  <button matSuffix mat-icon-button (click)="clearValue($event)">
     <mat-icon>clear</mat-icon>
   </button>
 }
@@ -135,14 +135,14 @@
 
 
 <ng-template #searchBox>
-  <mat-form-field class="select-filter-input" style="width: 100%">
+  <div class="select-filter-input" style="width: 100%">
     <span matPrefix><mat-icon>search</mat-icon></span>
-    <input #filterInput autofocus matInput style="flex: 1;border:none;outline: none;" [value]="q"
+    <input #filterInput autofocus style="flex: 1;border:none;outline: none;" [value]="q"
       (input)="q=$event.target?.['value']" (keydown.enter)="filter$.next(q)">
     @if(q.length > 0){
       <button matSuffix mat-icon-button (click)="$event.stopPropagation(); q=''">
         <mat-icon>clear</mat-icon>
       </button>
     }
-  </mat-form-field>
+  </div>
 </ng-template>

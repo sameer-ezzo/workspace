@@ -13,7 +13,6 @@ export type FormSubmitResult = { closeDialog?: boolean, successMessage?: string,
 export type DataFormViewModel<T = any> = DynamicFormInputs<T> & {
 
     value$: Observable<T>,
-    // submitBtn?: ActionDescriptor,
     actions?: ActionDescriptor[],
     conditions?: Condition<DynamicFormEvents.AnyEvent, DynamicFormCommands.AnyCommands>[],
     valueToRecord?: (form: DynamicFormComponent, value: T) => Promise<any>,

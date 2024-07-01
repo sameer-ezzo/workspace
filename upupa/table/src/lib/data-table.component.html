@@ -1,187 +1,216 @@
 <div tabindex="0" class="table-wrapper">
 
-    <!-- ACTIONS MENU -->
-    <mat-menu #actionsMenu="matMenu">
-        @for(a of getMenuActions(focusedItem?.item); track a.action){
-        <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
-            <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
-        </button>
-        }
+  <!-- ACTIONS MENU -->
+  <mat-menu #actionsMenu="matMenu">
+    @for(a of getMenuActions(focusedItem?.item); track a.action){
+    <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
+      <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
+    </button>
+    }
+  </mat-menu>
+
+
+  <!-- TABLE HEADER -->
+
+  <div class="table-header">
+    @if(label){<h3>{{label}}</h3>}
+
+    @if(showSearch){
+    <div id="search-box-wrapper">
+      <input style="background: transparent;outline: none;border: none;display: flex;flex: 1;" placeholder="Search"
+        [(ngModel)]="q" (keydown.enter)="filter$.next(q)" />
+      <button mat-icon-button matSuffix (click)="filter$.next(q)">
+        <mat-icon>search</mat-icon>
+      </button>
+    </div>
+    }
+    @if(selected.length > 0){
+    @if(maxAllowed === 1){
+    <div style="flex:1">item selected</div>
+    }@else{
+    <div style="flex:1">{{selected.length}} items selected </div>
+    }
+    }
+    <span style="flex:1"></span>
+    <div style="display: flex;align-items: center;">
+      <ng-container *ngTemplateOutlet="commandTemplate; context:{actions:headerActions()}">
+      </ng-container>
+      @if(hasHeaderActionsMenu()){
+
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      }
+    </div>
+    <mat-menu #menu="matMenu">
+      @if(_allowChangeColumnsOptions()){
+      <button [disabled]="loading" mat-menu-item (click)="openColumnsSelectDialog()">columns</button>
+      }
+      @for (haim of headerActionsInMenu(); track haim.action) {
+      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, null)">
+        <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) }}
+      </button>
+      }
+
     </mat-menu>
 
 
-    <!-- TABLE HEADER -->
-    @if(hasHeader){
-    <div class="table-header">
-        @if(label){
-        <h3>{{label }}</h3>
-        }
-        @if(!hasValue){
-        @if(showSearch){
-        <div id="search-box-wrapper">
-            <input style="background: transparent;outline: none;border: none;display: flex;flex: 1;" placeholder="Search" [(ngModel)]="q" (keydown.enter)="filter$.next(q)" />
-            <button mat-icon-button matSuffix (click)="filter$.next(q)">
-                <mat-icon>search</mat-icon>
-            </button>
-        </div>
-        }
-        <span style="flex:1"></span>
-        <div style="display: flex;align-items: center;">
-            <ng-container *ngTemplateOutlet="commandTemplate; context:{actions:headerActions}">
-            </ng-container>
-            @if(hasHeaderActionsMenu){
-            @if (name) {
-            <button mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            }
-            }
-        </div>
-        <mat-menu #menu="matMenu">
-            @if(allowChangeColumnsVisibility){
-            <button [disabled]="loading" mat-menu-item (click)="openColumnsSelectDialog()">columns</button>
-            }
-            @for (haim of headerActionsInMenu; track haim.action) {
-            <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, null)">
-                <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) }}
-            </button>
-            }
 
-        </mat-menu>
-
-        }@else{
-        @if(maxAllowed === 1){
-        <div style="flex:1">item-selected</div>}@else{
-        <div style="flex:1">{{value?.['length']}} items-selected </div>
-        }
-        <div style="display: flex;align-items: center;">
-            <ng-container *ngTemplateOutlet="commandTemplate; context:{actions:bulkActions,data:bulkActionsData(value)}">
-            </ng-container>
-        </div>
-        }
+    <div style="display: flex;align-items: center;">
+      <ng-container *ngTemplateOutlet="commandTemplate; context:{actions:bulkActions(),data:selectedNormalized()}">
+      </ng-container>
     </div>
-    }
+
+  </div>
 
 
-    <div class="table-container">
-        <mat-progress-bar [class.hidden]="!loading" mode="query"></mat-progress-bar>
+
+  <div class="table-container">
+    <mat-progress-bar [class.hidden]="!loading" mode="query"></mat-progress-bar>
 
 
-        @if (adapter) {
-        <table #table mat-table multiTemplateDataRows class="dd-list" [dataSource]="adapter.normalized$ | async" cdkDropList [cdkDropListDisabled]="dragDropDisabled" (cdkDropListDropped)="drop($event)" matSort [matSortDisabled]="loading" [matSortDirection]="adapter.sort?.direction" [matSortActive]="adapter.sort?.active" (matSortChange)="onSortData($event)">
-            <!-- <ng-container matColumnDef="drag" [sticky]="'start'"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row;let i = index"><div class="dd-placeholder" *cdkDragPlaceholder></div></td></ng-container> -->
-            <ng-container matColumnDef="i" [sticky]="columns['actions']?.sticky === 'start'" [stickyEnd]="columns['actions']?.sticky === 'end'">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let row;let i = index">
-                    {{i + 1 + adapter.page.pageIndex * adapter.page.pageSize}}</td>
-            </ng-container>
-            <ng-container matColumnDef="select" [sticky]="columns['select']?.sticky === 'start'" [stickyEnd]="columns['select']?.sticky === 'end'">
-                <th mat-header-cell *matHeaderCellDef>
-                    @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
-                    <mat-checkbox (change)="toggleSelectAll()" [checked]="selected.length === adapter.normalized.length" [indeterminate]="selected.length > 0 && selected.length !== adapter.normalized.length">
-                    </mat-checkbox>
-                    }
-                </th>
-                <td mat-cell *matCellDef="let row">
-                    @if(adapter.imageProperty){
-                    <img [src]="row.image" [attr.alt]="row.display || row.key" class="avatar" />
-                    }
-                    <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.key)" (change)="toggleSelection($event,row)"></mat-checkbox>
-                </td>
-            </ng-container>
-            @for(descriptor of _properties | keyvalue; track descriptor.key; let i = $index){
-            <ng-container matColumnDef="{{descriptor.key}}" [sticky]="descriptor.value?.sticky === 'start'" [stickyEnd]="descriptor.value?.sticky === 'end'">
-                <th mat-header-cell *matHeaderCellDef [mat-sort-header]="descriptor.value.sortId || descriptor.key" [arrowPosition]="descriptor.value?.sortArrowPosition || 'after'" [disabled]="descriptor.value?.sortDisabled === true" [class.none]="descriptor.value?.visible === false" [ngStyle]="{width: descriptor.value?.width+'px'}">
-                    {{(descriptor.value.header || descriptor.key) }}
-                </th>
-                <td mat-cell *matCellDef="let row;let i = index" [class.none]="descriptor.value?.visible === false" [ngStyle]="{width: descriptor.value?.width+'px'}">
-                    @if(descriptor.value.component){
-                        <ng-component *ngComponentOutlet="descriptor.value.component;inputs: {element:row,descriptor,index:i};" ></ng-component>
-                    }
-                    @else {
-                        <ng-container [ngTemplateOutlet]="templates[descriptor.key] ?? cellTemplate" [ngTemplateOutletContext]="{descriptor,element:row,index:i}"></ng-container>
-                    }
-                </td>
-            </ng-container>
+    @if (adapter) {
+    <table #table mat-table multiTemplateDataRows class="dd-list" [dataSource]="adapter.normalized$ | async" cdkDropList
+      [cdkDropListDisabled]="dragDropDisabled" (cdkDropListDropped)="drop($event)" matSort [matSortDisabled]="loading"
+      [matSortDirection]="adapter.sort?.direction" [matSortActive]="adapter.sort?.active"
+      (matSortChange)="onSortData($event)">
+      <!-- <ng-container matColumnDef="drag" [sticky]="'start'"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row;let i = index"><div class="dd-placeholder" *cdkDragPlaceholder></div></td></ng-container> -->
+      <ng-container matColumnDef="i" [sticky]="columns['actions']?.sticky === 'start'"
+        [stickyEnd]="columns['actions']?.sticky === 'end'">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row;let i = index">
+          {{i + 1 + adapter.page.pageIndex * adapter.page.pageSize}}</td>
+      </ng-container>
+      <ng-container matColumnDef="select" [sticky]="columns['select']?.sticky === 'start'"
+        [stickyEnd]="columns['select']?.sticky === 'end'">
+        <th mat-header-cell *matHeaderCellDef>
+          @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
+          <mat-checkbox (change)="toggleSelectAll()" [checked]="selected.length === adapter.normalized.length"
+            [indeterminate]="selected.length > 0 && selected.length !== adapter.normalized.length">
+          </mat-checkbox>
+          }
+        </th>
+        <td mat-cell *matCellDef="let row">
+          @if(adapter.imageProperty){
+          <img [src]="row.image" [attr.alt]="row.display || row.key" class="avatar" />
+          }
+          <mat-checkbox (click)="$event.stopPropagation();" [checked]="selectionModel.isSelected(row.key)"
+            (change)="toggleSelection($event,row)"></mat-checkbox>
+        </td>
+      </ng-container>
+      @for(descriptor of _properties | keyvalue; track descriptor.key; let i = $index){
+      <ng-container matColumnDef="{{descriptor.key}}" [sticky]="descriptor.value?.sticky === 'start'"
+        [stickyEnd]="descriptor.value?.sticky === 'end'">
+        <th mat-header-cell *matHeaderCellDef [mat-sort-header]="descriptor.value.sortId || descriptor.key"
+          [arrowPosition]="descriptor.value?.sortArrowPosition || 'after'"
+          [disabled]="descriptor.value?.sortDisabled === true" [class.none]="descriptor.value?.visible === false"
+          [ngStyle]="{width: descriptor.value?.width+'px'}">
+          {{(descriptor.value.header || descriptor.key) }}
+        </th>
+        <td mat-cell *matCellDef="let row;let i = index" [class.none]="descriptor.value?.visible === false"
+          [ngStyle]="{width: descriptor.value?.width+'px'}">
+          @if(descriptor.value.component){
+          <ng-component
+            *ngComponentOutlet="descriptor.value.component;inputs: {element:row,descriptor,index:i};"></ng-component>
+          }
+          @else {
+          <ng-container [ngTemplateOutlet]="templates[descriptor.key] ?? cellTemplate"
+            [ngTemplateOutletContext]="{descriptor,element:row,index:i}"></ng-container>
+          }
+        </td>
+      </ng-container>
+      }
+      <ng-container matColumnDef="actions" [sticky]="columns['actions']?.sticky === 'start'"
+        [stickyEnd]="columns['actions']?.sticky === 'end'">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row; let i = index" class="actions">
+          <div>
+            <ng-container [ngTemplateOutlet]="commandTemplate"
+              [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row]}"></ng-container>
+            @if(getMenuActions(row.item).length){
+            <button (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button
+              [matMenuTriggerFor]="actionsMenu" class="actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
             }
-            <ng-container matColumnDef="actions" [sticky]="columns['actions']?.sticky === 'start'" [stickyEnd]="columns['actions']?.sticky === 'end'">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let row; let i = index" class="actions">
-                    <div>
-                        <ng-container [ngTemplateOutlet]="commandTemplate" [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row]}"></ng-container>
-                        @if(getMenuActions(row.item).length){
-                        <button (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button [matMenuTriggerFor]="actionsMenu" class="actions">
-                            <mat-icon>more_vert</mat-icon>
-                        </button>
-                        }
-                        @if(expandable !== 'none' && expandableTemplate){
-                        <button (click)="$event.stopPropagation(); toggleExpand(row, i)" mat-icon-button class="actions" aria-label="expand row">
-                            @if (expanded[row.key]?.()) {
-                            <mat-icon>keyboard_arrow_up</mat-icon>
-                            } @else {
-                            <mat-icon>keyboard_arrow_down</mat-icon>
-                            }
-                        </button>
-                        }
-                    </div>
-                </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="_columns; sticky: true" [class.selected]="selected.length > 0"></tr>
-            <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true" [cdkDragData]="row" class="dd-item {{rowClass(row)}}" [class.focused]="focusedItem === row" [class.selected]="selectionModel.isSelected(row.key)" (click)="onClick(row)" (touch)="onClick(row)" (long-press)="onLongPress(row)">
-                <td class="dd-placeholder" *cdkDragPlaceholder></td>
-            </tr>
-            <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc;"></tr>
             @if(expandable !== 'none' && expandableTemplate){
-            <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
-                <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length" class="example-element-detail" [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'">
-                    <ng-container [ngTemplateOutlet]="expandableTemplate" [ngTemplateOutletContext]="{element}"></ng-container>
-                </td>
-            </ng-container>
-            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row" [class.expanded]="expanded[row.key]?.()">
-            </tr>
+            <button (click)="$event.stopPropagation(); toggleExpand(row, i)" mat-icon-button class="actions"
+              aria-label="expand row">
+              @if (expanded[row.key]?.()) {
+              <mat-icon>keyboard_arrow_up</mat-icon>
+              } @else {
+              <mat-icon>keyboard_arrow_down</mat-icon>
+              }
+            </button>
             }
-        </table>
-        }
-
-        @if((firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0){
-        <div id="no-data" style="text-align: center; padding: 2rem">
-            @if(noDataImage){
-            <img style="width: 100%; max-width: 320px;" [src]="noDataImage" alt="no data">
-            }
-            <p>No Data</p>
-        </div>
-        }
-        @if((loading$ | async) === true ){
-        <div style="text-align: center; padding: 2rem">
-            <p>Loading</p>
-        </div>
-        }
-        @if(addUrl || showAdd){
-        <a [routerLink]="addUrl" class="fab" mat-mini-fab (click)="onAdd()">
-            <mat-icon>add</mat-icon>
-        </a>
-        }
-    </div>
-
-    @if(adapter && adapter.page && adapter.page.pageSize){
-    <mat-paginator [disabled]="(loading$ | async) === true" [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length" [pageSize]="adapter.page.pageSize" [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+          </div>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="_columns; sticky: true" [class.selected]="selected.length > 0"></tr>
+      <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true"
+        [cdkDragData]="row" class="dd-item {{rowClass(row)}}" [class.focused]="focusedItem === row"
+        [class.selected]="selectionModel.isSelected(row.key)" (click)="onClick(row)" (touch)="onClick(row)"
+        (long-press)="onLongPress(row)">
+        <td class="dd-placeholder" *cdkDragPlaceholder></td>
+      </tr>
+      <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc;"></tr>
+      @if(expandable !== 'none' && expandableTemplate){
+      <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
+        <td mat-cell *matCellDef="let element" [attr.colspan]="_columns.length" class="example-element-detail"
+          [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'">
+          <ng-container [ngTemplateOutlet]="expandableTemplate" [ngTemplateOutletContext]="{element}"></ng-container>
+        </td>
+      </ng-container>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row"
+        [class.expanded]="expanded[row.key]?.()">
+      </tr>
+      }
+    </table>
     }
+
+    @if((firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0){
+    <div id="no-data" style="text-align: center; padding: 2rem">
+      @if(noDataImage){
+      <img style="width: 100%; max-width: 320px;" [src]="noDataImage" alt="no data">
+      }
+      <p>No Data</p>
+    </div>
+    }
+    @if((loading$ | async) === true ){
+    <div style="text-align: center; padding: 2rem">
+      <p>Loading</p>
+    </div>
+    }
+    @if(addUrl || showAdd){
+    <a [routerLink]="addUrl" class="fab" mat-mini-fab (click)="onAdd()">
+      <mat-icon>add</mat-icon>
+    </a>
+    }
+  </div>
+
+  @if(adapter && adapter.page && adapter.page.pageSize){
+  <mat-paginator [disabled]="(loading$ | async) === true" [pageIndex]="adapter.page.pageIndex"
+    [length]="adapter.page.length" [pageSize]="adapter.page.pageSize" [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+  }
 
 </div>
 
 
 
 <ng-template #commandTemplate let-actions="actions" let-data="data">
-    @for (a of actions; track a.name) {
-    <mat-btn style="margin-inline-end: 0.25rem;" [descriptor]="a" (action)="onAction(a,data)" [disabled]="a.disabled">
-    </mat-btn>
-    }
+  @for (a of actions; track a.name) {
+  <mat-btn style="margin-inline-end: 0.25rem;" [descriptor]="a" (action)="onAction(a,data)" [disabled]="a.disabled">
+  </mat-btn>
+  }
 </ng-template>
 
 <ng-template #defaultTemplate let-element="element" let-descriptor="descriptor" let-index="index">
-    @if (descriptor.value.pipe) {
-        @if (descriptor.value.pipe.pipe) { <div [innerHTML]="element.item[descriptor.key] | dynamic:descriptor.value.pipe.pipe:descriptor.value.pipe.args"></div> }
-        @else { <div [innerHTML]="element.item[descriptor.key] | dynamic:descriptor.value.pipe"></div> }
-    }
-    @else { {{element.item | key:descriptor.key}} }
+  @if (descriptor.value.pipe) {
+  @if (descriptor.value.pipe.pipe) { <div
+    [innerHTML]="element.item[descriptor.key] | dynamic:descriptor.value.pipe.pipe:descriptor.value.pipe.args"></div> }
+  @else { <div [innerHTML]="element.item[descriptor.key] | dynamic:descriptor.value.pipe"></div> }
+  }
+  @else { {{element.item | jpointer:descriptor.key}} }
 </ng-template>

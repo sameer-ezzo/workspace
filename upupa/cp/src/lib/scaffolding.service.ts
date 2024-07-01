@@ -89,14 +89,18 @@ export class ScaffoldingService {
         scaffoldingModel: ListScaffoldingModel
     ): Promise<DataListResolverResult> {
         const listViewModel = scaffoldingModel.viewModel;
+        const pathInfo = PathInfo.parse(path, 1).path;
+        listViewModel.actions ??= scaffoldingModel.actions ?? defaultListActions;
+        const filter = (listViewModel.query?.() ?? []) as any[];
+        const fObj = filter.reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
         let select = listViewModel.select ?? Object.keys(listViewModel.columns ?? {})
         if (typeof select === 'string') select = select.split(',').filter(s => s)
-        listViewModel.select = select
-        const pathInfo = PathInfo.parse(path, 1).path;
+        select.push(...Object.getOwnPropertyNames(fObj))
+        select = select.filter((s, i, a) => a.indexOf(s) === i)
         const dataAdapter = listViewModel.adapter
         let source = null
         if (dataAdapter?.type === 'server')
-            source = new ServerDataSource<any>(this.data, `/v2/${pathInfo}`, listViewModel.select)
+            source = new ServerDataSource<any>(this.data, `/v2/${pathInfo}`, select)
         else if (dataAdapter?.type === 'client')
             source = new ClientDataSource((dataAdapter as unknown as DataAdapterDescriptor<'client', any>).data)
         else if (dataAdapter?.type === 'http') {
@@ -108,9 +112,8 @@ export class ScaffoldingService {
         }
         else throw 'UNSUPPORTED DATA ADAPTER TYPE'
 
-        listViewModel.actions ??= scaffoldingModel.actions ?? defaultListActions;
-        const filter = listViewModel.query?.();
-        const options = Object.assign({}, listViewModel.adapter.options, { filter: { ...listViewModel.adapter.options?.filter, ...filter } });
+
+        const options = Object.assign({}, listViewModel.adapter.options, { filter: { ...listViewModel.adapter.options?.filter, ...fObj } });
         options.page ??= { pageSize: 100 };
         const adapter = new DataAdapter(
             source,
@@ -125,9 +128,10 @@ export class ScaffoldingService {
 
     async dialogForm<T = any>(path: string, dialogOptions?: DialogServiceConfig, ...params: any[]): Promise<T> {
         const data = await this.scaffold(path, undefined, ...params) as DataFormResolverResult;
+        const { formViewModel } = data
         return firstValueFrom(this.dialog.openDialog(DataFormComponent, {
             ...dialogOptions,
-            inputs: { ...dialogOptions.inputs, formResolverResult: data }
+            inputs: { ...dialogOptions.inputs, path, ...formViewModel }
         }).afterClosed())
     }
 }

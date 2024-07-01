@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, ViewChild, inject, signal } from '@angular/core'
 import { PageEvent } from '@angular/material/paginator'
 import { Sort } from '@angular/material/sort'
 import { Subscription, BehaviorSubject, Subject } from 'rxjs'
@@ -10,6 +10,7 @@ import { MatTable } from '@angular/material/table'
 import { SelectionModel } from '@angular/cdk/collections'
 import { InputBaseComponent } from '@upupa/common'
 import { FormControl } from '@angular/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 export class Logger {
@@ -96,6 +97,8 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.adapter?.refresh()
     }
 
+
+    protected readonly destroyRef = inject(DestroyRef)
     override async ngOnChanges(changes: SimpleChanges) {
         super.ngOnChanges(changes)
         if (changes['adapter']) {
@@ -106,8 +109,8 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
                 Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
             }
 
-            this.normalized$sub?.unsubscribe()
-            this.normalized$sub = this.adapter?.normalized$.subscribe(data => this.onDataChange(data))
+
+            this.adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(data => this.onDataChange(data))
             if ('all' in this.adapter.dataSource)
                 this.adapter.refresh() // if it's a client data source
             this._updateViewModel() //force update view model every time adapter changes to calculate the value data source
@@ -128,6 +131,8 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.loading = false
 
         this.dataChangeListeners.forEach(x => x(data))
+        this.selected = (this.selected || []).slice()
+
     }
 
     destroy$ = new Subject<void>()
@@ -209,7 +214,6 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.selectionModel.deselect(key)
     }
     toggle(key: keyof T) {
-        // const _key = this.adapter.getItems(key) .extract(value, this.adapter.keyProperty, value).key ?? value
         if (this.selectionModel.isSelected(key)) this.deselect(key)
         else this.select(key)
     }

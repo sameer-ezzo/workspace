@@ -17,7 +17,7 @@ export type ViewMetaOptions = {
 
 type ScaffolderOption = { scaffolder?: IScaffolder<ListScaffoldingModel> | any };
 export type QueryFactoryProvider = FactorySansProvider & { useFactory: (...deps: any[]) => Iterable<readonly [string, string]> }
-export type QueryType = ((...deps: any[]) => Iterable<readonly [string, string]>) | QueryFactoryProvider;
+export type QueryType = ((...deps: any[]) => Iterable<readonly [string, string | number]>) | QueryFactoryProvider;
 
 export type ListViewModelOptions = Partial<Omit<DataListViewModel, 'filterForm' | 'query' | 'queryParams'>> & {
     filterForm?: Partial<Omit<DataListFilterForm, 'fields'>> & { fields: FormScheme | string },

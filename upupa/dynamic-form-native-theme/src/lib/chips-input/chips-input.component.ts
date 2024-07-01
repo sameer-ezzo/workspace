@@ -29,19 +29,20 @@ export class ChipsComponent extends SelectComponent {
     @Output() adding = new EventEmitter<string>()
     options = signal<NormalizedItem[]>([])
 
-    private readonly destroyRef = inject(DestroyRef)
+
     protected readonly _bus = inject(EventBus)
 
 
     override async ngOnChanges(changes: any): Promise<void> {
         await super.ngOnChanges(changes)
         if (changes['adapter']) {
-            this.items$ = combineLatest([this.adapter.normalized$, this.valueDataSource$])
-                .pipe(
-                    map(([items, value]) => {
-                        return items.filter(i => !value.some(v => v.key === i.key))
-                    })
-                )
+            this.items$ = combineLatest([this.adapter.normalized$, this.valueDataSource$]).pipe(
+                takeUntilDestroyed(this.destroyRef)
+            ).pipe(
+                map(([items, value]) => {
+                    return items.filter(i => !value.some(v => v.key === i.key))
+                })
+            )
         }
     }
 

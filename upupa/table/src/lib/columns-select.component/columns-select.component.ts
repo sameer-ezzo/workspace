@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ColumnDescriptor } from '../data-table.component';
 
@@ -9,7 +9,7 @@ import { ColumnDescriptor } from '../data-table.component';
 })
 export class ColumnsSelectComponent {
     columns: { name: string, descriptor: ColumnDescriptor }[] = [];
-    constructor(@Inject(MAT_DIALOG_DATA) public data: { table: string, columns: Record<string, any> }) { }
+    public data: { table: string, columns: Record<string, any> } = inject(MAT_DIALOG_DATA)
 
     ngOnInit() {
         const columns = this.data.columns
@@ -23,7 +23,7 @@ export class ColumnsSelectComponent {
     saveSelection() {
         if (!this.data?.table || !localStorage) return
 
-        const selectedColumns = this.columns.filter(x => x.descriptor.visible).map(x => x.name);
-        localStorage.setItem(`table#${this.data.table}`, selectedColumns.join(','));
+        const columnsInfo = this.columns.map(x => ({ name: x.name, visible: x.descriptor.visible, sticky: x.descriptor.sticky }));
+        localStorage.setItem(`table#${this.data.table}`, JSON.stringify(columnsInfo));
     }
 }

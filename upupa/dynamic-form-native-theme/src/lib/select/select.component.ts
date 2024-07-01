@@ -20,7 +20,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     inlineError = true
     showSearch = false
 
-    @Input() required = true
+
     @Input() appearance = InputDefaults.appearance
     @Input() floatLabel = InputDefaults.floatLabel
     @Input() label: string
@@ -43,12 +43,21 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
             this.valueDataSource$)
     )
 
+    clearValue(e) {
+        e.stopPropagation();
+        this.valueChanged(undefined)
+    }
 
     singleSelected = signal(null)
     override async _updateViewModel(): Promise<void> {
         await super._updateViewModel()
         this.selected = this.valueDataSource.map(v => v.key)
-        if (this.value !== undefined && !Array.isArray(this.value)) this.singleSelected.set(this.selected?.[0])
+        if (!Array.isArray(this.value)) {
+            if (this.value !== undefined || this.selected.length > 0)
+                this.singleSelected.set(this.selected[0])
+            else this.singleSelected.set(null)
+        }
+
     }
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {

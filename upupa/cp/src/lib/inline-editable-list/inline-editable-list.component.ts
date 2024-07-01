@@ -31,9 +31,6 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
     @Input() hint: string;
     @Input() readonly = false;
 
-
-    @Input() required: boolean;
-
     focusedTableItem: any;
     @Input() tableActions: ActionDescriptor[] = [
         { action: 'edit', icon: 'edit', text: 'Edit', menu: true },

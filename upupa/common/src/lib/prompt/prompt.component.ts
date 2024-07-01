@@ -6,10 +6,10 @@ import { ActionDescriptor, ActionEvent } from '../mat-btn/action-descriptor';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormControl, Validators } from '@angular/forms';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, filter, startWith } from 'rxjs';
+import { startWith } from 'rxjs';
 import { UpupaDialogComponent, UpupaDialogPortal } from '../upupa-dialog/upupa-dialog.component';
 
 
@@ -30,6 +30,9 @@ import { UpupaDialogComponent, UpupaDialogPortal } from '../upupa-dialog/upupa-d
 })
 export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnInit {
 
+
+
+
   promptText = 'Please enter value';
   promptTitle = 'Prompt';
   promptNoButton = 'No';
@@ -45,8 +48,8 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
   appearance: MatFormFieldAppearance = 'outline';
   valueFormControl = new UntypedFormControl('', []);
   private readonly destroyRef = inject(DestroyRef)
+  private readonly data = inject(MAT_DIALOG_DATA, { optional: true })
 
-  constructor(@Optional() @Inject(MAT_DIALOG_DATA) public data: any) { }
 
   ngOnInit(): void {
     const data = this.data;
@@ -54,6 +57,7 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
     if (data.text !== undefined) { this.promptText = data.text; }
     if (data.placeholder !== undefined) { this.placeholder = data.placeholder; }
     this.required = data.required === true;
+
 
     const validators = this.required ? [Validators.required] : [];
     this.type = data.type || 'text';
@@ -65,35 +69,35 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
       else
         this.valueFormControl = new FormControl<string>(data.value || '', [...validators]);
     }
-    this.valueFormControl.updateValueAndValidity();
+
+    this.valueFormControl.updateValueAndValidity()
 
     this.valueFormControl.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef),
-      startWith(this.valueFormControl.value),
-      debounceTime(100),
-    ).subscribe(v => {
-      this.updateActionsState()
-    })
-  }
-  private updateActionsState() {
-    const actions = this.dialogActions().map(a => {
-      const action = { ...a, disabled: false }
-      if (a.type === 'submit') action.disabled = this.valueFormControl.invalid
-      return action
-    });
-    this.dialogActions.set(actions);
+      startWith(null))
+      .subscribe(v => {
+        this.dialogActions.set(this.dialogActions().map(a => {
+          const action = { ...a, disabled: false }
+          if (a.type === 'submit') action.disabled = this.valueFormControl.invalid
+          return action
+        }))
+      })
   }
 
-  submit(e) {
+  enterAction(e) {
     e.stopPropagation();
     e.preventDefault();
-    if (this.valueFormControl.invalid) return
-    this.dialogRef.close(this.valueFormControl.value)
+    const submitAction = this.dialogActions().find(a => a.type === 'submit')
+    if (submitAction && e.key === 'Enter') {
+      this.onAction({ action: submitAction, data: undefined }, this.dialogRef)
+    }
   }
-
   async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>): Promise<any> {
-    // ref ??= this.dialogRef
-    // ref.close(this.valueFormControl.value)
+    if (!ref) console.warn('No dialog reference');
+    if (e.action.type === 'submit') {
+      if (this.valueFormControl.invalid) return
+      ref.close(this.valueFormControl.value)
+    }
   }
 
 }

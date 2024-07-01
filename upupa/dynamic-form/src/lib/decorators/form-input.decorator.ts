@@ -19,7 +19,7 @@ export class BooleanFieldOptions { }
 export class AdapterFieldOptions {
     minAllowed?: number = 1
     maxAllowed?: number = 1
-    adapter: SimpleDataAdapter = { dataSource: 'client' , data: [] }
+    adapter: SimpleDataAdapter = { dataSource: 'client', data: [] }
 }
 
 export type SimpleDataAdapter = SimpleServerDataAdapter | SimpleClientDataAdapter | SimpleUrlDataAdapter;
@@ -39,7 +39,7 @@ export type SimpleServerDataAdapter = SimpleDataAdapterBase & {
     path: string
 }
 
-export type SimpleClientDataAdapter = SimpleDataAdapterBase &{
+export type SimpleClientDataAdapter = SimpleDataAdapterBase & {
     dataSource: 'client';
     data: any[]
 }
@@ -154,6 +154,8 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
         type: 'field'
     } as FieldItem;
 
+
+
     if (field.input.length === 0) field.input = 'hidden';
 
     if (options['adapter']) {
@@ -173,7 +175,7 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
         placeholder: opts.placeholder,
         appearance: opts.appearance
     }
-
+    
     if (options.input === 'switch') {
         const switchOptions = opts as any;
         field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
@@ -261,6 +263,7 @@ export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'sche
 
 export function formInput(options: FormFieldOptions = { input: 'text' }) {
     return function (target: any, propertyKey: string) {
+
         if ('from' in options) options['input'] = 'fieldset'
 
         if (!options['input']) {

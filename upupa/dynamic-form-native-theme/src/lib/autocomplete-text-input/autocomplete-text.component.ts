@@ -18,7 +18,7 @@ export class AutoCompleteTextComponent extends DataComponentBase<string> {
   @Input() appearance = InputDefaults.appearance;
   @Input() floatLabel = InputDefaults.floatLabel;
   @Input() label;
-  @Input() required;
+
   @Input() panelClass;
   @Input() placeholder;
   @Input() hint;

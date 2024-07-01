@@ -49,14 +49,15 @@ const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } =
 
     return res
   },
-  requiredTrue: (v) => (control) =>
-    control?.value !== true
-      ? { [v.message || "required"]: true }
-      : null,
+  requiredTrue: (v) => (control) => {
+    if (!control) return null
+    console.log(control.value);
+    return control.value === undefined ? { [v.message || "required"]: true } : null
+  },
   pattern: (v) => (control) =>
     empty(control) || new RegExp(<string>v.arguments).test(control.value)
       ? null
-      : { [v.message || "pattern-error"]: true},
+      : { [v.message || "pattern-error"]: true },
   max: (v) => (control) =>
     control?.value > v.arguments
       ? { [v.message || "max-error"]: v.arguments }
@@ -81,11 +82,12 @@ const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } =
     control?.value?.length < v.arguments
       ? { [v.message || "min-length-error"]: v.arguments }
       : null,
-  latin: (v) => (control) =>{
+  latin: (v) => (control) => {
     const p = v.arguments as RegExp || /^[a-zA-Z0-9^ ]+$/
     return empty(control) || p.test(control.value)
       ? null
-      : { [v.message || "latin-error"]: true }},
+      : { [v.message || "latin-error"]: true }
+  },
   email: (v) => (control) => {
 
     const res = empty(control) || /^[^@]+@[^.]+\.[a-zA-Z.-]{2,20}$/.test(control.value)
@@ -96,11 +98,11 @@ const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } =
   },
   timeSpanMax: (v) => (control) =>
     Date.now() - (control.value as number) > (v.arguments as number)
-      ? { [v.message || "timespan-max-error"]: true}
+      ? { [v.message || "timespan-max-error"]: true }
       : null,
   timeSpanMin: (v) => (control) =>
     Date.now() - (control.value as number) < (v.arguments as number)
-      ? { [v.message || "timespan-min-error"]: true}
+      ? { [v.message || "timespan-min-error"]: true }
       : null,
 };
 

@@ -1,16 +1,13 @@
-@if(formResolverResult){
 <div id="form-wrapper">
-    @if(formResolverResult.formViewModel?.scheme){
-    <dynamic-form [fields]="formResolverResult.formViewModel.scheme" #dynForm
-        [value]="formResolverResult.formViewModel.value$ | async" [name]="formResolverResult.formViewModel.name"
-        [preventDirtyUnload]="formResolverResult.formViewModel.preventDirtyUnload"
-        [initialValueFactory]="formResolverResult.formViewModel.initialValueFactory"
-        [recaptcha]="formResolverResult.formViewModel.recaptcha" [theme]="formResolverResult.formViewModel.theme"
-        [conditions]="formResolverResult.formViewModel.conditions" (submit)="submit($event)"></dynamic-form>
+    @if(scheme){
+    <dynamic-form [fields]="scheme" #dynForm [value]="formValue()" [name]="name" (valueChange)="formValue.set($event)"
+        [preventDirtyUnload]="preventDirtyUnload" [initialValueFactory]="initialValueFactory" [recaptcha]="recaptcha"
+        [theme]="theme" [conditions]="conditions" (submit)="submit($event)"></dynamic-form>
     }
 </div>
 
-@if(actions(); as _actions){
+@if(!dialogRef){
+@if(dialogActions(); as _actions){
 <div class="toolbar footer">
     @for(descriptor of _actions; track descriptor.action){
     <mat-btn (action)="onAction($event, dialogRef)" [descriptor]="descriptor"></mat-btn>
