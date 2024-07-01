@@ -120,7 +120,7 @@ export class DataService {
 
             const [fqdn, rest] = s.split('/')
             const [dbName, optionsStr] = rest.split('?')
-            const cnnStrOptions = optionsStr.split('&').reduce((acc, x) => {
+            const cnnStrOptions = (optionsStr ?? '').split('&').reduce((acc, x) => {
                 const [key, value] = x.split('=')
                 acc[key] = value
                 return acc
