@@ -1,4 +1,4 @@
-import mongoose, { ConnectOptions, ObjectId } from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 import { Model, Document } from "mongoose";
 
 import mongooseUniqueValidator from "mongoose-unique-validator";
@@ -30,6 +30,7 @@ import { DataChangedEvent } from "./data-changed-event"
 import { IDbMigration } from "./databases-collections";
 import migrationSchema, { MigrationModel } from "./migration-schema";
 import { groupBy, sortBy } from "lodash";
+import { ObjectId } from "mongodb";
 
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
@@ -53,9 +54,12 @@ export class DataService {
 
     private async _migrate(ds: DataService, migrations: IDbMigration[]) {
         try {
+            const prefix = ds.options.prefix
+            const connection = ds.connection
+
             let model = await ds.getModel("migration");
             if (!model) model = await ds.addModel("migration", migrationSchema);
-            const migrationsInDb = await model.find({}).lean();
+            const migrationsInDb = await connection.collection(prefix + "migration").find({}).toArray();
 
             const migrationsByCollection = groupBy(migrations, m => m.collectionName)
             const migrationsInDbByCollection = groupBy(migrationsInDb, m => m.collectionName)
@@ -73,11 +77,11 @@ export class DataService {
                     if (i < ms.length) {
                         if (migrations[i].name !== ms[i].name) throwMismatchError('Migration name mismatch');
                     } else {
-                        const migrationModel = await ds.getModel(migrations[i].collectionName);
-                        if (!migrationModel) {
-                            logger.warn(`Migration model not found for ${migrations[i].collectionName}. Migation skipped!`);
-                            continue
-                        }
+                        // const migrationModel = await connection.collection(prefix + migrations[i].collectionName);
+                        // if (!migrationModel) {
+                        //     logger.warn(`Migration model not found for ${migrations[i].collectionName}. Migation skipped!`);
+                        //     continue
+                        // }
                         await migrations[i].up?.(ds);
                         await model.create({
                             _id: this.generateId(),
@@ -292,6 +296,9 @@ export class DataService {
             }
         }
 
+
+
+
         this._models[collectionName] = this._connection.model(collectionName, schema)
 
         if (exclude?.length > 0) this.addExclusion(collectionName, exclude)
@@ -303,6 +310,8 @@ export class DataService {
 
         return this._models[collectionName]
     }
+    
+
     addExclusion(name: string, exclude: string[]) {
         this._exclusions[name] = exclude;
     }
