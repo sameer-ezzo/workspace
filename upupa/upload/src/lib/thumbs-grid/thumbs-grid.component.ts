@@ -34,7 +34,7 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
     public client: UploadClient) {
     super();
     this.base = this.client.baseUrl;
-    this.loading = true;
+    this.loading.set(true);
   }
 
 
@@ -50,18 +50,18 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
     super.ngOnInit()
     this.adapter.refresh();
     this.adapter.dataSource.refresh().pipe(takeUntil(this.destroy$)).subscribe(x => {
-      this.loading = false;
+      this.loading.set(false);
     });
   }
 
   async remove(t: NormalizedItem<FileInfo>) {
-    this.loading = true;
+    this.loading.set(true);
     if (this.selectionModel.isSelected(t.key)) this.selectionModel.deselect(t.key);
 
     try {
       await this.client.delete('/' + t.item.path, new URL(this.base).origin);
       this.adapter.normalized.splice(this.adapter.normalized.indexOf(t), 1);
-      this.loading = false;
+      this.loading.set(false);
     } catch (error) {
       console.error(error);
     }

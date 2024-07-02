@@ -2,7 +2,8 @@ import { Injector, Pipe, PipeTransform } from '@angular/core';
 
 
 @Pipe({
-     name: 'dynamic'
+    name: 'dynamic',
+    pure: true
 })
 export class DynamicPipe implements PipeTransform {
 
@@ -18,3 +19,9 @@ export class DynamicPipe implements PipeTransform {
         }
     }
 }
+
+@Pipe({
+    name: 'impure',
+    pure: false
+})
+export class NonePureDynamicPipe extends DynamicPipe { }

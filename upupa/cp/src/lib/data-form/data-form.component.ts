@@ -89,8 +89,6 @@ export class DataFormComponent<T = any> implements UpupaDialogPortal<DataFormCom
     }
 
     init(changes: Record<string, unknown>) {
-        console.log('init', changes);
-
         if (changes['path']) this.path = changes['path'] as string
         if (changes['name']) this.name = changes['name'] as string
         if (changes['preventDirtyUnload']) this.preventDirtyUnload = changes['preventDirtyUnload'] as boolean
