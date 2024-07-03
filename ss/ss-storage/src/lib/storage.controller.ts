@@ -218,41 +218,41 @@ export class StorageController {
         if (access === 'deny') throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN)
 
 
-        if (isFile(msg.path)) {
-            const fname = Path.basename(msg.path)
+        if (!isFile(msg.path)) throw new HttpException("File not found", HttpStatus.NOT_FOUND)
 
-            const ext = Path.extname(msg.path)
-            let file: File | undefined = undefined
-            const decodedPath = decodeURIComponent(msg.path).split('/').filter(x => x.trim().length).join('/')
-            try {
-                const _id = fname.substring(0, fname.length - ext.length)
-                file = await this.data.get<File>(`storage/${_id}`)
-                if (!file) {
-                    logger.error(`Could not find any file with id: ${_id}`)
-                    throw new HttpException("File not found", HttpStatus.NOT_FOUND)
-                }
-            }
-            catch (err) {
-                logger.error(`Cast to ObjectId failed. ${msg.path}`)
-                const files = await this.data.get<File[]>('storage', { path: decodedPath })
-                file = files.shift()
-            }
+        const fname = Path.basename(msg.path)
 
-            const fullPath = Path.join(__dirname, file!.path)
-            if (!file || !fs.existsSync(fullPath)) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND)
-
-            if (msg.query!.view === '1') {
-                const img = await this.imageService.get(__dirname, file!.path, msg.query!);
-                if (!img) return res.status(404).send('');
-                res.type(`image/${msg.query!.format || 'png'}`);
-                img.pipe(res);
-            }
-            else {
-                // const stream = fs.createReadStream(Path.join(__dirname, file.path))
-                res.setHeader("Access-Control-Expose-Headers", "Content-Disposition")
-                res.download(fullPath, file!.originalname)
+        const ext = Path.extname(msg.path)
+        let file: File | undefined = undefined
+        const decodedPath = decodeURIComponent(msg.path).split('/').filter(x => x.trim().length).join('/')
+        try {
+            const _id = fname.substring(0, fname.length - ext.length)
+            file = await this.data.get<File>(`storage/${_id}`)
+            if (!file) {
+                logger.error(`Could not find any file with id: ${_id}`)
+                throw new HttpException("File not found", HttpStatus.NOT_FOUND)
             }
         }
-        else throw new HttpException("File not found", HttpStatus.NOT_FOUND)
+        catch (err) {
+            logger.error(`Cast to ObjectId failed. ${msg.path}`)
+            const files = await this.data.get<File[]>('storage', { path: decodedPath })
+            file = files.shift()
+        }
+
+        const fullPath = Path.join(__dirname, file!.path)
+        if (!file || !fs.existsSync(fullPath)) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND)
+
+        if (msg.query!.view === '1') {
+            const img = await this.imageService.get(__dirname, file!.path, msg.query!);
+            if (!img) return res.status(404).send('');
+            res.type(`image/${msg.query!.format || 'png'}`);
+            img.pipe(res);
+        }
+        else {
+            // const stream = fs.createReadStream(Path.join(__dirname, file.path))
+            res.setHeader("Access-Control-Expose-Headers", "Content-Disposition")
+            res.download(fullPath, file!.originalname)
+        }
     }
+}
 }
