@@ -108,8 +108,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         return this._allowChangeColumnsOptions()
     }
     public set allowChangeColumnsOptions(value) {
-        console.log('set allowChangeColumnsOptions', value);
-
         this._allowChangeColumnsOptions.set(value)
     }
 
@@ -168,7 +166,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         const headerActions = changes['headerActions']?.currentValue ?? this.headerActions
-        console.log('headerActions', headerActions);
 
         this._headerActions.set(
             ((Array.isArray(headerActions) ? headerActions : headerActions(this.adapter.normalized, this.selectedNormalized())) || [])

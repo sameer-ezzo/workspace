@@ -14,7 +14,7 @@
       }
 
 
-      @if(loading){
+      @if(loading()){
         <mat-option>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-option>
@@ -71,7 +71,7 @@
       }
 
 
-      @if(loading){
+      @if(loading()){
         <mat-option>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-option>
@@ -113,10 +113,10 @@
 }
 
 
-@if(loading){
+@if(loading()){
   <mat-progress-spinner matSuffix [diameter]="20" mode="indeterminate"></mat-progress-spinner>
 }
-@if(selected.length > 0 && !loading && !disabled){
+@if(selected.length > 0 && !loading() && !disabled){
   <button matSuffix mat-icon-button (click)="clearValue($event)">
     <mat-icon>clear</mat-icon>
   </button>

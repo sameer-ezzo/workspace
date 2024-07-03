@@ -23,7 +23,7 @@ export class ChipsComponent extends SelectComponent {
     @Input() visible = true
     @Input() selectable = true
     @Input() removable = true
-    @Input() allowAdding = false
+    @Input() canAdd = false
     @Input() separatorKeysCodes: number[] = [ENTER, COMMA]
 
     @Output() adding = new EventEmitter<string>()
@@ -88,11 +88,12 @@ export class ChipsComponent extends SelectComponent {
 
 
     onAdding(value: string) {
+        if (!(value || '').length) return
 
         const chip = value
         if (this.findKeyInValue(chip)) return
 
-        if (!this.allowAdding) return
+        if (!this.canAdd) return
         this.adding.emit(chip)
         this.selectionChange(value)
     }
