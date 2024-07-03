@@ -205,7 +205,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
     filterValueChangeHandler(e: FilterDescriptor) {
         this.setDataTableActions(e);
-        const { groupBy } = this.filterFormVm as any
+        const { groupBy } = this.filterFormVm ?? {} as any
         const q = groupBy ? { [this.filterFormVm.groupBy]: this.toBase64(this.filterFormValue) } : this.filterFormValue
 
         const vm = this.dataListResolverResult.listViewModel
@@ -217,7 +217,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         const r = {
             ...this.route.snapshot.queryParams,
             ...queryParams,
-            ...q,
+            ...(q ?? {}),
             page: this.page,
             per_page: this.per_page,
             sort_by: this.sort_by
