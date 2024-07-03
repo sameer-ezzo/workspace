@@ -30,14 +30,7 @@ export class Logger {
 export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | Partial<T>[]> {
 
 
-    readonly separatorKeysCodes: number[] = [ENTER]
-    loading$ = new BehaviorSubject(false)
-    public get loading() {
-        return this.loading$.value
-    }
-    public set loading(value) {
-        this.loading$.next(value)
-    }
+    loading = signal(false)
 
     firstLoad$ = new BehaviorSubject(false)
     public get firstLoad() {
@@ -93,7 +86,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
 
     refreshData() {
-        this.loading = true
+        this.loading.set(true)
         this.adapter?.refresh()
     }
 
@@ -128,7 +121,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         if (this.firstLoad)
             setTimeout(() => this.firstLoad = false, 1000) //delay this to give time to html template to switch
 
-        this.loading = false
+        this.loading.set(false)
 
         this.dataChangeListeners.forEach(x => x(data))
         this.selected = (this.selected || []).slice()
@@ -147,7 +140,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() pageChange = new EventEmitter<PageEvent>()
     onPageChange(page: PageEvent) {
-        this.loading = true
+        this.loading.set(true)
         this.adapter.page = page
         this.pageChange.emit(page)
     }
@@ -155,7 +148,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() sortChange = new EventEmitter<Sort>()
     onSortData(sort: Sort) {
-        this.loading = true
+        this.loading.set(true)
         this.adapter.sort = sort
         this.sortChange.emit(sort)
     }
@@ -164,7 +157,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     @Output() filterChange = new EventEmitter<FilterDescriptor>()
     onFilter(q: string) {
         if (this.q === q || (this._q === '' && !q)) return
-        this.loading = true
+        this.loading.set(true)
         this._q = q
         const f = { ...this.adapter.filter, ...(this.adapter.normalizeFilter(q) || {}) }
         this.adapter.filter = f

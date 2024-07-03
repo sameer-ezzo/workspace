@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef, computed } from '@angular/core'
+import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef, computed, HostBinding } from '@angular/core'
 import { debounceTime, takeUntil } from 'rxjs/operators'
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
@@ -8,7 +8,7 @@ import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
 
 import { NormalizedItem } from '@upupa/data'
 
-import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
+import { ActionDescriptor, ActionEvent, DialogService, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
 import { ReplaySubject, firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
@@ -50,39 +50,39 @@ type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges, AfterViewInit {
+    @HostBinding('attr.tabindex') tabindex = 0
 
-
+    @Input() stickyHeader = false
     @Input() showSearch = undefined // will be set to true if there are terms in the adapter
     hasHeader = computed(() => {
-        return this.showSearch === true || (this.label || '').length > 0 || this.bulkActions().length > 0 || this.headerActions().length > 0
+        return this.showSearch === true || (this.label || '').length > 0 || this.headerActionsList().length > 0
     }) // will be set to true if showSearch is true or there are bulk actions or header actions
 
     @Input() label: string
-    @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = []
+    @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = [] // this represents the actions that will be shown in each row
+    @Input() headerActions: ActionDescriptor[] | ((all: NormalizedItem<T>[], selected: NormalizedItem<T>[]) => ActionDescriptor[]) = [] // this represents the actions that will be shown in the header of the table
     @Input() dragDropDisabled = true
 
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Output() action = new EventEmitter<ActionEvent>()
 
-    private _actions = signal<ActionDescriptor[]>([])
-    bulkActions = computed(() => {
-        const actions = this._actions() ?? []
+
+    private _headerActions = signal<ActionDescriptor[]>([])
+
+    headerMenuActions = computed(() => {
+        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && ActionDescriptor._menu(a))
         const selected = this.selectedNormalized()
         actions.forEach(a => { a.disabled = selected.length === 0 })
-        return actions.filter(a => ActionDescriptor._bulk(a))
+        return actions
     })
 
-    headerActions = computed(() => {
-        const actions = this._actions() ?? []
-        return actions.filter(a => ActionDescriptor._header(a))
+    headerActionsList = computed(() => {
+        const actions = (this._headerActions() ?? [])
+        const selected = this.selectedNormalized()
+        const bulkActions = actions.filter(a => ActionDescriptor._bulk(a))
+        bulkActions.forEach(a => { a.disabled = selected.length === 0 })
+        return actions
     })
-
-    headerActionsInMenu = computed(() => {
-        const actions = this.headerActions() ?? []
-        return actions.filter(a => ActionDescriptor._menu(a))
-    })
-
-    hasHeaderActionsMenu = computed(() => { return this.headerActionsInMenu().length > 0 || this._allowChangeColumnsOptions() === true })
 
     @Input() pageSizeOptions = [10, 25, 50, 100]
 
@@ -105,12 +105,14 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     @Input() cellTemplate: any
     @ViewChild('defaultTemplate') defaultTemplate: any
 
-    readonly _allowChangeColumnsOptions = signal(true)
+    readonly _allowChangeColumnsOptions = signal(false)
     @Input()
     public get allowChangeColumnsOptions() {
         return this._allowChangeColumnsOptions()
     }
     public set allowChangeColumnsOptions(value) {
+        console.log('set allowChangeColumnsOptions', value);
+
         this._allowChangeColumnsOptions.set(value)
     }
 
@@ -120,7 +122,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     constructor(protected host: ElementRef<HTMLElement>,
         private bus: EventBus,
-        protected breakpointObserver: BreakpointObserver, protected dialog: MatDialog) {
+        protected breakpointObserver: BreakpointObserver, protected dialog: DialogService) {
         super()
         this.maxAllowed = Infinity
     }
@@ -167,7 +169,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             this.actionsMap = new Map<any, ActionDescriptor[]>()
             this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
         }
-        this._actions.set((Array.isArray(this.actions) ? this.actions : this.actions(null)) || [])
+
+        this._headerActions.set((Array.isArray(this.headerActions) ? this.headerActions : this.headerActions(this.adapter.normalized, this.selectedNormalized())) || [])
 
     }
 
@@ -194,9 +197,18 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         if (this.name && localStorage) {
+            const parseJson = (str, def) => {
+                if (!str) return def
+                try {
+                    return JSON.parse(str)
+                } catch (e) {
+                    return def
+                }
+            }
+
             const storageColumnsInfoStr = localStorage.getItem(`table#${this.name}`)
-            const storageColumnsInfo = storageColumnsInfoStr ? JSON.parse(storageColumnsInfoStr) : []
-            this._allowChangeColumnsOptions.set(storageColumnsInfo.length > 0)
+            const storageColumnsInfo = parseJson(storageColumnsInfoStr, [])
+            this.allowChangeColumnsOptions = this.allowChangeColumnsOptions || storageColumnsInfo.length > 0
             if (storageColumnsInfo.length > 0) {
                 for (const prop in this._properties) {
                     const colInfo = storageColumnsInfo.find(x => x.name === prop) ?? { visible: true, sticky: false }
@@ -230,7 +242,11 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
     async openColumnsSelectDialog() {
-        await firstValueFrom(this.dialog.open(ColumnsSelectComponent, { data: { table: this.name, columns: this._properties }, width: '60%' })
+        await firstValueFrom(this.dialog.openDialog(ColumnsSelectComponent, {
+            title: 'Select columns',
+            width: '60%',
+            inputs: { data: { table: this.name, columns: this._properties } }
+        })
             .afterClosed())
     }
 
@@ -268,7 +284,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     onAction(descriptor: ActionDescriptor, data: NormalizedItem[] | any[]) {
         //TODO should action set loading automatically just like filter?
-        if (descriptor.header === true && descriptor.bulk === true) data = this.selectedNormalized()
 
         const d = (data || []).map(x => x.item)
         const e = { action: descriptor, data: d }
@@ -299,6 +314,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     }
 
+
+    isPurePipe(pipe: Type<any>): boolean {
+        return !!pipe.prototype.constructor.ɵpipe.pure
+    }
 
 }
 

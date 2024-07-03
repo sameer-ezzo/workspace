@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 
-import { DynamicPipe } from "./dynamic.pipe";
+import { DynamicPipe, NonePureDynamicPipe } from "./dynamic.pipe";
 import { DataTableComponent } from './data-table.component';
 import { JsonPointerPipe } from './json-pointer.pipe';
 import { ColumnsSelectComponent } from './columns-select.component/columns-select.component';
@@ -47,7 +47,7 @@ export class TableColumnSelectorPipe implements PipeTransform {
 const pipes = [DatePipe, TableColumnSelectorPipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe];
 
 const material = [MatCardModule, MatTableModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBarModule, MatMenuModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatSortModule, MatPaginatorModule, MatIconModule, MatButtonModule, MatToolbarModule,];
-const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
+const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
 @NgModule({
     declarations: declarations,
     imports: [

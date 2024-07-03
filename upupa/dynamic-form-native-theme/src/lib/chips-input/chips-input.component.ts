@@ -24,7 +24,7 @@ export class ChipsComponent extends SelectComponent {
     @Input() selectable = true
     @Input() removable = true
     @Input() allowAdding = false
-    @Input() override separatorKeysCodes: number[] = [ENTER, COMMA]
+    @Input() separatorKeysCodes: number[] = [ENTER, COMMA]
 
     @Output() adding = new EventEmitter<string>()
     options = signal<NormalizedItem[]>([])

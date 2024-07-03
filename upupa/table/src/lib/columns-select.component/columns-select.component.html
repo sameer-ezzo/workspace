@@ -2,17 +2,17 @@
 <table class="table">
   <thead>
     <tr>
-      @for (col of columns; track col) {
+
       <th>Column</th>
       <th>Visible</th>
       <th>Sticky</th>
-      }
+
     </tr>
   </thead>
   <tbody>
     @for (row of columns; track row) {
     <tr>
-      <td>{{row.name}}</td>
+      <td>{{row.descriptor['header'] || row.name}}</td>
       <td>
         <mat-checkbox [(ngModel)]="row.descriptor.visible" (ngModelChange)="saveSelection()"></mat-checkbox>
       </td>
@@ -23,3 +23,4 @@
     </tr>
     }
   </tbody>
+</table>
