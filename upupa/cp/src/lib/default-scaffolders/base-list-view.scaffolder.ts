@@ -9,23 +9,27 @@ import { ListViewModelOptions, LookUpDescriptor, QueryType } from '../decorators
 
 
 
-export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>  {
+export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel> {
     private injector = inject(Injector)
     scaffold(path: string, ...params: any[]): ListScaffoldingModel | Promise<ListScaffoldingModel> {
         const { path: _path } = resolvePath(path);
         const collection = _path.split('/').filter(s => s).pop();
         const listInfo = getListInfoOf(collection) as ListViewModelOptions;
 
-        const actions: ActionDescriptor[] = listInfo.actions as ActionDescriptor[] ?? []
-        if (actions.length === 0) {
-            const { hasCreate, hasEdit, hasView } = resolvePathScaffolders(collection)
+        let actions = listInfo.rowActions
+        let headerActions = listInfo.headerActions
+        const { hasCreate, hasEdit, hasView } = resolvePathScaffolders(collection)
+        if (actions === undefined) {
+            actions = [];
 
-            if (hasCreate) actions.push({ position: 'header', action: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
             if (hasEdit) actions.push({ variant: 'icon', action: 'edit', icon: 'edit' })
             if (hasView) actions.push({ variant: 'icon', action: 'view', icon: 'visibility', menu: true })
+            actions.push({ position: 'menu', action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
 
-            actions.push({ position: 'menu', action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-                { position: 'bulk', action: 'delete', icon: 'delete_outline', text: 'Delete', bulk: true })
+        }
+        if (hasCreate && headerActions === undefined) {
+            headerActions = []
+            headerActions.push({ position: 'header', action: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
         }
         const queryFn = resolveQueryFn(listInfo);
         const queryParamsFn = resolveQueryParamsFn(listInfo);
@@ -59,7 +63,8 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
                 filterForm: ffVm,
                 ...queryFn,
                 ...queryParamsFn,
-                actions
+                rowActions: actions,
+                headerActions
             } as DataListViewModel
         }
     }

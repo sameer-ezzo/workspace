@@ -28,7 +28,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
     }
   })
 
-  @Input() canAdd = true
+  @Input() override canAdd = true
   @Input()
   public get parentPath(): string {
     return this._parentPath;
@@ -47,7 +47,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
   }
 
   override remove(item: NormalizedItem): void {
-    this.value = this.value.filter(v => v === item.key)
+    this.value = this.value.filter(v => v !== item.key)
     this.control.markAllAsTouched()
     this.control.markAsDirty()
   }
@@ -61,8 +61,9 @@ export class TagsChipsInputComponent extends ChipsComponent {
   }
 
 
-  override async onAdding(value: string): Promise<void> {
+  override async onAdding(value: any): Promise<void> {
 
+    if (!(value || '').length) return
     if (this.canAdd !== true) return
 
     const chip = value

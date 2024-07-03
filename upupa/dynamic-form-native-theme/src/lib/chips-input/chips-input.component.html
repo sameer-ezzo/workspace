@@ -32,7 +32,7 @@
             <span>{{opt.display}}</span>
         </mat-option>
         }
-        @if(allowAdding && filterInput.value.length > 0 && options().length === 0){
+        @if(canAdd && filterInput.value.length > 0 && options().length === 0){
         <mat-option [value]=""><span>Add</span></mat-option>
         }
 

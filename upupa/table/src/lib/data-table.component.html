@@ -14,29 +14,18 @@
 <div class="table-header">
   @if(label){<h3>{{label}}</h3>}
 
-  <div style="display: flex; flex-direction: column;">
-
-    @if(showSearch){
-    <div id="search-box-wrapper">
-      <input style="background: transparent;outline: none;border: none;display: flex;flex: 1;" placeholder="Search"
-        [(ngModel)]="q" (keydown.enter)="filter$.next(q)" />
-      <button mat-icon-button matSuffix (click)="filter$.next(q)">
-        <mat-icon>search</mat-icon>
-      </button>
-    </div>
-    }
-    <span>
-
-      @if(selected.length > 0){
-      <span>{{selected.length}}&nbsp;of&nbsp;</span>
-      }
-      @if(adapter.normalized$ | async){
-      <span>{{adapter.normalized.length}} total items </span>
-      }
-    </span>
+  @if(showSearch){
+  <div id="search-box-wrapper">
+    <input style="background: transparent;outline: none;border: none;display: flex;flex: 1;" placeholder="Search"
+      [(ngModel)]="q" (keydown.enter)="filter$.next(q)" />
+    <button mat-icon-button matSuffix (click)="filter$.next(q)">
+      <mat-icon>search</mat-icon>
+    </button>
   </div>
+  }
 
-  @if(headerMenuActions().length || _allowChangeColumnsOptions()){
+
+  @if(headerActionsList().length || _allowChangeColumnsOptions()){
   <span style="flex:1"></span>
   <div style="display: flex;align-items: center;">
 
@@ -51,7 +40,7 @@
     </button>
     <mat-menu #menu="matMenu">
       @for (haim of headerMenuActions(); track haim.action) {
-      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, null)">
+      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, selectedNormalized())">
         <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) }}
       </button>
       }

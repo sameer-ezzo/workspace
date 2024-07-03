@@ -84,7 +84,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         }
         if (value.adapter.options.sort) this.updateSortInfo(value.adapter.options.sort)
         this.filterFormVm = value.listViewModel.filterForm
-        this._listViewModelActions = value.listViewModel.actions
+        this._listViewModelActions = value.listViewModel.rowActions
         this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions
 
         this.listenOnQueryParamsChange()

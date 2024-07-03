@@ -225,7 +225,7 @@ export class StorageController {
             let file: File | undefined = undefined
             const decodedPath = decodeURIComponent(msg.path).split('/').filter(x => x.trim().length).join('/')
             try {
-                const _id = toObjectId(fname.substring(0, fname.length - ext.length))
+                const _id = fname.substring(0, fname.length - ext.length)
                 file = await this.data.get<File>(`storage/${_id}`)
                 if (!file) {
                     logger.error(`Could not find any file with id: ${_id}`)
