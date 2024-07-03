@@ -14,7 +14,7 @@ export class TagsService {
   private readonly idTagMap: Map<string, Tag> = new Map()
   private readonly tagsMap: Map<string, Tag[]> = new Map()
 
-  constructor(private dataService: DataService) { 
+  constructor(private dataService: DataService) {
     this.getTags().subscribe()
   }
 
@@ -29,7 +29,7 @@ export class TagsService {
       map(res => res.data as Tag[]),
       tap(tags => {
         this.tagsMap.set(parentPath, tags)
-        tags.forEach(t => this.idTagMap.set(t._id, t))        
+        tags.forEach(t => this.idTagMap.set(t._id, t))
       }),
       shareReplay(1)
     )

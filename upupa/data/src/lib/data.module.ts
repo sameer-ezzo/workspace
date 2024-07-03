@@ -23,7 +23,7 @@ export class DataModule {
       providers: [
         {
           provide: APIBASE,
-          useValue: api_base
+          useValue: api_base ?? '/api'
         },
         {
           provide: DataConfig,

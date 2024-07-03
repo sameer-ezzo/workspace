@@ -19,7 +19,7 @@ export class ApiService {
     _timeout = 5000;
 
     private combinePath(path: string) {
-        let base = this.api_base.trim();
+        let base = (this.api_base ?? '').trim();
         while (base.endsWith('/')) base = base.substring(0, base.length - 1);
 
         path = (path ?? '').trim();
@@ -36,8 +36,7 @@ export class ApiService {
         return `${base}/v2/${path}`
     }
 
-    constructor(private http: HttpClient, @Inject(APIBASE) public readonly api_base: string) {
-
+    constructor(private http: HttpClient, @Inject(APIBASE) public readonly api_base: string = '/api') {
     }
 
     get<T>(path: string): Observable<T> {

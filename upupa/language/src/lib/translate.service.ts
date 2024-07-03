@@ -1,9 +1,9 @@
 import { Injectable, Inject, Optional } from '@angular/core'
-import { Observable, Subject, firstValueFrom, of } from 'rxjs'
+import { Observable, Subject, of } from 'rxjs'
 import { LanguageService } from './language.service'
 import { filter, shareReplay, switchMap } from 'rxjs/operators'
 import { LanguagesDictionary, DICTIONARIES_URL, SHOW_LOGS } from './di.token'
-import { HttpClient } from '@angular/common/http'
+
 
 @Injectable({ providedIn: 'root' })
 export class TranslateService {
@@ -85,9 +85,9 @@ export class TranslateService {
     }
 
     private _loaded: { [lang: string]: Promise<any> } = {}
-    private async get_dictionary(lang: string): Promise<void> {
+    private async get_dictionary(lang: string): Promise<any> {
+        if (this._loaded[lang]) return this._loaded[lang]
 
-        if (this._loaded[lang]) { return }
         if (!this.dictionariesUrl) {
             this.dictionary[lang] = {}
             this._loaded[lang] = Promise.resolve({})
@@ -96,16 +96,16 @@ export class TranslateService {
 
         this._loaded[lang] = new Promise(async (resolve) => {
             const url = `${this.dictionariesUrl}/${lang}.json`
-            let dic = {}
+            let dictionary = {}
             try {
-                dic = await fetch(url).then(r => r.ok ? r.json() : {})
+                dictionary = await fetch(url).then(r => r.ok ? r.json() : {})
             } catch (error) {
                 console.error('Error fetching dictionary', error)
             }
 
-            this.dictionaryLoaded$.next(dic)
-            this.dictionary[lang] = dic
-            resolve(dic)
+            this.dictionaryLoaded$.next(dictionary)
+            this.dictionary[lang] = dictionary
+            resolve(dictionary)
         })
 
 
