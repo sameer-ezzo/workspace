@@ -90,7 +90,7 @@ export class ScaffoldingService {
     ): Promise<DataListResolverResult> {
         const listViewModel = scaffoldingModel.viewModel;
         const pathInfo = PathInfo.parse(path, 1).path;
-        listViewModel.actions ??= scaffoldingModel.actions ?? defaultListActions;
+        listViewModel.rowActions ??= scaffoldingModel.actions ?? defaultListActions;
         const filter = (listViewModel.query?.() ?? []) as any[];
         const fObj = filter.reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
         let select = listViewModel.select ?? Object.keys(listViewModel.columns ?? {})

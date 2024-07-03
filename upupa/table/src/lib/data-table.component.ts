@@ -70,17 +70,14 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     private _headerActions = signal<ActionDescriptor[]>([])
 
     headerMenuActions = computed(() => {
-        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && ActionDescriptor._menu(a))
         const selected = this.selectedNormalized()
-        actions.forEach(a => { a.disabled = selected.length === 0 })
+        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && ActionDescriptor._menu(a))
         return actions
     })
 
     headerActionsList = computed(() => {
-        const actions = (this._headerActions() ?? [])
         const selected = this.selectedNormalized()
-        const bulkActions = actions.filter(a => ActionDescriptor._bulk(a))
-        bulkActions.forEach(a => { a.disabled = selected.length === 0 })
+        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && !ActionDescriptor._menu(a))
         return actions
     })
 
@@ -170,7 +167,13 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
         }
 
-        this._headerActions.set((Array.isArray(this.headerActions) ? this.headerActions : this.headerActions(this.adapter.normalized, this.selectedNormalized())) || [])
+        const headerActions = changes['headerActions']?.currentValue ?? this.headerActions
+        console.log('headerActions', headerActions);
+
+        this._headerActions.set(
+            ((Array.isArray(headerActions) ? headerActions : headerActions(this.adapter.normalized, this.selectedNormalized())) || [])
+                .map(a => ({ ...a, header: true, bulk: a.bulk || false, menu: a.menu || false }))
+        )
 
     }
 

@@ -31,6 +31,7 @@
   @if (tableInputs.adapter) {
     <data-table [name]="tableInputs.path" [(focusedItem)]="item"
       [adapter]="tableInputs.adapter" [columns]="tableInputs.listViewModel.columns" [actions]="actions"
+      [headerActions]="tableInputs.listViewModel.headerActions"
       (action)="onAction($event)" (selectionChange)="selectionChanged($event)"
       (filterChange)="filterValueChangeHandler($event)" (pageChange)="updatePageInfo($event)"
       (sortChange)="updateSortInfo($event)" [maxAllowed]="100000" [(focusedItem)]="focusedItem">
