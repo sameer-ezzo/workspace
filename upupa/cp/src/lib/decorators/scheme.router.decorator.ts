@@ -55,7 +55,8 @@ export function createFormScaffolder(path: string, options: CreateFormOptions = 
     return function (target) {
         applyFormScheme(path, target, options);
         const registeredRoute = _scaffoldingScheme['create']?.[path];
-        const createRoute = { [path]: { type: registeredRoute?.type || options.scaffolder || FormViewScaffolderService } };
+        const type = registeredRoute?.type ?? options.scaffolder ?? FormViewScaffolderService
+        const createRoute = { [path]: { type } };
         if (options) createRoute[path]['meta'] = options;
         _scaffoldingScheme['create'] = { ..._scaffoldingScheme['create'], ...createRoute }
     }
@@ -69,7 +70,7 @@ export function editFormScaffolder(path: string, options: EditFormOptions = { se
         const s = selector || ':id'
 
         const registeredRoute = _scaffoldingScheme['edit']?.[path]?.[s];
-        const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
+        const type = registeredRoute?.type ?? options.scaffolder ?? FormViewScaffolderService;
         const editRoute = { [path]: { [s]: { type } } };
         if (editOptions) editRoute[path][s]['meta'] = editOptions;
 
@@ -83,7 +84,7 @@ export function viewFormScaffolder(path: string, options: ViewFormOptions = { se
         const { selector, options: editOptions } = options;
         const s = selector || ':id'
         const registeredRoute = _scaffoldingScheme['edit']?.[path]?.[s];
-        const type = registeredRoute?.type || options.scaffolder || FormViewScaffolderService;
+        const type = registeredRoute?.type ?? options.scaffolder ?? FormViewScaffolderService;
 
         const viewRoute = { [path]: { [s]: { type } } };
         if (editOptions) viewRoute[path][s]['meta'] = editOptions;
@@ -119,15 +120,12 @@ export function formScaffolder(path: string, options: { editForm?: EditFormOptio
             ...options
         };
         if (options.createForm !== null) {
-            applyFormScheme(path, target, opts.createForm);
             createFormScaffolder(path, opts.createForm)(target)
         };
         if (options.editForm !== null) {
-            applyFormScheme(path, target, opts.editForm.options);
             editFormScaffolder(path, opts.editForm as EditFormOptions)(target)
         };
         if (options.viewForm !== null) {
-            applyFormScheme(path, target, opts.viewForm.options);
             editFormScaffolder(path, opts.editForm as EditFormOptions)(target)
         };
     }

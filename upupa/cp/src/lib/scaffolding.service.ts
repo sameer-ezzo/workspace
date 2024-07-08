@@ -55,7 +55,7 @@ export class ScaffoldingService {
             promise = this.injector
                 .get<IScaffolder<ScaffoldingModel>>(scaffolder.type)
                 .scaffold(path, ...params);
-        if (scaffolder.scaffold) promise = scaffolder.scaffold(path, ...params);
+        else if (scaffolder.scaffold) promise = scaffolder.scaffold(path, ...params);
 
         const _model = await promise;
 

@@ -18,21 +18,27 @@ export class TagsService {
     this.getTags().subscribe()
   }
 
+  private readonly gettingByPath: Map<string, Observable<Tag[]>> = new Map()
   getTags(parentPath?: string): Observable<Tag[]> {
-    const filter = {}
+
     parentPath = (parentPath || '').trim().split('/').filter(x => x.length).join('/')
     parentPath = '/' + parentPath?.split('/').filter(x => x.length).join('/')
-    const tags = this.tagsMap.get(parentPath)
-    if (tags?.length) return of(tags)
-    filter['parentPath'] = `${parentPath}*`
-    return this.dataService.get<any>(`/v2/tag`, filter).pipe(
+    if (this.gettingByPath.has(parentPath)) return this.gettingByPath.get(parentPath)
+    const tags = this.tagsMap.get(parentPath) ?? []
+    if (tags.length) return of(tags)
+    const filter = { parentPath: `${parentPath}*` }
+    const rx = () => this.dataService.get<any>(`/v2/tag`, filter).pipe(
       map(res => res.data as Tag[]),
       tap(tags => {
         this.tagsMap.set(parentPath, tags)
         tags.forEach(t => this.idTagMap.set(t._id, t))
+        this.gettingByPath.delete(parentPath)
       }),
       shareReplay(1)
     )
+    this.gettingByPath.set(parentPath, rx())
+    return this.gettingByPath.get(parentPath)
+
   }
 
 
