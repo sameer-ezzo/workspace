@@ -1,5 +1,4 @@
-import { Component, HostBinding, Input, inject, input } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, Input } from '@angular/core';
 import { ColumnDescriptor } from '../data-table.component';
 
 
