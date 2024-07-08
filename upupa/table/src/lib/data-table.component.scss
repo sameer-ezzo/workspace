@@ -185,7 +185,7 @@ tr {
 
 .dd-list {
   width: 100%;
-  background: var(--bg-background);
+  background: var(--bg-background) !important;
 }
 
 .dd-item {
@@ -283,6 +283,9 @@ tr {
   }
 }
 
+tr {
+  background: var(--bg-background) !important;
+}
 tr + tr.expandable-row td {
   border-bottom: none !important;
 }
