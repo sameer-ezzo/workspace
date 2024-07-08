@@ -99,61 +99,36 @@ export class DataService {
     private _connecting: Promise<mongoose.Connection>
     private _connection: mongoose.Connection
     get connection(): mongoose.Connection { return this._connection }
-
-    private _host: string
-    private _port: string
-    private _db: string
-
-    get host(): string { return this._host }
-    get port(): string { return this._port }
-    get db(): string { return this._db }
+    redactedUrl: string
 
     queryParser: QueryParser
     protected prefix = ''
 
-    private async _connect(url: string, options: ConnectOptions = { autoIndex: true }): Promise<mongoose.Connection> {
+    private async _connect(_url: string, options: ConnectOptions = { autoIndex: true }): Promise<mongoose.Connection> {
         try {
-            const i = url.indexOf('://')
-            const s = url.substring(i + 3) //remove protocol
 
+            const url = new URL(_url);
+            url.password = null
+            this.redactedUrl = url.toString()
 
-
-            const [fqdn, rest] = s.split('/')
-            const [dbName, optionsStr] = rest.split('?')
-            const cnnStrOptions = (optionsStr ?? '').split('&').reduce((acc, x) => {
-                const [key, value] = x.split('=')
-                acc[key] = value
-                return acc
-            }, {})
-
-
-            const [user, pass] = fqdn.indexOf('@') > -1 ? fqdn.split('@')[0].split(':') : [undefined, undefined]
-            const hostsStr = fqdn.indexOf('@') > -1 ? fqdn.split('@')[1] : fqdn
-            const hosts = hostsStr.indexOf(',') > -1 ? hostsStr.split(',').map(h => h.split(':')) : [hostsStr.split(':')]
-
-
-            this._db = dbName || 'test'
-            this._host = hosts[0]?.[0] ?? '127.0.0.1'
-            this._port = hosts[0]?.[1] ?? '27017'
+            // this._db = url.pathname.substring(1) || 'test'
+            // this._host = url.host
+            // this._port = url.port || '27017'
 
             const _options = {
                 ...defaultMongoDbConnectionOptions,
                 ...options,
-                ...cnnStrOptions,
-                dbName: this._db,
-                user,
-                pass
             } as ConnectOptions
 
             // mongoose.set('debug', true);
-            const connection = await mongoose.createConnection(url, _options)
+            const connection = await mongoose.createConnection(_url, _options)
 
 
             return connection
         }
         catch (error) {
             if (error + "" !== "MongoError: Topology closed") {
-                logger.error(`DB Connection error URI:${url}`, error)
+                logger.error(`DB Connection error URI:${_url}`, error)
             }
             throw error
         }
@@ -188,7 +163,7 @@ export class DataService {
                     })
                 })
 
-                logger.warn(`DS:CONNECTED ${this.name} @ mongo://${this.host}:${this.port}/${this.db}`)
+                logger.warn(`DS:CONNECTED ${this.name} @ ${this.redactedUrl}`)
 
 
                 await this._initCollections(this.collections)
