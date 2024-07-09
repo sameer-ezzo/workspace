@@ -39,6 +39,41 @@ export function Authorize(options?: SimplePermissionBase & { access?: AccessType
     return applyDecorators(...[decorator, UseInterceptors(AuthorizeInterceptor)])
 }
 
+export function AuthorizeRole(role: string) {
+    return Authorize({ by: "role", value: role })
+}
+
+export function AuthorizeAnonymous() {
+    return Authorize({ by: "anonymous" })
+}
+
+export function AuthorizeClaim(claim: {
+    claimFieldPath: string
+    claimValue: string
+    operator?: string
+}) {
+    return Authorize({ by: "claim", value: claim })
+}
+
+export function AuthorizeUser(email: string) {
+    return Authorize({ by: "email", value: email })
+}
+
+export function AuthorizeEmailVerified() {
+    return Authorize({ by: "emv" })
+}
+export function AuthorizePhone(phone: string) {
+    return Authorize({ by: "phone", value: phone })
+}
+
+export function AuthorizePhoneVerified(email: string) {
+    return Authorize({ by: "phv" })
+}
+
+export function AuthorizeLoggedIn() {
+    return Authorize({ by: "user" })
+}
+
 
 // export function AuthorizeMethod(options?: SimplePermissionBase & { access?: AccessType }): MethodDecorator {
 

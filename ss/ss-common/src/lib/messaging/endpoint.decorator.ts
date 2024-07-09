@@ -60,10 +60,16 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
         const path = options.path ?? options.http?.path ?? options.cmd ?? options.event
         const httpPath = path.startsWith('/') ? path : `/${path}`
         return applyDecorators(
-            ...(options.http ? [HttpEndpoint(options.http, { operation: options.operation, path:httpPath })] : []),
+            ...(options.http ? [HttpEndpoint(options.http, { operation: options.operation, path: httpPath })] : []),
             ...(options.cmd ? [CommandHandler(options.cmd, options.operation, path)] : []),
             ...(options.event ? [EventHandler(options.event, options.operation, path)] : [])
         )
     }
 }
+
+
+export function HttpEndpoint(path: string, method: HttpMethod = 'GET') {
+    return EndPoint({ http: { path, method } })
+}
+
 
