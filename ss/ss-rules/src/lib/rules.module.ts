@@ -1,5 +1,5 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common'
-import { Rule } from '@noah-ark/common'
+import { Rule, unreachable } from '@noah-ark/common'
 import { CommonModule } from '@ss/common'
 import { DataModule } from '@ss/data'
 import { RulesService } from './rules.svr'
@@ -9,18 +9,27 @@ import { PermissionController } from './permission.controller'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 
 
+export function rootRule(defaultAccess: 'GRANT' | 'DENY' | 'LOGGED' = 'DENY') {
+    switch (defaultAccess) {
+        case 'GRANT': return GrantRule;
+        case 'DENY': return GrantRule;
+        case 'LOGGED': return GrantRule;
+        default: throw unreachable('root rule access', defaultAccess, false);
+    }
+}
+
 export const GrantRule: Rule = (() => {
-    const rule = new Rule('/')
+    const rule = new Rule('root')
     rule.fallbackAuthorization = 'grant'
     return rule
 })()
 export const DenyRule: Rule = (() => {
-    const rule = new Rule('/')
+    const rule = new Rule('root')
     rule.fallbackAuthorization = 'deny'
     return rule
 })()
 export const AuthenticatedRule: Rule = (() => {
-    const rule = new Rule('/')
+    const rule = new Rule('root')
     rule.fallbackAuthorization = [{ access: 'grant', by: 'user' }]
     return rule
 })()

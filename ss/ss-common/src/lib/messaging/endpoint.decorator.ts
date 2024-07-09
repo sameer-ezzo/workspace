@@ -1,5 +1,5 @@
 import { applyDecorators, HttpException, HttpStatus } from '@nestjs/common'
-import { HttpEndpoint } from './http-endpoint.decorator'
+import { HttpEndpoint as _HttpEndpoint}  from './http-endpoint.decorator'
 import { HttpMethod } from "./model"
 import { CommandHandler } from "./command-endpoint.decorator"
 import { EventHandler } from "./event-endpoint.decorator"
@@ -50,7 +50,7 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
     if (typeof options === 'string') {
         const path = options.startsWith('/') ? options : `/${options}`
         return applyDecorators(
-            HttpEndpoint({ method: 'POST', path: path }, { operation: 'POST', path: path }),
+            _HttpEndpoint({ method: 'POST', path: path }, { operation: 'POST', path: path }),
             EventHandler(path),
             WebSocketsEndpoint(path)
         )
@@ -60,7 +60,7 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
         const path = options.path ?? options.http?.path ?? options.cmd ?? options.event
         const httpPath = path.startsWith('/') ? path : `/${path}`
         return applyDecorators(
-            ...(options.http ? [HttpEndpoint(options.http, { operation: options.operation, path: httpPath })] : []),
+            ...(options.http ? [_HttpEndpoint(options.http, { operation: options.operation, path: httpPath })] : []),
             ...(options.cmd ? [CommandHandler(options.cmd, options.operation, path)] : []),
             ...(options.event ? [EventHandler(options.event, options.operation, path)] : [])
         )
