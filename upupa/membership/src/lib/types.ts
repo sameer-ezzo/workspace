@@ -8,7 +8,7 @@ import { AuthService, PasswordStrength } from "@upupa/auth";
 
 export type IdpName = 'google' | 'facebook' | 'github' | 'twitter' | 'linkedin' | 'microsoft' | 'apple';
 export type GoogleIDPOptions = {
-    clientId: '872052515920-acb04e3ps4csnktcdn8958rhm8m49rk0.apps.googleusercontent.com',
+    clientId: string,
     attributes?: {
         context: "signin",
         callback: "signin",
@@ -63,8 +63,9 @@ export const defaultOnSuccessProvider: FormHandlerProvider = {
     useFactory: (router: Router, route: ActivatedRoute) => {
         return (...args: []) => {
             const { redirect } = route.snapshot.queryParams;
-            if (redirect) router.navigateByUrl(redirect);
-            else router.navigateByUrl('/');
+            if (!redirect) return router.navigateByUrl('/');
+            const urlSegments = redirect.split('/').filter(segment => segment);
+            return router.navigate(urlSegments);
         };
     }
 }

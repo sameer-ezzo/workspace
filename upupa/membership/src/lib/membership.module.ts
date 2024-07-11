@@ -32,7 +32,6 @@ import { SignUpFormComponent } from './signup-form/signup-form.component';
 import { ForgotPasswordFormComponent } from './forgot-password-form/forgot-password-form.component';
 import { ResetPasswordFormComponent } from './reset-password-form/reset-password-form.component';
 import { IdpButtonDirective } from './idp-button.directive';
-import { loadScript } from './load-script.func';
 
 
 const optionsProviders = <T extends BaseMembershipFormOptions>(form: 'LOG_IN' | 'SIGNUP' | 'FORGOT_PASSWORD' | 'VERIFY', options: T): Provider[] => {
