@@ -6,24 +6,26 @@ import { ActionDescriptor } from "@upupa/common";
 import { FieldItem, FormScheme } from "@upupa/dynamic-form";
 import { ColumnsDescriptor } from "@upupa/table";
 import { defaultEmailField, userFullNameField, userNameField } from "../default-values";
-import { TagsPipe } from "@upupa/tags";
 
-export const defaultRolesListActions: ActionDescriptor[] = [
+export const defaultRolesListHeaderActions: ActionDescriptor[] = [
     { variant: 'stroked', header: true, action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
+]
+export const defaultRolesListActions: ActionDescriptor[] = [
     { variant: 'icon', action: 'edit', icon: 'edit' },
     { variant: 'icon', action: 'delete', icon: 'delete', color: 'warn' }
 
 ]
 export const defaultUserListActions: ActionDescriptor[] = [
-    { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
-    { variant: 'stroked', position: 'header', action: 'create', icon: 'person_add', text: 'Create', color: 'primary' },
-
     { variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', menu: true, color: 'warn' },
     { variant: 'icon', action: 'edit', icon: 'edit' },
-    { variant: 'icon', action: 'impersonate', icon: 'supervised_user_circle' },
-    { variant: 'icon', text: 'Reset password', action: 'reset', icon: 'password', menu: true },
-    { variant: 'icon', text: 'Change roles', action: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
+    { path: '/auth/impersonate', variant: 'icon', action: 'impersonate', icon: 'supervised_user_circle' },
+    { path: '/auth/resetpassword', variant: 'icon', text: 'Reset password', action: 'reset', icon: 'password', menu: true },
+    { path: '/auth/updateusertoroles', variant: 'icon', text: 'Change roles', action: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
     { variant: 'icon', text: 'Delete User', action: 'delete', icon: 'delete', color: 'warn', menu: true }
+];
+export const defaultUserListHeaderActions: ActionDescriptor[] = [
+    { path: '/auth/ban', variant: 'button', text: 'Ban user', action: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
+    { path: 'auth/admincreate', variant: 'stroked', position: 'header', action: 'create', icon: 'person_add', text: 'Create', color: 'primary' }
 ];
 
 export const defaultCreateUserFromScheme: FormScheme = {
@@ -69,10 +71,9 @@ export const defaultRolesListColumns: ColumnsDescriptor = {
 }
 
 export type FormOptions = Partial<Record<'signup' | 'createUser' | 'editUser' | 'createRole' | 'editRole', { scheme: FormScheme, conditions?: Condition[] }>>
-type ListOptionsValue = { columns: ColumnsDescriptor }
 export type ListOptions = Partial<{
-    'users': ListOptionsValue & { actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) },
-    'roles': ListOptionsValue & { actions: ActionDescriptor[] }
+    'users': any
+    'roles': any
 }>
 
 export const defaultUsersManagementOptions = {
@@ -81,8 +82,16 @@ export const defaultUsersManagementOptions = {
         editUser: { scheme: defaultEditUserFromScheme }
     },
     lists: {
-        'users': { columns: defaultUserListColumns, actions: defaultUserListActions },
-        'roles': { columns: defaultRolesListColumns, actions: defaultRolesListActions }
+        'users': {
+            columns: defaultUserListColumns,
+            rowActions: defaultUserListActions,
+            headerActions: defaultUserListHeaderActions
+        },
+        'roles': {
+            columns: defaultRolesListColumns,
+            rowActions: defaultRolesListActions,
+            headerActions: defaultRolesListHeaderActions,
+        }
     }
 } as UsersManagementOptions
 

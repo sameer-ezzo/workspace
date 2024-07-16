@@ -21,13 +21,10 @@ import { PermissionsPageComponent } from './permissions-page/permissions-page.co
 import { PermissionsSideBarComponent } from './permissions-side-bar/permissions-side-bar.component';
 import { RulePermissionsTableComponent } from './rule-permissions-table/rule-permissions-table.component';
 import { PERMISSIONS_BASE_URL } from './app-admin-roles.token'
-import { appDefaultAdminRoles } from './user-role';
 
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { AuthorizeActionDirective } from "./authorize-action.directive";
 
 const components = [
-    AuthorizeActionDirective,
     PermissionsPageComponent, PermissionsSideBarComponent, RuleFormComponent, RulePermissionsTableComponent
 ];
 

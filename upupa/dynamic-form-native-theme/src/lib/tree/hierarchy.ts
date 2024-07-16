@@ -1,9 +1,4 @@
-import { CollectionViewer, SelectionChange } from "@angular/cdk/collections";
-import { DataSource } from "@angular/cdk/table";
-import { FlatTreeControl } from "@angular/cdk/tree";
 import { NormalizedItem, DataAdapter } from "@upupa/data";
-import { BehaviorSubject, Observable, combineLatest } from "rxjs";
-import { map } from "rxjs/operators";
 
 
 export interface HierarchicalC<T> {

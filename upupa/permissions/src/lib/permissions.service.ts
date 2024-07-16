@@ -1,8 +1,8 @@
-import { inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { DataService } from "@upupa/data";
 import { catchError, map, startWith, tap } from "rxjs/operators";
 
-import { firstValueFrom, Observable, of, shareReplay } from "rxjs";
+import { BehaviorSubject, firstValueFrom, Observable, of, shareReplay } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Rule } from "@noah-ark/common";
 import { NodeModel } from "./node-model";
@@ -15,23 +15,28 @@ import { PERMISSIONS_BASE_URL } from "./app-admin-roles.token";
     providedIn: "root",
 })
 export class PermissionsService {
+
     private _rulesActions = new Map<string, string[]>()
 
     private nodes: NodeModel[] = [];
 
-    readonly roles$: Observable<any[]>;
+    readonly _roles = signal<any[]>([])
+    readonly roles = computed(() => this._roles())
     private readonly base = inject(PERMISSIONS_BASE_URL)
     private readonly data = inject(DataService)
     private readonly http = inject(HttpClient)
 
     constructor() {
-
-        this.roles$ = this.data.get<any>(`/v2/role?select=name`).pipe(
-            map(x => x.data),
-            map(roles => (roles || []).filter(x => x._id !== 'super-admin')),
-            shareReplay(1)
-        )
-        this.getRules().subscribe()
+        this.init()
+    }
+    async init() {
+        firstValueFrom(
+            this.data.get<any>(`/v2/role?select=name`).pipe(
+                map(x => x.data),
+                map(roles => (roles || []).filter(x => x._id !== 'super-admin'))
+            )
+        ).then(roles => this._roles.set(roles))
+        await this.getRules()
     }
 
     userPermissions = new Map<string, Promise<SimplePermission[]>>();
@@ -45,28 +50,33 @@ export class PermissionsService {
         ))
         return this.userPermissions.get(userId)
     }
+    async setRules(permissions: any) {
+        await firstValueFrom(this.http.post(`${this.base}/restore-permissions`, permissions))
+        return await this.getRules(true)
+    }
 
-    getRules(): Observable<NodeModel[]> {
-        if (this.nodes?.length > 0) return of(this.nodes);
-        return this.http.get<any>(`${this.base}/rules`).pipe(
-            map((tree) => {
-                this.nodes = convertTreeToArray(tree)
-                return this.nodes;
-            }),
-            shareReplay(1)
-        );
+    // Hierarchy of rules
+    getRulesTree(): Promise<any> {
+        return firstValueFrom(this.http.get<any>(`${this.base}/rules`))
+    }
+
+    async getRules(forceFresh = false): Promise<NodeModel[]> {
+        if (!forceFresh && this.nodes?.length > 0) return this.nodes;
+
+        const rulesTree = await this.getRulesTree()
+        this.nodes = convertTreeToArray(rulesTree)
+        return this.nodes
     }
 
 
-    getRuleActions(rule: Rule): Promise<string[]> {
+    async getRuleActions(rule: Rule): Promise<string[]> {
         const path = rule.path
         const cached = this._rulesActions.get(path)
-        const acs$ = cached ? of(cached) :
-            this.http.post<string[]>(`${this.base}/actions`, { path })
+        const result = cached ? cached :
+            await firstValueFrom(this.http.post<string[]>(`${this.base}/actions`, { path })
                 .pipe(tap(acs => this._rulesActions.set(path, acs))
-                )
-
-        return firstValueFrom(acs$)
+                ))
+        return result
     }
     async addOrUpdatePermission(permission: SimplePermission): Promise<SimplePermission> {
 

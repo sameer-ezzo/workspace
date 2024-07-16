@@ -16,6 +16,16 @@ import { AUTHORIZE_PERMISSIONS, PermissionsSource } from "./constants";
 
 @Injectable()
 export class RulesService {
+    async restorePermissions(permissionsTree: any, principle: Principle) {
+        for (const item of permissionsTree) {
+            const rule = item.rule as Rule
+            for (const action in rule.actions) {
+                const permission = rule.actions[action] as unknown as SimplePermission
+                if (!permission._id) continue
+                await this.updatePermission(rule.name, permission.name, permission, principle)
+            }
+        }
+    }
     private rulesPathMatcher: PathMatcher<Rule>;
 
     get tree() {

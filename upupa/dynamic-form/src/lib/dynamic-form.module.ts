@@ -8,7 +8,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { FocusLeaveDirective } from './focusleave.dir';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CollectorComponent } from './collector/collector.component';
-import { MatBtnModule, UtilsModule } from '@upupa/common';
+import { UtilsModule } from '@upupa/common';
 import { TaskValidationComponent } from './task.validation.component/task.validation.component';
 import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
 import { DynamicFormThemes } from './dynamic-form-themes.type';
@@ -32,7 +32,7 @@ const declarations = [
     declarations: [...declarations],
     exports: [...declarations, ScrollingModule],
     bootstrap: [DynamicFormComponent], imports: [CommonModule,
-        MatBtnModule,
+        UtilsModule,
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,

@@ -30,6 +30,7 @@ import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import {
   defaultUserListActions,
   defaultUserListColumns,
+  defaultUserListHeaderActions,
   UsersManagementOptions,
 } from "../types";
 import { firstValueFrom } from "rxjs";
@@ -62,6 +63,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
   @Input() templates: any;
   @Output() action = new EventEmitter<ActionEvent>();
   actions: ActionDescriptor[] = defaultUserListActions;
+  headerActions: ActionDescriptor[] = defaultUserListHeaderActions;
   columns: ColumnsDescriptor = defaultUserListColumns;
 
   _templates: any = {};
@@ -71,28 +73,28 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
   @Input() adapter: DataAdapter<ModelType>;
   loading = false;
 
-  private readonly _usersManagementOptions: UsersManagementOptions;
-  constructor(
-    public data: DataService,
-    public http: HttpClient,
-    private bus: EventBus,
-    public auth: AuthService,
-    public snack: SnackBarService,
-    public confirm: ConfirmService,
-    public dialog: DialogService
-  ) {
-    this._usersManagementOptions = inject(USERS_MANAGEMENT_OPTIONS);
-  }
+  public readonly data = inject(DataService)
+  public readonly http = inject(HttpClient)
+  private readonly bus = inject(EventBus)
+  public readonly auth = inject(AuthService)
+  public readonly snack = inject(SnackBarService)
+  public readonly confirm = inject(ConfirmService)
+  public readonly dialog = inject(DialogService)
+  private readonly _usersManagementOptions: UsersManagementOptions = inject(USERS_MANAGEMENT_OPTIONS);
+
+
 
   readonly dataAdapter = signal(null);
   userSelect = []
   private _setOptions(options: UsersManagementOptions) {
+    if (!options) options = this._usersManagementOptions ?? new UsersManagementOptions();
     const usersOptions = options.lists?.users ?? {
       columns: this.columns,
       actions: this.actions,
     };
     this.columns = usersOptions.columns;
-    this.actions = usersOptions.actions as any[];
+    this.actions = usersOptions.rowActions as any[];
+    this.headerActions = usersOptions.headerActions as any[];
 
     this.userSelect = [
       ...new Set([
@@ -107,8 +109,8 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       this.adapter.destroy();
       this.adapter = null;
     }
-    if(this.adapter) this.adapter.destroy();
-    
+    if (this.adapter) this.adapter.destroy();
+
     this.adapter = new DataAdapter(this.usersDataSource, "_id", "email", "_id", null, {
       page: { pageIndex: 0, pageSize: 100 },
       sort: { active: "date", direction: "desc" },

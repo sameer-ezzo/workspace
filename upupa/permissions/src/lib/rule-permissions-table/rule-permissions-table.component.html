@@ -4,39 +4,35 @@
     [actions]="tableActions"></data-table>
 
 <ng-template #permissionTypeTemplate let-permission="element">
-    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
-        {{permission.item.by}}
-    </ng-container>
-    <ng-template #editableTemplate>
-        <select [ngModel]="permission.item.by" (change)="changeType(permission.item, $event.target)">
-            <option *ngFor="let pt of permissionTypes" [value]="pt.value">
-                {{ pt.display  }}
-            </option>
-        </select>
-    </ng-template>
+
+    <select [disabled]="permission.item.builtIn === true" [ngModel]="permission.item.by"
+        (change)="changeType(permission.item, $event.target)">
+        <option *ngFor="let pt of permissionTypes" [value]="pt.value">
+            {{ pt.display }}
+        </option>
+    </select>
 </ng-template>
 
 <ng-template #permissionAccessTemplate let-permission="element">
-    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
-        {{permission.item.access}}
-    </ng-container>
-    <ng-template #editableTemplate>
+    @if(permission.item.builtIn === true){
+    {{permission.item.access| titlecase}}
+    }@else{
     <select [ngModel]="permission.item.access" (change)="changeAccess(permission.item, $event.target)">
         <option value=""></option>
         <option value="deny">Deny</option>
         <option value="grant">Grant</option>
     </select>
-    </ng-template>
+    }
 </ng-template>
+
 <ng-template #permissionValueTemplate let-permission="element">
-    <ng-container *ngIf="permission.item.builtIn === true; else editableTemplate">
-        {{permission.item.value}}
-    </ng-container>
-    <ng-template #editableTemplate>
+    @if(permission.item.builtIn === true){
+    {{permission.item.value }}
+    }@else{
     <div [ngSwitch]="permission.item.by" style="overflow: hidden">
 
         <ng-container *ngSwitchCase="'role'">
-            <select *ngIf="permissionsService.roles$ | async as allRoles" [ngModel]="permission.item.value"
+            <select *ngIf="permissionsService.roles() as allRoles" [ngModel]="permission.item.value"
                 (change)="changeValue(permission.item, $event.target)">
                 <option *ngFor="let role of allRoles" [value]="role._id">
                     {{ role.name }}
@@ -82,5 +78,5 @@
 
 
     </div>
-    </ng-template>
+    }
 </ng-template>

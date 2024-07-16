@@ -1,27 +1,30 @@
 @if (rule) {
-  <h2>Rule : {{rule.name || rule.path}}</h2>
-  <h3>{{ "Permissions"  }}</h3>
-  @if ((loading$ | async) !== true) {
-    <div style="overflow-y: auto">
-      @for (action of actionNames$ | async; track action) {
-        <div style="margin-block-end: 2rem;">
-          <div class="flex row align-center">
-            <h5>{{ action | titlecase}}</h5>
-            <span class="spacer"></span>
-            <button mat-icon-button color="accent" (click)="addPermission(action)">
-              <mat-icon>add</mat-icon>
-            </button>
-          </div>
-          @if (actionPermissions.get(action) | async; as ps) {
-            <rule-permissions-table [permissions]="ps" [action]="action"
-            (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
-          }
-        </div>
-      }
+<h2>Rule : {{rule.name || rule.path}}</h2>
+<h3>{{ "Permissions" }}</h3>
+@if (loading() !== true) {
+<div style="overflow-y: auto">
+  @for (action of actionNames(); track action) {
+  <div style="margin-block-end: 2rem;">
+    <div class="flex row align-center">
+      <h5>{{ action | titlecase}}</h5>
+      <span class="spacer"></span>
+      <button mat-icon-button color="accent" (click)="addPermission(action)">
+        <mat-icon>add</mat-icon>
+      </button>
     </div>
-  } @else {
-    <div class="loader">
-      <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
-    </div>
+    @if (actionPermissionsMap.get(action)(); as ps) {
+    @if(ps.length > 0){
+    <rule-permissions-table [permissions]="ps" [action]="action"
+      (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
+    }
+    }
+
+  </div>
   }
+</div>
+} @else {
+<div class="loader">
+  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+</div>
+}
 }

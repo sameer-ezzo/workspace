@@ -29,7 +29,7 @@
 
   @if(commands?.length > 0){
   @for (umc of commands; track $index) {
-  <mat-btn auth-action [path]="umc.path" [action]="umc.action" [descriptor]="umc"
+  <mat-btn  [descriptor]="umc"
     (action)="umcClicked($event); menuTrigger.closeMenu()"></mat-btn>
   }
   <mat-divider></mat-divider>

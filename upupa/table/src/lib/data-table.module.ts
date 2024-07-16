@@ -1,6 +1,6 @@
 
 import { TranslationModule } from '@upupa/language';
-import { MatBtnModule, UtilsModule } from '@upupa/common';
+import { UtilsModule } from '@upupa/common';
 import { ModuleWithProviders, NgModule, Pipe, PipeTransform, Provider } from '@angular/core';
 
 import { CommonModule, DatePipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe } from '@angular/common';
@@ -52,7 +52,7 @@ const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelec
     declarations: declarations,
     imports: [
         CommonModule,
-        MatBtnModule,
+        UtilsModule,
         RouterModule,
         FormsModule,
         UtilsModule,

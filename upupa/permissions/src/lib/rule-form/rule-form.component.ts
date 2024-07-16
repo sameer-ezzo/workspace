@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, Input, signal, WritableSignal } from "@angular/core";
 import { Rule, SimplePermission } from "@noah-ark/common";
-import { BehaviorSubject, map, ReplaySubject } from "rxjs";
 import { PermissionsService } from "../permissions.service";
 import { SnackBarService } from "@upupa/common";
 
@@ -12,9 +11,14 @@ import { SnackBarService } from "@upupa/common";
 })
 export class RuleFormComponent {
 
-    loading$ = new BehaviorSubject<boolean>(false)
-    actionNames$ = new ReplaySubject<string[]>(1)
-    actionPermissions: Map<string, BehaviorSubject<SimplePermission[]>>
+    loading = signal(false)
+    actionNames = signal<string[]>([])
+    actionPermissionsMap: Map<string, WritableSignal<SimplePermission[]>>
+    = new Map()
+
+    public permissionsService = inject(PermissionsService)
+    private snack = inject(SnackBarService)
+
 
     private _rule: Rule;
     @Input()
@@ -24,30 +28,30 @@ export class RuleFormComponent {
     public set rule(value: Rule) {
         if (this._rule === value) return;
         this._rule = value;
-        this._rule.actions ??= {  }
+        this._rule.actions ??= {}
         this._init(this.rule)
     }
 
     private async _init(rule: Rule) {
-        this.loading$.next(true)
+        this.loading.set(true)
         const ruleActions = await this.permissionsService.getRuleActions(rule)
 
-        this.actionPermissions = new Map<string, BehaviorSubject<SimplePermission[]>>()
+        this.actionPermissionsMap = new Map()
         const actions = [...new Set(['*', ...ruleActions])]
         actions.forEach(action => {
             rule.actions[action] ??= []
             const permissions = rule.actions[action] as SimplePermission[]
-            this.actionPermissions.set(action, new BehaviorSubject<SimplePermission[]>(permissions))
+            this.actionPermissionsMap.set(action, signal<SimplePermission[]>(permissions))
         })
-        this.actionNames$.next(actions)
-        this.loading$.next(false)
+        this.actionNames.set(actions)
+        this.loading.set(false)
     }
 
-    constructor(public permissionsService: PermissionsService, private snack: SnackBarService) { }
+
 
     updateRulePermissions(action, permissions) {
         this.rule.actions[action] = permissions
-        this.actionPermissions.get(action).next(permissions)
+        this.actionPermissionsMap.get(action).set(permissions)
     }
 
     async addPermission(action: string) {

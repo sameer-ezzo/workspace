@@ -13,7 +13,7 @@
     <mat-drawer #drawer class="sidenav" [mode]="sideBarMode"
       [opened]="isSidebarOpened && sideBarCommands?.length > 0">
       <mat-accordion id="cp-accordion" multi="true" displayMode="flat">
-        @for(g of sideBarCommands; track g.action){
+        @for(g of sideBarCommands; track i; let i = $index){
           @if(g.items.length > 0){
             <mat-expansion-panel expanded="true" class="mat-elevation-z0">
 
@@ -39,7 +39,7 @@
 
 
 <ng-template #linkTemplate let-item="item">
-  <a class="cp-item-link" auth-action [path]="item.path" [action]="item.name" [routerLink]="item.link"
+  <a class="cp-item-link" authAction [path]="item.path" [action]="item.name" [routerLink]="item.link"
     [queryParams]="item.queryParams" routerLinkActive="active">
 
     @if(item.icon){

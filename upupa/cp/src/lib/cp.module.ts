@@ -18,7 +18,7 @@ import { PopoverModule } from "@upupa/popover";
 import { LanguageModule, TranslationModule } from "@upupa/language";
 import { MaterialModulesModule } from "./material-modules.module";
 import { RouterModule } from "@angular/router";
-import { MatBtnModule, UtilsModule } from "@upupa/common";
+import { UtilsModule } from "@upupa/common";
 import { ToolbarUserMenuComponent } from "./tool-bar-user-menu/tool-bar-user-menu.component";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { DataFilterFormComponent } from "./data-filter-form/data-filter-form.component";
@@ -61,7 +61,6 @@ const declarations = [
     imports: [
         CommonModule,
         UtilsModule,
-        MatBtnModule,
         MatSidenavModule,
         RouterModule,
         MaterialModulesModule,

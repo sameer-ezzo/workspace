@@ -40,7 +40,7 @@ export class ApiController {
     }
 
 
-    @EndPoint({ http: { method: 'GET', path: 'v2/**' }, cmd: GET_COMMAND, operation: 'read', path: '**' })
+    @EndPoint({ http: { method: 'GET', path: 'v2/**' }, cmd: GET_COMMAND, operation: 'Read v2', path: '**' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async agg(@Message() msg: IncomingMessage) {
         const { path, q } = msg.path.indexOf('api/v2') > -1 ? _query(msg.path, msg.query, '/v2' + baseUrl) : _query(msg.path, msg.query, baseUrl)

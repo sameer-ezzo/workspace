@@ -25,5 +25,5 @@
   ],
   "include": [
     "**/*.ts"
-  ]
+, "../permissions/src/lib/authorize-action.directive.ts"  ]
 }

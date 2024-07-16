@@ -9,6 +9,7 @@ export const SimplePermissionSchema = new Schema(
         createDate: { type: Date, required: true },
         builtIn: { type: Boolean, default: false },
         type: { type: String, required: false, index: true },
+        by: { type: String, required: false, index: true },
         value: { type: String, required: false },
         access: { type: String, required: false }
     },

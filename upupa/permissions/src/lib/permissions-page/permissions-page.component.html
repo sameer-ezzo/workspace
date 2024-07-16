@@ -1,5 +1,20 @@
-<permissions-side-bar style="overflow-y: auto; padding: 0.25rem" [nodes]="nodes$ | async"
-(focusedChange)="focused = $event"></permissions-side-bar>
+<div id="toolbar">
+  <h4>Permissions</h4>
+  <span class="spacer"></span>
+  <button mat-button (click)="restore()">
+    <mat-icon>restore</mat-icon>
+    <span>Restore</span>
+  </button>
+  <button mat-button (click)="download()">
+    <mat-icon>cloud_download</mat-icon>
+    <span>Download</span>
+  </button>
+</div>
+<div style="padding-inline-start:1rem; overflow-y: auto;">
+
+  <permissions-side-bar [nodes]="nodes()" (focusedChange)="focused = $event"></permissions-side-bar>
+</div>
+
 @if (focused) {
-  <rule-form style="overflow-y: auto; padding: 0.25rem" [rule]="focused"></rule-form>
+<rule-form [rule]="focused"></rule-form>
 }

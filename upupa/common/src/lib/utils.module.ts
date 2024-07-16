@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,25 +14,34 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { OnlyNumberDirective } from './directives/only-numbers.directive';
 import { PortalModule } from '@angular/cdk/portal';
-import { MatBtnModule } from './mat-btn/mat-btn.module';
 import { UpupaDialogComponent } from './upupa-dialog/upupa-dialog.component';
 import { HtmlPipe } from './html.pipe';
 import { InputBaseComponent, BaseTextInputComponent } from './input-base.component';
-import { LazyLoadDirective } from './lazy-load.directive';
+import { LazyLoadDirective } from './directives/lazy-load.directive';
 import { MarkdownPipe } from './markdown.pipe';
 import { FocusDirective } from './directives/focus.directive';
+import { AuthorizeActionDirective } from './directives/authorize-action.directive';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBtnComponent } from './mat-btn/mat-btn.component';
+import { MatBadgeModule } from '@angular/material/badge';
+import { PERMISSIONS_BASE_URL } from './tokens';
 
 const declarations = [
+    AuthorizeActionDirective,
     InputBaseComponent,
     BaseTextInputComponent,
     UpupaDialogComponent,
     OnlyNumberDirective,
-    HtmlPipe, MarkdownPipe,
+    HtmlPipe, 
+    MarkdownPipe,
     LazyLoadDirective,
     FocusDirective,
-    ErrorPipe];
+    MatBtnComponent,
+    ErrorPipe
+];
 
-const imports = [MatFormFieldModule,
+const imports = [
+    MatFormFieldModule,
     MatInputModule,
     MatIconModule,
     MatButtonModule,
@@ -40,12 +49,12 @@ const imports = [MatFormFieldModule,
     MatSnackBarModule,
     MatDialogModule,
     PortalModule,
-    MatBtnModule,
     LanguageModule,
     MatIconModule,
-    MatButtonModule,
     TranslationModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatBadgeModule,
+    MatTooltipModule,
 ]
 @NgModule({
     declarations,
@@ -58,4 +67,13 @@ const imports = [MatFormFieldModule,
     ...imports
     ]
 })
-export class UtilsModule { }
+export class UtilsModule {
+    static forRoot(options: { permissionsBaseUrl: string }): ModuleWithProviders<UtilsModule> {
+        return {
+            ngModule: UtilsModule,
+            providers: [
+                { provide: PERMISSIONS_BASE_URL, useValue: options.permissionsBaseUrl }
+            ]
+        }
+    }
+}

@@ -40,7 +40,8 @@
     </button>
     <mat-menu #menu="matMenu">
       @for (haim of headerMenuActions(); track haim.action) {
-      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled" (click)="onAction(haim, selectedNormalized())">
+      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled"
+        (click)="onAction(haim, selectedNormalized())">
         <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) }}
       </button>
       }
@@ -193,7 +194,7 @@
 
 
 <ng-template #commandTemplate let-actions="actions" let-data="data">
-  @for (a of actions; track a.name) {
+  @for (a of actions; track i; let i = $index){
   <mat-btn style="margin-inline-end: 0.25rem;" [descriptor]="a" (action)="onAction(a,data)" [disabled]="a.disabled">
   </mat-btn>
   }

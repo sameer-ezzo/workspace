@@ -4,6 +4,7 @@ import { EndPoint, EndpointsInfo, Message, logger } from "@ss/common";
 import { DataService } from "@ss/data";
 import { join } from "path";
 import { RulesService } from "./rules.svr";
+import { Authorize } from "./authorize.decorator";
 
 @Controller("permissions")
 export class PermissionController {
@@ -26,6 +27,13 @@ export class PermissionController {
         return await this.data.get("permission");
     }
 
+    @EndPoint({ http: { method: "POST", path: "restore-permissions" } })
+    @Authorize({ by: "role", value: "super-admin" })
+    async restorePermissions(@Message() msg: IncomingMessage<any>) {
+        const permissionsTree = msg.payload;
+        await this.rulesService.restorePermissions(permissionsTree, msg.principle);
+        return this.rulesService.tree;
+    }
 
     @EndPoint({ http: { method: "GET", path: "user-permissions/:id" } })
     async getPermissionsForUser(@Message() msg: IncomingMessage<any>) {
