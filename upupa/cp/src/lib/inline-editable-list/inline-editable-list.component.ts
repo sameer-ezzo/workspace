@@ -33,9 +33,9 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
 
     focusedTableItem: any;
     @Input() tableActions: ActionDescriptor[] = [
-        { action: 'edit', icon: 'edit', text: 'Edit', menu: true },
-        { action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-        { action: 'create', icon: 'add_circle_outline', text: 'Create' }
+        { name: 'edit', icon: 'edit', text: 'Edit', menu: true },
+        { name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
+        { name: 'create', icon: 'add_circle_outline', text: 'Create' }
     ];
 
     @Input() tableColumns = {};

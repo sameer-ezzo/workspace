@@ -19,7 +19,7 @@ export class SignUpFormComponent {
     @Output() fail = new EventEmitter();
 
     @Input() model: any = {};
-    @Input() submitBtn: ActionDescriptor = { action: 'signup', type: 'submit', text: 'Signup', color: 'primary', variant: 'raised' };
+    @Input() submitBtn: ActionDescriptor = { name: 'signup', type: 'submit', text: 'Signup', color: 'primary', variant: 'raised' };
     @Input() fields: FormScheme = defaultSignupFormFields;
     @Input() conditions: Condition[] = []
 

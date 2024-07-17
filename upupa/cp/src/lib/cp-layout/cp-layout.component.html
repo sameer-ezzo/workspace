@@ -17,7 +17,7 @@
           @if(g.items.length > 0){
             <mat-expansion-panel expanded="true" class="mat-elevation-z0">
 
-              @if(g.action){
+              @if(g.name){
                 <mat-expansion-panel-header>
                   <mat-panel-title>{{g.text}}</mat-panel-title>
                 </mat-expansion-panel-header>
@@ -39,7 +39,7 @@
 
 
 <ng-template #linkTemplate let-item="item">
-  <a class="cp-item-link" authAction [path]="item.path" [action]="item.name" [routerLink]="item.link"
+  <a class="cp-item-link" authAction [path]="item.path" [action]="item.action" [routerLink]="item.link"
     [queryParams]="item.queryParams" routerLinkActive="active">
 
     @if(item.icon){

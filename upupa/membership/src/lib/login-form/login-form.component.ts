@@ -23,7 +23,7 @@ export class LoginFormComponent {
     @Output() fail = new EventEmitter();
 
     @Input() model: { email: string, password: string, rememberMe?: boolean } = { email: '', password: '' }
-    @Input() submitBtn: ActionDescriptor = { action: 'login', type: 'submit', text: 'login', color: 'primary', variant: 'raised' };
+    @Input() submitBtn: ActionDescriptor = { name: 'login', type: 'submit', text: 'login', color: 'primary', variant: 'raised' };
     @Input() fields: FormScheme = defaultLoginFormFields
     @Input() conditions: Condition[] = []
 
