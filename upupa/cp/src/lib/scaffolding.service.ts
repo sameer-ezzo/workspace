@@ -1,4 +1,4 @@
-import { Inject, Injectable, Injector } from "@angular/core";
+import { inject, Inject, Injectable, Injector } from "@angular/core";
 import { firstValueFrom, Observable, of } from "rxjs";
 import {
     ScaffoldingScheme,
@@ -31,16 +31,15 @@ import { HttpClient } from "@angular/common/http";
 
 @Injectable({ providedIn: "root" })
 export class ScaffoldingService {
-    matcher: PathMatcher<Scaffolder>;
+    matcher = new PathMatcher<Scaffolder>(null)
+    private readonly injector = inject(Injector)
+    private readonly dialog = inject(DialogService)
+    private readonly data = inject(DataService)
+    private readonly scaffoldingScheme = inject(SCAFFOLDING_SCHEME)
 
-    constructor(
-        private injector: Injector,
-        private dialog: DialogService,
-        private data: DataService,
-        @Inject(SCAFFOLDING_SCHEME) private scaffoldingScheme: ScaffoldingScheme
-    ) {
-        this.matcher = new PathMatcher<Scaffolder>(null);
-        addPath(this.matcher, "/", this.scaffoldingScheme);
+
+    constructor() {
+        addPath(this.matcher, "/", this.scaffoldingScheme);        
     }
 
 

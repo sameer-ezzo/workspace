@@ -1,6 +1,6 @@
 import { JsonPointer } from "@noah-ark/json-patch";
-import { PathMatcher } from "../../../../path-matcher/src";
 import { Rule } from "./rule";
+import { PathMatcher } from "@noah-ark/path-matcher";
 
 export class RulesManager {
     private readonly rulesPathMatcher: PathMatcher<Rule>;

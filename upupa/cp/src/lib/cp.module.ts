@@ -1,8 +1,8 @@
-import { ModuleWithProviders, NgModule } from "@angular/core";
+import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { DataListComponent } from "./data-list/data-list.component";
-import { CP_OPTIONS, SCAFFOLDING_SCHEME, USER_PICTURE_RESOLVER } from "./di.token";
+import { CP_SIDE_BAR_ITEMS, CP_OPTIONS, SCAFFOLDING_SCHEME, USER_PICTURE_RESOLVER } from "./di.token";
 import { ScaffoldingScheme } from "../types";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import {
@@ -31,10 +31,11 @@ import { TagsModule } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
 import { getUserInitialsImage } from "./user-image.service";
 import { catchError, map, of, switchMap } from "rxjs";
-
+import { CpLayoutOptions } from "./decorators/decorator.types";
 
 const userImageProvider = {
-    provide: USER_PICTURE_RESOLVER, useFactory: (auth: AuthService, data: DataService) => {
+    provide: USER_PICTURE_RESOLVER,
+    useFactory: (auth: AuthService, data: DataService) => {
         return auth.user$.pipe(
             switchMap(u =>
                 data.get<{ picture: string }>(`/user/${u?.sub}?select=picture`).pipe(
@@ -87,20 +88,21 @@ const declarations = [
     exports: [...declarations],
 })
 export class ControlPanelModule {
-    public static register(viewModels?: ScaffoldingScheme, options: {
+    public static register(options: {
         providers?: any[],
     } = {
-            providers: [userImageProvider]
-        }): ModuleWithProviders<ControlPanelModule> {
-        const scaffolders = mergeScaffoldingScheme(viewModels ?? {})
+                providers: [userImageProvider]
+            }): ModuleWithProviders<ControlPanelModule> {
+        const scaffolders = mergeScaffoldingScheme()
 
         return {
             ngModule: ControlPanelModule,
             providers: [
-                {
-                    provide: SCAFFOLDING_SCHEME,
-                    useValue: scaffolders,
-                },
+                // { provide: CP_LAYOUT_OPTIONS_FACTORY, useFactory: viewModelsFactory.factory, deps: viewModelsFactory.deps },
+                // {
+                //     provide: SCAFFOLDING_SCHEME,
+                //     useValue: scaffolders,
+                // },
                 {
                     provide: CP_OPTIONS,
                     useValue: options ?? {},

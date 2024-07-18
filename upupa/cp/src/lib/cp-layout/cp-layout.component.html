@@ -1,36 +1,38 @@
 <main>
   <mat-toolbar class="mat-elevation-z2">
-    @if (sideBarCommands?.length > 0) {
-      <button mat-icon-button (click)="drawer.toggle()">
-        <mat-icon>reorder</mat-icon>
-      </button>
+    @if (sideBarItems()?.length > 0) {
+    <button mat-icon-button (click)="drawer.toggle()">
+      <mat-icon>reorder</mat-icon>
+    </button>
     }
-    <img [src]="logo" class="logo" >
+    <img [src]="logo" class="logo">
     <span class="spacer"></span>
     <toolbar-user-menu [commands]="userMenuCommands"></toolbar-user-menu>
   </mat-toolbar>
   <mat-drawer-container autosize [dir]="languageService.dir$ | async" autosize style="flex: 1;">
-    <mat-drawer #drawer class="sidenav" [mode]="sideBarMode"
-      [opened]="isSidebarOpened && sideBarCommands?.length > 0">
-      <mat-accordion id="cp-accordion" multi="true" displayMode="flat">
-        @for(g of sideBarCommands; track i; let i = $index){
-          @if(g.items.length > 0){
-            <mat-expansion-panel expanded="true" class="mat-elevation-z0">
+    <mat-drawer #drawer class="sidenav" [mode]="sideBarMode" [opened]="isSidebarOpened && sideBarItems()?.length > 0">
+      @for(g of sideBarItems(); track i; let i = $index){
+      @if(g.items?.length > 0){
+      <mat-accordion id="cp-accordion-{{g.name}}" displayMode="flat">
+        <mat-expansion-panel [expanded]="i === 0" class="mat-elevation-z0">
 
-              @if(g.name){
-                <mat-expansion-panel-header>
-                  <mat-panel-title>{{g.text}}</mat-panel-title>
-                </mat-expansion-panel-header>
-              }
-
-              @for(item of g['items']; track item.text;){
-                <ng-container *ngTemplateOutlet="linkTemplate; context: {item: item}"></ng-container>
-              }
-
-            </mat-expansion-panel>
+          @if(g.name){
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{g.text}}</mat-panel-title>
+          </mat-expansion-panel-header>
           }
-        }
+
+          @for(item of g['items']; track item.text;){
+          <ng-container *ngTemplateOutlet="linkTemplate; context: {item: item}"></ng-container>
+          }
+
+        </mat-expansion-panel>
       </mat-accordion>
+      }
+      @else {
+      <ng-container *ngTemplateOutlet="linkTemplate; context: {item: g}"></ng-container>
+      }
+      }
     </mat-drawer>
     <router-outlet #outlet="outlet"></router-outlet>
   </mat-drawer-container>
@@ -43,11 +45,11 @@
     [queryParams]="item.queryParams" routerLinkActive="active">
 
     @if(item.icon){
-      <mat-icon>{{item.icon}}</mat-icon>
-      }@else {
-      @if (item.icon_url) {
-        <img [src]="item.icon_url" width="40px" height="40px" />
-      }
+    <mat-icon>{{item.icon}}</mat-icon>
+    }@else {
+    @if (item.icon_url) {
+    <img [src]="item.icon_url" width="40px" height="40px" />
+    }
     }
 
     <span style="margin: 0 .5rem">{{ item.text}}</span>

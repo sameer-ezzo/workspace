@@ -122,8 +122,10 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.ds.refreshCache(this.dataListResolverResult.path);
-        this.dataListResolverResult.adapter.destroy()
+        if (this.dataListResolverResult) {
+            this.ds.refreshCache(this.dataListResolverResult.path);
+            this.dataListResolverResult.adapter.destroy()
+        }
     }
 
     filterDrawerStatus = 'closed'

@@ -1,8 +1,7 @@
 import { JsonPointer } from "@noah-ark/json-patch"
-import { Principle } from "../user"
-import { AccessType, AuthorizeResult, isPermissionSimple, Permission, permissionKey } from "./permission"
-import { _NullPermissionTypes, _StringPermissionTypes, isObjectValuePermission, SimplePermission } from "./simple-permission"
-import { evaluateOpExpression } from "@noah-ark/expression-engine"
+import { evaluateOpExpression } from "./op-expression"
+import { _NullPermissionTypes, _StringPermissionTypes, AccessType, AuthorizeResult, isObjectValuePermission, isPermissionSimple, Permission, permissionKey, Principle, SimplePermission } from "@noah-ark/common"
+
 
 export type AuthorizeMessage = { payload: any, operation: string, path: string, query: any, ctx?: any, principle: Principle }
 export class AuthorizerService {

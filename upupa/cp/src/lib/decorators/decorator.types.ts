@@ -2,6 +2,7 @@ import { FactorySansProvider } from "@angular/core";
 import { FormScheme } from "@upupa/dynamic-form";
 import { ColumnDescriptor } from "@upupa/table"
 import { IScaffolder, ListScaffoldingModel, DataListViewModel, DataListFilterForm, DataFormViewModel, FormScaffoldingModel } from "../../types";
+import { SideBarGroup, SideBarItem } from "../cp-layout/side-bar-group-item";
 
 export type LookUpDescriptor = { from: string, as: string, localField: string, foreignField: string, single: boolean }
 export type ColumnOptions = ColumnDescriptor & { displayPath?: string, order?: number, includeInDataSelect?: boolean, lookup?: LookUpDescriptor }
@@ -14,6 +15,10 @@ export type ViewMetaOptions = {
     icon?: string
     group?: string
 }
+
+export type CpLayoutOptions = {
+    [key in CPCommandPosition]: (SideBarGroup | SideBarItem)[];
+};
 
 type ScaffolderOption = { scaffolder?: IScaffolder<ListScaffoldingModel> | any };
 export type QueryFactoryProvider = FactorySansProvider & { useFactory: (...deps: any[]) => Iterable<readonly [string, string]> }

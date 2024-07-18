@@ -1,6 +1,6 @@
+import { uniqueId } from "lodash";
 import { EMPTY, Observable, of, ReplaySubject } from "rxjs";
 import { filter, map, timeout } from "rxjs/operators";
-import { randomId } from "@noah-ark/common";
 
 
 export type EventRecord<T> = { source: any, payload: T, match?: RegExpMatchArray };
@@ -35,7 +35,7 @@ export abstract class EventBusBase implements BrokerClient {
     }
 
     send(pattern: string, payload: any, source?: any): Observable<any> {
-        payload.transactionId = randomId()
+        payload.transactionId = uniqueId()
         this.emit(pattern, payload, source)
         const rx = this.on(`${pattern}-reply`)
             .pipe(

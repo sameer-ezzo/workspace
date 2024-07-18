@@ -6,6 +6,7 @@ import 'reflect-metadata'
 
 import { toTitleCase } from "@upupa/common";
 import { CPCommandPosition, CreateFormOptions, EditFormOptions, ListViewOptions, ModelSchemeRouteOptions, ViewFormOptions, ViewMetaOptions } from "./decorator.types";
+import { JsonPointer } from "@noah-ark/json-patch";
 
 export const _LISTS_INFO: Record<string, Partial<ListViewOptions>> = {};
 const _scaffoldingScheme: ScaffoldingScheme = {};
@@ -30,6 +31,9 @@ export function mergeScaffoldingScheme(scheme?: ScaffoldingScheme): ScaffoldingS
     return _scaffoldingScheme;
 }
 export const scaffoldingScheme = getScaffoldingScheme()
+export function getListScaffolder(path: string) {
+    return JsonPointer.get(_scaffoldingScheme, path, '/');
+}
 
 export function listScaffolder(path: string, options: ListViewOptions = {}) {
     return function (target) {
