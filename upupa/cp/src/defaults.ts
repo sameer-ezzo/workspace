@@ -27,9 +27,10 @@ export function defaultCreateListItemHandler(scaffolder, value, subject) {
     } as ActionDescriptor
 }
 
+export const defaultListHeaderActions: ActionDescriptor[] = [
+    { position: 'header', name: 'create', variant:'stroked', icon: 'add_circle_outline', text: 'Create' }
+]
 export const defaultListActions: ActionDescriptor[] = [
     { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
     { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-    { position: 'header', name: 'delete', variant:'stroked', icon: 'delete_outline', text: 'Delete', bulk: true },
-    { position: 'header', name: 'create', variant:'stroked', icon: 'add_circle_outline', text: 'Create' }
 ]

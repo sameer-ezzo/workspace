@@ -2,6 +2,7 @@
 
 import { ObjectId } from "mongodb";
 import { logger } from "./logger";
+import { Model } from "mongoose";
 
 
 // */
@@ -102,20 +103,20 @@ export class QueryParser {
     private dateMethods = [(d: Date) => d.getFullYear(), (d: Date) => d.getMonth(), (d: Date) => d.getDate(), (d: Date) => d.getHours(), (d: Date) => d.getMinutes(), (d: Date) => d.getSeconds()];
     private objectIdPattern = /^[0-9a-fA-F]{24}$/; // Regular expression for ObjectId
 
-    _operator(s: string) {
+    _operator(s: string, key?: string, model?: Model<any>) {
 
         const operatorMatches = operatorPattern.exec(s);
-        if (operatorMatches) return { operator: operatorMatches[1], val: this.autoParseValue(operatorMatches[2]) };
+        if (operatorMatches) return { operator: operatorMatches[1], val: this.autoParseValue(operatorMatches[2], {}, key, model) };
     }
 
-    private parseExpression(key: string, value: string): any {
+    private parseExpression(key: string, value: string, model?: Model<any>): any {
         //OR
         const subExpressions = value.split('|').filter(s => s);
         if (subExpressions.length > 1) {
             const $or = subExpressions.map(sub => {
                 const s_exp = sub.split('=');
-                if (s_exp.length === 1) return this.parseExpression(key, sub);
-                else return this.parseExpression(s_exp[0], s_exp[1]);
+                if (s_exp.length === 1) return this.parseExpression(key, sub, model);
+                else return this.parseExpression(s_exp[0], s_exp[1], model);
             });
             return { $or };
         }
@@ -129,7 +130,7 @@ export class QueryParser {
             else if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') return { [key]: { ['$' + operator]: val } };
             else if (operator === 'btw') {
                 const range = (val || '').split(',');
-                const [min, max] = [this.autoParseValue(range[0]), this.autoParseValue(range[1])];
+                const [min, max] = [this.autoParseValue(range[0], {}, key, model), this.autoParseValue(range[1], {}, key, model)];
                 if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
                     return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }]
                 }
@@ -176,7 +177,7 @@ export class QueryParser {
 
         }
         else { //If not operator the default value conversion is string
-            const val = this.autoParseValue(value, { number: false, array: false });
+            const val = this.autoParseValue(value, { number: false, array: false }, key, model);
             if (val === '') return;
             if (val === undefined) return { [key]: { $exists: false } };
             else if (typeof val === "string" && val.indexOf('*') > -1) {
@@ -217,7 +218,12 @@ export class QueryParser {
     }
 
 
-    autoParseValue(value: string, config?: any): any {
+    private getPathType(path: string, model?: Model<any>) {
+        return model?.schema.path(path)?.instance ?? 'String';
+    }
+
+    autoParseValue(value: string, config?: any, key?: string, model?: Model<any>): any {
+        const keyType = this.getPathType(key || '', model);
         switch (value) {
             case '': return '';
             case 'null': return null;
@@ -226,9 +232,10 @@ export class QueryParser {
             case 'false': return false;
             default:
                 if ((!config || config.date) && dateFormat.exec(value)) return new Date(value);
-                else if (this.objectIdPattern.test(value) && ObjectId.isValid(value)) return new ObjectId(value);
+                else if (this.objectIdPattern.test(value) && ObjectId.isValid(value) && keyType === 'ObjectId')
+                    return new ObjectId(value);
                 else if ((!config || config.number) && !isNaN(+value)) return +value;
-                else if ((!config || config.array) && value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x));
+                else if ((!config || config.array) && value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x, config, key, model));
                 else return value;
         }
     }
@@ -260,7 +267,7 @@ export class QueryParser {
     }
 
 
-    parse(query: { [key: string]: string }[]) {
+    parse(query: { [key: string]: string }[], model?: Model<any>) {
 
         const queryArray = query.map(x => Object.keys(x).map(k => { return { key: k, value: x[k] } }));
         const q = queryArray.length ? queryArray.reduce((a, b) => a.concat(b)) : [];
@@ -328,7 +335,7 @@ export class QueryParser {
                     const match = [];
                     p = p.slice(4);
                     for (let i = 0; i < p.length; i += 2) {
-                        const exp = this.parseExpression(p[i], p[i + 1]);
+                        const exp = this.parseExpression(p[i], p[i + 1], model);
                         logger.info(exp);
 
                         match.push(exp)
@@ -338,7 +345,7 @@ export class QueryParser {
 
             }
             else if (x.value) {
-                const exp = this.parseExpression(x.key, x.value);
+                const exp = this.parseExpression(x.key, x.value, model);
                 if (exp) {
                     if (Array.isArray(exp)) filter.$and = filter.$and?.concat(exp);
                     else filter.$and?.push(exp);
