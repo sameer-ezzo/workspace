@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PathMatcher } from "@noah-ark/path-matcher";
-import { Permission, Rule, AuthorizeFun, SimplePermission, Principle, SimplePermissionRecord } from "@noah-ark/common";
+import { Permission, Rule, AuthorizeFun, SimplePermission, Principle, SimplePermissionRecord, RulesManager } from "@noah-ark/common";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { DataService } from "@ss/data";
 import { EndpointsInfo, ENDPOINT_OPERATION, ENDPOINT_PATH, _controllerPrefix, EndpointInfoRecord } from "@ss/common";
@@ -26,29 +26,17 @@ export class RulesService {
             }
         }
     }
-    private rulesPathMatcher: PathMatcher<Rule>;
 
-    get tree() {
-        return this.rulesPathMatcher.tree
-    }
-    get rules() {
-        return this.rulesPathMatcher.items()
-    }
-
-    get root(): Rule {
-        return this.rulesPathMatcher.root;
-    }
-    set root(root: Rule) {
-        this.rulesPathMatcher.root = root;
-    }
+    
 
 
+    rulesManager!:RulesManager
     constructor(
         @Inject("ROOT_RULE") readonly rootRule: Rule,
         @Inject("APP_RULES") readonly appRules: Rule[],
         public readonly dataService: DataService
     ) {
-        this.rulesPathMatcher = new PathMatcher<Rule>(rootRule);
+        this.rulesManager = new RulesManager(rootRule, appRules);
         dataService
             .addModel("permission", SimplePermissionSchema, undefined, [], true)
             .then(() => {
@@ -57,19 +45,19 @@ export class RulesService {
     }
 
     getRules(path?: string) {
-        return this.rulesPathMatcher.items(path ?? '/').map(r => r.item)
+        return this.rulesManager.items(path ?? '/').map(r => r.item)
     }
     getRule(path?: string, fallbackToParent = false): Rule | undefined {
-        return this.rulesPathMatcher.get(path ?? '/', fallbackToParent)
+        return this.rulesManager.get(path ?? '/', fallbackToParent)
     }
 
     addRule(path: string, rule: Rule) {
         //rule validation (name is required, path is unique,)
         if (!rule.name) throw new Error("Rule name is required");
-        const _existingRule = this.rulesPathMatcher.get(path, false);
+        const _existingRule = this.rulesManager.get(path, false);
         if (_existingRule)
             throw new Error(`Rule ${rule.name} already exists at path ${path}`);
-        this.rulesPathMatcher.add(path, rule);
+        this.rulesManager.add(path, rule);
     }
     async updatePermission(
         ruleName: string,
@@ -95,8 +83,8 @@ export class RulesService {
         rule.actions[action].push(p)
 
         const rulePath = rule.path.startsWith('/') ? rule.path : `/${rule.path}`
-        JsonPointer.set(this.root, `${rulePath}/actions`, rule.actions);
-        this.rulesPathMatcher.update(rulePath, rule)
+        this.rulesManager.updateRootWith(`${rulePath}/actions`, rule.actions)
+        this.rulesManager.updateRule(rulePath, rule)
         return p
     }
 
@@ -115,7 +103,7 @@ export class RulesService {
         rule.actions ??= {}
         const pIdx = rule.actions[permission.action]?.findIndex(p => p._id === permission._id)
         if (pIdx > -1) rule.actions[permission.action].splice(pIdx, 1)
-        JsonPointer.set(this.root, `${rule.path}/actions`, rule.actions)
+        this.rulesManager.updateRootWith(`${rule.path}/actions`, rule.actions)
         return await this.dataService.delete(`permission/${permission._id}`, principle);
     }
 

@@ -5,8 +5,19 @@ export type ActionsDescriptor = ActionDescriptor[];
 export type ActionEvent<T = any> = { action: ActionDescriptor; data: T[]; };
 
 export class ActionDescriptor {
-    action: string;
+    /// <summary>
+    /// The path of the action to be used in authorization
+    /// </summary>
     path?: string;
+    /// <summary>
+    /// The action name to be used in authorization
+    /// </summary>
+    action?: string;
+
+    /// <summary>
+    /// The name of the action to be used in the UI
+    /// </summary>
+    name: string;
 
     type?: 'button' | 'submit' = 'button';
     text?: string;

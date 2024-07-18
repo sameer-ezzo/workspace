@@ -22,14 +22,14 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
         if (actions === undefined) {
             actions = [];
 
-            if (hasEdit) actions.push({ variant: 'icon', action: 'edit', icon: 'edit' })
-            if (hasView) actions.push({ variant: 'icon', action: 'view', icon: 'visibility', menu: true })
-            actions.push({ position: 'menu', action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
+            if (hasEdit) actions.push({ variant: 'icon', name: 'edit', icon: 'edit' })
+            if (hasView) actions.push({ variant: 'icon', name: 'view', icon: 'visibility', menu: true })
+            actions.push({ position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
 
         }
         if (hasCreate && headerActions === undefined) {
             headerActions = []
-            headerActions.push({ position: 'header', action: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
+            headerActions.push({ position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
         }
         const queryFn = resolveQueryFn(listInfo);
         const queryParamsFn = resolveQueryParamsFn(listInfo);

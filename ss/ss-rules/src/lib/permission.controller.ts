@@ -19,7 +19,7 @@ export class PermissionController {
 
     @EndPoint({ http: { method: "GET", path: "rules" } })
     getRules() {
-        return this.rulesService.tree
+        return this.rulesService.rulesManager.tree
     }
 
     @EndPoint({ http: { method: "GET", path: "*" } })
@@ -31,8 +31,7 @@ export class PermissionController {
     @Authorize({ by: "role", value: "super-admin" })
     async restorePermissions(@Message() msg: IncomingMessage<any>) {
         const permissionsTree = msg.payload;
-        await this.rulesService.restorePermissions(permissionsTree, msg.principle);
-        return this.rulesService.tree;
+        return await this.rulesService.restorePermissions(permissionsTree, msg.principle);
     }
 
     @EndPoint({ http: { method: "GET", path: "user-permissions/:id" } })

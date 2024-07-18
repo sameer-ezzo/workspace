@@ -6,8 +6,8 @@ import { ColumnsDescriptor } from "@upupa/table"
 
 
 export const defaultFormActions: ActionDescriptor[] = [
-    { action: 'cancel', type: 'button', text: 'Cancel', variant: 'stroked', meta: { closeDialog: true } },
-    { variant: 'raised', type: 'submit', action: 'submit', text: 'Submit', color: 'primary', meta: { closeDialog: true } }
+    { name: 'cancel', type: 'button', text: 'Cancel', variant: 'stroked', meta: { closeDialog: true } },
+    { variant: 'raised', type: 'submit', name: 'submit', text: 'Submit', color: 'primary', meta: { closeDialog: true } }
 ]
 
 
@@ -28,9 +28,9 @@ export function defaultCreateListItemHandler(scaffolder, value, subject) {
 }
 
 export const defaultListHeaderActions: ActionDescriptor[] = [
-    { position: 'header', action: 'create', variant:'stroked', icon: 'add_circle_outline', text: 'Create' }
+    { position: 'header', name: 'create', variant:'stroked', icon: 'add_circle_outline', text: 'Create' }
 ]
 export const defaultListActions: ActionDescriptor[] = [
-    { variant: 'icon', action: 'edit', icon: 'edit', menu: false },
-    { position: 'menu', action: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
+    { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
+    { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
 ]

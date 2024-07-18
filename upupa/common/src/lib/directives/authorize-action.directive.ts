@@ -1,11 +1,11 @@
 import { HttpClient } from "@angular/common/http";
 import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, inject, Input, Renderer2 } from "@angular/core";
-import { Principle } from "@noah-ark/common";
+import { AuthorizeMessage, AuthorizerService, Principle, Rule, RulesManager } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { firstValueFrom } from "rxjs";
 import { PERMISSIONS_BASE_URL } from '../tokens';
 
-const rules = new Map<string, any>()
+let rulesManager: RulesManager = null
 
 @Directive({
     selector: '[authAction]',
@@ -24,22 +24,32 @@ export class AuthorizeActionDirective implements AfterViewInit {
 
     async ngAfterViewInit(): Promise<void> {
         if (!this.path) return;
-        if (!this.user) this.renderer.setStyle(this.el, 'display', 'none');
-        const userId = this.user?.sub;
-        let rs = rules.get(userId)
-        if (!rs) {
-            rs = await firstValueFrom(this.http.get<any[]>(`${this.baseUrl}/user-permissions/${userId}`))
-            rules.set(userId, rs)
-        }
-        if (!rs || rs.length === 0) return;
+        if ('disabled' in this.el) this.renderer.setProperty(this.el, 'disabled', true);
+        else this.renderer.setStyle(this.el, 'display', 'none');
 
-        const roles = this.user?.roles ?? [];
-        if (roles.length === 0)
+
+        if (!rulesManager) {
+            const rules = await firstValueFrom(this.http.get(`${this.baseUrl}/rules`))
+            const root = rules['/']
+            const children = Object.values(root.children ?? {}) as Rule[]
+            rulesManager = new RulesManager(root.item, children)
+        }
+
+
+        const authorizer = new AuthorizerService()
+        const msg = { path: this.path, operation: this.action, principle: this.user }
+        const rule = rulesManager.getRule(this.path, true)
+        const authResult = authorizer.authorize(msg as AuthorizeMessage, rule, this.action)
+        console.log('Authorizing action', this.action, 'on path', this.path, 'result:', authResult, rule);
+        
+        if (authResult.access === 'deny') {
             if ('disabled' in this.el) this.renderer.setProperty(this.el, 'disabled', true);
             else this.renderer.setStyle(this.el, 'display', 'none');
-        
-        const pathPermissions = rs.filter(p => p.path === this.path);
-
+        }
+        else {
+            if ('disabled' in this.el) this.renderer.removeAttribute(this.el, 'disabled');
+            else this.renderer.setStyle(this.el, 'display', '');
+        }
         this.cdRef.detectChanges();
     }
 }
