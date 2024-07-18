@@ -416,7 +416,7 @@ export class DataService {
 
         const model = await this.getModel(pathInfo.collection);
         if (!model) return Promise.resolve([])
-        const query = q ? this.queryParser.parse(<any>q) : ({} as any);
+        const query = q ? this.queryParser.parse(<any>q, model) : ({} as any);
         const pipeline = [];
         let _id = undefined
         if (pathInfo.id) {
