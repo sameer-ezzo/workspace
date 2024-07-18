@@ -1,9 +1,10 @@
 import { HttpClient } from "@angular/common/http";
 import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, inject, Input, Renderer2 } from "@angular/core";
-import { AuthorizeMessage, AuthorizerService, Principle, Rule, RulesManager } from "@noah-ark/common";
+import { Principle, Rule, RulesManager } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { firstValueFrom } from "rxjs";
 import { PERMISSIONS_BASE_URL } from '../tokens';
+import { AuthorizeMessage, AuthorizerService } from "@noah-ark/expression-engine";
 
 let rulesManager: RulesManager = null
 
@@ -39,9 +40,7 @@ export class AuthorizeActionDirective implements AfterViewInit {
         const authorizer = new AuthorizerService()
         const msg = { path: this.path, operation: this.action, principle: this.user }
         const rule = rulesManager.getRule(this.path, true)
-        const authResult = authorizer.authorize(msg as AuthorizeMessage, rule, this.action)
-        console.log('Authorizing action', this.action, 'on path', this.path, 'result:', authResult, rule);
-        
+        const authResult = authorizer.authorize(msg as AuthorizeMessage, rule, this.action)        
         if (authResult.access === 'deny') {
             if ('disabled' in this.el) this.renderer.setProperty(this.el, 'disabled', true);
             else this.renderer.setStyle(this.el, 'display', 'none');
