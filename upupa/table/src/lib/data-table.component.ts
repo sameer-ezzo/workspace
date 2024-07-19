@@ -15,6 +15,7 @@ import { DataComponentBase } from './datacomponent-base.component'
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { SortHeaderArrowPosition } from '@angular/material/sort'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens'
 
 export type PipeDescriptor = { pipe: Type<any>, args: string[] }
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> }

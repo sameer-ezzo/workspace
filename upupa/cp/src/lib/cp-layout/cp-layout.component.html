@@ -13,17 +13,20 @@
     <mat-drawer #drawer class="sidenav" [mode]="sideBarMode" [opened]="isSidebarOpened && sideBarItems()?.length > 0">
       @for(g of sideBarItems(); track i; let i = $index){
       @if(g.items?.length > 0){
-      <mat-accordion id="cp-accordion-{{g.name}}" displayMode="flat">
+      <mat-accordion class="cp-accordion" [attr.id]="g.name || i" displayMode="flat">
         <mat-expansion-panel [expanded]="i === 0" class="mat-elevation-z0">
 
           @if(g.name){
           <mat-expansion-panel-header>
-            <mat-panel-title>{{g.text}}</mat-panel-title>
+            <mat-panel-title>
+              <ng-container *ngTemplateOutlet="iconTemplate; context: {item: g}"></ng-container>
+              <span>{{g.text}}</span>
+            </mat-panel-title>
           </mat-expansion-panel-header>
           }
 
-          @for(item of g['items']; track item.text;){
-          <ng-container *ngTemplateOutlet="linkTemplate; context: {item: item}"></ng-container>
+          @for(item of g['items']; track item.name || j; let j = $index){
+          <ng-container *ngTemplateOutlet="linkTemplate; context: {item: item, index: j}"></ng-container>
           }
 
         </mat-expansion-panel>
@@ -40,18 +43,18 @@
 </main>
 
 
-<ng-template #linkTemplate let-item="item">
-  <a class="cp-item-link" authAction [path]="item.path" [action]="item.action" [routerLink]="item.link"
-    [queryParams]="item.queryParams" routerLinkActive="active">
-
-    @if(item.icon){
-    <mat-icon>{{item.icon}}</mat-icon>
-    }@else {
-    @if (item.icon_url) {
-    <img [src]="item.icon_url" width="40px" height="40px" />
-    }
-    }
-
+<ng-template #linkTemplate let-item="item" let-index="index">
+  <a class="cp-item-link" [attr.id]="item.name || index" authAction [path]="item.path" [action]="item.action"
+    [routerLink]="item.link" [queryParams]="item.queryParams" routerLinkActive="active">
+    <ng-container *ngTemplateOutlet="iconTemplate; context: {item: item}"></ng-container>
     <span style="margin: 0 .5rem">{{ item.text}}</span>
   </a>
+</ng-template>
+
+<ng-template #iconTemplate let-item="item">
+  @if(item.icon){
+  <mat-icon>{{item.icon}}</mat-icon>
+  }@else if (item.icon_url) {
+  <img [src]="item.icon_url" width="40px" height="40px" />
+  }
 </ng-template>

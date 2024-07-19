@@ -30,6 +30,7 @@ import { MatCardModule } from '@angular/material/card';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DataComponentBase } from './datacomponent-base.component';
 import { DefaultTableCellTemplate } from './cell-template-component';
+import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
 
 
 
@@ -48,6 +49,8 @@ const pipes = [DatePipe, TableColumnSelectorPipe, PercentPipe, CurrencyPipe, Dec
 
 const material = [MatCardModule, MatTableModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBarModule, MatMenuModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatSortModule, MatPaginatorModule, MatIconModule, MatButtonModule, MatToolbarModule,];
 const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
+
+
 @NgModule({
     declarations: declarations,
     imports: [
@@ -61,14 +64,16 @@ const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelec
         TranslationModule
     ],
     exports: [...declarations, DragDropModule],
-    providers: [...pipes]
+    providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }]
 })
 export class DataTableModule {
 
-    static forRoot(providers: Provider[]): ModuleWithProviders<DataTableModule> {
+    static forRoot(providers: Provider[], options: { enableLogs: boolean } = { enableLogs: false }): ModuleWithProviders<DataTableModule> {
         return {
             ngModule: DataTableModule,
-            providers: [...pipes, ...providers]
+            providers: [...pipes, ...providers,
+            { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions(), ...options } }
+            ]
         }
     }
 

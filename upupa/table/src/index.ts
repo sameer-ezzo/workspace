@@ -7,3 +7,4 @@ export * from './lib/datacomponent-base.component';
 export * from './lib/cell-template-component';
 export * from './lib/columns-select.component/columns-select.component';
 export * from './lib/data-table.module';
+export * from './lib/di.tokens';

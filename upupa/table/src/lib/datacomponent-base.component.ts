@@ -11,6 +11,7 @@ import { SelectionModel } from '@angular/cdk/collections'
 import { InputBaseComponent } from '@upupa/common'
 import { FormControl } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens'
 
 
 export class Logger {
@@ -29,6 +30,7 @@ export class Logger {
 })
 export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | Partial<T>[]> {
 
+    private readonly dataTableOptions = inject(DATA_TABLE_OPTIONS) as DataTableOptions
 
     loading = signal(false)
 
@@ -99,7 +101,9 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
             if (this._adapter !== this.adapter) {
                 this._adapter = this.adapter
-                Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
+                if (this.dataTableOptions.enableLogs) {
+                    Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
+                }
             }
 
 

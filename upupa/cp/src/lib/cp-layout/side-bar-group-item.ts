@@ -38,12 +38,13 @@ export function layoutRoute(options: {
         }
     };
 }
-export function layoutListRoute(options: {
-    component?: Route['component'],
-    scaffolder?: any,
-} = { component: DataListComponent },
+export function layoutListRoute(options: { component?: Route['component'] } = { component: DataListComponent },
     route: Omit<Route, 'component'>): Route {
     if (!options) options = { component: DataListComponent }
     if (!options.component) options.component = DataListComponent
-    return { ...route, component: options.component }
+    return {
+        ...route,
+        component: options.component,
+        runGuardsAndResolvers: 'pathParamsChange'
+    }
 }
