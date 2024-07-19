@@ -20,7 +20,7 @@ import {
 import { ColumnsDescriptor } from "@upupa/table";
 import { SnackBarService } from "@upupa/common";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
-import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultUserListColumns } from "../types";
+import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions, defaultUserListColumns } from "../types";
 import { RoleFormComponent } from "../role-form/role-form.component";
 import { firstValueFrom } from "rxjs";
 
@@ -44,15 +44,14 @@ export class RolesListComponent implements OnInit {
     public confirm: ConfirmService,
     public dialog: DialogService
   ) {
-    const _options  = options.lists?.roles
-    this.columns = _options?.columns || defaultRolesListColumns;
-    this.actions = (_options?.actions || defaultRolesListActions) as ActionDescriptor[];
+
   }
 
   @Input() primary: string;
   @Input() accent: string;
 
   @Input() columns: ColumnsDescriptor;
+  @Input() headerActions: ActionDescriptor[];
   @Input() actions: ActionDescriptor[];
   @Output() action = new EventEmitter<ActionEvent>();
 
@@ -60,6 +59,11 @@ export class RolesListComponent implements OnInit {
   loading = false;
 
   ngOnInit() {
+    const _options = this.options.lists?.roles
+    this.columns = _options?.columns || defaultRolesListColumns;
+    this.headerActions = (_options?.headerActions || defaultRolesListHeaderActions) as ActionDescriptor[];
+    this.actions = (_options?.rowActions || defaultRolesListActions) as ActionDescriptor[];
+
     const select = [...new Set(["name"].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
     const dataSource = new ServerDataSource<any>(this.data, "/v2/role", select);
 
