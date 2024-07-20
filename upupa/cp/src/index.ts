@@ -23,3 +23,4 @@ export * from './lib/media-library/media-library.component';
 export * from './lib/data-filter-form/data-filter-form.component';
 export * from './lib/decorators/decorator.types';
 export * from './lib/tool-bar-user-menu/tool-bar-user-menu.component';
+export * from './lib/dbI18n.pipe';

@@ -156,7 +156,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
             if (e.action.type === 'submit' || e.action.meta?.closeDialog === true)
                 if (e.action.type === 'submit') ref.close(res || this.component)
                 else ref.close(res)
-            else console.warn(`Action ${e.action.action} has no handler.`);
+            else console.warn(`Action ${e.action.name} has no handler.`);
 
     }
 

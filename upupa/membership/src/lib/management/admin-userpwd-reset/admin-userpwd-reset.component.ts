@@ -37,7 +37,7 @@ export class AdminUserPasswordRestComponent {
 
     dialogRef: MatDialogRef<UpupaDialogComponent>
     async onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent>) {
-        if (e.action.action === 'reset') {
+        if (e.action.name === 'reset') {
             const res = await this.reset()
             dialogRef.close(res)
         }

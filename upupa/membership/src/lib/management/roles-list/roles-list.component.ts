@@ -84,12 +84,12 @@ export class RolesListComponent implements OnInit {
     const roles = e.data;
     const role = roles?.length ? roles[0] : null;
 
-    switch (e.action.action) {
+    switch (e.action.name) {
       case "create":
       case "edit": {
         const data = {
           inputs: { role: role },
-          title: `${toTitleCase(e.action.action)} Role`,
+          title: `${toTitleCase(e.action.name)} Role`,
         };
         const res = await firstValueFrom(
           this.dialog.openDialog(RoleFormComponent, { ...data }).afterClosed()

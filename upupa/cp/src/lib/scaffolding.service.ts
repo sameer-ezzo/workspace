@@ -28,6 +28,9 @@ import { PathInfo, PathMatcher } from "@noah-ark/path-matcher";
 import { DialogService, DialogServiceConfig } from "@upupa/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { HttpClient } from "@angular/common/http";
+import { ColumnDescriptor, ColumnsDescriptor } from "@upupa/table";
+import { DbI18nPipe } from "./dbI18n.pipe";
+import { LanguageService } from "@upupa/language";
 
 @Injectable({ providedIn: "root" })
 export class ScaffoldingService {
@@ -35,11 +38,12 @@ export class ScaffoldingService {
     private readonly injector = inject(Injector)
     private readonly dialog = inject(DialogService)
     private readonly data = inject(DataService)
+    private readonly langService = inject(LanguageService)
     private readonly scaffoldingScheme = inject(SCAFFOLDING_SCHEME)
 
 
     constructor() {
-        addPath(this.matcher, "/", this.scaffoldingScheme);        
+        addPath(this.matcher, "/", this.scaffoldingScheme);
     }
 
 
@@ -92,10 +96,19 @@ export class ScaffoldingService {
         listViewModel.rowActions ??= scaffoldingModel.actions ?? defaultListActions;
         const filter = (listViewModel.query?.() ?? []) as any[];
         const fObj = filter.reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
-        let select = listViewModel.select ?? Object.keys(listViewModel.columns ?? {})
-        if (typeof select === 'string') select = select.split(',').filter(s => s)
-        select.push(...Object.getOwnPropertyNames(fObj))
-        select = select.filter((s, i, a) => a.indexOf(s) === i)
+        const columns = listViewModel.columns ?? {};
+        const columnsSelect = []
+        listViewModel.select ??= []
+        const select = (typeof listViewModel.select === 'string' ? listViewModel.select.split(',').filter(s => s) : listViewModel.select ?? []
+        ).filter((s, i, a) => a.indexOf(s) === i)
+        for (let i = 0; i < select.length; i++) {
+            const column = columns[select[i]] as ColumnDescriptor;
+            if (column.pipe) {
+                const p = 'pipe' in column.pipe ? column.pipe.pipe : column.pipe
+                if (p.prototype.constructor.name === DbI18nPipe.name)
+                    select.splice(i, 1, `${select[i]}.${this.langService.language ?? this.langService.defaultLang}`)
+            }
+        }
         const dataAdapter = listViewModel.adapter
         let source = null
         if (dataAdapter?.type === 'server')

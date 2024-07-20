@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Pipe, inject } from "@angular/core";
 import { TagsService } from "./tags.service";
 import { Observable, Subscribable, map, tap } from "rxjs";
 import { AsyncPipe } from "@angular/common";
+import { LanguageService } from "@upupa/language";
 
 @Pipe({
     name: 'tags',

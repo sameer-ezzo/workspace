@@ -8,7 +8,7 @@ import { InlineEditableListComponent } from '../inline-editable-list/inline-edit
 import { SideBarGroup, SideBarItem } from './side-bar-group-item'
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
-import { CP_SIDE_BAR_ITEMS, CP_OPTIONS, SCAFFOLDING_SCHEME } from '../di.token'
+import { CP_SIDE_BAR_ITEMS, SCAFFOLDING_SCHEME } from '../di.token'
 
 @Component({
   selector: 'cp-layout',
@@ -47,7 +47,11 @@ export class CpLayoutComponent {
 
   constructor() {
     console.log("Scheme: ", inject(SCAFFOLDING_SCHEME));
-    this.sideBarItems.set(inject(CP_SIDE_BAR_ITEMS) ?? this.sideBarCommands ?? [])
+    const t = inject(CP_SIDE_BAR_ITEMS) ?? this.sideBarCommands ?? []
+
+    if (Array.isArray(t)) this.sideBarItems.set(t)
+    else if (t instanceof Promise) t.then(this.sideBarItems.set)
+    else t.subscribe(r => this.sideBarItems.set(r))
   }
 
   ngOnInit() {

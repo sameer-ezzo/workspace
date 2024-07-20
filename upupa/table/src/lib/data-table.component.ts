@@ -166,7 +166,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
         }
 
-        const headerActions = changes['headerActions']?.currentValue ?? this.headerActions
+        const headerActions = changes['headerActions']?.currentValue ?? this.headerActions ?? []
 
         this._headerActions.set(
             ((Array.isArray(headerActions) ? headerActions : headerActions(this.adapter.normalized, this.selectedNormalized())) || [])

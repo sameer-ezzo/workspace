@@ -1,11 +1,12 @@
 
-import { Injectable } from '@angular/core'
+import { inject, Injectable } from '@angular/core'
 import { DataService } from '@upupa/data'
 import { ObjectId } from '@upupa/data'
 import { Observable, of } from 'rxjs'
 
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { Tag } from './tag.model'
+import { LanguageService } from '@upupa/language'
 
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class TagsService {
 
   private readonly idTagMap: Map<string, Tag> = new Map()
   private readonly tagsMap: Map<string, Tag[]> = new Map()
+  private readonly langService = inject(LanguageService)
 
   constructor(private dataService: DataService) {
     this.getTags().subscribe()
@@ -26,9 +28,10 @@ export class TagsService {
     if (this.gettingByPath.has(parentPath)) return this.gettingByPath.get(parentPath)
     const tags = this.tagsMap.get(parentPath) ?? []
     if (tags.length) return of(tags)
-    const filter = { parentPath: `${parentPath}*` }
+    const filter = { parentPath: `${parentPath}*`, select: `_id,name.${this.langService.language ?? this.langService.defaultLang},order,meta` }
     const rx = () => this.dataService.get<any>(`/v2/tag`, filter).pipe(
       map(res => res.data as Tag[]),
+      map(tags => tags.map(t => ({ ...t, name: t.name[this.langService.language ?? this.langService.defaultLang] }))),
       tap(tags => {
         this.tagsMap.set(parentPath, tags)
         tags.forEach(t => this.idTagMap.set(t._id, t))

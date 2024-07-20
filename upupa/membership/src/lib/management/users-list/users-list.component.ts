@@ -144,7 +144,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
     const users = e.data;
     const user = users?.[0];
 
-    switch (e.action.action) {
+    switch (e.action.name) {
       case "impersonate":
         this.bus.emit("impersonating-user", true, this);
         try {
@@ -160,7 +160,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       case "create":
       case "edit": {
 
-        const mode = e.action.action === 'create' ? 'createUser' : 'editUser';
+        const mode = e.action.name === 'create' ? 'createUser' : 'editUser';
         const formOptions = this.options.forms[mode]
         let fullUser = user
         if (mode === 'editUser') {
@@ -177,7 +177,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
         task = firstValueFrom(
           this.dialog
             .openDialog(UserFormComponent, {
-              title: toTitleCase(`${e.action.action} user`),
+              title: toTitleCase(`${e.action.name} user`),
               inputs: {
                 user: fullUser,
                 mode,
@@ -239,7 +239,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       }
       default:
         this.action.emit(e);
-        this.bus.emit(e.action.action, e, this);
+        this.bus.emit(e.action.name, e, this);
         break;
     }
 

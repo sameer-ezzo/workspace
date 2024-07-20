@@ -140,7 +140,7 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
 
         const opts = {
             ...options,
-            text: toTitleCase(path),
+            // text: toTitleCase(path),
             createForm: { ...(options.createForm ?? {}) },
             editForm: {
                 selector: options.editForm?.selector || ':id',
@@ -153,13 +153,13 @@ export function scaffolder(path: string, options: ViewMetaOptions & ModelSchemeR
                 scaffolder: options.viewForm?.scaffolder
             }
         } as ViewMetaOptions & ModelSchemeRouteOptions;
-        const listMeta = {
-            icon: opts.icon,
-            text: opts.text,
-            group: opts.group,
-            positions: opts.positions
-        }
-        if (options.listView !== null) listScaffolder(path, { ...listMeta, ...opts.listView })(target)
+        // const listMeta = {
+        //     icon: opts.icon,
+        //     text: opts.text,
+        //     group: opts.group,
+        //     positions: opts.positions
+        // }
+        if (options.listView !== null) listScaffolder(path, { /*...listMeta,*/ ...opts.listView })(target)
         if (options.createForm !== null) createFormScaffolder(path, opts.createForm)(target);
         if (options.editForm !== null) editFormScaffolder(path, opts.editForm)(target);
         if (options.viewForm !== null) viewFormScaffolder(path, opts.editForm)(target);

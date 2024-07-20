@@ -88,7 +88,7 @@ export class RulePermissionsTableComponent {
 
 
     async onTableAction(e: ActionEvent) {
-        const action = e.action.action;
+        const action = e.action.name;
         switch (action) {
             case "delete": {
                 await this.permissionsService.deletePermission(e.data[0])

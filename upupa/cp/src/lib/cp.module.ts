@@ -27,11 +27,12 @@ import { MembershipModule, UsersManagementModule } from "@upupa/membership";
 import { MediaLibraryComponent } from "./media-library/media-library.component";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { mergeScaffoldingScheme, scaffoldingScheme } from "./decorators/scheme.router.decorator";
-import { TagsModule } from "@upupa/tags";
+import { TagsModule, TagsPipe } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
 import { getUserInitialsImage } from "./user-image.service";
 import { catchError, map, of, switchMap } from "rxjs";
 import { CpLayoutOptions } from "./decorators/decorator.types";
+import { DbI18nPipe } from "./dbI18n.pipe";
 
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
@@ -71,7 +72,7 @@ const declarations = [
         DataModule,
         DynamicFormNativeThemeModule,
         DynamicFormModule,
-        DataTableModule,
+        DataTableModule.forRoot([TagsPipe, DbI18nPipe]),
         UploadModule,
         PopoverModule,
         RouterModule.forChild(cpRoutes),
@@ -91,8 +92,8 @@ export class ControlPanelModule {
     public static register(options: {
         providers?: any[],
     } = {
-                providers: [userImageProvider]
-            }): ModuleWithProviders<ControlPanelModule> {
+            providers: [userImageProvider]
+        }): ModuleWithProviders<ControlPanelModule> {
         const scaffolders = mergeScaffoldingScheme()
 
         return {

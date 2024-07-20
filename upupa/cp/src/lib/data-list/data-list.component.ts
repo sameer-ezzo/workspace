@@ -256,13 +256,13 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
     private async openFormDialog(collection: string, payload: ActionEvent) {
         const id = payload.data?.length > 0 ? payload.data[0]._id : null;
-        const path = '/' + [payload.action.action, collection, id].filter(s => s).join("/")
+        const path = '/' + [payload.action.name, collection, id].filter(s => s).join("/")
 
         const res = await this.scaffolder.dialogForm(path, {
             closeOnNavigation: true,
             disableClose: true,
             direction: languageDir(this.languageService.language),
-            title: toTitleCase(`${payload.action.action} ${collection}`),
+            title: toTitleCase(`${payload.action.name} ${collection}`),
         })
         if (!res) return
 
@@ -283,7 +283,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
     async onAction(x: ActionEvent) {
         const path = PathInfo.parse(this.dataListResolverResult.path, 1);
-        switch (x.action.action) {
+        switch (x.action.name) {
             case "create":
             case "edit":
             case "view":
@@ -316,7 +316,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
                 break;
             }
             default:
-                const id = `${this.collection}_${x.action.action}`
+                const id = `${this.collection}_${x.action.name}`
                 this.bus.emit(id, {
                     msg: id,
                     ...x,

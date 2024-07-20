@@ -2,8 +2,9 @@ import { ActionDescriptor } from "@upupa/common";
 import { DataListComponent } from "../data-list/data-list.component";
 import { Route } from "@angular/router";
 import { CP_SIDE_BAR_ITEMS, SCAFFOLDING_SCHEME } from "../di.token";
-import { getListScaffolder, mergeScaffoldingScheme } from "../decorators/scheme.router.decorator";
-import { ScaffoldingService } from "../scaffolding.service";
+import { mergeScaffoldingScheme } from "../decorators/scheme.router.decorator";
+import { Observable } from "rxjs";
+import { Type } from "@angular/core";
 
 
 export type SideBarItem = ActionDescriptor & {
@@ -13,8 +14,8 @@ export type SideBarItem = ActionDescriptor & {
     target?: string;
     external?: boolean;
 
-    component?: any
-    scaffolder?: any
+    component?: Type<any>
+    viewModel?: any
 };
 
 export type SideBarGroup = { name: string, text: string, items: SideBarItem[] };
@@ -23,7 +24,7 @@ export type SideBarViewModel = (SideBarGroup | SideBarItem)[]
 
 export function layoutRoute(options: {
     layout: Route['component'],
-    sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel, deps?: any[]; },
+    sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>, deps?: any[]; },
 }, route: Omit<Route, 'component'>): Route {
     return {
         ...route,

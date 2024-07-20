@@ -157,7 +157,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     onAction(event: any, action: ActionDescriptor) {
         event.stopPropagation()
         this.action.emit(action)
-        this.bus.emit(action.action, { msg: action.action }, this) //select-{name}-{action}
+        this.bus.emit(action.name, { msg: action.name }, this) //select-{name}-{action}
     }
 
 }
