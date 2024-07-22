@@ -13,7 +13,7 @@ import { Axios } from "axios";
 import { logger } from "./logger";
 import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
-import mongoose from "mongoose";
+import { UsersOptions } from './types';
 
 
 
@@ -26,16 +26,28 @@ export type RefreshSigninRequestGrant = { grant_type: 'refresh', refresh_token: 
 export type SigninRequest = SigninRequestBase & (PasswordSigninRequestGrant | RefreshSigninRequestGrant)
 
 @Controller('auth')
-export class AuthController {
+export class UsersController {
     private http: Axios
     constructor(
         private auth: AuthService,
         private readonly broker: Broker,
+        @Inject('USERS_OPTIONS') private readonly options: UsersOptions,
         @Inject('AUTH_DB') private dataService: DataService,
         private authorizationService: AuthorizeService) {
         this.http = new Axios({
             transformResponse: [(data) => JSON.parse(data)]
         });
+
+        setTimeout(() => { // wait for user model is added to data service
+            const { password, roles, email, username, name } = options.superAdmin
+            this.installSuperAdmin({ email, username: username ?? email, name }, password, roles)
+                .then(() => { })
+                .catch((error) => {
+                    if (error.message !== 'ALREADY_INSTALLED')
+                        logger.error(error)
+                })
+        }, 1000);
+
     }
 
 
@@ -75,21 +87,35 @@ export class AuthController {
     @Authorize({ by: 'anonymous', access: 'grant' })
     @EndPoint({ http: { method: 'GET', path: 'install' }, cmd: 'auth/install' })
     public async install(@Message() msg: IncomingMessage) {
-        logger.info('installing')
-        logger.info(msg.query)
-        const cnt = await this.dataService.count('/user')
-        logger.info(cnt)
-        if (cnt === 0 && !installed) {
-            const password = msg.query.password as string ?? randomString(8)
-            const email = msg.query.email as string ?? 'ramyhhh@gmail.com'
-            const user = { username: email, email } as Partial<User>
-            const result = await this.auth.signUp(user as Partial<User>, password)
-            installed = result !== null
-            await this.auth.addUserToRoles(result._id, ['super-admin'])
-            return password
-        } else {
-            throw new HttpException('NOTFOUND', HttpStatus.NOT_FOUND);
+        const password = msg.query.password as string ?? randomString(8)
+        const email = msg.query.email as string ?? 'ramyhhh@gmail.com'
+        try {
+            await this.installSuperAdmin({ email }, password)
+            return { email, password }
+        } catch (error) {
+            if (error.message === 'ALREADY_INSTALLED')
+                throw new HttpException('Not found', HttpStatus.NOT_FOUND)
+            throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
         }
+
+    }
+
+    private async installSuperAdmin(user: Partial<User>, password: string, roles = ['super-admin']) {
+        if (installed) throw new Error('ALREADY_INSTALLED')
+
+        const cnt = await this.dataService.count('/user')
+        if (cnt > 0) throw new Error('ALREADY_INSTALLED');
+        logger.info(`Installing super admin user ${user.email}`)
+
+        const payload = { ...user } as Partial<User>
+        const result = await this.auth.signUp(payload as Partial<User>, password)
+        installed = result !== null
+        roles ??= []
+        roles.push('super-admin')
+        roles = [...new Set(roles)]
+        await this.auth.addUserToRoles(result._id, roles)
+        installed = true
+        return { ...result, roles }
     }
 
     @Authorize({ by: 'role', value: 'super-admin', access: 'grant' })
@@ -329,36 +355,35 @@ export class AuthController {
         }
 
         let userRecord: User = await this.auth.findUserByEmail(googleUser.email);
+
         const GOOGLE_CLIENT_REGISTRATION_ENABLED = (process.env.GOOGLE_CLIENT_REGISTRATION_ENABLED || 'false').toLowerCase() === 'true'
 
-        const user = {
-            hd: googleUser.hd,
-            email: googleUser.email,
-            username: googleUser.email,
-            emailVerified: googleUser.email_verified,
-            name: googleUser.name,
-            picture: googleUser.picture,
-            given_name: googleUser.given_name,
-            family_name: googleUser.family_name,
-            locale: googleUser.locale,
-            language: googleUser.locale,
-        } as unknown as User
 
-        if (!userRecord || userRecord.external?.google !== googleUser.sub) {
-            if (GOOGLE_CLIENT_REGISTRATION_ENABLED === true) {
-                const external = userRecord?.external ?? {}
-                try {
-                    const res = await this.auth.signUp({
-                        ...user,
-                        external: { ...external, ['google']: googleUser.sub }
-                    } as User, '')
-                    userRecord = await this.auth.findUserByEmail(res.email);
+        if (!userRecord) {
+            if (GOOGLE_CLIENT_REGISTRATION_ENABLED !== true) throw new HttpException("User not found", HttpStatus.NOT_FOUND)
+            const user = {
+                hd: googleUser.hd,
+                email: googleUser.email,
+                username: googleUser.email,
+                emailVerified: googleUser.email_verified,
+                name: googleUser.name,
+                picture: googleUser.picture,
+                given_name: googleUser.given_name,
+                family_name: googleUser.family_name,
+                locale: googleUser.locale,
+                language: googleUser.locale,
+            } as unknown as User
+            const external = userRecord?.external ?? {}
+            try {
+                const res = await this.auth.signUp({
+                    ...user,
+                    external: { ...external, ['google']: googleUser.sub }
+                } as User, '')
+                userRecord = await this.auth.findUserByEmail(res.email);
 
-                } catch (error) {
-                    throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
-                }
+            } catch (error) {
+                throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
             }
-            else userRecord = { _id: new mongoose.Types.ObjectId(), ...user } as any
         }
 
         const access_token = await this.auth.issueAccessToken(userRecord);

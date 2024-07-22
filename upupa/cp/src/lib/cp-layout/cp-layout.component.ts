@@ -46,7 +46,6 @@ export class CpLayoutComponent {
   public auth = inject(AuthService)
 
   constructor() {
-    console.log("Scheme: ", inject(SCAFFOLDING_SCHEME));
     const t = inject(CP_SIDE_BAR_ITEMS) ?? this.sideBarCommands ?? []
 
     if (Array.isArray(t)) this.sideBarItems.set(t)

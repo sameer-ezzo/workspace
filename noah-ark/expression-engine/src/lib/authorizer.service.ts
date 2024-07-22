@@ -13,10 +13,10 @@ export class AuthorizerService {
      * @param additional Any data useful for the authorization function @example { new_data, old_data }
      * @returns grant or deny access for the provided msg/action
      */
-    authorize(msg: AuthorizeMessage, rule: any, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
+    static authorize(msg: AuthorizeMessage, rule: any, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
         //BUILD CONTEXT AND ALLOW SUPER ADMIN
         action ??= msg.operation
-        if (this._isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, source: 'default', access: 'grant' }
+        if (AuthorizerService._isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, source: 'default', access: 'grant' }
 
         // const rule = this.rulesService.getRule(msg.path, true)! // use default app rule
         const ruleSummary = rule ? { name: rule.name, path: rule.path, fallbackSource: rule.fallbackSource, ruleSource: rule.ruleSource } : undefined
@@ -37,7 +37,7 @@ export class AuthorizerService {
         if (!permissions.length) return { rule: ruleSummary, action, source, access }
 
         const accessResults = permissions.map(p => ({
-            result: this._evalPermission(p, { msg, additional }),
+            result: AuthorizerService._evalPermission(p, { msg, additional }),
             permission: p
         }))
 
@@ -61,7 +61,7 @@ export class AuthorizerService {
         return { rule: ruleSummary, action, source, access }
     }
 
-    private _evalPermission(p: Permission, ctx?: { msg: AuthorizeMessage, additional?: Record<string, unknown> }): boolean | undefined {
+    static _evalPermission(p: Permission, ctx?: { msg: AuthorizeMessage, additional?: Record<string, unknown> }): boolean | undefined {
         // if (!action || !p?.action) return undefined
 
         if (isPermissionSimple(p)) {
@@ -101,7 +101,7 @@ export class AuthorizerService {
     }
 
 
-    private _isSuperAdmin(ctx: AuthorizeMessage) {
+    static _isSuperAdmin(ctx: AuthorizeMessage) {
         const principle = ctx.principle!;
         return principle && principle.roles?.some((r: string) => r === 'super-admin' || r === 'developer');
     }

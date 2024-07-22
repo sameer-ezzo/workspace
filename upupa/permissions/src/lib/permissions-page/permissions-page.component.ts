@@ -52,7 +52,7 @@ export class PermissionsPageComponent {
             }
         })
         const permissions = JSON.parse(permissionsStr as string)
-        await this.permissionsService.setRules(permissions)
+        await this.permissionsService.restorePermissions(permissions)
 
     }
 }

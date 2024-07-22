@@ -20,15 +20,21 @@ export class PathMatcher<T extends object> {
 
     private readonly _items = new Map<string, T | null>()
 
-    items(path?: string): { path: string,item: T | null }[] {
-        const p : string = path?.trim().length ? path : '/'
+    items(path?: string): { path: string, item: T | null }[] {
+        const p: string = path?.trim().length ? path : '/'
         return Array.from(this._items).filter(e => e[0].startsWith(p)).map(e => ({ path: e[0], item: e[1] }))
     }
 
 
     private readonly pathTree!: { ["/"]: TreeBranch<T> }
 
-    get tree() { return { ...this.pathTree } }
+    public get tree(): TreeBranch<T> {
+        return this.pathTree['/'];
+    }
+    public set tree(value: TreeBranch<T>) {
+        this.pathTree["/"] = value;
+    }
+    
     constructor(root: T) {
         this.pathTree = { ["/"]: { item: root, children: {} } }
         this._items.set('/', root)

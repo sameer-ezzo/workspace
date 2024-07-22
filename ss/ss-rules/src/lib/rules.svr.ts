@@ -20,9 +20,11 @@ export class RulesService {
         for (const item of permissionsTree) {
             const rule = item.rule as Rule
             for (const action in rule.actions) {
-                const permission = rule.actions[action] as unknown as SimplePermission
-                if (!permission._id) continue
-                await this.updatePermission(rule.name, permission.name, permission, principle)
+                const permissions = rule.actions[action] as unknown as SimplePermission[]
+                for (const permission of permissions) {
+                    if (!permission._id) continue
+                    await this.updatePermission(rule.name, action, permission, principle)
+                }
             }
         }
     }

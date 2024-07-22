@@ -50,7 +50,7 @@ export class PermissionsService {
         ))
         return this.userPermissions.get(userId)
     }
-    async setRules(permissions: any) {
+    async restorePermissions(permissions: any) {
         await firstValueFrom(this.http.post(`${this.base}/restore-permissions`, permissions))
         return await this.getRules(true)
     }
@@ -108,7 +108,7 @@ export function convertTreeToArray<T>(tree: TreeBranch<T>): NodeModel<T>[] {
         for (const r in node.children) extract(node.children[r], level + 1, x.children)
         acc.push(x)
     }
-    for (const rc in tree['/'].children) extract(tree['/'].children[rc], 0, res)
+    for (const rc in tree.children) extract(tree.children[rc], 0, res)
 
     return res
 }

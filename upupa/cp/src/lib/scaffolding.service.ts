@@ -103,10 +103,18 @@ export class ScaffoldingService {
         ).filter((s, i, a) => a.indexOf(s) === i)
         for (let i = 0; i < select.length; i++) {
             const column = columns[select[i]] as ColumnDescriptor;
+            if (!column) {
+                console.log(`${select[i]} is in the select statement with no column to display`, columns);
+                continue;
+            }
             if (column.pipe) {
-                const p = 'pipe' in column.pipe ? column.pipe.pipe : column.pipe
-                if (p.prototype.constructor.name === DbI18nPipe.name)
-                    select.splice(i, 1, `${select[i]}.${this.langService.language ?? this.langService.defaultLang}`)
+                try {
+                    const pipe = 'pipe' in column.pipe ? column.pipe.pipe : column.pipe;
+                    if (pipe.prototype.constructor.name === DbI18nPipe.name)
+                        select.splice(i, 1, `${select[i]}.${this.langService.language ?? this.langService.defaultLang}`)
+                } catch (error) {
+                    console.error(error);
+                }
             }
         }
         const dataAdapter = listViewModel.adapter

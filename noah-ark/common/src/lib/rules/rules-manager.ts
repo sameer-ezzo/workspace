@@ -1,15 +1,20 @@
 import { JsonPointer } from "@noah-ark/json-patch";
 import { Rule } from "./rule";
-import { PathMatcher } from "@noah-ark/path-matcher";
+import { PathMatcher, TreeBranch } from "@noah-ark/path-matcher";
 
 export class RulesManager {
     private readonly rulesPathMatcher: PathMatcher<Rule>;
     
     
     
-    get tree() {
+    public get tree(): TreeBranch<Rule> {
         return this.rulesPathMatcher.tree
     }
+    public set tree(value: TreeBranch<Rule>) {
+        if(value.item.path !== '/') throw new Error('Root path must be /')
+        this.rulesPathMatcher.tree = value;
+    }
+
     get rules() {
         return this.rulesPathMatcher.items()
     }
@@ -18,13 +23,16 @@ export class RulesManager {
         return this.rulesPathMatcher.root;
     }
     set root(root: Rule) {
+
         this.rulesPathMatcher.root = root;
     }
     
     
     constructor(readonly rootRule: Rule, readonly appRules: Rule[]) {
         this.rulesPathMatcher = new PathMatcher<Rule>(rootRule);
+        this.appRules.forEach(r => this.rulesPathMatcher.add(r.path, r));
     }
+
     updateRootWith(path: string, payload: any) {
         JsonPointer.set(this.root, path, payload);
     }

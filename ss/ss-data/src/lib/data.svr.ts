@@ -82,15 +82,19 @@ export class DataService {
                         //     logger.warn(`Migration model not found for ${migrations[i].collectionName}. Migation skipped!`);
                         //     continue
                         // }
-                        await migrations[i].up?.(ds);
-                        await model.create({
-                            _id: this.generateId(),
-                            name: migrations[i].name,
-                            date: new Date(),
-                            collectionName: migrations[i].collectionName,
-                            documentVersion: 1,
-                            lockVersion: 0
-                        } as unknown as MigrationModel);
+                        try {
+                            await migrations[i].up?.(ds);
+                            await model.create({
+                                _id: this.generateId(),
+                                name: migrations[i].name,
+                                date: new Date(),
+                                collectionName: migrations[i].collectionName,
+                                documentVersion: 1,
+                                lockVersion: 0
+                            } as unknown as MigrationModel);
+                        } catch (error) {
+                            logger.error(`Error on migration: ${migrations[i].name}`, error)
+                        }
                     }
                 }
             }
@@ -285,7 +289,7 @@ export class DataService {
 
         return this._models[collectionName]
     }
-    
+
 
     addExclusion(name: string, exclude: string[]) {
         this._exclusions[name] = exclude;

@@ -28,10 +28,10 @@ export class TagsService {
     if (this.gettingByPath.has(parentPath)) return this.gettingByPath.get(parentPath)
     const tags = this.tagsMap.get(parentPath) ?? []
     if (tags.length) return of(tags)
-    const filter = { parentPath: `${parentPath}*`, select: `_id,name.${this.langService.language ?? this.langService.defaultLang},order,meta` }
+    const filter = { parentPath: `${parentPath}*`, select: `_id,name,order,meta` }
     const rx = () => this.dataService.get<any>(`/v2/tag`, filter).pipe(
       map(res => res.data as Tag[]),
-      map(tags => tags.map(t => ({ ...t, name: t.name[this.langService.language ?? this.langService.defaultLang] }))),
+      map(tags => tags.map(t => ({ ...t, name: typeof t.name === 'string' ? t.name : t.name[this.langService.language ?? this.langService.defaultLang] }))),
       tap(tags => {
         this.tagsMap.set(parentPath, tags)
         tags.forEach(t => this.idTagMap.set(t._id, t))

@@ -19,8 +19,7 @@ export class AuthorizeService {
      * @returns grant or deny access for the provided msg/action
      */
     authorize(msg: IncomingMessage, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
-        const authorizer = new AuthorizerService()
         const rule = this.rulesService.getRule(msg.path, true)! // use default app rule
-        return authorizer.authorize(msg as AuthorizeMessage, rule, action, additional)
+        return AuthorizerService.authorize(msg as AuthorizeMessage, rule, action, additional)
     }
 }
