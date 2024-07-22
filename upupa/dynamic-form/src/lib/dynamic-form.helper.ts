@@ -3,7 +3,7 @@ export function mergeFields(target: Partial<FieldItem>, source: Partial<FieldIte
     const getValidations = (f: Pick<FieldItem, 'validations'>) => (f.validations ? f.validations.map(v => ({ ...v })) : [])
     const validations = [...getValidations(source), ...getValidations(target)]
 
-    const reuslt: Field = {
+    const result: Field = {
         input: target.input ?? source.input, //copy string
         name: target.name ?? source.name, //copy string
         type: target.type ?? source.type, //copy string
@@ -19,7 +19,7 @@ export function mergeFields(target: Partial<FieldItem>, source: Partial<FieldIte
     }
 
 
-    return reuslt;
+    return result;
 
 }
 

@@ -121,7 +121,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     async valueChanged(key: Partial<T> | Partial<T>[]) {
         const getValueForKey = (all: NormalizedItem[], key: string) => (all.find(a => a.key === key)?.value)
 
-        if (!key) this.value = undefined
+        if (key === undefined) this.value = undefined
         else {
             const all = this.valueDataSource.concat(this.adapter?.normalized || [])
             if (Array.isArray(key)) this.value = key.map(k => getValueForKey(all, k as unknown as string))
