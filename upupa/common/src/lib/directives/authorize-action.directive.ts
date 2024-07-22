@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Input, Renderer2 } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Input, OnChanges, Renderer2, SimpleChanges } from "@angular/core";
 import { Principle, Rule, RulesManager } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { ReplaySubject } from "rxjs";
@@ -8,6 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PERMISSIONS_BASE_URL } from '../tokens';
 import { AuthorizeMessage, AuthorizerService } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
+import { isEmpty } from "lodash";
 
 
 let rulesManager: RulesManager = null
@@ -18,7 +19,8 @@ let sub = null
     selector: '[authAction]',
     exportAs: 'authAction',
 })
-export class AuthorizeActionDirective implements AfterViewInit {
+export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
+
     private readonly el = inject(ElementRef);
     private readonly http = inject(HttpClient);
     private readonly auth = inject(AuthService);
@@ -42,34 +44,54 @@ export class AuthorizeActionDirective implements AfterViewInit {
         })
 
     }
-    async ngAfterViewInit(): Promise<void> {
-        const nel = this.el.nativeElement
-        this.deny(nel)
-        const path = [(this.path || nel.getAttribute('path') || nel.getAttribute('data-path') || '').replace(/\/$/, '')].join('/')
-        rules$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rules => this._authorize(nel, rulesManager, path, this.action, this.user))
+
+    initialized = false
+    ngOnChanges(changes: SimpleChanges) {
+        if (this.initialized) {
+            this._authorize(rulesManager, this.path, this.action, this.user)
+        }
     }
 
+    originalDisplay = ''
+    originalState = false
+    ngAfterViewInit(): void {
+        const el = this.el.nativeElement as HTMLElement
+        this.originalDisplay = el.style.display
+        this.originalState = el['disabled'] === true
+
+        rules$.pipe(
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(rules => {
+            this._authorize(rulesManager, this.path, this.action, this.user);
+            this.initialized = true;
+        });
+    }
     private deny(el: HTMLElement) {
-        if ('disabled' in el)
-            if (this.disableDenied === true) this.renderer.setProperty(el, 'disabled', true);
-            else this.renderer.setStyle(el, 'display', 'none');
+
+        if (this.disableDenied === true) if ('disabled' in el) this.renderer.setProperty(el, 'disabled', true);
+        else this.renderer.setStyle(el, 'display', 'none');
 
         if (this.hideDenied === true) {
             this.renderer.setStyle(el, 'display', 'none');
         }
+        this.cdRef.detectChanges();
     }
     private grant(el: HTMLElement) {
-        if ('disabled' in el) this.renderer.removeAttribute(el, 'disabled');
-        else this.renderer.setStyle(el, 'display', '');
+        if (this.originalState === true) this.renderer.setAttribute(el, 'disabled', 'true');
+        else this.renderer.removeAttribute(el, 'disabled');
+
+        this.renderer.setStyle(el, 'display', this.originalDisplay);
+        this.cdRef.detectChanges();
     }
 
-    private _authorize(el: HTMLElement, rulesManager: RulesManager, path: string, action: string, principle: Principle) {
+    private _authorize(rulesManager: RulesManager, path: string, action: string, principle: Principle) {
+        const el = this.el.nativeElement as HTMLElement
+        if (isEmpty(action ?? '')) return this.grant(el)
+
         const msg = { path, operation: action, principle }
         const rule = rulesManager.getRule(path, true)
         const authResult = AuthorizerService.authorize(msg as AuthorizeMessage, rule, action)
-        console.log(path, action, authResult);
         if (authResult.access === 'deny') this.deny(el)
         else this.grant(el)
-        this.cdRef.detectChanges();
     }
 }

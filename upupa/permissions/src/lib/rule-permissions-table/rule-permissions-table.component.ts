@@ -42,10 +42,12 @@ export class RulePermissionsTableComponent {
     tableActions = (item) => {
         return item?.builtIn === true ? [] : [
             {
-                action: "delete",
+
+                name: "delete",
                 variant: "icon",
                 icon: "delete",
                 color: "warn",
+
             } as ActionDescriptor,
         ]
     };
