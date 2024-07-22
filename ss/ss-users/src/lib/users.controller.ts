@@ -102,17 +102,19 @@ export class UsersController {
 
     private async installSuperAdmin(user: Partial<User>, password: string, roles = ['super-admin']) {
         if (installed) throw new Error('ALREADY_INSTALLED')
+        roles ??= []
+        roles.push('super-admin')
+        roles = [...new Set(roles)]
 
-        const cnt = await this.dataService.count('/user')
+        const cnt = await this.dataService.count('/user', {
+            roles: `{in}${roles.join(',')}`
+        })
         if (cnt > 0) throw new Error('ALREADY_INSTALLED');
         logger.info(`Installing super admin user ${user.email}`)
 
         const payload = { ...user } as Partial<User>
         const result = await this.auth.signUp(payload as Partial<User>, password)
         installed = result !== null
-        roles ??= []
-        roles.push('super-admin')
-        roles = [...new Set(roles)]
         await this.auth.addUserToRoles(result._id, roles)
         installed = true
         return { ...result, roles }
