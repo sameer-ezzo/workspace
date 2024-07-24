@@ -53,7 +53,7 @@ export class EditUserRolesComponent implements UpupaDialogPortal<EditUserRolesCo
         if (!form.getDirtyValue()) return []
         try {
             const res = await firstValueFrom(
-                this.http.post<{ userId: string, roles: string[] }>(`${this.auth.baseUrl}/updateusertoroles`,
+                this.http.post<{ userId: string, roles: string[] }>(`${this.auth.baseUrl}/changeuserroles`,
                     { userId: this.user._id, roles: this.value.roles })
             )
             this.dialogRef.close(res.roles)

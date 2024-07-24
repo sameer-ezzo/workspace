@@ -9,6 +9,7 @@ import { SideBarGroup, SideBarItem } from './side-bar-group-item'
 import { DynamicFormService } from '@upupa/dynamic-form'
 import { DEFAULT_THEME_NAME } from '@upupa/dynamic-form'
 import { CP_SIDE_BAR_ITEMS, SCAFFOLDING_SCHEME } from '../di.token'
+import { MatAccordion, MatExpansionPanel } from '@angular/material/expansion'
 
 @Component({
   selector: 'cp-layout',
@@ -22,7 +23,14 @@ export class CpLayoutComponent {
 
   sideBarItems = signal([])
 
+  getId = (g, i) => 'accordion_' + (g.name || i)
+  hasActiveChild(el: MatExpansionPanel) {
+    return el._body?.nativeElement.querySelector('.active') !== null
+  }
 
+  hasChildren(selector: string) {
+    return document.querySelector(selector)?.querySelector('.cp-item-link') !== null
+  }
   @Input() logo: string | null = null
 
   private _sideBarCommands = [] as SideBarGroup[]

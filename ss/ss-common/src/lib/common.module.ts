@@ -26,7 +26,7 @@ const redisClients = Object.keys(process.env)
         } as FactoryProvider
     })
 
-const prod = process.env.NODE_PROD === 'production'
+const prod = process.env['NODE_PROD'] === 'production'
 if (!prod && !redisClients.find(p => p.provide == 'REDIS_DEFAULT')) {
     const provide = "REDIS_DEFAULT"
     redisClients.push({

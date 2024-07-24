@@ -1,14 +1,4 @@
-import { Injectable, inject } from "@angular/core";
-import { Observable } from "rxjs";
-import { USER_PICTURE_RESOLVER } from "./di.token";
 
-
-@Injectable({
-    providedIn: 'root'
-})
-export class UserImageService {
-    public readonly resolver = inject(USER_PICTURE_RESOLVER) as Observable<string>
-}
 
 
 
@@ -29,7 +19,7 @@ export function textToImage(
 ): string {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    const size = 128;
+    const size = 80;
 
     canvas.width = canvas.height = size;
 
@@ -38,14 +28,14 @@ export function textToImage(
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     // Set text properties
-    const fontSize = canvas.height / text.length;
+    const fontSize = (0.7 * size) / text.length;
     context.font = `ultra-condensed small-caps ${fontSize}px "Sans", sans-serif`;
     context.fillStyle = color;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
 
     // Draw text
-    context.fillText(text, canvas.width / 2, canvas.height / 2, 0.75 * canvas.width);
+    context.fillText(text, 0.5 * size, 0.5 * size, canvas.width);
 
     return canvas.toDataURL();
 }

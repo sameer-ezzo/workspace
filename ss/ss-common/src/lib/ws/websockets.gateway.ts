@@ -64,7 +64,7 @@ export class WebsocketsGateway {
     }
 
     async auth(socket: Socket) {
-        const token = socket.handshake.auth?.token
+        const token = socket.handshake.auth?.['token']
         const principle = await verifyToken(token)
         if (principle) {
             socket.data = socket.data ? { ...socket.data, principle } : { principle }
@@ -91,7 +91,7 @@ export class WebsocketsGateway {
     }
 
     handleConnection(socket: Socket, ...args: any[]) {
-        if (socket.handshake.auth?.token) this.auth(socket)
+        if (socket.handshake.auth?.['token']) this.auth(socket)
         socket.on('disconnect', (...args) => this.handleDisconnect(socket, args))
         //catch up wth already registered events
         this._on.forEach(event => socket.on(event, (msg, callback) => {

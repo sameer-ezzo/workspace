@@ -104,7 +104,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       ]),
     ];
 
-    this.usersDataSource = new ServerDataSource<ModelType>(this.data, "/v2/user", this.userSelect);
+    this.usersDataSource = new ServerDataSource<ModelType>(this.data, "/user", this.userSelect);
     if (this.adapter) {
       this.adapter.destroy();
       this.adapter = null;
@@ -168,7 +168,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
           const formKeys = extractKeysFromFormScheme(formOptions.scheme ?? {})
           const missingKeys = formKeys.filter(k => !this.userSelect.includes(k))
           if (missingKeys.length > 0) {
-            const missingData = await firstValueFrom(this.data.get<any>(`/v2/user/${user._id}`, {
+            const missingData = await firstValueFrom(this.data.get<any>(`/user/${user._id}`, {
               select: missingKeys.join(',')
             })).then(x => x.data?.[0 ?? user])
             fullUser = { ...user, ...missingData }
@@ -217,7 +217,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
         ) {
           await this.banUser(user._id, !user.disabled);
           this.snack.openSuccess("User banned");
-          await this.data.refreshCache(`/v2/user`);
+          await this.data.refreshCache(`/user`);
           await this.adapter.refresh();
         }
         break;
@@ -232,7 +232,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
         if (await this.confirm.openWarning(d)) {
           await this.data.delete(`/user/${user._id}`);
           this.snack.openSuccess("User deleted");
-          await this.data.refreshCache(`/v2/user`);
+          await this.data.refreshCache(`/user`);
           await this.adapter.refresh();
         }
         break;
@@ -247,7 +247,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       if (task) {
         if (await task) {
           this.snack.openSuccess();
-          await this.data.refreshCache(`/v2/user`);
+          await this.data.refreshCache(`/user`);
           await this.adapter.refresh();
         }
       }

@@ -66,7 +66,7 @@ JSON.parse = (text: string, reviver?: any) => {
 // BOOT APP/MICROSERVICE AND FORK WORKERS
 export async function bootstrap(module: Type<unknown>, port = 3333, options?: Partial<AppOptions>) {
 
-    const applicationName = options?.applicationName ?? process.env.APP_NAME ?? module.name
+    const applicationName = options?.applicationName ?? process.env['APP_NAME'] ?? module.name
     updateDefaultLoggerScope(applicationName)
     const cluster = _cluster.default
     let noOfClusters = Math.abs(options?.noOfClusters ?? 1)
@@ -91,7 +91,7 @@ export async function bootstrap(module: Type<unknown>, port = 3333, options?: Pa
             cluster.fork()
         })
 
-
+        return cluster
     } else {
         logger.info(`Starting application ${applicationName}`)
         const app = await _bootstrap(applicationName, module, port, options)
@@ -151,7 +151,7 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
     }
 
 
-    if (env.NODE_ENV === 'development') {
+    if (env['NODE_ENV'] === 'development') {
         application.enableCors({ origin: '*' })
     }
 
@@ -181,8 +181,8 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
         helpers: options.handlebarsConfig?.helpers
     })
     if (options.handlebarsConfig?.helpers) {
-        const hbsHelpers = hbs.handlebars.helpers as any
-        hbs.handlebars.helpers = { ...hbsHelpers, ...options.handlebarsConfig?.helpers }
+        const hbsHelpers = hbs.handlebars['helpers'] as any
+        hbs.handlebars['helpers'] = { ...hbsHelpers, ...options.handlebarsConfig?.helpers }
         application.engine('handlebars', hbs.engine)
     }
 

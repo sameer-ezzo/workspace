@@ -24,7 +24,7 @@ export class PermissionsPageComponent {
         this._focused = v
     }
 
-    async download() {
+    async export() {
         const permissions = await this.permissionsService.getRules(true)
         const json = JSON.stringify(permissions, null, 2)
         const blob = new Blob([json], { type: 'application/json' })

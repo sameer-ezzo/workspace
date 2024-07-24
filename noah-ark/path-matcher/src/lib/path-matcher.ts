@@ -1,4 +1,3 @@
-
 export type UpHierarchy<T> = { node: T, parent?: UpHierarchy<T> }
 export type DownHierarchy<T> = { node: T, children?: DownHierarchy<T>[] }
 export type FlatHierarchy<T> = { [key: string]: FlatHierarchy<T> | (T & Record<string, any>) } | T;
@@ -118,7 +117,11 @@ export class PathMatcher<T extends object> {
 
     add(path: string, item: T): void {
         if (!path) throw `Can not add path: ${path}`
-        if (this._items.has(path)) throw `Path ${path} already exists`
+        if (this._items.has(path)) 
+        {
+            console.warn(`Path: ${path} already exists`)
+            return
+        }
 
 
         let current = this.pathTree["/"]

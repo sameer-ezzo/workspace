@@ -65,7 +65,7 @@ export class UsersController {
 
 
     @Authorize({ by: 'anonymous', access: 'grant' })
-    @EndPoint({ http: { method: 'POST', path: 'forgotpassword' }, cmd: 'auth/forgotpassword' })
+    @EndPoint({ http: { method: 'POST', path: 'forgotpassword' }, operation: 'Forgot Password' })
     public async forgotPassword(@Message() msg: IncomingMessage<{ email: string }>) {
         const email = msg.payload.email
         if (!email) return
@@ -84,21 +84,6 @@ export class UsersController {
         this.broker.emit(`${appName}/auth/forgotpassword`, { ...msg.payload, user, token: resetToken });
     }
 
-    @Authorize({ by: 'anonymous', access: 'grant' })
-    @EndPoint({ http: { method: 'GET', path: 'install' }, cmd: 'auth/install' })
-    public async install(@Message() msg: IncomingMessage) {
-        const password = msg.query.password as string ?? randomString(8)
-        const email = msg.query.email as string ?? 'ramyhhh@gmail.com'
-        try {
-            await this.installSuperAdmin({ email }, password)
-            return { email, password }
-        } catch (error) {
-            if (error.message === 'ALREADY_INSTALLED')
-                throw new HttpException('Not found', HttpStatus.NOT_FOUND)
-            throw new HttpException(error.message ?? 'ERROR', HttpStatus.BAD_REQUEST)
-        }
-
-    }
 
     private async installSuperAdmin(user: Partial<User>, password: string, roles = ['super-admin']) {
         if (installed) throw new Error('ALREADY_INSTALLED')
@@ -110,18 +95,18 @@ export class UsersController {
             roles: `{in}${roles.join(',')}`
         })
         if (cnt > 0) throw new Error('ALREADY_INSTALLED');
-        logger.info(`Installing super admin user ${user.email}`)
 
         const payload = { ...user } as Partial<User>
         const result = await this.auth.signUp(payload as Partial<User>, password)
         installed = result !== null
         await this.auth.addUserToRoles(result._id, roles)
         installed = true
+        logger.info(`Super admin user set to ${user.email}`)
         return { ...result, roles }
     }
 
     @Authorize({ by: 'role', value: 'super-admin', access: 'grant' })
-    @EndPoint({ http: { method: 'POST', path: 'resetpassword' }, cmd: 'auth/resetpassword' })
+    @EndPoint({ http: { method: 'POST', path: 'resetpassword' }, operation: 'Reset Password' })
     public async resetpassword(@Message() msg: IncomingMessage<{ new_password: string, reset_token: string }>) {
         const new_password = msg.payload.new_password
         const reset_token = msg.payload.reset_token
@@ -137,7 +122,7 @@ export class UsersController {
         } else throw new HttpException('INVALID_DATA', HttpStatus.BAD_REQUEST)
     }
 
-    @EndPoint({ http: { method: 'POST', path: 'changepassword/:id' }, cmd: 'auth/changepassword' })
+    @EndPoint({ http: { method: 'POST', path: 'changepassword/:id' }, operation: 'Change Password' })
     @Authorize({ by: 'user', access: 'grant' })
     public async changePassword(@Message() msg: IncomingMessage<{ new_password: string, old_password: string }>) {
         if (!msg.payload) throw new HttpException('MISSING_INFO', HttpStatus.BAD_REQUEST)
@@ -167,7 +152,7 @@ export class UsersController {
         else throw new HttpException('INVALID_DATA', HttpStatus.BAD_REQUEST)
     }
 
-    @EndPoint({ http: { method: 'POST', path: 'adminreset' }, cmd: 'auth/adminreset' })
+    @EndPoint({ http: { method: 'POST', path: 'adminreset' }, operation: 'Reset User\'s Password' })
     @Authorize({ by: "role", value: 'super-admin' })
     public async adminReset(@Message() msg: IncomingMessage<{ email: string, new_password: string, forceChangePwd: boolean }>) {
         if (!msg.payload) throw new HttpException('MISSING_INFO', HttpStatus.BAD_REQUEST)
@@ -187,7 +172,7 @@ export class UsersController {
     }
 
 
-    @EndPoint({ http: { method: 'POST', path: 'addusertoroles' }, cmd: 'auth/addusertoroles' })
+    @EndPoint({ http: { method: 'POST', path: 'addusertoroles' }, operation: 'Add User To Roles' })
     @Authorize({ by: "role", value: 'super-admin' })
     public async addUserToRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
 
@@ -203,19 +188,19 @@ export class UsersController {
         return msg.payload
     }
 
-    @EndPoint({ http: { method: 'POST', path: 'updateusertoroles' }, cmd: 'auth/updateusertoroles' })
+    @EndPoint({ http: { method: 'POST', path: 'changeuserroles' }, operation: 'Change User Roles' })
     @Authorize({ by: 'role', value: 'super-admin' })
-    public async updateUserToRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
+    public async changeUserRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
 
         const { userId, roles } = msg.payload;
-        await this.auth.updateUserToRoles(userId, roles)
+        await this.auth.changeUserToRoles(userId, roles)
         this.auth.signOut({ _id: userId })
         return msg.payload
     }
 
-    @EndPoint({ http: { method: 'POST', path: 'admincreateuser' }, cmd: 'auth/admincreate' })
+    @EndPoint({ http: { method: 'POST', path: 'admincreateuser' }, operation: 'Admin Create User' })
     @Authorize({ by: 'role', value: 'super-admin' })
-    public async admincreateuser(@Message() msg: IncomingMessage<any>) {
+    public async adminCreateUser(@Message() msg: IncomingMessage<any>) {
 
         const _user = msg.payload;
 
@@ -237,7 +222,7 @@ export class UsersController {
     }
 
 
-    @EndPoint({ http: { method: 'POST', path: 'impersonate' } })
+    @EndPoint({ http: { method: 'POST', path: 'impersonate' }, operation: 'Impersonate User' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async impersonate(@Message() msg: IncomingMessage<{ sub: string }>) {
         //get current principle
@@ -348,7 +333,7 @@ export class UsersController {
     }
 
     @Authorize({ by: 'anonymous', access: 'grant' })
-    @EndPoint({ http: { method: 'POST', path: 'google-auth' }, operation: 'google-auth' })
+    @EndPoint({ http: { method: 'POST', path: 'google-auth' }, operation: 'Auth with google' })
     async clientExternalAuth(@Body() req) {
         const googleUser = await verifyGoogleUser(req.token)
         if (!googleUser) {
@@ -394,7 +379,7 @@ export class UsersController {
     }
 
     @Authorize({ by: 'anonymous', access: 'grant' })
-    @EndPoint({ http: { method: 'POST', path: 'fbacebook-auth' }, operation: 'fbacebook-auth' })
+    @EndPoint({ http: { method: 'POST', path: 'fbacebook-auth' }, operation: 'Auth with Facebook' })
     async fb_clientExternalAuth(@Body() req) {
         const fbuser = await this.http.get("https://graph.facebook.com/v1.0" + "/me?fields=id,name,email" + "&access_token=" + req.access_token)
         const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN)
@@ -439,7 +424,7 @@ export class UsersController {
         return { url: `${this.auth.options.externalAuth.facebook.client_url}/login?access_token=${access_token}&refresh_token=${refresh_token}` }
     }
 
-    @EndPoint({ http: { method: 'POST', path: '' }, cmd: 'auth/signin' })
+    @EndPoint({ http: { method: 'POST', path: '' }, operation: 'Login' })
     @Authorize({ by: 'anonymous', access: 'grant' })
     public async signIn(@Message() msg: IncomingMessage<SigninRequest>) {
 
@@ -451,7 +436,7 @@ export class UsersController {
         }
     }
 
-    @EndPoint({ http: { method: 'POST', path: 'signup' } })
+    @EndPoint({ http: { method: 'POST', path: 'signup' }, operation: 'Sign up' })
     @Authorize({ by: 'anonymous', access: 'grant' })
     public async signup(@Message() msg: IncomingMessage<User & { password: string }>) {
         try {
@@ -472,7 +457,7 @@ export class UsersController {
     }
 
 
-    @EndPoint({ http: { method: 'POST', path: 'lock' }, cmd: 'auth/lock' })
+    @EndPoint({ http: { method: 'POST', path: 'lock' }, operation: 'Lock User' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async lock(@Message() msg: IncomingMessage<{ id: string, lock: string | boolean }>) {
 
@@ -509,7 +494,7 @@ export class UsersController {
     }
 
 
-    @EndPoint({ http: { method: 'POST', path: 'verify/send' }, cmd: 'auth.send-verification' })
+    @EndPoint({ http: { method: 'POST', path: 'verify/send' }, operation: 'Send Verification' })
     @Authorize()
     public async sendVerification(@Message() msg: IncomingMessage<{ id: string, name: string, value: string }>) {
         const name = (msg.payload.name ?? "").trim();
@@ -565,7 +550,7 @@ export class UsersController {
 
 
 
-    @EndPoint({ http: { method: 'POST', path: 'verify' }, cmd: 'auth.verify' })
+    @EndPoint({ http: { method: 'POST', path: 'verify' }, operation: 'Verify' })
     @Authorize()
     public async verify(@Message() msg: IncomingMessage<{ id: string, name: string, value: string, token: string, type: string }>) {
 
@@ -594,7 +579,7 @@ export class UsersController {
     }
 
 
-    @EndPoint({ http: { method: 'POST', path: 'device' }, cmd: 'auth.update-device' })
+    @EndPoint({ http: { method: 'POST', path: 'device' }, operation: 'Add Device' })
     @Authorize()
     public async updateDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle
@@ -615,7 +600,7 @@ export class UsersController {
         })
     }
 
-    @EndPoint({ http: { method: 'DELETE', path: 'device' }, cmd: 'auth.remove-device' })
+    @EndPoint({ http: { method: 'DELETE', path: 'device' }, operation: 'Remove Device' })
     @Authorize()
     public async removeDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle
@@ -640,7 +625,7 @@ export class UsersController {
         return "OK"
     }
 
-    @EndPoint({ http: { method: 'GET', path: 'whoami' } })
+    @EndPoint({ http: { method: 'GET', path: 'whoami' }, operation: 'Who am I' })
     @Authorize({ by: 'anonymous' })
     public async whoami(@Message() msg: IncomingMessage) {
         return msg.principle ?? {}

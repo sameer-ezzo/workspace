@@ -1,11 +1,12 @@
 @if(scheme(); as _scheme){
 <div class="wrapper">
-    <dynamic-form #userForm [fields]="_scheme" [conditions]="conditions()" (submit)="save(userForm)" [(value)]="user">
+    <dynamic-form #userForm [fields]="_scheme" [conditions]="conditions()" (submit)="save()" [value]="user" (valueChange)="_userValue.set($event)">
     </dynamic-form>
 </div>
 <div class="toolbar footer">
     <button mat-button class="action" (click)="discard()" type="button">Discard</button>
-    <button mat-stroked-button color="primary" [disabled]="loading || !userForm.touched || userForm.invalid"
-        (click)="save(userForm)" class="action" type="submit">Submit</button>
+    <button authAction path="auth" action="Admin Create User" mat-stroked-button color="primary"
+        [disabled]="loading || !userForm.touched || userForm.invalid" (click)="save()" class="action"
+        type="submit">Submit</button>
 </div>
 }

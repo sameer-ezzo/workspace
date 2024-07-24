@@ -33,7 +33,7 @@ export class ApiService {
 
         path = (path ?? '').trim();
         while (path.startsWith('/')) path = path.substring(1);
-        return `${base}/v2/${path}`
+        return `${base}/${path}`
     }
 
     constructor(private http: HttpClient, @Inject(APIBASE) public readonly api_base: string = '/api') {

@@ -7,6 +7,7 @@ import { IScaffolder, FormScaffoldingModel } from "../../types";
 import { FormScheme, resolveDynamicFormInputsFor } from "@upupa/dynamic-form";
 import { resolvePath } from "./resolve-scaffolder-path.func";
 import { defaultFormActions } from "../../defaults";
+import { inject } from "@angular/core";
 
 // defaultListActions: ActionDescriptor[] = [
 //     { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
@@ -16,7 +17,9 @@ import { defaultFormActions } from "../../defaults";
 // ];
 export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> {
 
-    constructor(public scaffolder: ScaffoldingService, public data: DataService, public confirm: ConfirmService) { }
+    public scaffolder = inject(ScaffoldingService)
+    public data = inject(DataService)
+    public confirm = inject(ConfirmService)
 
     value: T;
     subject = new ReplaySubject<T>(1);

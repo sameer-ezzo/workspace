@@ -18,14 +18,14 @@ export const defaultRolesListActions: ActionDescriptor[] = [
 export const defaultUserListActions: ActionDescriptor[] = [
     { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', menu: true, color: 'warn' },
     { variant: 'icon', name: 'edit', icon: 'edit' },
-    { path: '/auth/impersonate', variant: 'icon', name: 'impersonate', icon: 'supervised_user_circle' },
-    { path: '/auth/resetpassword', variant: 'icon', text: 'Reset password', name: 'reset', icon: 'password', menu: true },
-    { path: '/auth/updateusertoroles', variant: 'icon', text: 'Change roles', name: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
+    { path: 'auth', action: 'Impersonate User', variant: 'icon', name: 'impersonate', icon: 'supervised_user_circle' },
+    { path: 'auth', variant: 'icon', text: 'Reset password', name: 'reset', icon: 'password', menu: true },
+    { path: 'auth', action: 'Change User Roles', variant: 'icon', text: 'Change roles', name: 'change-user-roles', icon: 'switch_access_shortcut_add', menu: true },
     { variant: 'icon', text: 'Delete User', name: 'delete', icon: 'delete', color: 'warn', menu: true }
 ];
 export const defaultUserListHeaderActions: ActionDescriptor[] = [
-    { path: '/auth/ban', variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
-    { path: 'auth/admincreate', variant: 'stroked', position: 'header', name: 'create', icon: 'person_add', text: 'Create', color: 'primary' }
+    { path: 'auth', action: 'Ban User', variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
+    { path: 'auth', action: 'Admin Create User', variant: 'stroked', position: 'header', name: 'create', icon: 'person_add', text: 'Create', color: 'primary' }
 ];
 
 export const defaultCreateUserFromScheme: FormScheme = {

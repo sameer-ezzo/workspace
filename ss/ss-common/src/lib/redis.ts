@@ -14,7 +14,7 @@ export function parseRedisConfig(
 
 const defaultOptions: RedisOptions = {
     enableAutoPipelining: true,
-    showFriendlyErrorStack: !process.env.NODE_PROD,
+    showFriendlyErrorStack: !process.env['NODE_PROD'],
     maxRetriesPerRequest: null, //keep trying forever
     retryStrategy: (times) => times < 5 ? 500 : 2000,
 }

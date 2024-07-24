@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Input, OnChanges, Renderer2, SimpleChanges } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Injectable, Input, OnChanges, Renderer2, SimpleChanges } from "@angular/core";
 import { Principle, Rule, RulesManager } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { ReplaySubject } from "rxjs";
@@ -10,11 +10,32 @@ import { AuthorizeMessage, AuthorizerService } from "@noah-ark/expression-engine
 import { TreeBranch } from "@noah-ark/path-matcher";
 import { isEmpty } from "lodash";
 
+@Injectable({ providedIn: 'root' })
+export class AuthorizationService {
+    rulesManager: RulesManager = null
+    readonly rules$ = new ReplaySubject<TreeBranch<Rule>>(1)
+    private readonly baseUrl = inject(PERMISSIONS_BASE_URL)
+    private readonly http = inject(HttpClient)
 
-let rulesManager: RulesManager = null
-const rules$ = new ReplaySubject<TreeBranch<Rule>>(1)
-let sub = null
+    constructor() {
+        this.http.get<TreeBranch<Rule>>(`${this.baseUrl}/rules`).subscribe(rules => {
+            const rootRule = rules.item
+            this.rulesManager = new RulesManager(rootRule, [])
+            this.rulesManager.tree = rules
+            this.rules$.next(rules)
+        })
+    }
 
+    authorize(path: string, action: string, principle: Principle) {
+
+        if (isEmpty(action ?? '')) return { access: 'grant' }
+
+        const msg = { path, operation: action, principle }
+        const rule = this.rulesManager.getRule(path, true)
+        const authResult = AuthorizerService.authorize(msg as AuthorizeMessage, rule, action)
+        return authResult
+    }
+}
 @Directive({
     selector: '[authAction]',
     exportAs: 'authAction',
@@ -26,8 +47,8 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     private readonly auth = inject(AuthService);
     private readonly renderer = inject(Renderer2);
     private readonly cdRef = inject(ChangeDetectorRef);
-    private readonly baseUrl = inject(PERMISSIONS_BASE_URL)
     private readonly destroyRef = inject(DestroyRef)
+    private readonly authorizeService = inject(AuthorizationService)
     @Input() action: string;
     @Input() path: string;
     @Input() user: Principle = this.auth.user;
@@ -35,20 +56,12 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     @Input() disableDenied = true;
     @Input() hideDenied = false;
 
-    ngOnInit() {
-        if (!sub) sub = this.http.get<TreeBranch<Rule>>(`${this.baseUrl}/rules`).subscribe(rules => {
-            const rootRule = rules.item
-            rulesManager = new RulesManager(rootRule, [])
-            rulesManager.tree = rules
-            rules$.next(rules)
-        })
 
-    }
 
     initialized = false
     ngOnChanges(changes: SimpleChanges) {
         if (this.initialized) {
-            this._authorize(rulesManager, this.path, this.action, this.user)
+            this._authorize(this.path, this.action, this.user)
         }
     }
 
@@ -59,10 +72,10 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
         this.originalDisplay = el.style.display
         this.originalState = el['disabled'] === true
 
-        rules$.pipe(
+        this.authorizeService.rules$.pipe(
             takeUntilDestroyed(this.destroyRef)
         ).subscribe(rules => {
-            this._authorize(rulesManager, this.path, this.action, this.user);
+            this._authorize(this.path, this.action, this.user);
             this.initialized = true;
         });
     }
@@ -84,13 +97,10 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
         this.cdRef.detectChanges();
     }
 
-    private _authorize(rulesManager: RulesManager, path: string, action: string, principle: Principle) {
+    private _authorize(path: string, action: string, principle: Principle) {
         const el = this.el.nativeElement as HTMLElement
-        if (isEmpty(action ?? '')) return this.grant(el)
+        const authResult = this.authorizeService.authorize(path, action, principle)
 
-        const msg = { path, operation: action, principle }
-        const rule = rulesManager.getRule(path, true)
-        const authResult = AuthorizerService.authorize(msg as AuthorizeMessage, rule, action)
         if (authResult.access === 'deny') this.deny(el)
         else this.grant(el)
     }

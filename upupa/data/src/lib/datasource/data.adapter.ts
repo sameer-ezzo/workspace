@@ -3,7 +3,7 @@ import { Subscription, Observable, ReplaySubject, of, firstValueFrom } from "rxj
 import { ClientDataSource } from "./client.data.source"
 import { filterNormalized } from "./filter.fun"
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model"
-import { map } from 'rxjs/operators'
+import { map, tap } from 'rxjs/operators'
 import { HttpServerDataSourceOptions } from "./http-server-data-source"
 
 export type DataAdapterType = 'server' | 'client' | 'http'
@@ -104,7 +104,9 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
 
         const source = itemsNotInAdapter.length > 0 ?
             this.dataSource.getItems(itemsNotInAdapter, this.keyProperty)
-                .pipe(map(items => items.filter(x => x).map(i => this.normalize(i))),
+                .pipe(
+                    tap(items => console.log('items', items, this.dataSource)),
+                    map(items => items.filter(x => x).map(i => this.normalize(i))),
                     map(items => items.concat(itemsInAdapter)),
                     map(x => KEYS.map(vi => x.find(ni => ni.key === vi))))
             : of(itemsInAdapter)

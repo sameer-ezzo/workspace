@@ -1,4 +1,4 @@
-import { Component, inject, Input, signal, ViewChild } from '@angular/core';
+import { Component, Input, signal, ViewChild } from '@angular/core';
 
 import { AuthService, User } from '@upupa/auth';
 
@@ -65,8 +65,13 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     }
 
     private async getUser(user: Partial<User>) {
-        if (!user?._id) return {} as User
-        return await firstValueFrom(this.data.get<User>(`/user/${user._id}`))
+        if (!user?._id) return {}
+        try {
+            return await firstValueFrom(this.data.get<User>(`/user/${user._id}`))
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
     constructor(
@@ -80,7 +85,10 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     discard() {
         this.dialogRef?.close()
     }
-    async save(form: any) {
+    async save() {
+        const form = this.form
+        const user = this.user
+        debugger
         if (!form.touched || form.invalid) return
         try {
 
@@ -110,7 +118,7 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>) {
         if (e.action.name === 'save') {
             e.action.meta.closeDialog = false
-            return this.save(this.form)
+            return this.save()
         }
         else return e
     }

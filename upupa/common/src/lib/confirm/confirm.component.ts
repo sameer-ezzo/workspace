@@ -27,6 +27,8 @@ export class ConfirmComponent {
   }
 
   onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent, boolean>) {
+    console.log('confirm action', e);
+    
     return dialogRef.close(e.action.name === 'yes')
   }
 }

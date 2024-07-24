@@ -65,7 +65,7 @@ export const defaultOnSuccessProvider: FormHandlerProvider = {
             const { redirect } = route.snapshot.queryParams;
             if (!redirect) return router.navigateByUrl('/');
             const urlSegments = redirect.split('/').filter(segment => segment);
-            return router.navigate(urlSegments);
+            return router.navigate(['/', ...urlSegments]);
         };
     }
 }

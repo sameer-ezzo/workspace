@@ -3,26 +3,46 @@ import { Controller, HttpException, HttpStatus, Res } from "@nestjs/common"
 import { Response } from 'express'
 import { DataService, Patch } from "@ss/data"
 import { Authorize, AuthorizeService } from "@ss/rules"
-import type { IncomingMessage } from "@noah-ark/common"
+import type { IncomingMessage, Rule } from "@noah-ark/common"
 import { EndPoint, Message } from "@ss/common"
 import ObjectToCSV from 'object-to-csv'
 import { MongoError } from "mongodb"
 import { logger } from "@ss/common"
+
 const baseUrl = '/api'
 
+export function provideApiRulesFromPaths(paths: string[]): Rule[] {
+    const operations = ['Create', 'Read', 'Update', 'Patch', 'Delete', 'Export']
+    const makeRule = (p: string): Rule => {
+        return {
+            path: p,
+            name: p,
+            builtIn: true,
+            ruleSource: "code",
+            actions: operations.map(operation => {
+                return {
+                    [operation]: [{
+                        "access": "grant",
+                        "by": "role",
+                        "builtIn": true,
+                        "value": "super-admin",
+                        "name": operation,
+                        "action": operation,
+                        "rule": p
 
-const GET_COMMAND = "api/get"
-const CREATE_COMMAND = "api/create"
-const UPDATE_COMMAND = "api/update"
-const PATCH_COMMAND = "api/patch"
-const DELETE_COMMAND = "api/delete"
-
+                    }]
+                }
+            }).reduce((a, b) => ({ ...a, ...b }), {})
+        } as Rule
+    }
+    return paths.map(path => makeRule(`/api/${path}`)) as Rule[]
+}
 @Controller('api')
 export class ApiController {
 
     constructor(private authorizationService: AuthorizeService, private dataService: DataService) { }
 
-    @EndPoint({ http: { method: 'POST', path: '**' }, cmd: CREATE_COMMAND, operation: 'create' })
+    @EndPoint({ http: { method: 'POST', path: '**' }, operation: 'Create' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async post(@Message() msg: IncomingMessage) {
 
@@ -40,10 +60,10 @@ export class ApiController {
     }
 
 
-    @EndPoint({ http: { method: 'GET', path: 'v2/**' }, cmd: GET_COMMAND, operation: 'Read v2', path: '**' })
+    @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'Read' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async agg(@Message() msg: IncomingMessage) {
-        const { path, q } = msg.path.indexOf('api/v2') > -1 ? _query(msg.path, msg.query, '/v2' + baseUrl) : _query(msg.path, msg.query, baseUrl)
+        const { path, q } = _query(msg.path, msg.query, baseUrl)
 
         const data = await this.dataService.agg(path, false, ...q)
         const total = await this.dataService.count(path, ...q) //TODO use count based on pipeline api
@@ -51,53 +71,8 @@ export class ApiController {
         return result
     }
 
-    @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'read' })
-    @Authorize({ by: 'role', value: 'super-admin' })
-    public async get(@Message() msg: IncomingMessage, @Res() res: Response) {
-        switch (msg.query.function) {
-            case 'COUNT': return res.send(await this._count(msg))
-            default: return res.send(await this._select(msg, res))
-        }
-    }
 
-    private async _select(msg: IncomingMessage, res: Response) {
-        const { path, q } = _query(msg.path, msg.query, baseUrl)
-
-        const authZ1 = this.authorizationService.authorize(msg, 'read')
-        if (authZ1.access === 'deny') throw new HttpException({ ...authZ1, q: msg.query }, HttpStatus.FORBIDDEN)
-
-        let result = await this.dataService.get(path, ...q)
-
-        const authZ2 = this.authorizationService.authorize(msg, 'read', { data: result })
-        if (authZ2.access === 'deny') throw new HttpException({ ...authZ2, q: msg.query }, HttpStatus.FORBIDDEN)
-
-        if (!result) throw new HttpException('NotFound', HttpStatus.NOT_FOUND)
-        else {
-            if (Array.isArray(result)) {
-                const count = await this.dataService.count(path, ...q)
-                if (res) res.header('X-Get-Count', count + '')
-                else result = { data: result, total: count, query: q }
-            }
-            return result
-        }
-
-    }
-
-    private async _count(msg: IncomingMessage) {
-        const { path, q } = _query(msg.path, msg.query, baseUrl)
-
-        const { access, rule, source, action } = this.authorizationService.authorize(msg, 'read')
-        if (access === 'deny') throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN)
-
-        const count = await this.dataService.count(path, ...q)
-        return count
-    }
-
-
-
-
-
-    @EndPoint({ http: { method: 'PUT', path: '**' }, cmd: UPDATE_COMMAND, operation: 'update' })
+    @EndPoint({ http: { method: 'PUT', path: '**' }, operation: 'Update' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async put(@Message() msg: IncomingMessage) {
 
@@ -124,7 +99,7 @@ export class ApiController {
         }
     }
 
-    @EndPoint({ http: { method: 'PATCH', path: '**' }, cmd: PATCH_COMMAND, operation: 'update' })
+    @EndPoint({ http: { method: 'PATCH', path: '**' }, operation: 'Patch' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async patch(@Message() msg: IncomingMessage) {
 
@@ -154,7 +129,7 @@ export class ApiController {
 
     }
 
-    @EndPoint({ http: { method: 'DELETE', path: '**' }, cmd: DELETE_COMMAND, operation: 'delete' })
+    @EndPoint({ http: { method: 'DELETE', path: '**' }, operation: 'Delete' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async delete(@Message() msg: IncomingMessage) {
 
@@ -176,11 +151,11 @@ export class ApiController {
     }
 
 
-    @EndPoint({ http: { method: 'GET', path: 'v2/export/**' }, operation: 'export', path: 'export/**' })
+    @EndPoint({ http: { method: 'GET', path: 'export/**' }, operation: 'Export' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async export(@Message() msg: IncomingMessage, @Res() res: Response) {
 
-        const { path, q } = _query(msg.path, msg.query, '/v2/export' + baseUrl)
+        const { path, q } = _query(msg.path, msg.query, '/export' + baseUrl)
 
         const data: any[] = await this.dataService.agg(path, true, ...q)
         if (data.length === 0) throw new HttpException('NotFound', HttpStatus.NOT_FOUND)
@@ -214,7 +189,7 @@ export class ApiController {
             const message = error.message || error
             const stack = error.stack || ''
             logger.error(message, stack)
-            return new HttpException({message}, HttpStatus.INTERNAL_SERVER_ERROR)
+            return new HttpException({ message }, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 }

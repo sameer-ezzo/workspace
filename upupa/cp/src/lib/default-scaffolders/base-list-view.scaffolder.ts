@@ -33,9 +33,6 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
         }
         const queryFn = resolveQueryFn(listInfo);
         const queryParamsFn = resolveQueryParamsFn(listInfo);
-
-
-
         let ffVm = null as DataListFilterForm;
         if (listInfo.filterForm) {
 

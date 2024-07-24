@@ -65,7 +65,7 @@ export class RolesListComponent implements OnInit {
     this.actions = (_options?.rowActions || defaultRolesListActions) as ActionDescriptor[];
 
     const select = [...new Set(["name"].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
-    const dataSource = new ServerDataSource<any>(this.data, "/v2/role", select);
+    const dataSource = new ServerDataSource<any>(this.data, "/role", select);
 
     this.adapter = new DataAdapter(dataSource, "_id", "email", "_id", null, {
       page: { pageIndex: 0, pageSize: 15 },
@@ -95,7 +95,7 @@ export class RolesListComponent implements OnInit {
           this.dialog.openDialog(RoleFormComponent, { ...data }).afterClosed()
         );
         if (!res) return;
-        await this.data.refreshCache("/v2/role");
+        await this.data.refreshCache("/role");
         this.adapter.refresh();
         break;
       }
@@ -110,7 +110,7 @@ export class RolesListComponent implements OnInit {
         if (!res) return
         await this.data.delete(`/role/${role._id}`);
         this.snack.openSuccess("Role deleted!");
-        await this.data.refreshCache("/v2/role");
+        await this.data.refreshCache("/role");
         this.adapter.refresh();
         break;
       }

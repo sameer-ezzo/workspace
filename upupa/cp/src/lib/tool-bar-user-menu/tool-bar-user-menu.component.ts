@@ -1,11 +1,11 @@
-import { Component, Input, signal } from '@angular/core';
-import { Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { Component, inject, Input, signal } from '@angular/core';
+import { map, Observable, Subject } from 'rxjs';
 import { EventBus } from '@upupa/common';
 import { AuthService } from '@upupa/auth';
 import { SideBarItem } from '../cp-layout/side-bar-group-item';
-import { UserImageService } from '../user-image.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { USER_PICTURE_RESOLVER } from '../di.token';
+import { getUserInitialsImage } from '../user-image.service';
 
 
 @Component({
@@ -15,32 +15,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarItem[]
+    readonly userImageResolver = inject(USER_PICTURE_RESOLVER) as Observable<string>
+    public readonly auth = inject(AuthService)
+    private readonly bus = inject(EventBus)
 
-
-    impersonated = signal<boolean>(false)
-    destroyed$ = new Subject<boolean>()
-
-    username = signal<string>('')
-
-
-    constructor(
-        public auth: AuthService,
-        public userImageService: UserImageService,
-        private bus: EventBus) {
-        this.auth.user$.pipe(takeUntilDestroyed()).subscribe(u => {
-            const impersonated = u?.claims?.['imps'] || undefined
-            this.impersonated.set(impersonated !== undefined)
-            this.username.set(u.name ?? u.email?.substring(0, u.email.indexOf('@')))
-        })
-    }
-
-
-
-    ngOnDestroy(): void {
-        this.destroyed$.next(true)
-        this.destroyed$.complete()
-    }
-
+    u$ = this.auth.user$.pipe(takeUntilDestroyed())
+    userName$ = this.u$.pipe(
+        map(u => u.name ?? u.email?.substring(0, u.email.indexOf('@')))
+    )
+    impersonated$ = this.u$.pipe(
+        map(u => u?.claims?.['imps'] || undefined)
+    )
     umcClicked(e) {
         e = e.action;
         if (e.handler) e.handler({ action: e, data: null });
@@ -50,12 +35,16 @@ export class ToolbarUserMenuComponent {
     signout() {
         const user = { ...this.auth.user }
         this.auth.signout();
-        this.bus.emit('user-signed-out', { user, signedOut: true }, this)
-        window.location.href = '/'
+        window.location.href = window.location.href
     }
 
     async unimpersonate() {
         await this.auth.unimpersonate()
-        this.bus.emit('user-unimpersonated', true, this)
+        window.location.href = window.location.href
+    }
+
+    handelImageError(event) {
+        event.target.onerror = null;
+        event.target.src = getUserInitialsImage(this.auth.user.name || this.auth.user.email);
     }
 }

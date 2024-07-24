@@ -31,7 +31,7 @@ export class PermissionsService {
     }
     async init() {
         firstValueFrom(
-            this.data.get<any>(`/v2/role?select=name`).pipe(
+            this.data.get<any>(`/role?select=name`).pipe(
                 map(x => x.data),
                 map(roles => (roles || []).filter(x => x._id !== 'super-admin'))
             )

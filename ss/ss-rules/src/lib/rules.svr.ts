@@ -23,16 +23,21 @@ export class RulesService {
                 const permissions = rule.actions[action] as unknown as SimplePermission[]
                 for (const permission of permissions) {
                     if (!permission._id) continue
-                    await this.updatePermission(rule.name, action, permission, principle)
+                    try {
+                        await this.updatePermission(rule.name, action, permission, principle)
+                    }
+                    catch (e) {
+                        logger.error(`Failed to restore permission ${permission.name} for rule ${rule.name}`)
+                    }
                 }
             }
         }
     }
 
-    
 
 
-    rulesManager!:RulesManager
+
+    rulesManager!: RulesManager
     constructor(
         @Inject("ROOT_RULE") readonly rootRule: Rule,
         @Inject("APP_RULES") readonly appRules: Rule[],
@@ -138,7 +143,7 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
             const operation = Reflect.getMetadata(ENDPOINT_OPERATION, target)
 
             const prefix = _controllerPrefix(args.controller)
-            const fullPath = '/' + `${prefix}/${path}`.split('/').filter(s => s).join('/')
+            const fullPath = ['/', `${prefix}/${path}`.split('/').filter(s => s)].join('/')
             return { permissions: args.permissions, prefix, fullPath, path, operation }
 
         }

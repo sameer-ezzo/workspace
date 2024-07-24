@@ -95,6 +95,8 @@ export class ScaffoldingService {
         const pathInfo = PathInfo.parse(path, 1).path;
         listViewModel.rowActions ??= scaffoldingModel.actions ?? defaultListActions;
         const filter = (listViewModel.query?.() ?? []) as any[];
+
+        
         const fObj = filter.reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
         const columns = listViewModel.columns ?? {};
         const columnsSelect = []
@@ -120,7 +122,7 @@ export class ScaffoldingService {
         const dataAdapter = listViewModel.adapter
         let source = null
         if (dataAdapter?.type === 'server')
-            source = new ServerDataSource<any>(this.data, `/v2/${pathInfo}`, select)
+            source = new ServerDataSource<any>(this.data, `/${pathInfo}`, select)
         else if (dataAdapter?.type === 'client')
             source = new ClientDataSource((dataAdapter as unknown as DataAdapterDescriptor<'client', any>).data)
         else if (dataAdapter?.type === 'http') {

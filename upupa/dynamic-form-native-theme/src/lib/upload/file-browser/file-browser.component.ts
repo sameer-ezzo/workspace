@@ -51,7 +51,7 @@ export class FileBrowserComponent extends DataComponentBase<FileInfo> implements
     valueProperty = ['_id', 'fieldname', 'originalname', 'filename', 'size', 'encoding', 'mimetype', 'destination', 'path', 'date', 'status', 'user', 'meta'] as (keyof FileInfo)[]
 
     override adapter = new DataAdapter<FileInfo>(
-        new ServerDataSource(this.data, '/v2/storage', this.valueProperty),
+        new ServerDataSource(this.data, '/storage', this.valueProperty),
         this.keyProperty,
         undefined,
         this.valueProperty,

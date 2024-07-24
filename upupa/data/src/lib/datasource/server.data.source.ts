@@ -58,7 +58,7 @@ export class ServerDataSource<T = any> extends TableDataSource<T> {
 
         if (this.selectedColumns?.length > 0) query.select = this.selectedColumns.join(',')
 
-        const src = this.path.includes('v2/') ? this.v2Get(this.path, page, query) : this.v1Get(this.path, page, query)
+        const src = this.v2Get(this.path, page, query)
 
         this.src$.next(src)
         return this.data$

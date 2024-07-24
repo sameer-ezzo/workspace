@@ -126,7 +126,7 @@ export class AuthService {
         return jwt.sign(this.#secret)
     }
 
-    async updateUserToRoles(userId: string, roles: string[]) {
+    async changeUserToRoles(userId: string, roles: string[]) {
         if (!userId) throw new AuthException(AuthExceptions.InvalidUserData);
         const user = await this.findUserById(userId)
         if (!user) throw new AuthException(AuthExceptions.InvalidUserData);

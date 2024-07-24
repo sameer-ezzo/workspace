@@ -26,7 +26,7 @@ export enum levels {
     'debug',
     'silly'
 }
-export function loggerFactory(scope: string, level: levels = levels[process.env.LOG_LEVEL ?? 'info']): NestLogger {
+export function loggerFactory(scope: string, level: levels = levels[process.env['LOG_LEVEL'] ?? 'info']): NestLogger {
     return new NestLogger(scope, level)
 }
 
@@ -77,7 +77,7 @@ export class NestLogger implements LoggerService {
     }
 
     _format(level: string, message: any, ...args: any[]) {
-        const prod = process.env.NODE_PROD === 'production'
+        const prod = process.env['NODE_PROD'] === 'production'
         const time = new Date().toISOString()
         return prod ?
             [{ level, time, message, args, scope: this.scope }] :
@@ -87,7 +87,7 @@ export class NestLogger implements LoggerService {
 }
 
 
-export const          logger = loggerFactory(process.env.APP_NAME ?? 'Nest')
+export const          logger = loggerFactory(process.env['APP_NAME'] ?? 'Nest')
 export function updateDefaultLoggerScope(scope: string) { logger.scope = scope }
 
 

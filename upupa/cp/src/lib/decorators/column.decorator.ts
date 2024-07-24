@@ -13,7 +13,7 @@ export function column(options: ColumnOptions = { order: 1, includeInDataSelect:
         const key = options.displayPath ?? propertyKey;
         columns[key] = options;
         if (options.includeInDataSelect !== false) {
-            select.push(propertyKey);
+            select.push(key);
         }
 
         delete options.includeInDataSelect;
