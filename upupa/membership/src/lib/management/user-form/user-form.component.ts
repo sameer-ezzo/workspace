@@ -88,7 +88,6 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     async save() {
         const form = this.form
         const user = this.user
-        debugger
         if (!form.touched || form.invalid) return
         try {
 
