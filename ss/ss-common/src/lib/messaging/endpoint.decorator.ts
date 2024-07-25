@@ -69,22 +69,22 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
 
 
 function HttpEndpoint(path: string, method: HttpMethod = 'GET', options?: Omit<EndPointOptions, 'http'>) {
-    return EndPoint({ http: { path, method }, ...(options??{}) })
+    return EndPoint({ http: { path, method }, ...(options ?? {}) })
 }
 
 
 export function HttpGetEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
-    return HttpEndpoint( path, 'GET' , options)
+    return HttpEndpoint(path, 'GET', options)
 }
 export function HttpPostEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
-    return HttpEndpoint( path, 'POST' , options)
+    return HttpEndpoint(path, 'POST', options)
 }
 export function HttpPutEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
-    return HttpEndpoint( path, 'PUT' , options)
+    return HttpEndpoint(path, 'PUT', options)
 }
 export function HttpPatchEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
-    return HttpEndpoint( path, 'PATCH' , options)
+    return HttpEndpoint(path, 'PATCH', options)
 }
 export function HttpDeleteEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
-    return HttpEndpoint( path, 'DELETE' , options)
+    return HttpEndpoint(path, 'DELETE', options)
 }
