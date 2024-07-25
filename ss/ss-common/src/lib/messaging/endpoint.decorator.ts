@@ -1,5 +1,5 @@
 import { applyDecorators, HttpException, HttpStatus } from '@nestjs/common'
-import { HttpEndpoint as _HttpEndpoint}  from './http-endpoint.decorator'
+import { HttpEndpoint as _HttpEndpoint } from './http-endpoint.decorator'
 import { HttpMethod } from "./model"
 import { CommandHandler } from "./command-endpoint.decorator"
 import { EventHandler } from "./event-endpoint.decorator"
@@ -68,8 +68,23 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
 }
 
 
-export function HttpEndpoint(path: string, method: HttpMethod = 'GET') {
-    return EndPoint({ http: { path, method } })
+function HttpEndpoint(path: string, method: HttpMethod = 'GET', options?: Omit<EndPointOptions, 'http'>) {
+    return EndPoint({ http: { path, method }, ...(options??{}) })
 }
 
 
+export function HttpGetEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
+    return HttpEndpoint( path, 'GET' , options)
+}
+export function HttpPostEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
+    return HttpEndpoint( path, 'POST' , options)
+}
+export function HttpPutEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
+    return HttpEndpoint( path, 'PUT' , options)
+}
+export function HttpPatchEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
+    return HttpEndpoint( path, 'PATCH' , options)
+}
+export function HttpDeleteEndpoint(path: string, options?: Omit<EndPointOptions, 'http'>) {
+    return HttpEndpoint( path, 'DELETE' , options)
+}
