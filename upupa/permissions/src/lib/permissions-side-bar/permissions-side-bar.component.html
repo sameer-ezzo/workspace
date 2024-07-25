@@ -1,40 +1,46 @@
-<mat-accordion multi="false">
-  @for (node of nodes; track node; let i = $index) {
-    <mat-expansion-panel [expanded]="i === 0"
-      [class.empty]="node.children.length === 0" [hideToggle]="node.children.length === 0">
-      <mat-expansion-panel-header expandedHeight="48px" (click)="focused = node.rule">
+@for (node of nodes; track node; let i = $index) {
+<div class="item">
+  @if (node.children.length > 0) {
+  <mat-accordion displayMode="flat">
+    <mat-expansion-panel #panel [expanded]="hasActiveChild(panel)" class="mat-elevation-z0">
+      <mat-expansion-panel-header (click)="focused = node" [class.active]="node === focused">
         <mat-panel-title>
           <h4 style="margin: 0"> {{node.rule?.name | titlecase}}</h4>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      @if (node.children.length > 0) {
-        <div class="actions">
-          @for (leaf of node.children; track leaf) {
-            <ng-container *ngTemplateOutlet="leafTemplate; context:{ leaf,level: leaf.level }"></ng-container>
-          }
-        </div>
-      }
+      <div class="actions">
+        @for (leaf of node.children; track leaf) {
+        <ng-container *ngTemplateOutlet="leafTemplate; context:{node:leaf, leaf,level: leaf.level }"></ng-container>
+        }
+      </div>
     </mat-expansion-panel>
+  </mat-accordion>
   }
-</mat-accordion>
+  @else {
+  <div class="actions mat-expansion-panel mat-elevation-z0" style="margin-inline: 0;">
+    <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:node.rule, level: 1 }"></ng-container>
+  </div>
+  }
+</div>
+}
 
 
 
-<ng-template #leafTemplate let-leaf="leaf" let-level="level">
+<ng-template #leafTemplate let-node="node" let-leaf="leaf" let-level="level">
   @if (leaf.children?.length > 0) {
-    <ng-container *ngTemplateOutlet="ruleTemplate; context:{ rule:leaf.rule,level: leaf.level }"></ng-container>
-    @for (item of leaf.children; track item) {
-      <ng-container *ngTemplateOutlet="leafTemplate; context:{ leaf:item, level: item.level }"></ng-container>
-    }
+  <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:leaf.rule,level: leaf.level }"></ng-container>
+  @for (item of leaf.children; track item) {
+  <ng-container *ngTemplateOutlet="leafTemplate; context:{ node, leaf:item, level: item.level }"></ng-container>
+  }
   }
   @if ((leaf.children||[]).length === 0) {
-    <ng-container *ngTemplateOutlet="ruleTemplate; context:{ rule:leaf.rule, level: leaf.level }"></ng-container>
+  <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:leaf.rule, level: leaf.level }"></ng-container>
   }
 </ng-template>
 
-<ng-template #ruleTemplate let-rule="rule" let-level="level">
-  <div class="action" [ngStyle]="{'margin-inline-start.em': level-1}" (click)="focused = rule"
-    [class.active]="rule.name === focused?.name">
+<ng-template #ruleTemplate let-node="node" let-rule="rule" let-level="level">
+  <div class="action" [ngStyle]="{'margin-inline-start.em': level-1}" (click)="focused = node"
+    [class.active]="rule.name === focused?.rule.name">
     <div class="action-header">
       <span>{{rule.path}}</span>
       <span class="spacer"></span>

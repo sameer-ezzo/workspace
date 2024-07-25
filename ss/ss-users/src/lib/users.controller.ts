@@ -39,12 +39,13 @@ export class UsersController {
         });
 
         setTimeout(() => { // wait for user model is added to data service
-            const { password, roles, email, username, name } = options.superAdmin
-            this.installSuperAdmin({ email, username: username ?? email, name }, password, roles)
+            const { password, role, email, username, name } = options.superAdmin
+            this.installSuperAdmin({ email, username: username ?? email, name }, password, role)
                 .then(() => { })
                 .catch((error) => {
-                    if (error.message !== 'ALREADY_INSTALLED')
-                        logger.error(error)
+                    const { message } = error
+                    if (message === 'ALREADY_INSTALLED' || message === 'USER_WITH_ROLE_EXISTS') return
+                    logger.error(error)
                 })
         }, 1000);
 
@@ -85,24 +86,36 @@ export class UsersController {
     }
 
 
-    private async installSuperAdmin(user: Partial<User>, password: string, roles = ['super-admin']) {
+    private async installSuperAdmin(user: Partial<User>, password: string, role = 'super-admin') {
         if (installed) throw new Error('ALREADY_INSTALLED')
-        roles ??= []
-        roles.push('super-admin')
-        roles = [...new Set(roles)]
 
-        const cnt = await this.dataService.count('/user', {
-            roles: `{in}${roles.join(',')}`
-        })
-        if (cnt > 0) throw new Error('ALREADY_INSTALLED');
+        const usersModel = await this.dataService.getModel('user')
+        if (!usersModel) throw new Error('MISSING_USER_MODEL')
 
-        const payload = { ...user } as Partial<User>
-        const result = await this.auth.signUp(payload as Partial<User>, password)
-        installed = result !== null
-        await this.auth.addUserToRoles(result._id, roles)
-        installed = true
-        logger.info(`Super admin user set to ${user.email}`)
-        return { ...result, roles }
+        const usersWithRole = await usersModel.countDocuments({ roles: { $in: [role] } })
+        if (usersWithRole > 0) throw new Error(`USER_WITH_ROLE_EXISTS`);
+        try {
+            const dbUser = await usersModel.findOne({ email: user.email })
+            let u = dbUser
+            if (u) {
+                logger.info(`Super admin user already exists, Setting password.`)
+                await this.auth.changePassword(dbUser._id, dbUser.password, password)
+            }
+            else {
+                logger.info(`Creating super admin user.`)
+                const payload = { ...user } as Partial<User>
+                u = await this.auth.signUp(payload as Partial<User>, password)
+            }
+            installed = true
+            await this.auth.addUserToRoles(u._id, [role])
+            installed = true
+            logger.info(`Super admin user set to ${user.email}`)
+            return { ...u, roles: [...(u.roles ?? []), role] }
+        } catch (error) {
+            installed = false
+            throw error
+        }
+
     }
 
     @Authorize({ by: 'role', value: 'super-admin', access: 'grant' })

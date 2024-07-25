@@ -10,11 +10,10 @@
     <span>Export</span>
   </button>
 </div>
-<div style="padding-inline-start:1rem; overflow-y: auto;">
-
-  <permissions-side-bar [nodes]="nodes()" (focusedChange)="focused = $event"></permissions-side-bar>
+<div style="padding-inline-start:1rem;overflow: hidden; overflow-y: auto;">
+  <permissions-side-bar [nodes]="nodes()" [focused]="focused()" (focusedChange)="focused.set($event)"></permissions-side-bar>
 </div>
 
 @if (focused) {
-<rule-form [rule]="focused"></rule-form>
+<rule-form [rule]="focused()?.rule"></rule-form>
 }

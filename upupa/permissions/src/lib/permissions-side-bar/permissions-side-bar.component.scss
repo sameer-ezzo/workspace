@@ -1,24 +1,19 @@
 :host {
   overflow-y: auto;
-  
+  .item {
+    padding-inline: 0.25rem;
+    &:not(:last-child) {
+      border-block-end: 1px solid var(--divider);
+      margin-block-end: 0.25rem;
+    }
+  }
+
   .actions {
     margin: 0 -24px;
 
     & > .action {
       cursor: pointer;
       padding: 0.5rem 1rem;
-      border-inline-end: 2px solid transparent;
-      transition: all 200ms ease-in;
-
-      &:hover,
-      &.active,
-      &:focus-within {
-        background-color: var(--bg-hover);
-      }
-
-      &.active {
-        border-inline-end-color: blueviolet;
-      }
 
       & > .action-header {
         display: flex;
@@ -48,9 +43,20 @@
     }
   }
 
-  .mat-expansion-panel.empty .mat-expansion-panel-body {
-    height: 0;
-    display: none;
+  .action,
+  .mat-expansion-panel-header {
+    border-inline-end: 2px solid transparent;
+    transition: all 200ms ease-in;
+
+    &:hover,
+    &.active,
+    &:focus-within {
+      background-color: var(--bg-hover);
+    }
+
+    &.active {
+      border-inline-end-color: var(--mdc-outlined-text-field-caret-color);
+    }
   }
 
   .frow {

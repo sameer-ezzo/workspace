@@ -37,7 +37,7 @@ export class RuleFormComponent {
         const ruleActions = await this.permissionsService.getRuleActions(rule)
 
         this.actionPermissionsMap = new Map()
-        const actions = [...new Set(['*', ...ruleActions])]
+        const actions = [...new Set([...ruleActions])]
         actions.forEach(action => {
             rule.actions[action] ??= []
             const permissions = rule.actions[action] as SimplePermission[]

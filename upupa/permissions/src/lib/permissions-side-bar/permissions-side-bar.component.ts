@@ -11,16 +11,22 @@ import { NodeModel } from '../node-model';
 })
 export class PermissionsSideBarComponent {
 
-    @Output() focusedChange = new EventEmitter<Rule>()
-    @Input() nodes:NodeModel[] = []
-    private _focused: Rule;
-    public get focused(): Rule {
+    @Output() focusedChange = new EventEmitter<NodeModel>()
+    @Input() nodes: NodeModel[] = []
+    private _focused: NodeModel;
+    @Input()
+    public get focused(): NodeModel {
         return this._focused;
     }
-    public set focused(value: Rule) {
-        if (this._focused === value || !value.name) return
+    public set focused(value: NodeModel) {
+        if (this._focused === value) return
         this._focused = value;
+        console.log('focused', value);
         this.focusedChange.emit(this.focused)
     }
 
+    hasActiveChild(el: any) {
+        const e = el._body?.nativeElement as HTMLElement
+        return e?.querySelector('.active') !== null
+    }
 }

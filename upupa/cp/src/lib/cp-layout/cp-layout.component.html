@@ -13,8 +13,7 @@
     <mat-drawer #drawer class="sidenav" [mode]="sideBarMode" [opened]="isSidebarOpened && sideBarItems()?.length > 0">
       @for(g of sideBarItems(); track i; let i = $index){
       @if(g.items?.length > 0){
-      <mat-accordion #accordion class="cp-accordion" [class.hidden]="hasChildren(getId(g,i))"
-        [attr.id]="getId(g,i)" displayMode="flat">
+      <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g,i)" displayMode="flat">
         <mat-expansion-panel #panel [expanded]="hasActiveChild(panel)" class="mat-elevation-z0">
 
           @if(g.name){

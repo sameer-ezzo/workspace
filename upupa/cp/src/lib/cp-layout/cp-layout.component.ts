@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, Inject, Input, signal, ViewEncapsulation } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, Inject, Input, signal, ViewEncapsulation } from '@angular/core'
 import { LanguageService } from '@upupa/language'
 import { AuthService } from '@upupa/auth'
 import { Subject } from 'rxjs'
@@ -28,9 +28,6 @@ export class CpLayoutComponent {
     return el._body?.nativeElement.querySelector('.active') !== null
   }
 
-  hasChildren(selector: string) {
-    return document.querySelector(selector)?.querySelector('.cp-item-link') !== null
-  }
   @Input() logo: string | null = null
 
   private _sideBarCommands = [] as SideBarGroup[]
@@ -52,13 +49,25 @@ export class CpLayoutComponent {
   public languageService = inject(LanguageService)
   public breakPointObserver = inject(BreakpointObserver)
   public auth = inject(AuthService)
-
+  private readonly el = inject(ElementRef)
   constructor() {
     const t = inject(CP_SIDE_BAR_ITEMS) ?? this.sideBarCommands ?? []
 
     if (Array.isArray(t)) this.sideBarItems.set(t)
     else if (t instanceof Promise) t.then(this.sideBarItems.set)
     else t.subscribe(r => this.sideBarItems.set(r))
+
+    effect(() => {
+      const items = this.sideBarItems()
+      setTimeout(() => {
+        const cpItems = this.el.nativeElement.querySelectorAll('.cp-accordion')
+        cpItems.forEach((accEl: HTMLElement) => {
+          const links = accEl.querySelectorAll('.cp-item-link')
+          const allHidden = Array.from(links).every((l: HTMLElement) => l.style.display === 'none')
+          accEl.style.display = allHidden === true ? 'none' : 'block'
+        })
+      }, 500);
+    })
   }
 
   ngOnInit() {

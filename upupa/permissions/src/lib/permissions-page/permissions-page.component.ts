@@ -13,16 +13,14 @@ export class PermissionsPageComponent {
 
     nodes = signal<NodeModel[]>([])
     constructor(private permissionsService: PermissionsService) {
-        this.permissionsService.getRules().then(x => this.nodes.set(x))
+        this.permissionsService.getRules().then(x => {
+            this.nodes.set(x)
+            this.focused.set(x[0])
+        })
     }
 
 
-    private _focused: Rule;
-    public get focused(): Rule { return this._focused }
-    public set focused(v: Rule) {
-        if (this._focused === v) return
-        this._focused = v
-    }
+    focused = signal<NodeModel>(null);
 
     async export() {
         const permissions = await this.permissionsService.getRules(true)

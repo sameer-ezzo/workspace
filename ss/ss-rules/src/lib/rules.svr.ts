@@ -11,7 +11,9 @@ import { logger } from "./logger";
 import { SimplePermissionSchema } from "./simple-permission.schema";
 import { AUTHORIZE_PERMISSIONS, PermissionsSource } from "./constants";
 
-
+export function joinPaths(...segments: string[]): string {
+    return '/' + segments.flatMap(c => (c ?? '').split('/').filter(s => s)).join('/');
+}
 
 
 @Injectable()
@@ -134,16 +136,18 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
 
         if (!args.controller) {
             prefix = _controllerPrefix(target)
-            const fullPath = '/' + prefix
+            const fullPath = joinPaths(prefix)
             return { ...s, fullPath, prefix, path: fullPath }
 
         }
         else {
-            const path = Reflect.getMetadata(ENDPOINT_PATH, target)
-            const operation = Reflect.getMetadata(ENDPOINT_OPERATION, target)
-
             const prefix = _controllerPrefix(args.controller)
-            const fullPath = ['/', `${prefix}/${path}`.split('/').filter(s => s)].join('/')
+            const operation = Reflect.getMetadata(ENDPOINT_OPERATION, target)
+            const path = (Reflect.getMetadata(ENDPOINT_PATH, target) ?? '') as string
+
+            if (path.includes('**'))
+                return { permissions: args.permissions, prefix, fullPath: joinPaths(prefix), path: '/', operation }
+            const fullPath = joinPaths(prefix, path)
             return { permissions: args.permissions, prefix, fullPath, path, operation }
 
         }
@@ -155,7 +159,7 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
         if (g.length === 0) continue;
 
         const rulePath = g.length > 1 ? key : g[0].prefix;
-        const segments = rulePath.split('/');
+        const segments = rulePath.split('/').filter(s => s.length > 0);
 
         for (let i = 0; i < segments.length; i++) {
             const p = segments.slice(0, i + 1).join('/');
@@ -176,7 +180,14 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
 function getAuthorizePermissionsFromEndpoints(endPoints: EndpointInfoRecord[], rulesService: RulesService) {
     return endPoints.map(ep => {
         const parentRule = rulesService.getRule(ep.fullPath, true)!
-        return (Reflect.getMetadata(AUTHORIZE_PERMISSIONS, ep.descriptor.value) ?? []).map((p: any) => ({ ...p, name: ep.operation, action: ep.operation, rule: parentRule.name } as SimplePermission))
+        return (Reflect.getMetadata(AUTHORIZE_PERMISSIONS, ep.descriptor.value) ?? [])
+            .map((p: any) => (
+                {
+                    ...p,
+                    name: ep.operation,
+                    action: ep.operation,
+                    rule: parentRule.name
+                } as SimplePermission))
     }).reduce((ps, acc) => ([...ps, ...acc]), []);
 }
 

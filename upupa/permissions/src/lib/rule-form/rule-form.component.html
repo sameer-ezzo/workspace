@@ -1,10 +1,10 @@
 @if (rule) {
-<h2>Rule : {{rule.name || rule.path}}</h2>
-<h3>{{ "Permissions" }}</h3>
+<h2>{{rule.name || rule.path | titlecase}}</h2>
+<!-- <h3>{{ "Permissions" }}</h3> -->
 @if (loading() !== true) {
-<div style="overflow-y: auto">
-  @for (action of actionNames(); track action) {
-  <div style="margin-block-end: 2rem;">
+<div style="overflow: hidden; overflow-y: auto;padding-block: 1rem; padding-inline: 0.25rem;">
+  @for (action of actionNames(); track i; let i = $index) {
+  <div class="item">
     <div class="flex row align-center">
       <h5>{{ action | titlecase}}</h5>
       <span class="spacer"></span>
