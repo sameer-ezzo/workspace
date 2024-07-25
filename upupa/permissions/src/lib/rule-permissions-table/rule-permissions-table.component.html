@@ -1,10 +1,18 @@
-<data-table (action)="onTableAction($event)"
-    [templates]="{type: permissionTypeTemplate, value: permissionValueTemplate, access: permissionAccessTemplate}"
-    [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
-    [actions]="tableActions"></data-table>
+<data-table (action)="onTableAction($event)" [templates]="{
+        info: permissionInfoTemplate,
+        access: permissionAccessTemplate,
+         type: permissionTypeTemplate, 
+         value: permissionValueTemplate}" [(focusedItem)]="focused" [adapter]="permissionsAdapter"
+    [columns]="tableColumns" [actions]="tableActions"></data-table>
+
+<ng-template #permissionInfoTemplate let-permission="element">
+
+    @if(permission.item.builtIn === true){
+    <mat-icon style="transform: scale(.8);" matTooltip="Permission is built in">info</mat-icon>
+    }
+</ng-template>
 
 <ng-template #permissionTypeTemplate let-permission="element">
-
     <select [disabled]="permission.item.builtIn === true" [ngModel]="permission.item.by"
         (change)="changeType(permission.item, $event.target)">
         <option *ngFor="let pt of permissionTypes" [value]="pt.value">

@@ -83,6 +83,9 @@ tr[cdk-header-row] > th {
   align-items: center;
   padding: 0.5em 1rem;
   height: auto;
+  &:empty {
+    display: none;
+  }
 }
 
 /* select */

@@ -1,12 +1,14 @@
 @if (rule) {
 <h2>{{rule.name || rule.path | titlecase}}</h2>
-<!-- <h3>{{ "Permissions" }}</h3> -->
+<!-- TODO -->
+ <!-- ADD Rule Info like (fallback input to set grant or deny, description ...) -->
+
 @if (loading() !== true) {
 <div style="overflow: hidden; overflow-y: auto;padding-block: 1rem; padding-inline: 0.25rem;">
   @for (action of actionNames(); track i; let i = $index) {
   <div class="item">
     <div class="flex row align-center">
-      <h5>{{ action | titlecase}}</h5>
+      <h4>{{ action | titlecase}}</h4>
       <span class="spacer"></span>
       <button mat-icon-button color="accent" (click)="addPermission(action)">
         <mat-icon>add</mat-icon>

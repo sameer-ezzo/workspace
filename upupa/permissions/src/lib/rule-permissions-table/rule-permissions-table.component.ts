@@ -107,9 +107,10 @@ export class RulePermissionsTableComponent {
 
 const TABLE_COLUMNS = {
     select: 0,
-    type: { header: "Type", width: '120px' },
+    info: { header: "Info", width: '0.1' },
+    type: { header: "Type", width: '0.2' },
     value: { header: "Value" },
-    access: { header: "Access", width: '60px' },
+    access: { header: "Access", width: "0.2" },
 } as unknown as ColumnsDescriptor
 
 

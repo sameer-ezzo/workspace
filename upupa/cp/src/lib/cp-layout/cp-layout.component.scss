@@ -35,6 +35,8 @@ main {
     text-decoration: none;
     transition: background-color 0.2s;
     box-sizing: border-box;
+    border-inline-start: 3px solid transparent;
+
 
     &:hover {
       background-color: var(--bg-hover);
@@ -43,6 +45,8 @@ main {
     &.active,
     &:focus-within {
       background-color: var(--bg-focused-button);
+      border-inline-start-color: var(--mdc-outlined-text-field-caret-color);
+
     }
   }
 

@@ -45,7 +45,7 @@
 
   .action,
   .mat-expansion-panel-header {
-    border-inline-end: 2px solid transparent;
+    border-inline-start: 3px solid transparent;
     transition: all 200ms ease-in;
 
     &:hover,
@@ -55,7 +55,7 @@
     }
 
     &.active {
-      border-inline-end-color: var(--mdc-outlined-text-field-caret-color);
+      border-inline-start-color: var(--mdc-outlined-text-field-caret-color);
     }
   }
 

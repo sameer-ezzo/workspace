@@ -42,9 +42,7 @@
   <div class="action" [ngStyle]="{'margin-inline-start.em': level-1}" (click)="focused = node"
     [class.active]="rule.name === focused?.rule.name">
     <div class="action-header">
-      <span>{{rule.path}}</span>
-      <span class="spacer"></span>
-      <span class="tag {{rule.name}}">{{rule.name | titlecase}}</span>
+      <span>{{rule.name || rule.path}}</span>
     </div>
   </div>
 </ng-template>
