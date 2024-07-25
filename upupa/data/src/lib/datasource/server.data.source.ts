@@ -66,29 +66,20 @@ export class ServerDataSource<T = any> extends TableDataSource<T> {
 
     v2Get(path: string, page: Partial<PageEvent>, query: any): Observable<T[]> {
         return this.dataService.get<any>(path, query).pipe(
-            catchError(() => of({ total: 0, data: [], query })), //TODO proper handling to errors comming from data service
+            catchError(() => of({ total: 0, data: [], query })), //TODO proper handling to errors coming from data service
             map(x => {
                 page.length = x.total
                 this.data = x.data
                 return x.data
             }))
     }
-    v1Get(path: string, page: Partial<PageEvent>, query: any): Observable<T[]> {
-        return this.dataService.fetch<T[]>(path, query, { "X-Get": 'Count' })
-            .pipe(catchError(() => of({ meta: { count: 0 }, data: [], query })), //TODO proper handling to errors comming from data service
-                map(x => {
-                    page.length = x.meta === null || isNaN(+x.meta?.count) ? 0 : +x.meta.count
-                    this.data = x.data
-                    return x.data
-                }))
-    }
+
 
     destroy?() { }
 
     override getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
-        return value?.length > 0 ? (this.path.includes('v2/') ?
-            this.v2Get(this.path, {}, { [key]: `{in}${value.join(',')}` }) :
-            this.v1Get(this.path, {}, { [key]: `{in}${value.join(',')}` })) : of([])
+        return value?.length > 0 ? this.v2Get(this.path, {}, { [key]: `{in}${value.join(',')}` }) :
+            of([])
     }
 }
 
