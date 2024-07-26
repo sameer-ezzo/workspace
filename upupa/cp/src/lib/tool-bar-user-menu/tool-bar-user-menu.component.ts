@@ -6,6 +6,7 @@ import { SideBarItem } from '../cp-layout/side-bar-group-item';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { USER_PICTURE_RESOLVER } from '../di.token';
 import { getUserInitialsImage } from '../user-image.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -32,15 +33,16 @@ export class ToolbarUserMenuComponent {
         else this.bus.emit(e.name, { msg: e.name, ...e }, this)
     }
 
+    private readonly router = inject(Router)
     signout() {
         const user = { ...this.auth.user }
         this.auth.signout();
-        window.location.href = window.location.href
+        this.router.navigate(['/'])
     }
 
     async unimpersonate() {
         await this.auth.unimpersonate()
-        window.location.href = window.location.href
+        this.router.navigate(['/'])
     }
 
     handelImageError(event) {

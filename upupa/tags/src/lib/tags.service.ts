@@ -61,7 +61,8 @@ export class TagsService {
 
 
   convertNameToId(name: string) {
-    return name?.trim().length > 0 ? name.split(' ').filter(s => s.length > 0).join('-') : ObjectId.generate()
+    const n = (name || '').trim()
+    return n.length > 0 ? n.split(' ').filter(s => s.length > 0).join('-') : ObjectId.generate()
   }
 
 

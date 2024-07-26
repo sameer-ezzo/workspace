@@ -273,7 +273,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     private async refreshData() {
         if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
             const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path;
-            await this.ds.refreshCache((dpath));
+            await this.ds.refreshCache(dpath);
             this.dataListResolverResult.adapter.refresh();
         }
         else {

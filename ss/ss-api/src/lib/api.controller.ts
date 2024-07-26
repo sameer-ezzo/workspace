@@ -59,7 +59,6 @@ export class ApiController {
         }
     }
 
-
     @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'Read' })
     @Authorize({ by: 'role', value: 'super-admin' })
     public async agg(@Message() msg: IncomingMessage) {
@@ -71,6 +70,7 @@ export class ApiController {
         return result
     }
 
+    
 
     @EndPoint({ http: { method: 'PUT', path: '**' }, operation: 'Update' })
     @Authorize({ by: 'role', value: 'super-admin' })

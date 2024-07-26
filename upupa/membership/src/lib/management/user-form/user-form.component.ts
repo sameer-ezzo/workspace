@@ -2,8 +2,8 @@ import { Component, Input, signal, ViewChild } from '@angular/core';
 
 import { AuthService, User } from '@upupa/auth';
 
-import { firstValueFrom } from 'rxjs';
-import { DataService } from '@upupa/data';
+import { firstValueFrom, map } from 'rxjs';
+import { DataResult, DataService } from '@upupa/data';
 
 import { HttpClient } from '@angular/common/http';
 import { ActionEvent, UpupaDialogComponent } from '@upupa/common';
@@ -67,7 +67,7 @@ export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
     private async getUser(user: Partial<User>) {
         if (!user?._id) return {}
         try {
-            return await firstValueFrom(this.data.get<User>(`/user/${user._id}`))
+            return await firstValueFrom(this.data.get<DataResult<User>>(`/user/${user._id}`).pipe(map(u => u.data?.[0] ?? {})))
         } catch (error) {
             console.error(error);
             throw error;
