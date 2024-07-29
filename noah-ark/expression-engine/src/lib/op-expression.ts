@@ -46,14 +46,24 @@ export function evaluateOpExpression(exp: Expression, ctx: any) {
 
     for (const op in noneSymbolExp) {
         let k = op as any
-        const t = (Array.isArray(noneSymbolExp[op]) ? noneSymbolExp[op] : [noneSymbolExp[op]]).map(e => evaluateOpExpression(e, ctx)).reduce((a, b) => a.concat(b), [])
+        const t = (Array.isArray(noneSymbolExp[op]) ? noneSymbolExp[op] : [noneSymbolExp[op]]).map(e => evaluateOpExpression(e, ctx)).reduce((a, b) => {
+          if (Array.isArray(a) && Array.isArray(b)) {
+            return a.concat(b);
+          } else if (Array.isArray(a)) {
+            return a.concat([b]);
+          } else if (Array.isArray(b)) {
+            return [a].concat(b);
+          } else {
+            return [a, b];
+          }
+        }, []);
 
         let expRes = null
         if (k.startsWith('$')) k = op.substring(1)
 
-        if (UNARY_OPERATORS.includes(k)) expRes = evalUnaryExpression(k, t.shift(), ctx)
+        if (UNARY_OPERATORS.includes(k)) expRes = evalUnaryExpression(k, Array.isArray(t) ? t.shift() : t, ctx)
         else if (BINARY_OPERATORS.includes(k)) expRes = evalBinaryExpression(k, t, ctx)
-        else if (POLY_OPERATORS.includes(k)) expRes = evalPolyExpression(k, t, ctx)
+        else if (POLY_OPERATORS.includes(k)) expRes = evalPolyExpression(k, [t], ctx)
         else console.warn(`Non supported operator ${k}.`)
 
         res.push(expRes)
@@ -72,7 +82,12 @@ export function evalUnaryExpression(op: string, exp: ExpressionSymbol, ctx: any)
             return null
     }
 }
-export function evalBinaryExpression(op: string, exp: [ExpressionSymbol, ExpressionSymbol], ctx: any) {
+export function evalBinaryExpression(op: string, exp: [ExpressionSymbol, ExpressionSymbol] | Expression, ctx: any) {
+    if (!Array.isArray(exp)) {
+        console.warn('Invalid expression format for binary operator:', op);
+        return null;
+    }
+
     switch (op) {
         case 'gt': return exp.reduce((a, b) => a > b)
         case 'gte': return exp.reduce((a, b) => a >= b)

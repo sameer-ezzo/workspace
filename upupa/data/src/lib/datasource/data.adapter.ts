@@ -105,7 +105,6 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         const source = itemsNotInAdapter.length > 0 ?
             this.dataSource.getItems(itemsNotInAdapter, this.keyProperty)
                 .pipe(
-                    tap(items => console.log('items', items, this.dataSource)),
                     map(items => items.filter(x => x).map(i => this.normalize(i))),
                     map(items => items.concat(itemsInAdapter)),
                     map(x => KEYS.map(vi => x.find(ni => ni.key === vi))))

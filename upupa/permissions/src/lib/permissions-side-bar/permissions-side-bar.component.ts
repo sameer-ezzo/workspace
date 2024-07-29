@@ -21,7 +21,6 @@ export class PermissionsSideBarComponent {
     public set focused(value: NodeModel) {
         if (this._focused === value) return
         this._focused = value;
-        console.log('focused', value);
         this.focusedChange.emit(this.focused)
     }
 

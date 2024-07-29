@@ -1,6 +1,7 @@
-import { Component, Input, forwardRef, Optional, Inject, OnChanges, ViewEncapsulation, ViewChild, SimpleChanges } from '@angular/core';
+import { Component, Input, forwardRef, OnChanges, ViewEncapsulation, inject, signal, ViewChild } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
+// import { Bold, Essentials, Italic, Mention, Paragraph, Undo } from '@ckeditor/ckeditor5-build-decoupled-document';
 
 
 import { HtmlUploadAdapter } from '../html-upload-adapter';
@@ -9,8 +10,13 @@ import { InputBaseComponent } from '@upupa/common';
 import { LanguageService } from '@upupa/language';
 import { UploadService } from '@upupa/upload';
 import { Editor, EditorConfig } from '@ckeditor/ckeditor5-core';
-import { ChangeEvent } from '@ckeditor/ckeditor5-angular/ckeditor.component';
+import { ChangeEvent, CKEditorComponent } from '@ckeditor/ckeditor5-angular/ckeditor.component';
 import { AuthService } from '@upupa/auth';
+
+import CKSource from '@ckeditor/ckeditor5-build-decoupled-document';
+const ContextWatchdog = CKSource.ContextWatchdog;
+const Context = CKSource.Context;
+
 
 // https://ckeditor.com/docs/ckeditor5/latest/installation/integrations/angular.html
 @Component({
@@ -24,15 +30,22 @@ import { AuthService } from '@upupa/auth';
             useExisting: forwardRef(() => HtmlEditorComponent),
             multi: true,
         },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => HtmlEditorComponent), multi: true }
+        { provide: NG_VALIDATORS, useExisting: forwardRef(() => HtmlEditorComponent), multi: true },
     ]
 })
 export class HtmlEditorComponent extends InputBaseComponent<string> implements OnChanges {
-    public Editor = DecoupledEditor
+
+    public Editor = DecoupledEditor;
+    @ViewChild('ckEditor') editorComponent: CKEditorComponent;
+    public getEditor() {
+        return this.editorComponent?.editorInstance;
+    }
+    watchdog: any;
     @Input() readonly = false;
     @Input() language: string;
     @Input()
     private _placeholder: string;
+    ready = signal(false);
     public get placeholder(): string {
         return this._placeholder;
     }
@@ -65,16 +78,28 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
         this.control?.markAsTouched();
     }
 
+    private ls = inject(LanguageService)
+    private baseUrl = inject(HTML_EDITOR_UPLOAD_BASE)
+    private editorConfig = inject(HTML_EDITOR_CONFIG) as EditorConfig
+    private upload = inject(UploadService)
+    private readonly auth = inject(AuthService)
 
-    constructor(
-        private ls: LanguageService,
-        @Inject(HTML_EDITOR_UPLOAD_BASE) private baseUrl: string,
-        @Optional() @Inject(HTML_EDITOR_CONFIG) private editorConfig: EditorConfig,
-        private upload: UploadService,
-        private readonly auth: AuthService
-    ) {
-        super();
+    watchdogConfig = {
+        crashNumberLimit: 5
+    }
+
+    async ngOnInit() {
         if (!this.baseUrl?.trim()) throw `HTML Editor ${this.name} must have baseUrl provided.`
+
+
+        this.watchdog = new CKSource.ContextWatchdog(CKSource.Context as any);
+        try {
+            await this.watchdog.create(this.watchdogConfig)
+            this.ready.set(true)
+        } catch (error) {
+            console.error(error);
+        }
+
         const lang = this.ls.language ?? 'en'
         this.config = {
             ...(this.editor?.config || {}),

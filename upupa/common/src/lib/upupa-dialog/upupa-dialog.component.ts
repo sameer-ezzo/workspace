@@ -161,6 +161,6 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     }
 
     close() {
-        this.dialogRef.close();
+        this.dialogRef?.close();
     }
 }

@@ -9,7 +9,11 @@ import { UtilsModule } from '@upupa/common';
 import { UploadModule } from '@upupa/upload';
 import { type Editor, EditorConfig } from '@ckeditor/ckeditor5-core';
 
+
 export type CKEditorConfig = EditorConfig
+
+
+
 
 @NgModule({
     declarations: [HtmlEditorComponent],
@@ -32,7 +36,7 @@ export class HtmlEditorModule {
         return {
             ngModule: HtmlEditorModule,
             providers: [
-                { provide: HTML_EDITOR_UPLOAD_BASE, useValue:  (uploadBase || '/storage').trim().replace(/\/$/, '') },
+                { provide: HTML_EDITOR_UPLOAD_BASE, useValue: (uploadBase || '/storage').trim().replace(/\/$/, '') },
                 { provide: HTML_EDITOR_CONFIG, useValue: editorConfig }
             ]
         };

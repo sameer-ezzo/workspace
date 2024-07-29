@@ -1,7 +1,7 @@
 import { from, Observable, ReplaySubject } from "rxjs";
 import { ActionEvent, ConfirmService } from "@upupa/common";
-import { shareReplay, tap } from "rxjs/operators";
-import { DataService } from "@upupa/data";
+import { map, shareReplay, tap } from "rxjs/operators";
+import { DataResult, DataService } from "@upupa/data";
 import { ScaffoldingService } from "../scaffolding.service";
 import { IScaffolder, FormScaffoldingModel } from "../../types";
 import { FormScheme, resolveDynamicFormInputsFor } from "@upupa/dynamic-form";
@@ -9,12 +9,6 @@ import { resolvePath } from "./resolve-scaffolder-path.func";
 import { defaultFormActions } from "../../defaults";
 import { inject } from "@angular/core";
 
-// defaultListActions: ActionDescriptor[] = [
-//     { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
-//     { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
-//     { position: 'bulk', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true, bulk: true },
-//     { position: 'header', name: 'create', icon: 'add_circle_outline', text: 'Create' }
-// ];
 export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> {
 
     public scaffolder = inject(ScaffoldingService)
@@ -61,7 +55,13 @@ export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> 
     value$(path: string): Observable<T> {
         const { path: _path, view } = resolvePath(path);
 
-        const model$ = (view === 'create' ? from(this.create()) : this.data.get<T>(_path).pipe(shareReplay(1)));
+        const model$ = view === 'create' ? from(this.create()) :
+            this.data.get<DataResult<T>>(_path).pipe(
+                shareReplay(1),
+                map(x => x.data?.[0] ?? {} as T),
+                tap(v => console.log(v))
+            )
+
         return model$.pipe(tap(v => this.value = v));
     }
 

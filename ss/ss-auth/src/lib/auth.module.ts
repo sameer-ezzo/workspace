@@ -70,7 +70,7 @@ export class AuthModule {
 
         authOptions = { ..._authOptions, ...authOptions } as AuthOptions
         if (authOptions.secret !== __secret()) {
-            logger.error('Auth secret has been overridden (the one passed in env is used)')
+            logger.warn('Auth secret has been overridden (the one passed in env is used)')
             authOptions.secret = __secret()
         }
         if (!authOptions.secret) {

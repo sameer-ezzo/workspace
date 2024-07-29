@@ -2,15 +2,16 @@
     "name": "@upupa/html-editor",
     "version": "0.0.3",
     "peerDependencies": {
-        "@ckeditor/ckeditor5-angular": "^7.0.1",
-        "@ckeditor/ckeditor5-build-decoupled-document": "^40.2.0",
-        "@ckeditor/ckeditor5-style": "^40.2.0",
-        "@ckeditor/ckeditor5-core": "^40.2.0",
-        "@ckeditor/ckeditor5-engine": "^40.2.0",
-        "@ckeditor/ckeditor5-utils": "^40.2.0",
-        "@ckeditor/ckeditor5-watchdog": "^40.2.0",
-        "@angular/common": "^17.0.9",
-        "@angular/core": "^17.0.9"
+        "@ckeditor/ckeditor5-angular": "^8.0.0",
+        "@ckeditor/ckeditor5-build-classic": "^42.0.2",
+        "@ckeditor/ckeditor5-build-decoupled-document": "^42.0.2",
+        "@ckeditor/ckeditor5-core": "^42.0.2",
+        "@ckeditor/ckeditor5-engine": "^42.0.2",
+        "@ckeditor/ckeditor5-style": "^42.0.2",
+        "@ckeditor/ckeditor5-utils": "^42.0.2",
+        "@ckeditor/ckeditor5-watchdog": "^42.0.2",
+        "@angular/common": "18.1.2",
+        "@angular/core": "18.1.2"
     },
     "dependencies": {
         "tslib": "^2.6.2"

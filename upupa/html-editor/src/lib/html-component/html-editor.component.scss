@@ -1,3 +1,5 @@
+// @import 'ckeditor5/ckeditor5.css';
+
 :root {
   /* Overrides the border radius setting in the theme. */
   --ck-border-radius: var(--mat-border-radius);
@@ -108,6 +110,11 @@
 }
 
 fieldset {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
   background-color: var(--mat-toolbar-container-background-color);
 
   legend {
@@ -137,10 +144,12 @@ fieldset {
 
 .ck-rounded-corners .ck.ck-editor__editable:not(.ck-editor__nested-editable),
 .ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-rounded-corners {
-  // border-radius: var(--ck-border-radius);
-  // border: 1px solid #c4c4c4;
-  // border-top: none;
   min-height: 150px;
   max-height: 550px;
   outline: none;
+}
+
+ckeditor {
+  width: 100%;
+  min-height: 300px;
 }
