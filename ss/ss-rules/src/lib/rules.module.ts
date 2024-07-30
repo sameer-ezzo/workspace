@@ -1,5 +1,5 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common'
-import { Rule, unreachable } from '@noah-ark/common'
+import { FunctionalPermission, Rule, unreachable } from '@noah-ark/common'
 import { CommonModule } from '@ss/common'
 import { DataModule } from '@ss/data'
 import { RulesService } from './rules.svr'
@@ -7,6 +7,7 @@ import { AuthorizeService } from './authorize.svr'
 import { AuthorizeInterceptor } from "./authorize.interceptor"
 import { PermissionController } from './permission.controller'
 import { APP_INTERCEPTOR } from '@nestjs/core'
+import { AUTHORIZATION_TEMPLATES, AuthorizationTemplate } from '@noah-ark/expression-engine'
 
 
 export function rootRule(defaultAccess: 'GRANT' | 'DENY' | 'LOGGED' = 'DENY') {
@@ -28,11 +29,7 @@ export const DenyRule: Rule = (() => {
     rule.fallbackAuthorization = 'deny'
     return rule
 })()
-export const AuthenticatedRule: Rule = (() => {
-    const rule = new Rule('root')
-    rule.fallbackAuthorization = [{ access: 'grant', by: 'user' }]
-    return rule
-})()
+
 
 @Module({
     imports: [DataModule, CommonModule],
@@ -47,13 +44,16 @@ export const AuthenticatedRule: Rule = (() => {
     exports: [RulesService, AuthorizeService],
 })
 export class RulesModule {
-    static register(rootRule: Rule = DenyRule, appRules: Rule[] = []): DynamicModule {
+    static register(rootRule: Rule = DenyRule, appRules: Rule[] = [], templates: AuthorizationTemplate[]): DynamicModule {
 
         (appRules ??= []).forEach(r => {
             if (!r.ruleSource) r.ruleSource = 'code'
         })
 
-
+        for (const template of templates) {
+            if (!AUTHORIZATION_TEMPLATES[template.by])
+                AUTHORIZATION_TEMPLATES[template.by] = template.template
+        }
 
         const providers: Provider[] = [
             { provide: 'ROOT_RULE', useValue: rootRule ?? DenyRule },

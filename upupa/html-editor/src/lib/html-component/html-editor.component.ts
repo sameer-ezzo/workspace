@@ -36,10 +36,10 @@ const Context = CKSource.Context;
 export class HtmlEditorComponent extends InputBaseComponent<string> implements OnChanges {
 
     public Editor = DecoupledEditor;
-    @ViewChild('ckEditor') editorComponent: CKEditorComponent;
-    public getEditor() {
-        return this.editorComponent?.editorInstance;
-    }
+    // @ViewChild('ckEditor') editorComponent: CKEditorComponent;
+    // public getEditor() {
+    //     return this.editorComponent?.editorInstance;
+    // }
     watchdog: any;
     @Input() readonly = false;
     @Input() language: string;

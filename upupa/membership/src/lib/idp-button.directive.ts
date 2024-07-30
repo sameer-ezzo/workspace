@@ -54,8 +54,12 @@ export class IdpButtonDirective {
     }
     if (this.idp.attributes.ux_mode === 'popup') options['callback'] = async (e) => {
       this.zone.run(async () => {
-        const res = await this.auth.signin_Google({ token: e.credential })
-        this.success.emit(res)
+        try {
+          const res = await this.auth.signin_Google({ token: e.credential })
+          this.success.emit(res)
+        } catch (error) {
+          console.error(error)
+        }
       })
     }
 
@@ -66,7 +70,7 @@ export class IdpButtonDirective {
       {
         theme: "outline",
         size: "large",
-        locale: browserLocale, 
+        locale: browserLocale,
         ...this.idp.customize
       }
     );

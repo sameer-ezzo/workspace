@@ -14,7 +14,7 @@ export class RuleFormComponent {
     loading = signal(false)
     actionNames = signal<string[]>([])
     actionPermissionsMap: Map<string, WritableSignal<SimplePermission[]>>
-    = new Map()
+        = new Map()
 
     public permissionsService = inject(PermissionsService)
     private snack = inject(SnackBarService)
@@ -28,6 +28,7 @@ export class RuleFormComponent {
     public set rule(value: Rule) {
         if (this._rule === value) return;
         this._rule = value;
+        if (!value) return
         this._rule.actions ??= {}
         this._init(this.rule)
     }

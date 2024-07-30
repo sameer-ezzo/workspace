@@ -1,11 +1,11 @@
 
-import { AccessType, PermissionBase, PermissionRecord } from "./permission"
+import { AccessType, PermissionBase } from "./permission"
 
 
 /**
  * @description Array of simple permission types that does not require a value
  */
-export const _NullPermissionTypes = ['anonymous', 'user', 'emv', 'phv'] as const //user -> authinticated
+export const _NullPermissionTypes = ['anonymous', 'user', 'emv', 'phv'] as const //user -> authenticated
 
 /**
  * @description Array of simple permission types that does require a string value
@@ -35,12 +35,12 @@ export const SimplePermissionTypes = [..._NullPermissionTypes, ..._StringPermiss
  */
 export type SimplePermissionType = typeof SimplePermissionTypes[number]
 
-export type NullValuePermission = { by: typeof _NullPermissionTypes[number] }
-export type StringValuePermission = {
+export type NullValuePermission = PermissionBase & { by: typeof _NullPermissionTypes[number] }
+export type StringValuePermission = PermissionBase & {
     by: typeof _StringPermissionTypes[number]
     value: string
 }
-export type ObjectValuePermission = {
+export type ObjectValuePermission = PermissionBase & {
     by: typeof _ObjectPermissionTypes[number]
     value: {
         claimFieldPath: string
@@ -50,10 +50,9 @@ export type ObjectValuePermission = {
 }
 
 
-export type SimplePermissionBase = NullValuePermission | StringValuePermission | ObjectValuePermission
+export type SimplePermission = NullValuePermission | StringValuePermission | ObjectValuePermission
 
-export type SimplePermission = PermissionBase & SimplePermissionBase
-export type SimplePermissionRecord = SimplePermission & PermissionRecord
+
 
 export class Permissions {
     static anonymous(access: AccessType = 'grant'): SimplePermission { return { by: 'anonymous', access } }

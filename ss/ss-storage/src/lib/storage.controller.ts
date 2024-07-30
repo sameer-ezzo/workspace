@@ -32,12 +32,8 @@ export class StorageController {
         private readonly imageService: ImageService) {
     }
 
-
-
-    // @EndPoint({ http: { method: 'POST', path: '**' } })
-    // @Authorize('create')
     @EndPoint({ http: { method: 'POST', path: '**' }, cmd: 'storage/create', operation: 'create' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     async post(@MessageStream(_uploadToTmp) msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>) {
         logger.info(`POST ${msg$.path}`)
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, 'create')
@@ -101,7 +97,7 @@ export class StorageController {
 
 
     @EndPoint({ http: { method: 'PUT', path: '**' }, cmd: 'storage/edit', operation: 'edit' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     async put(@MessageStream(_uploadToTmp) msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, 'edit')
         if (access === 'deny' || msg$.path.indexOf('.') > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN)
@@ -200,7 +196,7 @@ export class StorageController {
     }
 
     @EndPoint({ http: { method: 'DELETE', path: '**' }, cmd: 'storage/delete', operation: 'delete' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     async delete(@Message() msg: IncomingMessage) {
 
         const { access, rule, source, action } = this.authorizeService.authorize(msg, 'delete')
@@ -211,7 +207,7 @@ export class StorageController {
     }
 
     @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'read', cmd: 'storage/read' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     async download(@Message() msg: IncomingMessage, @Res() res: Response) {
 
         const { access, rule, source, action } = this.authorizeService.authorize(msg, 'read')

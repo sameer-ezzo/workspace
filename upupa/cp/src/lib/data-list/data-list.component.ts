@@ -213,8 +213,8 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         const vm = this.dataListResolverResult.listViewModel
         const _q = vm.query?.() ?? [];
         const _qps = vm.queryParams?.() ?? [];
-        const query = Object.fromEntries(_q); // this is an extra step to convert entries to Obj since the data service query is an object which has to be entries instead.
-        const queryParams = Object.fromEntries(_qps); // this is an extra step to convert entries to Obj since the data service query is an object which has to be entries instead.
+        const query = Object.entries(_q);
+        const queryParams = Object.entries(_qps);
 
         const r = {
             ...this.route.snapshot.queryParams,

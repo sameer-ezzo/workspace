@@ -1,6 +1,15 @@
+@if(view === 'textarea'){
 <mat-form-field [appearance]="appearance" style="width: 100%">
+    <mat-label>{{promptText}}</mat-label>
+    <textarea matInput (click)="valueFormControl.markAsTouched()" (blur)="valueFormControl.markAsTouched()"
+        [placeholder]="placeholder" [formControl]="valueFormControl" [required]="required"
+        (keydown.enter)="enterAction($event)"></textarea>
+</mat-form-field>
+}
+@else {<mat-form-field [appearance]="appearance" style="width: 100%">
     <mat-label>{{promptText}}</mat-label>
     <input matInput (click)="valueFormControl.markAsTouched()" (blur)="valueFormControl.markAsTouched()"
         [placeholder]="placeholder" [formControl]="valueFormControl" [type]="type" [required]="required"
         (keydown.enter)="enterAction($event)">
 </mat-form-field>
+}

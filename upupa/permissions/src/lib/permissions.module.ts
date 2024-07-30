@@ -23,12 +23,16 @@ import { RulePermissionsTableComponent } from './rule-permissions-table/rule-per
 import { PERMISSIONS_BASE_URL } from './app-admin-roles.token'
 
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { authorizationTemplates } from '@payroll/shared';
+import { AUTHORIZATION_TEMPLATES } from '@noah-ark/expression-engine';
 
 const components = [
     PermissionsPageComponent, PermissionsSideBarComponent, RuleFormComponent, RulePermissionsTableComponent
 ];
 
-@NgModule({ declarations: [...components],
+@NgModule({
+    declarations: [...components],
     exports: [...components], imports: [CommonModule,
         FormsModule,
         RouterModule,
@@ -44,13 +48,18 @@ const components = [
         MatExpansionModule,
         DataTableModule,
         MatProgressBarModule,
-        DataModule], 
-        providers: [
+        DataModule],
+    providers: [
         { provide: PERMISSIONS_BASE_URL, useValue: '/permissions' },
         provideHttpClient(withInterceptorsFromDi())
-    ] })
+    ]
+})
 export class PermissionsModule {
     static forRoot(options: { baseUrl: string }): ModuleWithProviders<RouterModule> {
+        for (const template of authorizationTemplates) {            
+            if (!AUTHORIZATION_TEMPLATES[template.by])
+                AUTHORIZATION_TEMPLATES[template.by] = template.template
+        }
         return {
             ngModule: PermissionsModule,
             providers: [

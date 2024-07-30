@@ -43,7 +43,7 @@ export class ApiController {
     constructor(private authorizationService: AuthorizeService, private dataService: DataService) { }
 
     @EndPoint({ http: { method: 'POST', path: '**' }, operation: 'Create' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async post(@Message() msg: IncomingMessage) {
 
         const { path, q } = _query(msg.path, msg.query, baseUrl)
@@ -60,7 +60,7 @@ export class ApiController {
     }
 
     @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'Read' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async agg(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl)
 
@@ -73,7 +73,7 @@ export class ApiController {
     
 
     @EndPoint({ http: { method: 'PUT', path: '**' }, operation: 'Update' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async put(@Message() msg: IncomingMessage) {
 
         const { path, q } = _query(msg.path, msg.query, baseUrl)
@@ -100,7 +100,7 @@ export class ApiController {
     }
 
     @EndPoint({ http: { method: 'PATCH', path: '**' }, operation: 'Patch' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async patch(@Message() msg: IncomingMessage) {
 
         const { path, q } = _query(msg.path, msg.query, baseUrl)
@@ -130,7 +130,7 @@ export class ApiController {
     }
 
     @EndPoint({ http: { method: 'DELETE', path: '**' }, operation: 'Delete' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async delete(@Message() msg: IncomingMessage) {
 
         const { path, q } = _query(msg.path, msg.query, baseUrl)
@@ -152,7 +152,7 @@ export class ApiController {
 
 
     @EndPoint({ http: { method: 'GET', path: 'export/**' }, operation: 'Export' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async export(@Message() msg: IncomingMessage, @Res() res: Response) {
 
         const { path, q } = _query(msg.path, msg.query, '/export' + baseUrl)

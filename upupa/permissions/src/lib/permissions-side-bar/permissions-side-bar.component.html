@@ -39,10 +39,12 @@
 </ng-template>
 
 <ng-template #ruleTemplate let-node="node" let-rule="rule" let-level="level">
+  @if(rule){
   <div class="action" [ngStyle]="{'margin-inline-start.em': level-1}" (click)="focused = node"
-    [class.active]="rule.name === focused?.rule.name">
+    [class.active]="rule.name === focused?.rule?.name">
     <div class="action-header">
       <span>{{rule.name || rule.path}}</span>
     </div>
   </div>
+  }
 </ng-template>

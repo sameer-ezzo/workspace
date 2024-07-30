@@ -2,19 +2,38 @@ import { Injectable, Injector, inject } from '@angular/core';
 
 import { resolvePath } from './resolve-scaffolder-path.func';
 import { resolveFormSchemeOf } from '@upupa/dynamic-form';
-import { ActionDescriptor } from '@upupa/common';
+import { ActionDescriptor, AuthorizationService } from '@upupa/common';
 import { DataListFilterForm, DataListViewModel, IScaffolder, ListScaffoldingModel } from '../../types';
 import { getListInfoOf, resolvePathScaffolders } from '../decorators/scheme.router.decorator';
 import { ListViewModelOptions, LookUpDescriptor, QueryType } from '../decorators/decorator.types';
+import { AuthService } from '@upupa/auth';
+import { evaluatePermission } from '@noah-ark/expression-engine';
 
 
-
+@Injectable({ providedIn: 'root' })
 export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel> {
+
+    private readonly authService = inject(AuthService)
+    private readonly authorizeService = inject(AuthorizationService)
     private injector = inject(Injector)
-    scaffold(path: string, ...params: any[]): ListScaffoldingModel | Promise<ListScaffoldingModel> {
+    async scaffold(path: string, ...params: any[]): Promise<ListScaffoldingModel> {
         const { path: _path } = resolvePath(path);
         const collection = _path.split('/').filter(s => s).pop();
         const listInfo = getListInfoOf(collection) as ListViewModelOptions;
+        const matches = await this.authorizeService.matchPermissions(`api/${collection}`, 'Read', this.authService.user);
+        const msg = this.authorizeService.buildAuthorizationMsg(`api/${collection}`, 'Read', this.authService.user)
+        const grantingPermissions = matches.filter(m => evaluatePermission(m.permission, { msg }) === 'grant').map(m => m.permission)
+
+        const simplestPermission = grantingPermissions
+            .sort((a, b) => Object.keys(a.selectors?.query ?? {}).length - Object.keys(b.selectors?.query ?? {}).length)
+            .shift();
+
+        const evaluatedQuerySelector = matches.find(m => m.permission === simplestPermission)!.match.evaluated?.query;
+
+
+        const queryFn = resolveQueryFn(listInfo, evaluatedQuerySelector);
+        const queryParamsFn = resolveQueryParamsFn(listInfo, {});
+
 
         let actions = listInfo.rowActions
         let headerActions = listInfo.headerActions
@@ -31,8 +50,8 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
             headerActions = []
             headerActions.push({ position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
         }
-        const queryFn = resolveQueryFn(listInfo);
-        const queryParamsFn = resolveQueryParamsFn(listInfo);
+
+
         let ffVm = null as DataListFilterForm;
         if (listInfo.filterForm) {
 
@@ -77,18 +96,21 @@ function _resolveQueryFn(fn?: QueryType): Function {
     }
     return queryFn
 }
-function resolveQueryFn(listInfo: Partial<ListViewModelOptions>): { query: Function } {
-    const _queryFn = _resolveQueryFn(listInfo.query)
+function resolveQueryFn(listInfo: Partial<ListViewModelOptions>, base: any): { query: Function } {
+    const _queryFn = _resolveQueryFn(listInfo.query);
     const lookups = Array.from(Object.entries(listInfo.columns ?? {})).filter(([k, v]) => v['lookup'])
         .map(([k, v]) => v['lookup'] as LookUpDescriptor)
         .map((l: LookUpDescriptor) => (`${l.from}:${l.foreignField}:${l.localField}:${l.as || l.localField}:${l.single === true ? 'unwind' : ''}`))
-        .join(';');
-    if (lookups.length === 0) return { query: _queryFn }
+        .filter(l => l.length)
+        .join(';')
+        .trim();
+
 
     const qs = _queryFn()
-    const queryFn = () => ({ ...qs, lookup: lookups })
+    const v = lookups.length > 0 ? { ...qs, lookup: lookups, ...base } : { ...qs, ...base }
+    const queryFn = () => v
     return { query: queryFn };
 }
-function resolveQueryParamsFn(listInfo: Partial<ListViewModelOptions>): { queryParams: Function } {
+function resolveQueryParamsFn(listInfo: Partial<ListViewModelOptions>, base: any): { queryParams: Function } {
     return { queryParams: _resolveQueryFn(listInfo.queryParams) }
 }

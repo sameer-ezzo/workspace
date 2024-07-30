@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PathMatcher } from "@noah-ark/path-matcher";
-import { Permission, Rule, AuthorizeFun, SimplePermission, Principle, SimplePermissionRecord, RulesManager } from "@noah-ark/common";
+import { Permission, Rule, AuthorizeFun, SimplePermission, Principle, RulesManager } from "@noah-ark/common";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { DataService } from "@ss/data";
 import { EndpointsInfo, ENDPOINT_OPERATION, ENDPOINT_PATH, _controllerPrefix, EndpointInfoRecord } from "@ss/common";
@@ -126,45 +126,35 @@ export class RulesService {
 
 }
 
-function createRulesTreeFromEndpoints(rulesService: RulesService) {
-    const source = Array.from(PermissionsSource)
-    const list = source.map(s => {
+function createRulesTreeFromEndpoints(endPoints, rulesService: RulesService) {
+    const list = endPoints.map(s => {
 
-        const target = s[0]
-        const args = s[1]
-        let prefix = null
+        const { controller, descriptor, prefix, fullPath, path, operation } = s
+        let _path = path, _fullPath = fullPath
 
-        if (!args.controller) {
-            prefix = _controllerPrefix(target)
-            const fullPath = joinPaths(prefix)
-            return { ...s, fullPath, prefix, path: fullPath }
-
+        if (path.includes('**')) {
+            _path = '/'
+            _fullPath = joinPaths(prefix)
         }
-        else {
-            const prefix = _controllerPrefix(args.controller)
-            const operation = Reflect.getMetadata(ENDPOINT_OPERATION, target)
-            const path = (Reflect.getMetadata(ENDPOINT_PATH, target) ?? '') as string
+        const permissions = Reflect.getMetadata(AUTHORIZE_PERMISSIONS, descriptor ? descriptor.value : controller) ?? []
 
-            if (path.includes('**'))
-                return { permissions: args.permissions, prefix, fullPath: joinPaths(prefix), path: '/', operation }
-            const fullPath = joinPaths(prefix, path)
-            return { permissions: args.permissions, prefix, fullPath, path, operation }
-
-        }
+        const result = { prefix,path: _path, fullPath: _fullPath, operation, permissions }
+        return result
     })
 
     const groups = groupBy(list, 'fullPath');
-    for (const key in groups) {
-        const g = groups[key];
+    for (const fullPath in groups) {
+        const g = groups[fullPath];
         if (g.length === 0) continue;
 
-        const rulePath = g.length > 1 ? key : g[0].prefix;
+        const rulePath = g[0].prefix;
         const segments = rulePath.split('/').filter(s => s.length > 0);
 
         for (let i = 0; i < segments.length; i++) {
             const p = segments.slice(0, i + 1).join('/');
             const parentRule = i > 0 ? rulesService.getRule(segments.slice(0, i - 1).join('/')) : rulesService.rootRule;
-            if (!rulesService.getRule(p))
+            if (!rulesService.getRule(p)) {
+                logger.info(`Creating rule ${p} under ${parentRule.name}`)
                 rulesService.addRule(p, {
                     path: p,
                     name: p,
@@ -172,7 +162,9 @@ function createRulesTreeFromEndpoints(rulesService: RulesService) {
                     fallbackAuthorization: parentRule.fallbackAuthorization,
                     fallbackSource: parentRule.fallbackSource ?? parentRule.name,
                     ruleSource: 'decorator',
+                    actions: {}
                 } as Rule);
+            }
         }
     }
 }
@@ -191,7 +183,7 @@ function getAuthorizePermissionsFromEndpoints(endPoints: EndpointInfoRecord[], r
     }).reduce((ps, acc) => ([...ps, ...acc]), []);
 }
 
-function detectOrphanPermissions(rules: Rule[], permissions: SimplePermissionRecord[]) {
+function detectOrphanPermissions(rules: Rule[], permissions: SimplePermission[]) {
     const rulesNames = rules.map(x => x.name);
     const orphaned = permissions.filter(p => rulesNames.every(r => r !== p.rule));
     for (const o of orphaned)
@@ -203,13 +195,13 @@ async function seedPermissions(data: DataService, rulesService: RulesService) {
 
     const endPoints = [...EndpointsInfo.httpEndpoints, ...EndpointsInfo.wsEndpoints]
         .map(e => ({ ...e, fullPath: join(e.prefix, e.path) }))
+
     //Create Rules tree from endpoints
-    createRulesTreeFromEndpoints(rulesService)
+    createRulesTreeFromEndpoints(endPoints, rulesService)
+
     const rules = rulesService.getRules().filter(r => r)
-
-
-
-    const permissions = await data.get<SimplePermissionRecord[]>("permission");
+    const permissionsModel = await data.getModel("permission")
+    const permissions = await permissionsModel.find({});
 
     // Generate Permissions from endpoints with Authorize decorator
     const authorizePermissions = getAuthorizePermissionsFromEndpoints(endPoints, rulesService)

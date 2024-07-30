@@ -1,17 +1,33 @@
 <data-table (action)="onTableAction($event)" [templates]="{
         info: permissionInfoTemplate,
         access: permissionAccessTemplate,
-         type: permissionTypeTemplate, 
-         value: permissionValueTemplate}" [(focusedItem)]="focused" [adapter]="permissionsAdapter"
-    [columns]="tableColumns" [actions]="tableActions"></data-table>
+        type: permissionTypeTemplate, 
+        value: permissionValueTemplate,
+        selectors: permissionSelectorsTemplate
+    }" [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+    [actions]="tableActions"></data-table>
 
 <ng-template #permissionInfoTemplate let-permission="element">
 
     @if(permission.item.builtIn === true){
-    <mat-icon style="transform: scale(.8);" matTooltip="Permission is built in">info</mat-icon>
+    <mat-icon style="transform: scale(.8);" matTooltip="Built in permission">info</mat-icon>
     }
 </ng-template>
 
+<ng-template #permissionSelectorsTemplate let-permission="element">
+    <div style="display: flex; align-items: center; overflow: hidden;">
+
+        <pre>
+        {{permission.item.selectors | json}}
+    </pre>
+        @if(permission.item.builtIn !== true){
+        <button mat-icon-button (click)="editFilters(permission.item)">
+            <mat-icon>tune</mat-icon>
+        </button>
+
+        }
+    </div>
+</ng-template>
 <ng-template #permissionTypeTemplate let-permission="element">
     <select [disabled]="permission.item.builtIn === true" [ngModel]="permission.item.by"
         (change)="changeType(permission.item, $event.target)">
@@ -37,7 +53,7 @@
     @if(permission.item.builtIn === true){
     {{permission.item.value }}
     }@else{
-    <div [ngSwitch]="permission.item.by" style="overflow: hidden">
+    <div [ngSwitch]="permission.item.valueType || permission.item.by" style="overflow: hidden">
 
         <ng-container *ngSwitchCase="'role'">
             <select *ngIf="permissionsService.roles() as allRoles" [ngModel]="permission.item.value"
@@ -46,6 +62,7 @@
                     {{ role.name }}
                 </option>
             </select>
+
         </ng-container>
         <div *ngSwitchCase="'email'" style="display: flex; align-items: center; flex-flow: row nowrap;">
             <input #perValueInput [value]="permission.item.value" style="flex: 1 1 auto;min-width: 50px;"

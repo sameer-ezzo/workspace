@@ -1,12 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Injectable, Input, OnChanges, Renderer2, SimpleChanges } from "@angular/core";
-import { Principle, Rule, RulesManager } from "@noah-ark/common";
+import { AuthorizeMessage, AuthorizeResult, Permission, Principle, Rule, RulesManager } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
-import { ReplaySubject } from "rxjs";
+import { firstValueFrom, ReplaySubject } from "rxjs";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { PERMISSIONS_BASE_URL } from '../tokens';
-import { AuthorizeMessage, AuthorizerService } from "@noah-ark/expression-engine";
+import { authorize, evaluatePermission, matchPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 import { isEmpty } from "lodash";
 
@@ -26,14 +26,26 @@ export class AuthorizationService {
         })
     }
 
-    authorize(path: string, action: string, principle: Principle) {
+    buildAuthorizationMsg(path: string, action: string, principle: Principle): AuthorizeMessage {
+        return { path, operation: action, principle, payload: {}, query: {} }
+    }
 
-        if (isEmpty(action ?? '')) return { access: 'grant' }
 
-        const msg = { path, operation: action, principle }
+    async authorize(path: string, action: string, principle: Principle): Promise<AuthorizeResult> {
+        await firstValueFrom(this.rules$)
+        if (isEmpty(action ?? '')) action = undefined
+
         const rule = this.rulesManager.getRule(path, true)
-        const authResult = AuthorizerService.authorize(msg as AuthorizeMessage, rule, action)
+        const msg = this.buildAuthorizationMsg(path, action, principle)
+        const authResult = authorize(msg, rule, action)
         return authResult
+    }
+
+    async matchPermissions(path: string, action: string, principle: Principle) {
+        await firstValueFrom(this.rules$)
+        const rule = this.rulesManager.getRule(path, true)
+        const msg = this.buildAuthorizationMsg(path, action, principle)
+        return matchPermissions(rule, action, { msg })
     }
 }
 @Directive({
@@ -97,9 +109,9 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
         this.cdRef.detectChanges();
     }
 
-    private _authorize(path: string, action: string, principle: Principle) {
+    private async _authorize(path: string, action: string, principle: Principle) {
         const el = this.el.nativeElement as HTMLElement
-        const authResult = this.authorizeService.authorize(path, action, principle)
+        const authResult = await this.authorizeService.authorize(path, action, principle)
 
         if (authResult.access === 'deny') this.deny(el)
         else this.grant(el)

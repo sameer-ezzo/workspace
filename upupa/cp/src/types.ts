@@ -39,8 +39,8 @@ export type DataListViewModel<TData = any, AdapterType extends 'server' | 'clien
     headerActions?: ActionDescriptor[] | ((all: NormalizedItem<TData>[], selected: NormalizedItem<TData>[]) => ActionDescriptor[]),
     rowActions?: ActionDescriptor[] | ((row: any) => ActionDescriptor[]),
     filterForm?: DataListFilterForm,
-    query?: (...deps: any[]) => Iterable<readonly [string, string]>,
-    queryParams?: (...deps: any[]) => Iterable<readonly [string, string]>,
+    query?: (...deps: any[]) => Record<string, string | string[]>,
+    queryParams?: (...deps: any[]) => Record<string, string | string[]>,
     adapter: DataAdapterDescriptor<AdapterType, TData>,
 }
 

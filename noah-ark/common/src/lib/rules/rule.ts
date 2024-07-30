@@ -13,13 +13,13 @@ export class Rule {
     /**
      * @description If permissions did not match then this is the default authorization (permissions could not match in case the action is not present or the authorize function returned false returned undefiled)
     */
-    fallbackAuthorization: AccessType | Permission<boolean | AuthorizeFun>[] = 'deny';
+    fallbackAuthorization: AccessType = 'deny';
 
     /**
      * @description list of permissions to be checked against the path
     */
     actions?: { [action: string]: Permission<boolean | AuthorizeFun>[] } = {}
-    builtIn? = true //TODO this should be replaced by tags
+    builtIn? = true
 
     /**
      * @description the name of the rule where this rule copied the fallback authorization from. If undefined then the rule has its own fallback

@@ -96,14 +96,14 @@ export class ScaffoldingService {
         listViewModel.rowActions ??= scaffoldingModel.actions ?? defaultListActions;
         const filter = (listViewModel.query?.() ?? []) as any[];
 
-        
-        const fObj = filter.reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+        const fObj = Object.entries(filter).reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+
         const columns = listViewModel.columns ?? {};
         const columnsSelect = []
         listViewModel.select ??= []
         const select = (typeof listViewModel.select === 'string' ? listViewModel.select.split(',').filter(s => s) : listViewModel.select ?? []
         ).filter((s, i, a) => a.indexOf(s) === i)
-        
+
         const dataAdapter = listViewModel.adapter
         let source = null
         if (dataAdapter?.type === 'server')
@@ -120,7 +120,10 @@ export class ScaffoldingService {
         else throw 'UNSUPPORTED DATA ADAPTER TYPE'
 
 
-        const options = Object.assign({}, listViewModel.adapter.options, { filter: { ...listViewModel.adapter.options?.filter, ...fObj } });
+        const options = Object.assign({}, listViewModel.adapter.options,
+            {
+                filter: { ...listViewModel.adapter.options?.filter, ...fObj }
+            });
         options.page ??= { pageSize: 100 };
         const adapter = new DataAdapter(
             source,

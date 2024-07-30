@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
-import { ActionDescriptor, ActionEvent } from "@upupa/common";
-import { AccessType, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
+import { ActionDescriptor, ActionEvent, DialogService, PromptService } from "@upupa/common";
+import { AccessType, AuthorizeMessage, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
 import { ColumnsDescriptor } from "@upupa/table";
+import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
 
 @Component({
     selector: "rule-permissions-table",
@@ -13,7 +14,7 @@ import { ColumnsDescriptor } from "@upupa/table";
 })
 export class RulePermissionsTableComponent {
     focused: any;
-    permissionTypes = PERMISSIONS_TYPES;
+    permissionTypes = PERMISSIONS_TYPES();
     @Input() action: string;
     @Output() permissionsChange = new EventEmitter<SimplePermission[]>()
     private _permissions: SimplePermission[];
@@ -35,12 +36,32 @@ export class RulePermissionsTableComponent {
     constructor(public readonly permissionsService: PermissionsService,
         private readonly cdRef: ChangeDetectorRef) { }
 
+    private readonly promptService = inject(PromptService)
+    async editFilters(permission: SimplePermission) {
+        if (permission.builtIn) return;
+        console.log(JSON.stringify(permission.selectors, null, 2));
 
-
-
+        const filtersStr = await this.promptService.open({
+            view: 'textarea',
+            title: 'Edit Filters',
+            value: JSON.stringify(permission.selectors, null, 2),
+            no: 'Cancel',
+            yes: 'Update',
+            text: 'Please enter the filters for this permission',
+            placeholder: JSON.stringify({ "createdBy.email": "$principal.email" }, null, 2),
+        })
+        const filters = JSON.parse(filtersStr)
+        await this.updatePermissionFilters(permission, filters)
+    }
+    async updatePermissionFilters(permission: SimplePermission, selectors: Omit<AuthorizeMessage, 'principle'>) {
+        if (permission.selectors === selectors) return
+        permission.selectors = selectors
+        await this._updatePermission(permission)
+    }
 
     tableActions = (item) => {
         return item?.builtIn === true ? [] : [
+
             {
 
                 name: "delete",
@@ -108,13 +129,13 @@ export class RulePermissionsTableComponent {
 const TABLE_COLUMNS = {
     select: 0,
     info: { header: "Info", width: '0.1' },
+    access: { header: "Access", width: "0.2" },
     type: { header: "Type", width: '0.2' },
     value: { header: "Value" },
-    access: { header: "Access", width: "0.2" },
+    selectors: { header: "Filters", width: '0.2' },
 } as unknown as ColumnsDescriptor
 
-
-const PERMISSIONS_TYPES = [
+const PERMISSIONS_TYPES = () => [
     { value: "anonymous", display: "Visitor" },
     { value: "user", display: "Logged in user" },
     { value: "emv", display: "User with verified email" },
@@ -123,4 +144,5 @@ const PERMISSIONS_TYPES = [
     { value: "email", display: "User with specific email" },
     { value: "phone", display: "User with specific phone" },
     { value: "claim", display: "User with specific claim" },
-];
+    ...Object.keys(AUTHORIZATION_TEMPLATES).map((k) => ({ value: k, display: k }))
+].filter((v, i, a) => a.findIndex(t => t.value === v.value) === i)

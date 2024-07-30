@@ -37,6 +37,7 @@ export class PromptService {
 }
 
 export class PromptOptions {
+  view?: "input" | "textarea" = "input";
   text? = "Please enter value";
   title? = "Prompt";
   no? = "No";

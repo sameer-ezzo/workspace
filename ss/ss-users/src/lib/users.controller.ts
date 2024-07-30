@@ -118,7 +118,6 @@ export class UsersController {
 
     }
 
-    @Authorize({ by: 'role', value: 'super-admin', access: 'grant' })
     @EndPoint({ http: { method: 'POST', path: 'resetpassword' }, operation: 'Reset Password' })
     public async resetpassword(@Message() msg: IncomingMessage<{ new_password: string, reset_token: string }>) {
         const new_password = msg.payload.new_password
@@ -166,7 +165,6 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'adminreset' }, operation: 'Reset User\'s Password' })
-    @Authorize({ by: "role", value: 'super-admin' })
     public async adminReset(@Message() msg: IncomingMessage<{ email: string, new_password: string, forceChangePwd: boolean }>) {
         if (!msg.payload) throw new HttpException('MISSING_INFO', HttpStatus.BAD_REQUEST)
         const { email, new_password, forceChangePwd } = msg.payload
@@ -186,7 +184,6 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'addusertoroles' }, operation: 'Add User To Roles' })
-    @Authorize({ by: "role", value: 'super-admin' })
     public async addUserToRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
 
         const { userId, roles } = msg.payload;
@@ -202,7 +199,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'changeuserroles' }, operation: 'Change User Roles' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async changeUserRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
 
         const { userId, roles } = msg.payload;
@@ -212,7 +209,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'admincreateuser' }, operation: 'Admin Create User' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async adminCreateUser(@Message() msg: IncomingMessage<any>) {
 
         const _user = msg.payload;
@@ -236,7 +233,7 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'impersonate' }, operation: 'Impersonate User' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async impersonate(@Message() msg: IncomingMessage<{ sub: string }>) {
         //get current principle
         const principle = msg.principle
@@ -471,7 +468,7 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'lock' }, operation: 'Lock User' })
-    @Authorize({ by: 'role', value: 'super-admin' })
+    
     public async lock(@Message() msg: IncomingMessage<{ id: string, lock: string | boolean }>) {
 
         const id = msg.payload.id ?? msg.payload['_id'];
@@ -508,7 +505,6 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'verify/send' }, operation: 'Send Verification' })
-    @Authorize()
     public async sendVerification(@Message() msg: IncomingMessage<{ id: string, name: string, value: string }>) {
         const name = (msg.payload.name ?? "").trim();
         const value = (msg.payload.value ?? "").trim();
@@ -564,7 +560,6 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'verify' }, operation: 'Verify' })
-    @Authorize()
     public async verify(@Message() msg: IncomingMessage<{ id: string, name: string, value: string, token: string, type: string }>) {
 
         try {
@@ -593,7 +588,6 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'device' }, operation: 'Add Device' })
-    @Authorize()
     public async updateDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle
         if (!principal) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND)
@@ -614,7 +608,6 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'DELETE', path: 'device' }, operation: 'Remove Device' })
-    @Authorize()
     public async removeDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle
         if (!principal) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND)

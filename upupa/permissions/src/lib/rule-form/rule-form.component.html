@@ -1,9 +1,13 @@
 @if (rule) {
 <h2>{{rule.name || rule.path | titlecase}}</h2>
 <!-- TODO -->
- <!-- ADD Rule Info like (fallback input to set grant or deny, description ...) -->
+<!-- ADD Rule Info like (fallback input to set grant or deny, description ...) -->
 
-@if (loading() !== true) {
+@if (loading()) {
+<div class="loader">
+  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+</div>
+} @else {
 <div style="overflow: hidden; overflow-y: auto;padding-block: 1rem; padding-inline: 0.25rem;">
   @for (action of actionNames(); track i; let i = $index) {
   <div class="item">
@@ -14,19 +18,12 @@
         <mat-icon>add</mat-icon>
       </button>
     </div>
-    @if (actionPermissionsMap.get(action)(); as ps) {
-    @if(ps.length > 0){
-    <rule-permissions-table [permissions]="ps" [action]="action"
-      (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
-    }
-    }
+    <rule-permissions-table [permissions]="actionPermissionsMap.get(action)()" [action]="action"
+        (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
 
   </div>
   }
 </div>
-} @else {
-<div class="loader">
-  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
-</div>
+
 }
 }

@@ -1,5 +1,5 @@
 import { applyDecorators, UseInterceptors } from "@nestjs/common"
-import { AccessType, SimplePermissionBase } from "@noah-ark/common"
+import { AccessType, SimplePermission } from "@noah-ark/common"
 import { _controllerPrefix } from "@ss/common"
 import { AuthorizeInterceptor } from "./authorize.interceptor"
 import { AUTHORIZE_PERMISSIONS, PermissionsSource } from "./constants"
@@ -7,7 +7,7 @@ import { AUTHORIZE_PERMISSIONS, PermissionsSource } from "./constants"
 
 
 
-export function Authorize(options?: SimplePermissionBase & { access?: AccessType }) {
+export function Authorize(options?: Partial<SimplePermission>) {
 
     const decorator = (...args: [object, string, PropertyDescriptor] | [object]) => {
         const target = args[0] as any
@@ -73,36 +73,3 @@ export function AuthorizePhoneVerified(email: string) {
 export function AuthorizeLoggedIn() {
     return Authorize({ by: "user" })
 }
-
-
-// export function AuthorizeMethod(options?: SimplePermissionBase & { access?: AccessType }): MethodDecorator {
-
-//     const decorator = (target: any, _propertyKey: string, descriptor: PropertyDescriptor) => {
-//         const permission = (!options ?
-//             { access: 'grant', by: 'user', builtIn: true } :
-//             { ...options, access: options.access ?? 'grant', builtIn: true }
-//         )
-//         const ps = Reflect.getMetadata(AUTHORIZE_PERMISSIONS, descriptor.value) ?? []
-//         ps.push(permission)
-//         Reflect.defineMetadata(AUTHORIZE_PERMISSIONS, ps, descriptor.value)
-//         PermissionsSource.set(descriptor.value, ps)
-//     }
-
-//     return applyDecorators(...[decorator, UseInterceptors(AuthorizeInterceptor)])
-// }
-
-// export function AuthorizeController(options?: SimplePermissionBase & { access?: AccessType }): ClassDecorator {
-
-//     const decorator = (target: any, _propertyKey: string, descriptor: PropertyDescriptor) => {
-//         const permission = (!options ?
-//             { access: 'grant', by: 'user', builtIn: true } :
-//             { ...options, access: options.access ?? 'grant', builtIn: true }
-//         )
-//         const ps = Reflect.getMetadata(AUTHORIZE_PERMISSIONS, descriptor.value) ?? []
-//         ps.push(permission)
-//         Reflect.defineMetadata(AUTHORIZE_PERMISSIONS, ps, descriptor.value)
-//         PermissionsSource.set(descriptor.value, ps)
-//     }
-
-//     return applyDecorators(...[decorator, UseInterceptors(AuthorizeInterceptor)])
-// }

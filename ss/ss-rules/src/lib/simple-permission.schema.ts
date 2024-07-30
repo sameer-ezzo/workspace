@@ -11,7 +11,8 @@ export const SimplePermissionSchema = new Schema(
         type: { type: String, required: false, index: true },
         by: { type: String, required: false, index: true },
         value: { type: String, required: false },
-        access: { type: String, required: false }
+        access: { type: String, required: false },
+        selectors: { type: Object, required: false },
     },
     { strict: true }
 )

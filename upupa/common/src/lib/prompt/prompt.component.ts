@@ -47,6 +47,7 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
 
   appearance: MatFormFieldAppearance = 'outline';
   valueFormControl = new UntypedFormControl('', []);
+  view: 'input' | 'textarea' = 'input';
   private readonly destroyRef = inject(DestroyRef)
   private readonly data = inject(MAT_DIALOG_DATA, { optional: true })
 
@@ -56,12 +57,13 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
     if (data.appearance !== undefined) { this.appearance = data.appearance; }
     if (data.text !== undefined) { this.promptText = data.text; }
     if (data.placeholder !== undefined) { this.placeholder = data.placeholder; }
+    this.view = data.view === 'textarea' ? 'textarea' : 'input';
     this.required = data.required === true;
 
 
     const validators = this.required ? [Validators.required] : [];
-    this.type = data.type || 'text';
-    if (data.type != null) {
+    this.type = data.type ?? 'text';
+    if (data.type !== null) {
       if (this.type === 'number')
         this.valueFormControl = new FormControl<number>(+(data.value || '0'), [...validators]);
       else if (this.type === 'email')
@@ -69,8 +71,9 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
       else
         this.valueFormControl = new FormControl<string>(data.value || '', [...validators]);
     }
-
     this.valueFormControl.updateValueAndValidity()
+    console.log(this.valueFormControl.value);
+
 
     this.valueFormControl.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef),

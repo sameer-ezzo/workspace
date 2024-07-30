@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core'
-import { Rule } from '@noah-ark/common'
 import { PermissionsService } from '../permissions.service'
 import { NodeModel } from '../node-model'
 
