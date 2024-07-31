@@ -1,6 +1,6 @@
 import { TemplateRef, Inject, ViewChild, Optional, ComponentRef, SimpleChange, SimpleChanges, AfterViewInit, reflectComponentType, HostBinding, Input, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, WritableSignal } from "@angular/core";
 import { MatDialogRef, MatDialogState, MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
-import { CdkPortalOutletAttachedRef, ComponentPortal } from "@angular/cdk/portal";
+import { CdkPortalOutletAttachedRef, ComponentPortal, PortalModule } from "@angular/cdk/portal";
 import { Component } from "@angular/core";
 import { fromEvent } from "rxjs";
 import { debounceTime, startWith, takeUntil } from "rxjs/operators";
@@ -9,6 +9,7 @@ import { isPlatformBrowser } from "@angular/common";
 import { ActionDescriptor, ActionEvent, ActionsDescriptor } from "@upupa/common";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 
 
 export interface UpupaDialogPortal<C> {
@@ -20,7 +21,7 @@ export interface UpupaDialogPortal<C> {
 @Component({
     selector: "upupa-dialog",
     standalone: true,
-    imports: [MatDialogModule, MatBtnComponent, MatIconModule],
+    imports: [MatDialogModule, MatBtnComponent,MatButtonModule, PortalModule, MatIconModule],
     templateUrl: "./upupa-dialog.component.html",
     styleUrls: ["./upupa-dialog.component.scss"],
     encapsulation: ViewEncapsulation.None,
