@@ -1,8 +1,8 @@
-import { Component, inject, Input, signal } from '@angular/core';
-import { map, Observable, Subject } from 'rxjs';
+import { Component, inject, Input } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { EventBus } from '@upupa/common';
 import { AuthService } from '@upupa/auth';
-import { SideBarItem } from '../cp-layout/side-bar-group-item';
+import { SideBarItem } from '../side-bar-group-item';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { USER_PICTURE_RESOLVER } from '../di.token';
 import { getUserInitialsImage } from '../user-image.service';

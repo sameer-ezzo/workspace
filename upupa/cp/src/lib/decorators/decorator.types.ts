@@ -2,7 +2,7 @@ import { FactorySansProvider } from "@angular/core";
 import { FormScheme } from "@upupa/dynamic-form";
 import { ColumnDescriptor } from "@upupa/table"
 import { IScaffolder, ListScaffoldingModel, DataListViewModel, DataListFilterForm, DataFormViewModel, FormScaffoldingModel } from "../../types";
-import { SideBarGroup, SideBarItem } from "../cp-layout/side-bar-group-item";
+import { SideBarGroup, SideBarItem } from "../side-bar-group-item";
 
 export type LookUpDescriptor = { from: string, as: string, localField: string, foreignField: string, single: boolean }
 export type ColumnOptions = ColumnDescriptor & { displayPath?: string, order?: number, includeInDataSelect?: boolean, lookup?: LookUpDescriptor }

@@ -1,5 +1,5 @@
 import { InjectionToken } from "@angular/core";
-import { SideBarViewModel } from "./cp-layout/side-bar-group-item";
+import { SideBarViewModel } from "./side-bar-group-item";
 import { Observable } from "rxjs";
 
 export const SCAFFOLDING_SCHEME = new InjectionToken<any>('scaffolding scheme');
