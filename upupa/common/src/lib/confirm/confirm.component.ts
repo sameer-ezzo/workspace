@@ -26,9 +26,7 @@ export class ConfirmComponent {
     if (data.no !== undefined) { this.confirmNoButton = data.no; }
   }
 
-  onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent, boolean>) {
-    console.log('confirm action', e);
-    
+  onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent, boolean>) {    
     return dialogRef.close(e.action.name === 'yes')
   }
 }
