@@ -1,12 +1,11 @@
 
 
 export class SuperAdmin {
-    email!: string
-    username?: string
-    name?: string = 'Super Admin'
+    username = 'admin'
+    name = 'Super Admin'
+    email: string
     password: string
-    role = 'super-admin'
 }
 export class UsersOptions {
-    superAdmin: SuperAdmin
+    superAdmin = new SuperAdmin()
 }
