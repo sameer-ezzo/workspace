@@ -1,0 +1,44 @@
+{
+  "name": "upupa-authz",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/workspace/upupa/authz/src",
+  "prefix": "raptor7-workspace",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/angular:package",
+      "options": {
+        "tsConfig": "libs/workspace/upupa/authz/tsconfig.lib.json",
+        "project": "libs/workspace/upupa/authz/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/workspace/upupa/authz/tsconfig.lib.prod.json"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/upupa/authz/src/**/*.ts",
+          "libs/workspace/upupa/authz/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/upupa/authz"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/upupa/authz/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:angular",
+    "type:library"
+  ]
+}
