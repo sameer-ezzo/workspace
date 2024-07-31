@@ -1,0 +1,9 @@
+{
+    "name": "@upupa/mat-btn",
+    "version": "0.0.3",
+    "peerDependencies": {
+    },
+    "dependencies": {
+        "tslib": "^2.4.0"
+    }
+}
