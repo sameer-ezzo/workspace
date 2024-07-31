@@ -1,9 +1,10 @@
 import { Component, OnInit, Input, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { AuthService } from '@upupa/auth';
-import { SnackBarService, FilterService, countries } from '@upupa/common';
+import {  FilterService, countries } from '@upupa/common';
 import { DataService } from '@upupa/data';
 import { Subscription } from 'rxjs';
 import { UntypedFormControl, NgModel } from '@angular/forms';
+import { SnackBarService } from '@upupa/dialog';
 
 
 @Component({

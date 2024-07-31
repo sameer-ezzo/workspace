@@ -5,6 +5,7 @@ import { CP_SIDE_BAR_ITEMS, SCAFFOLDING_SCHEME } from "../di.token";
 import { mergeScaffoldingScheme } from "../decorators/scheme.router.decorator";
 import { Observable } from "rxjs";
 import { Type } from "@angular/core";
+import { CpLayoutComponent } from "./cp-layout.component";
 
 
 export type SideBarItem = ActionDescriptor & {
@@ -23,12 +24,12 @@ export type SideBarViewModel = (SideBarGroup | SideBarItem)[]
 
 
 export function layoutRoute(options: {
-    layout: Route['component'],
+    layout?: Type<CpLayoutComponent>,
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>, deps?: any[]; },
 }, route: Omit<Route, 'component'>): Route {
     return {
         ...route,
-        component: options.layout,
+        component: options.layout ?? CpLayoutComponent,
         providers: [
             { provide: SCAFFOLDING_SCHEME, useValue: mergeScaffoldingScheme() },
             Array.isArray(options.sidebar) ? { provide: CP_SIDE_BAR_ITEMS, useValue: options.sidebar } : { provide: CP_SIDE_BAR_ITEMS, useFactory: options.sidebar.useFactory, deps: options.sidebar.deps },

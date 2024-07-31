@@ -1,12 +1,11 @@
 import { Component, Input, EventEmitter, SimpleChanges, Output } from '@angular/core'
 import { AuthService } from '@upupa/auth'
-import { SnackBarService } from '@upupa/common'
 import { DataService } from '@upupa/data'
 import { Subscription, takeWhile } from 'rxjs'
-import { UntypedFormControl } from '@angular/forms'
 import { emailField, Field, textField } from '@upupa/dynamic-form'
 import { languageDir, LanguageService } from '@upupa/language'
 import { MatInputComponent } from '@upupa/dynamic-form-material-theme'
+import { SnackBarService } from '@upupa/dialog'
 
 
 @Component({

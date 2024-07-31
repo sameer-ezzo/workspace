@@ -1,12 +1,13 @@
 import { Component, HostBinding, HostListener, Input, OnDestroy, forwardRef } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ActionDescriptor, ActionEvent, DialogService, EventBus, InputBaseComponent } from '@upupa/common';
+import { ActionDescriptor, ActionEvent, EventBus, InputBaseComponent } from '@upupa/common';
 import { Subject, firstValueFrom, lastValueFrom, takeUntil, tap } from 'rxjs';
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
 import { ThemePalette } from '@angular/material/core';
 import { AuthService } from '@upupa/auth';
 import { FileUploadService } from '../file-upload.service';
 import { FileEvent, SelectInputFileVm } from '../viewer-file.vm';
+import { DialogService } from '@upupa/dialog';
 
 
 @Component({

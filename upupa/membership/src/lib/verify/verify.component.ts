@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { AuthService } from '@upupa/auth';
 import { TranslateService } from '@upupa/language';
-import { ErrorService, PromptService, SnackBarService } from '@upupa/common';
+import { ErrorService } from '@upupa/common';
 import { FormDesign, FormScheme } from '@upupa/dynamic-form';
 import { ActivatedRoute } from '@angular/router';
 import { combineLatest, firstValueFrom, Subject } from 'rxjs';
 import { defaultVerifyCodeField } from '../default-values';
 import { DataService } from '@upupa/data';
+import { PromptService, SnackBarService } from '@upupa/dialog';
 
 @Component({
     selector: 'verify',
@@ -117,12 +118,12 @@ export class VerifyComponent {
             }
 
             await this.auth.verify(this.name, { type: this.type, token: this.token, value: this.value })
-            
+
             await this.auth.refresh()
             this.success.emit(true)
             this.snack.openSuccess()
         } catch (error) {
-            
+
             const e = this.errorservice.normalize(error);
             this.fail.emit(e);
             this.snack.openFailed(e.message);

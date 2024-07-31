@@ -3,13 +3,13 @@ import { Component, ElementRef, forwardRef, Inject, Input, OnChanges, OnInit, Si
 import { inject } from '@angular/core/testing';
 import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ActionDescriptor, ConfirmService, } from '@upupa/common';
+import { ActionDescriptor, } from '@upupa/common';
 import { DataComponentBase } from '@upupa/table';
 import { ClientDataSource, DataAdapter } from '@upupa/data'
 import { Field, FormScheme } from '@upupa/dynamic-form';
 import { languageDir, LanguageService } from '@upupa/language';
-import { DialogService } from '@upupa/common';
 import { firstValueFrom } from 'rxjs';
+import { ConfirmService, DialogService } from '@upupa/dialog';
 
 @Component({
     selector: 'inline-editable-list',

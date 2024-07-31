@@ -1,7 +1,7 @@
-import { Component, ViewChild, Input, inject, DestroyRef, signal, effect, SimpleChanges, WritableSignal } from '@angular/core';
+import { Component, ViewChild, Input, inject, DestroyRef, signal, SimpleChanges } from '@angular/core';
 import { DynamicFormCommands, DynamicFormComponent, DynamicFormEvents, FormScheme } from '@upupa/dynamic-form';
-import { debounceTime, distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
-import { ActionDescriptor, ActionEvent, SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
+import { debounceTime, map } from 'rxjs/operators';
+import { ActionDescriptor, ActionEvent } from '@upupa/common';
 import { DataService } from '@upupa/data';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataFormResolverResult, FormSubmitResult } from '../../types';
@@ -11,6 +11,7 @@ import { Observable, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Condition } from '@noah-ark/expression-engine';
 import { defaultFormActions } from '../../defaults';
+import { SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 
 
 

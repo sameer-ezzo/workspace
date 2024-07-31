@@ -1,5 +1,5 @@
 import { from, Observable, ReplaySubject } from "rxjs";
-import { ActionEvent, ConfirmService } from "@upupa/common";
+import { ActionEvent } from "@upupa/common";
 import { map, shareReplay, tap } from "rxjs/operators";
 import { DataResult, DataService } from "@upupa/data";
 import { ScaffoldingService } from "../scaffolding.service";
@@ -8,6 +8,7 @@ import { FormScheme, resolveDynamicFormInputsFor } from "@upupa/dynamic-form";
 import { resolvePath } from "./resolve-scaffolder-path.func";
 import { defaultFormActions } from "../../defaults";
 import { inject } from "@angular/core";
+import { ConfirmService } from "@upupa/dialog";
 
 export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> {
 

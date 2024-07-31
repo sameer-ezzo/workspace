@@ -2,13 +2,13 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { DataService } from "@upupa/data";
 import { catchError, map, startWith, tap } from "rxjs/operators";
 
-import { BehaviorSubject, firstValueFrom, Observable, of, shareReplay } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Rule } from "@noah-ark/common";
 import { NodeModel } from "./node-model";
 import { SimplePermission } from "@noah-ark/common";
 import { TreeBranch } from "@noah-ark/path-matcher";
-import { PERMISSIONS_BASE_URL } from "./app-admin-roles.token";
+import { PERMISSIONS_BASE_URL } from "@upupa/authz";
 
 
 @Injectable({

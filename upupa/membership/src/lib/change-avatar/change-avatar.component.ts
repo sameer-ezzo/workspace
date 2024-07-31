@@ -2,8 +2,8 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { UploadClient, openFileDialog, FileInfo } from '@upupa/upload';
 import { AuthService } from '@upupa/auth';
 import { firstValueFrom, Subscription, switchMap, tap } from 'rxjs';
-import { SnackBarService } from '@upupa/common';
 import { DataService } from '@upupa/data';
+import { SnackBarService } from '@upupa/dialog';
 
 
 @Component({

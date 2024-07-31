@@ -3,13 +3,14 @@ import { Component, Input, forwardRef, OnInit, Injector, signal, inject } from '
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@upupa/auth';
-import { SnackBarService, EventBus } from '@upupa/common';
+import {  EventBus } from '@upupa/common';
 import { DataAdapter, DataService, ServerDataSource } from '@upupa/data';
 import { LanguageService } from '@upupa/language';
 import { FileInfo } from '@upupa/upload';
 import { BehaviorSubject } from 'rxjs';
 import { FileSelectComponent } from '../file-select/file-select.component';
 import { DataComponentBase } from '@upupa/table';
+import { SnackBarService } from '@upupa/dialog';
 
 
 @Component({
@@ -80,9 +81,9 @@ export class FileBrowserComponent extends DataComponentBase<FileInfo> implements
         this.adapter.filter = filter
         this.adapter.refresh()
     }
-    
-    
-    
+
+
+
     override ngOnInit(): void {
         super.ngOnInit()
         if (!this.path) throw new Error("Base path is not provided");

@@ -1,8 +1,8 @@
 import { Injectable, inject } from "@angular/core";
 import { FormScheme } from "./types/types";
-import { DialogService, DialogServiceConfig, UpupaDialogComponent } from "@upupa/common";
 import { DynamicFormComponent } from "./dynamic-form.component";
 import { MatDialogRef } from "@angular/material/dialog";
+import { DialogService, DialogServiceConfig, UpupaDialogComponent } from "@upupa/dialog";
 
 @Injectable({ providedIn: 'root' })
 export class DynamicFormDialogService {

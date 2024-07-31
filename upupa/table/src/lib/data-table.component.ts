@@ -8,7 +8,7 @@ import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
 
 import { NormalizedItem } from '@upupa/data'
 
-import { ActionDescriptor, ActionEvent, DialogService, EventBus } from '@upupa/common'
+import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
 import { ReplaySubject, firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
@@ -16,6 +16,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { SortHeaderArrowPosition } from '@angular/material/sort'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens'
+import { DialogService } from '@upupa/dialog'
 
 export type PipeDescriptor = { pipe: Type<any>, args: string[] }
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> }

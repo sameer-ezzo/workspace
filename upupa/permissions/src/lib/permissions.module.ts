@@ -20,12 +20,12 @@ import { RuleFormComponent } from './rule-form/rule-form.component';
 import { PermissionsPageComponent } from './permissions-page/permissions-page.component';
 import { PermissionsSideBarComponent } from './permissions-side-bar/permissions-side-bar.component';
 import { RulePermissionsTableComponent } from './rule-permissions-table/rule-permissions-table.component';
-import { PERMISSIONS_BASE_URL } from './app-admin-roles.token'
 
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { authorizationTemplates } from '@payroll/shared';
 import { AUTHORIZATION_TEMPLATES } from '@noah-ark/expression-engine';
+import { AuthorizeModule } from '@upupa/authz';
+
+
 
 const components = [
     PermissionsPageComponent, PermissionsSideBarComponent, RuleFormComponent, RulePermissionsTableComponent
@@ -33,7 +33,9 @@ const components = [
 
 @NgModule({
     declarations: [...components],
-    exports: [...components], imports: [CommonModule,
+    exports: [...components],
+    imports: [CommonModule,
+        AuthorizeModule,
         FormsModule,
         RouterModule,
         MatFormFieldModule,
@@ -50,20 +52,19 @@ const components = [
         MatProgressBarModule,
         DataModule],
     providers: [
-        { provide: PERMISSIONS_BASE_URL, useValue: '/permissions' },
         provideHttpClient(withInterceptorsFromDi())
-    ]
+    ],
 })
 export class PermissionsModule {
-    static forRoot(options: { baseUrl: string }): ModuleWithProviders<RouterModule> {
-        for (const template of authorizationTemplates) {            
+    static forRoot(options: {}, authorizationTemplates: { by: string, template: typeof AUTHORIZATION_TEMPLATES[string] }[] = []): ModuleWithProviders<RouterModule> {
+        for (const template of authorizationTemplates) {
             if (!AUTHORIZATION_TEMPLATES[template.by])
                 AUTHORIZATION_TEMPLATES[template.by] = template.template
         }
         return {
             ngModule: PermissionsModule,
             providers: [
-                { provide: PERMISSIONS_BASE_URL, useValue: options.baseUrl }
+
             ]
         }
     }

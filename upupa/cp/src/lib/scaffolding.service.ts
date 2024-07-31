@@ -25,12 +25,12 @@ import {
 } from "../defaults";
 
 import { PathInfo, PathMatcher } from "@noah-ark/path-matcher";
-import { DialogService, DialogServiceConfig } from "@upupa/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { HttpClient } from "@angular/common/http";
 import { ColumnDescriptor, ColumnsDescriptor } from "@upupa/table";
 import { DbI18nPipe } from "./dbI18n.pipe";
 import { LanguageService } from "@upupa/language";
+import { DialogService, DialogServiceConfig } from "@upupa/dialog";
 
 @Injectable({ providedIn: "root" })
 export class ScaffoldingService {

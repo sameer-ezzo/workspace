@@ -3,9 +3,10 @@ import { Router } from "@angular/router";
 import { AuthService } from '@upupa/auth';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@upupa/language';
-import { ActionEvent, SnackBarService } from '@upupa/common';
+import { ActionEvent } from '@upupa/common';
 import { firstValueFrom } from 'rxjs';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
+import { SnackBarService } from '@upupa/dialog';
 @Component({
     selector: 'admin-reset-pwd',
     templateUrl: './admin-reset-pwd.component.html',

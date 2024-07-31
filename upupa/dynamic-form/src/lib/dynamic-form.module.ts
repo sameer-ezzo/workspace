@@ -15,6 +15,7 @@ import { DynamicFormThemes } from './dynamic-form-themes.type';
 import { DynamicFieldDirective } from './dynamic-field.directive';
 import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme'
 import { DynamicFormOptions } from './dynamic-form.options';
+import { MatBtnComponent } from '@upupa/mat-btn';
 
 const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS
@@ -31,13 +32,16 @@ const declarations = [
 @NgModule({
     declarations: [...declarations],
     exports: [...declarations, ScrollingModule],
-    bootstrap: [DynamicFormComponent], imports: [CommonModule,
+    bootstrap: [DynamicFormComponent],
+    imports: [
+        CommonModule,
         UtilsModule,
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
         DynamicFormNativeThemeModule,
-        UtilsModule],
+        MatBtnComponent
+    ],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
         { provide: DYNAMIC_COMPONENT_MAPPER, useValue: { NATIVE_THEME_NAME: DF_NATIVE_THEME_INPUTS } },
