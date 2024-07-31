@@ -7,7 +7,8 @@ import { DataAdapter, DataService, ObjectId, ServerDataSource } from '@upupa/dat
 import { MatDialogRef } from '@angular/material/dialog';
 import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
 import { HttpClient } from '@angular/common/http';
-import { ActionDescriptor, ActionEvent, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/common';
+import { ActionDescriptor } from '@upupa/common';
+import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 @Component({
     selector: 'edit-user-roles',
     templateUrl: './edit-user-roles.component.html',

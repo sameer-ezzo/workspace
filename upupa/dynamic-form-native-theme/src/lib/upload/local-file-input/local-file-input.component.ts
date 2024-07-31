@@ -2,12 +2,13 @@ import { Component, Input, forwardRef, OnChanges, SimpleChanges, OnDestroy, Outp
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ThemePalette } from '@angular/material/core';
 import { DataService } from '@upupa/data';
-import { DialogService, InputBaseComponent } from '@upupa/common';
+import {  InputBaseComponent } from '@upupa/common';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { AuthService } from '@upupa/auth';
 import { ClipboardService, openFileDialog } from '@upupa/upload';
+import { DialogService } from '@upupa/dialog';
 
 @Component({
     selector: 'local-file-input',

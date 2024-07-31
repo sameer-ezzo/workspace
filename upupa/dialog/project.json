@@ -1,0 +1,44 @@
+{
+  "name": "upupa-dialog",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/workspace/upupa/dialog/src",
+  "prefix": "raptor7-workspace",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/angular:package",
+      "options": {
+        "tsConfig": "libs/workspace/upupa/dialog/tsconfig.lib.json",
+        "project": "libs/workspace/upupa/dialog/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/workspace/upupa/dialog/tsconfig.lib.prod.json"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/upupa/dialog/src/**/*.ts",
+          "libs/workspace/upupa/dialog/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/upupa/dialog"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/upupa/dialog/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:angular",
+    "type:library"
+  ]
+}

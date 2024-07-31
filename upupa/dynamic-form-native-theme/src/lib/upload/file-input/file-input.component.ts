@@ -3,7 +3,7 @@ import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ThemePalette } from '@angular/material/core';
 import { DataService, ClientDataSource, DataAdapter } from '@upupa/data';
-import { ActionDescriptor, ActionEvent, DialogService } from '@upupa/common';
+import { ActionDescriptor, ActionEvent } from '@upupa/common';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { FileSelectComponent } from '../file-select/file-select.component';
 
@@ -11,6 +11,7 @@ import { AuthService } from '@upupa/auth';
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
 import { DataComponentBase } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
+import { DialogService } from '@upupa/dialog';
 
 
 
@@ -164,7 +165,7 @@ export class FileInputComponent extends DataComponentBase {
         const result = this.dialog.open(FileSelectComponent, {
             data: { path: this.path, base: this.base, value: this.value }
         });
-        //todo: convert selectionChanged to eventEmitter instead of replaySubject. 
+        //todo: convert selectionChanged to eventEmitter instead of replaySubject.
         // result.componentInstance.selectionChanged.subscribe(e => {
         //     result.close(e);
         // });

@@ -38,16 +38,17 @@ export class UsersController {
             transformResponse: [(data) => JSON.parse(data)]
         });
 
-        setTimeout(() => { // wait for user model is added to data service
-            const { password, role, email, username, name } = options.superAdmin
-            this.installSuperAdmin({ email, username: username ?? email, name }, password, role)
-                .then(() => { })
-                .catch((error) => {
-                    const { message } = error
-                    if (message === 'ALREADY_INSTALLED' || message === 'USER_WITH_ROLE_EXISTS') return
-                    logger.error(error)
-                })
-        }, 1000);
+        if (this.options.superAdmin.password)
+            setTimeout(() => { // wait for user model is added to data service
+                const { password, email, username, name } = this.options.superAdmin
+                this.installSuperAdmin({ email, username: username ?? email, name }, password, 'super-admin')
+                    .then(() => { })
+                    .catch((error) => {
+                        const { message } = error
+                        if (message === 'ALREADY_INSTALLED' || message === 'USER_WITH_ROLE_EXISTS') return
+                        logger.error(error)
+                    })
+            }, 1000);
 
     }
 
@@ -199,7 +200,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'changeuserroles' }, operation: 'Change User Roles' })
-    
+
     public async changeUserRoles(@Message() msg: IncomingMessage<{ userId: string, roles: string[] }>) {
 
         const { userId, roles } = msg.payload;
@@ -209,7 +210,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: 'POST', path: 'admincreateuser' }, operation: 'Admin Create User' })
-    
+
     public async adminCreateUser(@Message() msg: IncomingMessage<any>) {
 
         const _user = msg.payload;
@@ -233,7 +234,7 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'impersonate' }, operation: 'Impersonate User' })
-    
+
     public async impersonate(@Message() msg: IncomingMessage<{ sub: string }>) {
         //get current principle
         const principle = msg.principle
@@ -468,7 +469,7 @@ export class UsersController {
 
 
     @EndPoint({ http: { method: 'POST', path: 'lock' }, operation: 'Lock User' })
-    
+
     public async lock(@Message() msg: IncomingMessage<{ id: string, lock: string | boolean }>) {
 
         const id = msg.payload.id ?? msg.payload['_id'];

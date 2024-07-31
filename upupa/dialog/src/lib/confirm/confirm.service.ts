@@ -3,8 +3,8 @@ import { MatDialogConfig } from "@angular/material/dialog";
 import { firstValueFrom } from "rxjs";
 import { first, map } from "rxjs/operators";
 import { DialogService, DialogServiceConfig } from "../dialog.service";
-import { ActionDescriptor } from "../mat-btn/action-descriptor";
 import { ConfirmComponent } from "./confirm.component";
+import { ActionDescriptor } from "@upupa/common";
 
 @Injectable({ providedIn: "root" })
 export class ConfirmService {

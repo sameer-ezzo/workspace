@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { AuthService } from '@upupa/auth';
-import { SnackBarService } from '@upupa/common';
 import { DataService } from '@upupa/data';
 import { Subscription } from 'rxjs';
 import { emailPattern } from '../patterns';
 import { NgModel } from '@angular/forms';
+import { SnackBarService } from '@upupa/dialog';
 
 @Component({
     selector: 'change-email',

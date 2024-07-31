@@ -44,7 +44,7 @@ export const DenyRule: Rule = (() => {
     exports: [RulesService, AuthorizeService],
 })
 export class RulesModule {
-    static register(rootRule: Rule = DenyRule, appRules: Rule[] = [], templates: AuthorizationTemplate[]): DynamicModule {
+    static register(rootRule: Rule = DenyRule, appRules: Rule[] = [], templates: AuthorizationTemplate[] = []): DynamicModule {
 
         (appRules ??= []).forEach(r => {
             if (!r.ruleSource) r.ruleSource = 'code'

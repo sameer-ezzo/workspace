@@ -3,8 +3,8 @@ import { MatDialogConfig } from "@angular/material/dialog";
 
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "../dialog.service";
-import { ActionDescriptor } from "../mat-btn/action-descriptor";
 import { PromptComponent } from "./prompt.component";
+import { ActionDescriptor } from "@upupa/common";
 
 @Injectable({ providedIn: "root" })
 export class PromptService {

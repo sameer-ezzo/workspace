@@ -31,6 +31,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DataComponentBase } from './datacomponent-base.component';
 import { DefaultTableCellTemplate } from './cell-template-component';
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
+import { MatBtnComponent } from '@upupa/mat-btn';
 
 
 
@@ -61,7 +62,8 @@ const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelec
         UtilsModule,
         DragDropModule,
         ...material,
-        TranslationModule
+        TranslationModule,
+        MatBtnComponent
     ],
     exports: [...declarations, DragDropModule],
     providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }]

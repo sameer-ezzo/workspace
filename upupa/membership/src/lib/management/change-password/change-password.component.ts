@@ -2,9 +2,9 @@ import { Component, Input, Optional, Output, EventEmitter } from '@angular/core'
 import { AuthService } from '@upupa/auth';
 import { HttpClient } from '@angular/common/http';
 import { MatDialogRef } from '@angular/material/dialog';
-import { SnackBarService } from '@upupa/common';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { firstValueFrom } from 'rxjs';
+import { SnackBarService } from '@upupa/dialog';
 
 @Component({
   selector: 'change-password',

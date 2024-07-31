@@ -1,8 +1,4 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { AuthService } from '@upupa/auth';
-import { } from '@upupa/common';
-import { SnackBarService } from '@upupa/common';
-import { DataService } from '@upupa/data';
 
 
 @Component({

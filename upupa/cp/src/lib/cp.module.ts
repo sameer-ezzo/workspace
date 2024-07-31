@@ -31,8 +31,9 @@ import { TagsModule, TagsPipe } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
 import { getUserInitialsImage } from "./user-image.service";
 import { catchError, map, of, switchMap } from "rxjs";
-import { CpLayoutOptions } from "./decorators/decorator.types";
 import { DbI18nPipe } from "./dbI18n.pipe";
+import { AuthorizeModule } from "@upupa/authz";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
@@ -79,7 +80,9 @@ const declarations = [
         UsersManagementModule,
         MembershipModule,
         TagsModule,
+        AuthorizeModule,
         PermissionsModule,
+        MatBtnComponent
     ],
     providers: [
         ScaffoldersProvider,

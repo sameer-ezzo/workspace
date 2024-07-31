@@ -2,12 +2,14 @@ import { Injectable, Injector, inject } from '@angular/core';
 
 import { resolvePath } from './resolve-scaffolder-path.func';
 import { resolveFormSchemeOf } from '@upupa/dynamic-form';
-import { ActionDescriptor, AuthorizationService } from '@upupa/common';
+import { ActionDescriptor } from '@upupa/common';
 import { DataListFilterForm, DataListViewModel, IScaffolder, ListScaffoldingModel } from '../../types';
 import { getListInfoOf, resolvePathScaffolders } from '../decorators/scheme.router.decorator';
 import { ListViewModelOptions, LookUpDescriptor, QueryType } from '../decorators/decorator.types';
-import { AuthService } from '@upupa/auth';
+import {  AuthService } from '@upupa/auth';
 import { evaluatePermission } from '@noah-ark/expression-engine';
+import { AuthorizationService } from '@upupa/authz';
+
 
 
 @Injectable({ providedIn: 'root' })

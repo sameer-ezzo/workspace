@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
-import { ActionDescriptor, ActionEvent, DialogService, PromptService } from "@upupa/common";
+import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { AccessType, AuthorizeMessage, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
 import { ColumnsDescriptor } from "@upupa/table";
 import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
+import { PromptService } from "@upupa/dialog";
 
 @Component({
     selector: "rule-permissions-table",

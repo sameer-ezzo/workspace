@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { User } from '@upupa/auth';
-import { ActionEvent, UpupaDialogComponent } from '@upupa/common';
+import { ActionEvent } from '@upupa/common';
 import { FieldItem, FormScheme, checkboxField, hiddenField, switchField } from '@upupa/dynamic-form';
 import { UsersService } from '../users.service';
 import { passwordField } from '../../default-values';
+import { UpupaDialogComponent } from '@upupa/dialog';
 
 @Component({
     selector: 'admin-userpwd-reset',

@@ -36,6 +36,7 @@ import { FileSelectComponent } from './upload/file-select/file-select.component'
 import { FileUploadService } from './upload/file-upload.service';
 import { FilesViewerComponent } from './upload/file-viewer/file-viewer.component';
 import { LocalFileInputComponent } from './upload/local-file-input/local-file-input.component';
+import { MatBtnComponent } from '@upupa/mat-btn';
 
 
 export const NATIVE_THEME_NAME = 'native'
@@ -101,7 +102,8 @@ const imports = [
     UtilsModule,
     TranslationModule,
     DataTableModule,
-    ScrollingModule
+    ScrollingModule,
+    MatBtnComponent
 ]
 
 

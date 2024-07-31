@@ -6,12 +6,12 @@ import { firstValueFrom, map } from 'rxjs';
 import { DataResult, DataService } from '@upupa/data';
 
 import { HttpClient } from '@angular/common/http';
-import { ActionEvent, UpupaDialogComponent } from '@upupa/common';
+import { ActionEvent } from '@upupa/common';
 import { MatDialogRef } from '@angular/material/dialog';
-import { UpupaDialogPortal } from '@upupa/common'
 
 import { DynamicFormComponent, FormScheme } from '@upupa/dynamic-form';
 import { Condition } from '@noah-ark/expression-engine';
+import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 
 type UserFormOptions = {
     scheme: FormScheme;

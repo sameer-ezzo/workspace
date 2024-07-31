@@ -5,10 +5,10 @@ import { HttpClient } from "@angular/common/http";
 import { DataService } from "@upupa/data";
 import { BehaviorSubject, Subject } from "rxjs";
 import { ActivatedRoute } from "@angular/router";
-import { SnackBarService } from "@upupa/common";
 import { EventBus } from "@upupa/common";
 import { ScaffoldingService } from "../scaffolding.service";
 import { FileInfo } from "@noah-ark/common";
+import { SnackBarService } from "@upupa/dialog";
 
 
 

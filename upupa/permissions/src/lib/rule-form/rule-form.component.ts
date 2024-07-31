@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, Input, signal, WritableSignal } from "@angular/core";
 import { Rule, SimplePermission } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
-import { SnackBarService } from "@upupa/common";
+import { SnackBarService } from "@upupa/dialog";
 
 @Component({
     selector: "rule-form",

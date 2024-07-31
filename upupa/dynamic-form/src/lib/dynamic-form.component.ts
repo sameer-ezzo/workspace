@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, Untyp
 import { Field, FormScheme } from "./types"
 import { Condition } from "@noah-ark/expression-engine"
 import { Subscription } from "rxjs"
-import { DialogService, EventBus } from '@upupa/common'
+import {  EventBus } from '@upupa/common'
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers"
 import { JsonPointer, Patch } from "@noah-ark/json-patch"
 import { DynamicFormOptions } from "./dynamic-form.options"
@@ -11,6 +11,7 @@ import { DYNAMIC_FORM_OPTIONS } from "./di.token"
 import { DynamicFormRenderer } from "./dynamic-form-renderer"
 import { DynamicFormService } from "./dynamic-form.service"
 import { ConditionalLogicService } from "./conditional-logic.service"
+import { DialogService } from "@upupa/dialog"
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector

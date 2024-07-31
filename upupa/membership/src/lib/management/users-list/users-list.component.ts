@@ -18,14 +18,11 @@ import { AuthService, User } from "@upupa/auth";
 import {
   ActionDescriptor,
   ActionEvent,
-  ConfirmService,
-  DialogService,
   EventBus,
   toTitleCase,
 } from "@upupa/common";
 import { ColumnsDescriptor } from "@upupa/table";
 import { UserFormComponent } from "../user-form/user-form.component";
-import { SnackBarService } from "@upupa/common";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import {
   defaultUserListActions,
@@ -37,6 +34,7 @@ import { firstValueFrom } from "rxjs";
 import { AdminUserPasswordRestComponent } from "../admin-userpwd-reset/admin-userpwd-reset.component";
 import { EditUserRolesComponent } from "../edit-user-roles/edit-user-roles.component";
 import { Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
+import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 
 type ModelType = { _id: string; email: string } & Partial<User>;
 

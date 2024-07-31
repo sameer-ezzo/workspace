@@ -14,10 +14,10 @@ import {
 } from "@angular/material/dialog";
 import { ComponentType } from "@angular/cdk/portal";
 import { DOCUMENT } from "@angular/common";
-import { UpupaDialogComponent } from "./upupa-dialog/upupa-dialog.component";
 import { firstValueFrom, Subject, Observable } from "rxjs";
-import { ActionsDescriptor } from "./mat-btn/action-descriptor";
 import { DialogRef } from "@angular/cdk/dialog";
+import { ActionsDescriptor } from "@upupa/common";
+import { UpupaDialogComponent } from "./upupa-dialog.component";
 
 export type DialogServiceConfig<T = any> = MatDialogConfig<T> & {
     title?: string;

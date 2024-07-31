@@ -1,12 +1,13 @@
 import { Renderer2 } from "@angular/core";
 import { AbstractControl, UntypedFormBuilder, ValidatorFn, UntypedFormGroup, UntypedFormControl } from "@angular/forms";
-import { EventBus, DialogService } from "@upupa/common";
+import { EventBus } from "@upupa/common";
 import { Subject, Subscription, debounceTime, filter, firstValueFrom, skip } from "rxjs";
 import { _mergeFields } from "./dynamic-form.helper";
 import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Fieldset, FieldItem, ValidationTask, Validator } from "./types";
 import { TaskValidationComponent } from "./task.validation.component/task.validation.component";
 import { DynamicFormEvents as DF_Events } from "./events/events";
+import { DialogService } from "@upupa/dialog";
 
 export class DynamicFormRenderer<T = any> {
 
@@ -60,7 +61,7 @@ export class DynamicFormRenderer<T = any> {
             const abandonedControls = Array.from(this.controls).filter(([_, c]) => c['lot_number'] != this.lot_number);
             abandonedControls.forEach(([field, control]) => {
                 const formGroup = control.parent as UntypedFormGroup
-                if (formGroup && control === formGroup.controls[field.name]) { //double checking on control because removing is by name 
+                if (formGroup && control === formGroup.controls[field.name]) { //double checking on control because removing is by name
                     formGroup.removeControl(field.name);
                 }
                 this.controls.delete(field);
@@ -141,7 +142,7 @@ export class DynamicFormRenderer<T = any> {
             if (!control) return undefined
 
             let errors = validator ? validator(control) : null;
-            if (errors === null && task.state != 'check') { //if normal validators are happy and task still didn't sccuceed then show validation-task error  
+            if (errors === null && task.state != 'check') { //if normal validators are happy and task still didn't sccuceed then show validation-task error
                 errors = {};
                 errors[task.name || 'validation-task'] = { msg: task.error, validationTask: true };
             }

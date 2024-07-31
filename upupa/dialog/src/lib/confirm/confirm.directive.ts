@@ -1,7 +1,10 @@
 import { Directive, HostListener, Input, Output, EventEmitter } from '@angular/core';
 import { ConfirmService } from './confirm.service';
 
-@Directive({ selector: '[confirm]' })
+@Directive({
+    selector: '[confirm]',
+    standalone: true
+ })
 export class ConfirmDirective {
     @Output() confirm = new EventEmitter<Event>();
     @Input('confirm-text') confirmText: string;

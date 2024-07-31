@@ -13,16 +13,14 @@ import { AuthService } from "@upupa/auth";
 import {
   ActionDescriptor,
   ActionEvent,
-  ConfirmService,
-  DialogService,
   toTitleCase,
 } from "@upupa/common";
 import { ColumnsDescriptor } from "@upupa/table";
-import { SnackBarService } from "@upupa/common";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions, defaultUserListColumns } from "../types";
 import { RoleFormComponent } from "../role-form/role-form.component";
 import { firstValueFrom } from "rxjs";
+import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 
 
 
