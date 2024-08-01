@@ -1,3 +1,5 @@
+
+
 :not([dir='rtl']) {
   th.mat-header-cell:last-of-type,
   td.mat-cell:last-of-type,
@@ -188,7 +190,7 @@ tr {
 
 .dd-list {
   width: 100%;
-  background: var(--bg-background) !important;
+  background: var(--mat-table-background-color) !important;
 }
 
 .dd-item {
@@ -247,7 +249,7 @@ table > div {
   padding: 0 0.5rem;
 
   & > input {
-    color: var(--fg-secondary-text);
+
     letter-spacing: (--mat-table-header-headline-tracking);
     &::placeholder {
       color: var(--fg-hint-text);
@@ -287,7 +289,7 @@ tr {
 }
 
 tr {
-  background: var(--bg-background) !important;
+  background: var(--mat-table-background-color) !important;
 }
 tr + tr.expandable-row td {
   border-bottom: none !important;

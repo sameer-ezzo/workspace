@@ -1,6 +1,7 @@
 @if(auth.user$ | async; as _user && _user){
 
-<div id="avatar-wrapper" [class.impersonated]="impersonated$ | async" [class.active]="menuTrigger.menuOpen ||  (impersonated$ | async)">
+<div id="avatar-wrapper" [class.impersonated]="impersonated$ | async"
+    [class.active]="menuTrigger.menuOpen ||  (impersonated$ | async)">
     @if (impersonated$ | async) {
     <button mat-icon-button (click)="unimpersonate()" style="flex: 0 0 35px; margin-inline-end: 0.25rem;">
         <mat-icon style="color: rgba(255, 68, 0, 0.575);">supervised_user_circle
@@ -29,7 +30,8 @@
 
     @if(commands?.length > 0){
     @for (umc of commands; track $index) {
-    <button mat-menu-item authAction [path]="umc.path" [action]="umc.action" (click)="umcClicked($event); menuTrigger.closeMenu()">
+    <button mat-menu-item authAction [path]="umc.path" [action]="umc.action"
+        (click)="umcClicked($event); menuTrigger.closeMenu()">
 
         @if(umc.icon){
         <mat-icon>{{umc.icon}}</mat-icon>
@@ -48,7 +50,7 @@
 </mat-menu>
 }
 @else {
-<button routerLink="/en/login" mat-menu-item>
+<button mat-stroked-button color="accent" [routerLink]="signInUrl" mat-menu-item>
     Login
 </button>
 }

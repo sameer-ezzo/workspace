@@ -15,16 +15,15 @@
 </ng-template>
 
 <ng-template #permissionSelectorsTemplate let-permission="element">
-    <div style="display: flex; align-items: center; overflow: hidden;">
+    <div style="display: flex; align-items: center; overflow: hidden; max-width: 300px;">
 
-        <pre>
-        {{permission.item.selectors | json}}
-    </pre>
+        <span>
+            {{permission.item.selectors | json}}
+        </span>
         @if(permission.item.builtIn !== true){
         <button mat-icon-button (click)="editFilters(permission.item)">
             <mat-icon>tune</mat-icon>
         </button>
-
         }
     </div>
 </ng-template>

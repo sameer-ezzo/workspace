@@ -38,15 +38,16 @@ main {
     border-inline-start: 3px solid transparent;
 
 
-    &:hover {
-      background-color: var(--bg-hover);
+    &:hover,
+    &:focus-within {
+      background-color: var(--mat-option-hover-state-layer-color);
+      color: var(--mdc-list-list-item-focus-label-text-color);
+
     }
 
-    &.active,
-    &:focus-within {
-      background-color: var(--bg-focused-button);
-      border-inline-start-color: var(--mdc-outlined-text-field-caret-color);
-
+    &.active {
+      border-inline-start-color: var(--mat-focus-indicator-border-color);
+      background-color: var(--mat-option-selected-state-layer-color);
     }
   }
 

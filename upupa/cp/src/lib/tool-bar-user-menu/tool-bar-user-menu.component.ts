@@ -1,7 +1,7 @@
 import { Component, inject, Input } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { EventBus } from '@upupa/common';
-import { AuthService } from '@upupa/auth';
+import { AuthService, DEFAULT_LOGIN_PROVIDER_TOKEN } from '@upupa/auth';
 import { SideBarItem } from '../side-bar-group-item';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { USER_PICTURE_RESOLVER } from '../di.token';
@@ -17,6 +17,8 @@ import { Router } from '@angular/router';
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarItem[]
     readonly userImageResolver = inject(USER_PICTURE_RESOLVER) as Observable<string>
+    signInUrl = inject(DEFAULT_LOGIN_PROVIDER_TOKEN) as string
+
     public readonly auth = inject(AuthService)
     private readonly bus = inject(EventBus)
 

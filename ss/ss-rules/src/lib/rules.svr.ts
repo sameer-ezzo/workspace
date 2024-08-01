@@ -19,21 +19,33 @@ export function joinPaths(...segments: string[]): string {
 @Injectable()
 export class RulesService {
     async restorePermissions(permissionsTree: any, principle: Principle) {
-        for (const item of permissionsTree) {
+        const restoreRules = (rs: { name: string, rule: any, actions: any, children: [] }[]) => {
+            for (const r of rs) {
+                restoreRule(r)
+            }
+        }
+        const restoreRule = async (item: { name: string, rule: any, actions: any, children: [] }) => {
             const rule = item.rule as Rule
-            for (const action in rule.actions) {
-                const permissions = rule.actions[action] as unknown as SimplePermission[]
+            restoreActions(rule.name, rule.actions)
+            restoreRules(item.children)
+        }
+
+        const restoreActions = async (name: string, actions: any) => {
+            for (const action in actions) {
+                const permissions = actions[action] as unknown as SimplePermission[]
                 for (const permission of permissions) {
                     if (!permission._id) continue
                     try {
-                        await this.updatePermission(rule.name, action, permission, principle)
+                        await this.updatePermission(name, action, permission, principle)
                     }
                     catch (e) {
-                        logger.error(`Failed to restore permission ${permission.name} for rule ${rule.name}`)
+                        logger.error(`Failed to restore permission ${permission.name} for rule ${name}`)
                     }
                 }
             }
         }
+
+        restoreRules(permissionsTree)
     }
 
 
@@ -138,7 +150,7 @@ function createRulesTreeFromEndpoints(endPoints, rulesService: RulesService) {
         }
         const permissions = Reflect.getMetadata(AUTHORIZE_PERMISSIONS, descriptor ? descriptor.value : controller) ?? []
 
-        const result = { prefix,path: _path, fullPath: _fullPath, operation, permissions }
+        const result = { prefix, path: _path, fullPath: _fullPath, operation, permissions }
         return result
     })
 
