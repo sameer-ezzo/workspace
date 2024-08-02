@@ -1,5 +1,5 @@
 import { Component, inject, Input } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { filter, map, Observable } from 'rxjs';
 import { EventBus } from '@upupa/common';
 import { AuthService, DEFAULT_LOGIN_PROVIDER_TOKEN } from '@upupa/auth';
 import { SideBarItem } from '../side-bar-group-item';
@@ -24,6 +24,7 @@ export class ToolbarUserMenuComponent {
 
     u$ = this.auth.user$.pipe(takeUntilDestroyed())
     userName$ = this.u$.pipe(
+        filter(u => !!u),
         map(u => u.name ?? u.email?.substring(0, u.email.indexOf('@')))
     )
     impersonated$ = this.u$.pipe(
@@ -35,16 +36,14 @@ export class ToolbarUserMenuComponent {
         else this.bus.emit(e.name, { msg: e.name, ...e }, this)
     }
 
-    private readonly router = inject(Router)
     signout() {
-        const user = { ...this.auth.user }
         this.auth.signout();
-        this.router.navigate(['/'])
+        document.location.href = '/'
     }
 
     async unimpersonate() {
         await this.auth.unimpersonate()
-        this.router.navigate(['/'])
+        document.location.href = '/'
     }
 
     handelImageError(event) {

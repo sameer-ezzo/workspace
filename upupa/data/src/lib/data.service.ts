@@ -15,6 +15,7 @@ export class DataListener {
     stream: Observable<any>;
 }
 
+export type ApiGetResult<T> = { data: T, total: number, query: any[] }
 
 
 @Injectable({ providedIn: 'root' })
@@ -78,8 +79,8 @@ export class DataService {
         else return x.stream;
     }
 
-    get<T>(path: string, query?: QueryDescriptor): Observable<T> {
-        return this.fetch<T>(path, query).pipe(map(d => d.data));
+    get<T>(path: string, query?: QueryDescriptor): Observable<ApiGetResult<T>> {
+        return this.fetch<ApiGetResult<T>>(path, query).pipe(map(x => x.data));
     }
 
     agg<T>(path: string, query?: QueryDescriptor) {

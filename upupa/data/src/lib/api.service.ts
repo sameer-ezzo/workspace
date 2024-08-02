@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 import { APIBASE, MetaDataDescriptor } from "./di.token";
 import { firstValueFrom, Observable } from "rxjs";
-import { retry, timeout } from "rxjs/operators";
+import { timeout } from "rxjs/operators";
 import { Patch } from "@noah-ark/json-patch";
 
 

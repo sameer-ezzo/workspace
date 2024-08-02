@@ -24,6 +24,9 @@ main {
     flex: 1 1 auto;
   }
 
+  .sidenav{
+    padding: 0 0.25rem
+  }
   .cp-item-link {
     display: flex;
     flex-wrap: nowrap;
@@ -35,9 +38,8 @@ main {
     text-decoration: none;
     transition: background-color 0.2s;
     box-sizing: border-box;
-    border-inline-start: 3px solid transparent;
 
-
+    border-radius: var(--mat-sidenav-container-shape);
     &:hover,
     &:focus-within {
       background-color: var(--mat-option-hover-state-layer-color);
@@ -46,7 +48,6 @@ main {
     }
 
     &.active {
-      border-inline-start-color: var(--mat-focus-indicator-border-color);
       background-color: var(--mat-option-selected-state-layer-color);
     }
   }

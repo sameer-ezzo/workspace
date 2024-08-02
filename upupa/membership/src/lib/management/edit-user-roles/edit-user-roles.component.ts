@@ -2,7 +2,7 @@ import { Component, Input, SimpleChanges, ViewChild, signal } from '@angular/cor
 
 import { AuthService } from '@upupa/auth';
 
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { DataAdapter, DataService, ObjectId, ServerDataSource } from '@upupa/data';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
@@ -45,7 +45,10 @@ export class EditUserRolesComponent implements UpupaDialogPortal<EditUserRolesCo
         if (this.user && this.user._id === null) {
             throw "Invalid user object passed to component";
         }
-        this.value = await firstValueFrom(this.data.get<{ roles: string[] }>(`/user/${this.user._id}?select=_id,roles`))
+        this.value = await firstValueFrom(
+            this.data.get<{ roles: string[] }>(`/user/${this.user._id}?select=_id,roles`)
+                .pipe(map(res => res.data?.[0] ?? { roles: [] }))
+        )
 
     }
 

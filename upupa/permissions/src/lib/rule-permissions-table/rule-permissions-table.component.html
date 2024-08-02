@@ -55,12 +55,15 @@
     <div [ngSwitch]="permission.item.valueType || permission.item.by" style="overflow: hidden">
 
         <ng-container *ngSwitchCase="'role'">
-            <select *ngIf="permissionsService.roles() as allRoles" [ngModel]="permission.item.value"
-                (change)="changeValue(permission.item, $event.target)">
-                <option *ngFor="let role of allRoles" [value]="role._id">
+            @if(permissionsService.roles | async; as allRoles){
+            <select [ngModel]="permission.item.value" (change)="changeValue(permission.item, $event.target)">
+                @for(role of allRoles; track role._id){
+                <option [value]="role._id">
                     {{ role.name }}
                 </option>
+                }
             </select>
+            }
 
         </ng-container>
         <div *ngSwitchCase="'email'" style="display: flex; align-items: center; flex-flow: row nowrap;">

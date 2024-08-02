@@ -1,14 +1,14 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { DataService } from "@upupa/data";
-import { catchError, map, startWith, tap } from "rxjs/operators";
+import { catchError, map, shareReplay, startWith, tap } from "rxjs/operators";
 
-import { firstValueFrom, of } from "rxjs";
+import { firstValueFrom, Observable, of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Rule } from "@noah-ark/common";
 import { NodeModel } from "./node-model";
 import { SimplePermission } from "@noah-ark/common";
 import { TreeBranch } from "@noah-ark/path-matcher";
-import { PERMISSIONS_BASE_URL } from "@upupa/authz";
+import { AuthorizationService, PERMISSIONS_BASE_URL } from "@upupa/authz";
 
 
 @Injectable({
@@ -16,26 +16,25 @@ import { PERMISSIONS_BASE_URL } from "@upupa/authz";
 })
 export class PermissionsService {
 
+    private readonly base = inject(PERMISSIONS_BASE_URL)
+    private readonly data = inject(DataService)
+    private readonly http = inject(HttpClient)
+    private authorizationService = inject(AuthorizationService)
     private _rulesActions = new Map<string, string[]>()
 
     private nodes: NodeModel[] = [];
 
-    readonly _roles = signal<any[]>([])
-    readonly roles = computed(() => this._roles())
-    private readonly base = inject(PERMISSIONS_BASE_URL)
-    private readonly data = inject(DataService)
-    private readonly http = inject(HttpClient)
+
+    readonly roles = this.data.get<any>(`/role?select=name`).pipe(
+        map(res => res.data),
+        map(roles => (roles ?? [])),
+        shareReplay(1)
+    )
 
     constructor() {
         this.init()
     }
     async init() {
-        firstValueFrom(
-            this.data.get<any>(`/role?select=name`).pipe(
-                map(x => x.data),
-                map(roles => (roles || []).filter(x => x._id !== 'super-admin'))
-            )
-        ).then(roles => this._roles.set(roles))
         await this.getRules()
     }
 
@@ -56,8 +55,8 @@ export class PermissionsService {
     }
 
     // Hierarchy of rules
-    getRulesTree(): Promise<any> {
-        return firstValueFrom(this.http.get<any>(`${this.base}/rules`))
+    getRulesTree(): Promise<TreeBranch<Rule>> {
+        return firstValueFrom(this.authorizationService.rules$)
     }
 
     async getRules(forceFresh = false): Promise<NodeModel[]> {

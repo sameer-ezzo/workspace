@@ -47,7 +47,7 @@
   .mat-expansion-panel-header {
     border-inline-start: 3px solid transparent;
     transition: all 200ms ease-in;
-
+    border-radius: var(--mat-sidenav-container-shape);
     &:hover,
     &:focus-within {
       background-color: var(--mat-option-hover-state-layer-color);
@@ -56,7 +56,6 @@
     }
 
     &.active {
-      border-inline-start-color: var(--mat-focus-indicator-border-color);
       background-color: var(--mat-option-selected-state-layer-color);
     }
   }

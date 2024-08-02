@@ -38,9 +38,11 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
     useFactory: (auth: AuthService, data: DataService) => {
+        if (!auth.user$) return of(getUserInitialsImage(''))
         return auth.user$.pipe(
             switchMap(u =>
-                data.get<{ picture: string }>(`/user/${u?.sub}?select=picture`).pipe(
+                data.get<{ picture: string }>(`/user/${u.sub}?select=picture`).pipe(
+                    map(res => res.data?.[0]),
                     map(x => x.picture as string),
                     catchError(e => of(getUserInitialsImage(u.name ?? u.email)))
                 )

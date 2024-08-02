@@ -1,8 +1,10 @@
 import { ReplaySubject, Observable, of, } from "rxjs"
-import { catchError, debounceTime, map, switchMap } from "rxjs/operators"
+import { catchError, debounceTime, map, switchMap, tap } from "rxjs/operators"
 import { TableDataSource, Term } from "./model"
 import { PageEvent } from "@angular/material/paginator"
 import { DataService } from "../data.service"
+
+import { QueryDescriptor } from "@upupa/data"
 
 
 export class ServerDataSource<T = any> extends TableDataSource<T> {
@@ -58,27 +60,31 @@ export class ServerDataSource<T = any> extends TableDataSource<T> {
 
         if (this.selectedColumns?.length > 0) query.select = this.selectedColumns.join(',')
 
-        const src = this.v2Get(this.path, page, query)
+        const src = this.getData<T>(this.path, page, query)
 
         this.src$.next(src)
         return this.data$
     }
 
-    v2Get(path: string, page: Partial<PageEvent>, query: any): Observable<T[]> {
-        return this.dataService.get<any>(path, query).pipe(
-            catchError(() => of({ total: 0, data: [], query })), //TODO proper handling to errors coming from data service
-            map(x => {
-                page.length = x.total
-                this.data = x.data
-                return x.data
-            }))
+    getData<T>(path: string, page: Partial<PageEvent>, query: QueryDescriptor): Observable<T[]> {
+        return this.dataService.get<T[]>(path, query).pipe(
+            catchError(() => of({
+                data: [],
+                total: 0
+            })), //TODO proper handling to errors coming from data service
+            tap(res => {
+                page.length = res.total
+                this.data = res.data as any[]
+            }),
+            map(res => res.data),
+        )
     }
 
 
     destroy?() { }
 
     override getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
-        return value?.length > 0 ? this.v2Get(this.path, {}, { [key]: `{in}${value.join(',')}` }) :
+        return value?.length > 0 ? this.getData(this.path, {}, { [key]: `{in}${value.join(',')}` }) :
             of([])
     }
 }

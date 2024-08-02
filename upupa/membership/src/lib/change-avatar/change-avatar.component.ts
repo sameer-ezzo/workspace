@@ -1,9 +1,10 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { UploadClient, openFileDialog, FileInfo } from '@upupa/upload';
 import { AuthService } from '@upupa/auth';
-import { firstValueFrom, Subscription, switchMap, tap } from 'rxjs';
+import { firstValueFrom, map, Subscription, switchMap, tap } from 'rxjs';
 import { DataService } from '@upupa/data';
 import { SnackBarService } from '@upupa/dialog';
+
 
 
 @Component({
@@ -38,8 +39,8 @@ export class ChangeAvatarComponent {
             }),
             switchMap(user => this.dataService.get<FileInfo[]>(`storage?destination=storage/avatar/${user.sub}`)))
             .subscribe(async userAvatars => {
-                this.userAvatars = userAvatars
-                this.avatar = userAvatars.length > 0 ? `${userAvatars[0].path}?access_token=${this.auth.get_token()}` : '';
+                this.userAvatars = userAvatars.data;
+                this.avatar = this.userAvatars.length > 0 ? `${this.userAvatars[0].path}?access_token=${this.auth.get_token()}` : '';
             })
 
     }
@@ -60,9 +61,12 @@ export class ChangeAvatarComponent {
         if (files.length) {
             this.disabled = true;
             try {
-                const userAvatars = await firstValueFrom(this.dataService.get<FileInfo[]>(`storage?destination=storage/avatar/${this.user.sub}`))
-                if (userAvatars.length) {
-                    await Promise.all(userAvatars.map(ua => this.removeAvatar(ua.path)))
+                const userAvatar = await firstValueFrom(
+                    this.dataService.get<FileInfo[]>(`storage?destination=storage/avatar/${this.user.sub}`)
+                        .pipe(map(res => res.data?.[0]))
+                )
+                if (userAvatar) {
+                    await this.removeAvatar(userAvatar.path)
                 }
 
                 await firstValueFrom(this.uploader.upload(`/avatar/${this.user.sub}`, files[0], 'avatar').response$);

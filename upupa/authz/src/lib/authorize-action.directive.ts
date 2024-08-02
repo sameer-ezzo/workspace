@@ -71,7 +71,9 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
         const el = this.hostElement.nativeElement as HTMLElement
         const authResult = await this.authorizeService.authorize(path, action, principle)
 
-        if (authResult.access === 'deny') this.deny(el)
-        else this.grant(el)
+        if (authResult.access === 'deny')
+            this.deny(el)
+        else
+            this.grant(el)
     }
 }

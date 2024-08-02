@@ -101,7 +101,7 @@ export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, ad
     //EVALUATE PERMISSIONS
     for (const p of permissions) {
         const access = evaluatePermission(p, authorizationContext)
-
+        if (access === undefined) continue
         authorizationContext.permissions![permissionKey(p)].result = access
 
         result.access = access ? access : result.access
@@ -125,7 +125,7 @@ export function evaluatePermission(p: Permission<boolean | AuthorizeFun>, ctx?: 
 }
 
 
-function _isSuperAdmin(ctx: AuthorizeMessage) {
+export function _isSuperAdmin(ctx: AuthorizeMessage) {
     const principle = ctx.principle!;
     return principle && principle.roles?.some((r: string) => r === 'super-admin' || r === 'developer');
 }

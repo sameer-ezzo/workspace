@@ -17,21 +17,13 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
 
     private readonly authService = inject(AuthService)
     private readonly authorizeService = inject(AuthorizationService)
-    private injector = inject(Injector)
+
     async scaffold(path: string, ...params: any[]): Promise<ListScaffoldingModel> {
         const { path: _path } = resolvePath(path);
         const collection = _path.split('/').filter(s => s).pop();
         const listInfo = getListInfoOf(collection) as ListViewModelOptions;
-        const matches = await this.authorizeService.matchPermissions(`api/${collection}`, 'Read', this.authService.user);
-        const msg = this.authorizeService.buildAuthorizationMsg(`api/${collection}`, 'Read', this.authService.user)
-        const grantingPermissions = matches.filter(m => evaluatePermission(m.permission, { msg }) === 'grant').map(m => m.permission)
-
-        const simplestPermission = grantingPermissions
-            .sort((a, b) => Object.keys(a.selectors?.query ?? {}).length - Object.keys(b.selectors?.query ?? {}).length)
-            .shift();
-
-        const evaluatedQuerySelector = matches.find(m => m.permission === simplestPermission)!.match.evaluated?.query;
-
+        
+        const evaluatedQuerySelector = await this.authorizeService.getEvaluatedQuerySelector(`api/${collection}`, 'Read', this.authService.user)
 
         const queryFn = resolveQueryFn(listInfo, evaluatedQuerySelector);
         const queryParamsFn = resolveQueryParamsFn(listInfo, {});

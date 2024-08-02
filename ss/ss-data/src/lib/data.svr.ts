@@ -666,8 +666,6 @@ export class DataService {
     // pass path to check instance of
     convertToModelId(value: string, path = '_id', model: mongoose.Model<any, {}, {}, {}, any, any>, fromWhere: string): any {
         const instance = model.schema.paths[path]?.instance || 'ObjectId'
-        logger.info(`convertToModelId ${fromWhere}: ${model.modelName}.${path}:${value} => ${instance}`)
-
         if (instance === 'String') return value
         if (instance === 'Number') return +value
         if (instance === 'ObjectId')

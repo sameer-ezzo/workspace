@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { AuthService } from "@upupa/auth";
 import { DataService } from "@upupa/data";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, map } from "rxjs";
 import { ValidationTask, ValidationTaskResult } from "./types/types";
 
 
@@ -71,7 +71,10 @@ export function uniqueValidationTask(task: string, data: DataService, collection
         name: task, state: 'send', error: '',
         task: async (name, value) => {
             try {
-                const result = await firstValueFrom(data.get<any[]>(`/${collection}`, { [propertyName ?? name]: value }));
+                const result = await firstValueFrom(
+                    data.get<any[]>(`/${collection}`, { [propertyName ?? name]: value })
+                        .pipe(map(res => res.data))
+                );
                 return result.length === 0
             }
             catch (error) { return false; }
