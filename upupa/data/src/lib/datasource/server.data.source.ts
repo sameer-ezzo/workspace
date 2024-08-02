@@ -3,8 +3,9 @@ import { catchError, debounceTime, map, switchMap, tap } from "rxjs/operators"
 import { TableDataSource, Term } from "./model"
 import { PageEvent } from "@angular/material/paginator"
 import { DataService } from "../data.service"
+import { QueryDescriptor } from "../di.token"
 
-import { QueryDescriptor } from "@upupa/data"
+
 
 
 export class ServerDataSource<T = any> extends TableDataSource<T> {

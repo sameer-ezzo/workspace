@@ -15,11 +15,11 @@ function _evaluatePermissionSelector(expression: Record<string, string>, ctx: Au
     return evaluated
 }
 
-function matchPermissionSelectors(permission: Permission<boolean | AuthorizeFun>, ctx: AuthorizeContext): PermissionSelectorsEvaluationContext['match'] {
+function matchPermissionSelectors(permission: Permission<boolean | AuthorizeFun>, ctx: AuthorizeContext, bypassSelectors = false): PermissionSelectorsEvaluationContext['match'] {
 
     let match = { result: true } as PermissionSelectorsEvaluationContext['match']
 
-    if (!permission.selectors) return match
+    if (bypassSelectors === true || !permission.selectors) return match
     const { query: queryExpression, payload: payloadExpression } = permission.selectors
 
     const query = queryExpression ? _evaluatePermissionSelector(queryExpression as Record<string, string>, ctx) : undefined
@@ -59,9 +59,9 @@ export const AUTHORIZATION_TEMPLATES: Record<string, Pick<FunctionalPermission, 
     }
 }
 
-export function matchPermissions(rule: Rule, action: string, ctx: AuthorizeContext): { match: PermissionSelectorsEvaluationContext['match'], permission: Permission<boolean | AuthorizeFun> }[] {
+export function matchPermissions(rule: Rule, action: string, ctx: AuthorizeContext, bypassSelectors = false): { match: PermissionSelectorsEvaluationContext['match'], permission: Permission<boolean | AuthorizeFun> }[] {
     return (rule.actions?.[action] ?? []).map(p => ({
-        match: matchPermissionSelectors(p, ctx),
+        match: matchPermissionSelectors(p, ctx, bypassSelectors),
         permission: p
     }))
 }
@@ -74,7 +74,9 @@ export function matchPermissions(rule: Rule, action: string, ctx: AuthorizeConte
  * @param additional Any data useful for the authorization function @example { new_data, old_data }
  * @returns grant or deny access for the provided msg/action
  */
-export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
+export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, additional?: Record<string, unknown>,
+    bypassSelectors = false
+): AuthorizeResult {
     //BUILD CONTEXT AND ALLOW SUPER ADMIN
     action ??= msg.operation
     if (_isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, access: 'grant' }
@@ -91,7 +93,7 @@ export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, ad
     } as AuthorizeResult
 
     //MATCH PERMISSIONS (CHECK PERMISSIONS SELECTORS)
-    const matches = matchPermissions(rule, action, authorizationContext)
+    const matches = matchPermissions(rule, action, authorizationContext, bypassSelectors)
     authorizationContext.permissions = matches.reduce((a, b) => ({ ...a, [permissionKey(b.permission)]: b }), {})
     let permissions = matches.filter(m => m.match.result).map(m => m.permission)
 

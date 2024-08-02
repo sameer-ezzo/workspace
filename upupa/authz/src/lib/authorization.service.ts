@@ -35,50 +35,35 @@ export class AuthorizationService {
         await firstValueFrom(this.rules$);
         if (isEmpty(action ?? '')) action = undefined;
         const msg = this.buildAuthorizationMsg(path, action, principle);
-
-        //BUILD CONTEXT AND ALLOW SUPER ADMIN
-        if (_isSuperAdmin(msg)) return { rule: { name: 'builtin:super-admin', path: '**' }, action, access: 'grant' }
-
         const rule = this.rulesManager.getRule(path, true);
-        const ruleSummary = rule ? { name: rule.name, path: rule.path, fallbackSource: rule.fallbackSource, ruleSource: rule.ruleSource } : undefined
+        const res = authorize(msg, rule, action,{}, true);
 
-        //ASSUME THE RESULT IS THE DEFAULT AUTHORIZATION AND BUILD THE CONTEXT
-        const authorizationContext = { msg } as AuthorizeContext
-        const result = {
-            access: typeof rule.fallbackAuthorization === 'string' ? rule.fallbackAuthorization : 'deny',
-            rule: ruleSummary,
-            action,
-            ctx: authorizationContext
-        } as AuthorizeResult
-
-        const grantingPermissions = await this.getEvaluatedQuerySelector(path, action, principle, true);
-        result.access = grantingPermissions.length > 0 ? 'grant' : 'deny';
-
-        return result;
+        return res;
     }
 
 
     async getEvaluatedQuerySelector(path: string, action: string, user: Principle, bypassSelectors = false) {
-        const matches = await this.matchPermissions(path, action, user);
+        const matches = await this.matchPermissions(path, action, user, bypassSelectors);
         const msg = this.buildAuthorizationMsg(path, action, user);
-        if (bypassSelectors) return matches.filter(m => m.match).map(m => m.permission);
-
         const grantingPermissions = matches.filter(m => evaluatePermission(m.permission, { msg }) === 'grant')
             .map(m => m.permission)
+
+        if (bypassSelectors) grantingPermissions
+
 
 
         const simplestPermission = grantingPermissions
             .sort((a, b) => Object.keys(a.selectors?.query ?? {}).length - Object.keys(b.selectors?.query ?? {}).length)
             .shift();
 
-        const evaluatedQuerySelector = matches.find(m => m.permission === simplestPermission)!.match.evaluated?.query;
+        const evaluatedQuerySelector = simplestPermission ? matches.find(m => m.permission === simplestPermission)!.match.evaluated?.query : {};
         return evaluatedQuerySelector;
     }
 
-    async matchPermissions(path: string, action: string, principle: Principle) {
+    async matchPermissions(path: string, action: string, principle: Principle, bypassSelectors = false) {
         await firstValueFrom(this.rules$);
         const rule = this.rulesManager.getRule(path, true);
         const msg = this.buildAuthorizationMsg(path, action, principle);
-        return matchPermissions(rule, action, { msg });
+        return matchPermissions(rule, action, { msg }, bypassSelectors);
     }
 }
