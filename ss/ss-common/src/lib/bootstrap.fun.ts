@@ -63,17 +63,16 @@ JSON.parse = (text: string, reviver?: any) => {
     return jsonParse(text, reviver ?? dateReviver)
 }
 
-const defaultBootRequirements = async () => {
+const defaultAppBootRequirementsCheck = async () => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
     if (timezone !== 'UTC') 
-        logger.warn(`Timezone must be set to UTC, current timezone is: ${timezone}, setting timezone to UTC`)
-    process.env['TZ'] = 'UTC'
+        throw new Error(`Timezone must be set to UTC, current timezone is: ${timezone}, Please set the timezone to UTC`)
 }
 
 // BOOT APP/MICROSERVICE AND FORK WORKERS
-export async function bootstrap(module: Type<unknown>, port = 3333, options?: Partial<AppOptions>, bootRequirements: (...args: any[]) => Promise<void> = defaultBootRequirements) {
+export async function bootstrap(module: Type<unknown>, port = 3333, options?: Partial<AppOptions>, appBootRequirementsCheck: (...args: any[]) => Promise<void> = defaultAppBootRequirementsCheck) {
 
-    if (bootRequirements) await bootRequirements()
+    if (appBootRequirementsCheck) await appBootRequirementsCheck()
     const applicationName = options?.applicationName ?? process.env['APP_NAME'] ?? module.name
     updateDefaultLoggerScope(applicationName)
     const cluster = _cluster.default
