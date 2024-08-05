@@ -163,7 +163,6 @@ export class AuthService {
             return await httpFetch(url, body, 5000)
         } catch (error) {
             if (error.status === 400) {
-                this.signout()
                 throw error.body
             }
             else if (error.status) throw error.error

@@ -20,7 +20,7 @@ export class AuthorizationService {
     constructor() {
         this.http.get<TreeBranch<Rule>>(`${this.baseUrl}/rules`).subscribe(rules => {
             const rootRule = rules.item;
-            this.rulesManager = new RulesManager(rootRule, []);
+            this.rulesManager = new RulesManager(rootRule);
             this.rulesManager.tree = rules;
             this.rules$.next(rules);
         });

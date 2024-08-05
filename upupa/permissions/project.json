@@ -24,16 +24,6 @@
           "libs/workspace/upupa/permissions/src/**/*.html"
         ]
       }
-    },
-    "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/upupa/permissions"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/upupa/permissions/jest.config.ts",
-        "passWithNoTests": true
-      }
     }
   },
   "tags": [
