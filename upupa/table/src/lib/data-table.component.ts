@@ -127,22 +127,21 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     handset: boolean
     @Output() selectionChange = new EventEmitter<NormalizedItem<T>[]>()
-    selectedNormalized = signal<NormalizedItem<T>[]>([])
     override ngOnInit() {
         super.ngOnInit()
 
         this.dataChangeListeners.push(data => { if (this.columns === 'auto') this.generateColumns() })
 
-        this.breakpointObserver.observe([Breakpoints.Handset]).pipe(takeUntil(this.destroy$))
+        this.breakpointObserver.observe([Breakpoints.Handset]).pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(result => { this.handset = result.matches })
 
         this.selectionModel.changed.pipe(
             takeUntilDestroyed(this.destroyRef),
             debounceTime(this.filterDebounceTime))
             .subscribe(x => {
-                const normalized = x.source.selected.map(s => this.adapter.normalized.find(n => n.key === s))
-                this.selectedNormalized.set(normalized)
-                this.selectionChange.emit(normalized)
+                const selectedNormalized = x.source.selected.map(key => this.adapter.normalized.find(y => y.key === key)).filter(x => x)
+                this.selectedNormalized.set(selectedNormalized)
+                this.selectionChange.emit(selectedNormalized)
             })
     }
 
@@ -168,10 +167,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         const headerActions = changes['headerActions']?.currentValue ?? this.headerActions ?? []
-
         this._headerActions.set(
             ((Array.isArray(headerActions) ? headerActions : headerActions(this.adapter.normalized, this.selectedNormalized())) || [])
-                .map(a => ({ ...a, header: true, bulk: a.bulk || false, menu: a.menu || false }))
         )
 
     }

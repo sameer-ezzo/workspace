@@ -50,7 +50,7 @@
 </mat-menu>
 }
 @else {
-<button mat-stroked-button color="accent" [routerLink]="signInUrl" mat-menu-item>
+<button mat-stroked-button color="accent" (click)="navigateToLogin()">
     Login
 </button>
 }

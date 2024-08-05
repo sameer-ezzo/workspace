@@ -1,7 +1,7 @@
 @if(adapter){
 <!-- ACTIONS MENU -->
 <mat-menu #actionsMenu="matMenu">
-  @for(a of getMenuActions(focusedItem?.item); track a.action){
+  @for(a of getMenuActions(focusedItem?.item); track i; let i = $index){
   <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
     <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
   </button>
@@ -78,8 +78,8 @@
       [stickyEnd]="columns['select']?.sticky === 'end'">
       <th mat-header-cell *matHeaderCellDef>
         @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
-        <mat-checkbox (change)="toggleSelectAll()" [checked]="selected.length === adapter.normalized.length"
-          [indeterminate]="selected.length > 0 && selected.length !== adapter.normalized.length">
+        <mat-checkbox (change)="toggleSelectAll()" [checked]="selectedNormalized().length === adapter.normalized.length"
+          [indeterminate]="selectedNormalized().length !== selected.length">
         </mat-checkbox>
         }
       </th>

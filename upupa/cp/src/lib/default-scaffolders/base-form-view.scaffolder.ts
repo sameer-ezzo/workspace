@@ -59,8 +59,7 @@ export class FormViewScaffolder<T> implements IScaffolder<FormScaffoldingModel> 
         const model$ = view === 'create' ? from(this.create()) :
             this.data.get<DataResult<T>>(_path).pipe(
                 shareReplay(1),
-                map(x => x.data?.[0] ?? {} as T),
-                tap(v => console.log(v))
+                map(x => x.data?.[0] ?? {} as T)
             )
 
         return model$.pipe(tap(v => this.value = v));

@@ -72,8 +72,6 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
                 this.valueFormControl = new FormControl<string>(data.value || '', [...validators]);
         }
         this.valueFormControl.updateValueAndValidity()
-        console.log(this.valueFormControl.value);
-
 
         this.valueFormControl.valueChanges.pipe(
             takeUntilDestroyed(this.destroyRef),

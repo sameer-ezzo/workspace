@@ -21,6 +21,7 @@ export class ToolbarUserMenuComponent {
 
     public readonly auth = inject(AuthService)
     private readonly bus = inject(EventBus)
+    private readonly router = inject(Router)
 
     u$ = this.auth.user$.pipe(takeUntilDestroyed())
     userName$ = this.u$.pipe(
@@ -30,6 +31,12 @@ export class ToolbarUserMenuComponent {
     impersonated$ = this.u$.pipe(
         map(u => u?.claims?.['imps'] || undefined)
     )
+    navigateToLogin() {
+        const url = this.signInUrl || '/'
+        const [path, qpsStr] = url.split('?')
+        const qps = new URLSearchParams(qpsStr)
+        this.router.navigate(path.split('/').filter(s => s.length), { queryParams: Object.fromEntries(qps) })
+    }
     umcClicked(e) {
         e = e.action;
         if (e.handler) e.handler({ action: e, data: null });

@@ -40,7 +40,6 @@ export class RulePermissionsTableComponent {
     private readonly promptService = inject(PromptService)
     async editFilters(permission: SimplePermission) {
         if (permission.builtIn) return;
-        console.log(JSON.stringify(permission.selectors, null, 2));
 
         const filtersStr = await this.promptService.open({
             view: 'textarea',

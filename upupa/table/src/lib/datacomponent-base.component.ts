@@ -120,6 +120,8 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         }
     }
 
+    selectedNormalized = signal<NormalizedItem<T>[]>([])
+
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = []
     onDataChange(data: NormalizedItem<T>[]) {
         if (this.firstLoad)
@@ -128,8 +130,9 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.loading.set(false)
 
         this.dataChangeListeners.forEach(x => x(data))
-        this.selected = (this.selected || []).slice()
-
+        const selected = (this.selected || []).slice()
+        const normalized = selected.map(s => this.adapter.normalized.find(n => n.key === s)).filter(n => n)
+        this.selectedNormalized.set(normalized)
     }
 
     destroy$ = new Subject<void>()
