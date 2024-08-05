@@ -3,10 +3,12 @@ import { Rule } from "./rule";
 import { PathMatcher, TreeBranch } from "@noah-ark/path-matcher";
 
 export class RulesManager {
-    private readonly rulesPathMatcher: PathMatcher<Rule>;
-    
-    
-    
+    private readonly rulesPathMatcher!: PathMatcher<Rule>;
+    constructor(readonly rootRule: Rule) {
+        this.rulesPathMatcher = new PathMatcher<Rule>(rootRule);
+    }
+
+
     public get tree(): TreeBranch<Rule> {
         return this.rulesPathMatcher.tree
     }
@@ -18,7 +20,7 @@ export class RulesManager {
     get rules() {
         return this.rulesPathMatcher.items()
     }
-    
+
     get root(): Rule {
         return this.rulesPathMatcher.root;
     }
@@ -26,12 +28,9 @@ export class RulesManager {
 
         this.rulesPathMatcher.root = root;
     }
-    
-    
-    constructor(readonly rootRule: Rule, readonly appRules: Rule[]) {
-        this.rulesPathMatcher = new PathMatcher<Rule>(rootRule);
-        this.appRules.forEach(r => this.rulesPathMatcher.add(r.path, r));
-    }
+
+
+
 
     updateRootWith(path: string, payload: any) {
         JsonPointer.set(this.root, path, payload);
