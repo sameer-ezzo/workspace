@@ -68,6 +68,7 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     }
 
     private async _authorize(path: string, action: string, principle: Principle) {
+        if (!(path??'').trim().length) return
         const el = this.hostElement.nativeElement as HTMLElement
         const authResult = await this.authorizeService.authorize(path, action, principle)
 
