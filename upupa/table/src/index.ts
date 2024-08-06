@@ -10,3 +10,4 @@ export * from './lib/columns-select.component/columns-select.component';
 export * from './lib/data-table.module';
 export * from './lib/di.tokens';
 export * from './lib/types';
+export * from './lib/table-column-selector.pipe';
