@@ -1,12 +1,11 @@
-@if(adapter){
 <!-- ACTIONS MENU -->
-<mat-menu #actionsMenu="matMenu">
+<!-- <mat-menu #actionsMenu="matMenu">
   @for(a of getMenuActions(focusedItem?.item); track i; let i = $index){
   <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
     <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
   </button>
   }
-</mat-menu>
+</mat-menu> -->
 
 
 <!-- TABLE HEADER -->
@@ -25,37 +24,19 @@
   }
 
 
-  @if(headerActionsList().length || _allowChangeColumnsOptions()){
+
   <span style="flex:1"></span>
   <div style="display: flex;align-items: center;">
+    <data-table-actions-wrapper [actions]="headerActions" (action)="onAction($event)"
+      [context]="selectedNormalized()"></data-table-actions-wrapper>
 
-
-    <ng-container
-      *ngTemplateOutlet="commandTemplate; context:{actions:headerActionsList(), data: selectedNormalized()}">
-    </ng-container>
-    @if(headerMenuActions().length){
-
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      @for (haim of headerMenuActions(); track haim.action) {
-      <button mat-menu-item [attr.color]="haim.color" [disabled]="haim.disabled"
-        (click)="onAction(haim, selectedNormalized())">
-        <mat-icon>{{haim['icon']}}</mat-icon>{{(haim.text || haim.action) }}
-      </button>
-      }
-
-    </mat-menu>
-
-    }
     @if(_allowChangeColumnsOptions()){
     <button [disabled]="loading()" mat-icon-button (click)="openColumnsSelectDialog()">
       <mat-icon>shelf_position</mat-icon>
     </button>
     }
   </div>
-  }
+
 
 </div>
 
@@ -63,11 +44,10 @@
 
 <div class="table-container">
 
-  <table #table mat-table multiTemplateDataRows class="dd-list" [dataSource]="adapter.normalized$ | async" cdkDropList
-    [cdkDropListDisabled]="dragDropDisabled" (cdkDropListDropped)="drop($event)" matSort [matSortDisabled]="loading()"
+  <table #table mat-table multiTemplateDataRows [dataSource]="adapter.normalized$ | async" matSort
+    class="{{stickyHeader ? 'sticky-header' : ''}}" [matSortDisabled]="loading()"
     [matSortDirection]="adapter.sort?.direction" [matSortActive]="adapter.sort?.active"
     (matSortChange)="onSortData($event)">
-    <!-- <ng-container matColumnDef="drag" [sticky]="'start'"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row;let i = index"><div class="dd-placeholder" *cdkDragPlaceholder></div></td></ng-container> -->
     <ng-container matColumnDef="i" [sticky]="columns['actions']?.sticky === 'start'"
       [stickyEnd]="columns['actions']?.sticky === 'end'">
       <th mat-header-cell *matHeaderCellDef></th>
@@ -78,8 +58,8 @@
       [stickyEnd]="columns['select']?.sticky === 'end'">
       <th mat-header-cell *matHeaderCellDef>
         @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
-        <mat-checkbox (change)="toggleSelectAll()" [checked]="selectedNormalized().length === adapter.normalized.length"
-          [indeterminate]="selectedNormalized().length !== selected.length">
+        <mat-checkbox (change)="toggleSelectAll()" [checked]="selectedNormalized().length > adapter.normalized.length"
+          [indeterminate]="selectedNormalized().length > 0 && selectedNormalized().length !== adapter.normalized.length">
         </mat-checkbox>
         }
       </th>
@@ -118,14 +98,9 @@
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row; let i = index" class="actions">
         <div>
-          <ng-container [ngTemplateOutlet]="commandTemplate"
-            [ngTemplateOutletContext]="{actions:getActions(row.item),data:[row]}"></ng-container>
-          @if(getMenuActions(row.item).length){
-          <button (click)="$event.stopPropagation(); setFocusedItem(row)" mat-icon-button
-            [matMenuTriggerFor]="actionsMenu" class="actions">
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          }
+          <data-table-actions-wrapper [actions]="actions" [context]="row"
+            (action)="onAction($event)"></data-table-actions-wrapper>
+
           @if(expandable !== 'none' && expandableTemplate){
           <button (click)="$event.stopPropagation(); toggleExpand(row, i)" mat-icon-button class="actions"
             aria-label="expand row">
@@ -163,6 +138,7 @@
   </table>
 
 
+
   @if((firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0){
   <div id="no-data" style="text-align: center; padding: 2rem">
     @if(noDataImage){
@@ -176,11 +152,7 @@
     <p>Loading</p>
   </div>
   }
-  @if(addUrl || showAdd){
-  <a [routerLink]="addUrl" class="fab" mat-mini-fab (click)="onAdd()">
-    <mat-icon>add</mat-icon>
-  </a>
-  }
+
 </div>
 
 @if(adapter && adapter.page && adapter.page.pageSize){
@@ -193,12 +165,7 @@
 
 
 
-<ng-template #commandTemplate let-actions="actions" let-data="data">
-  @for (a of actions; track i; let i = $index){
-  <mat-btn style="margin-inline-end: 0.25rem;" [descriptor]="a" (action)="onAction(a,data)" [disabled]="a.disabled">
-  </mat-btn>
-  }
-</ng-template>
+
 
 <ng-template #defaultTemplate let-element="element" let-descriptor="descriptor" let-index="index">
   @if(element.item | jpointer:descriptor.key; as cell){
@@ -218,4 +185,3 @@
   @else { {{cell}} }
   }
 </ng-template>
-}

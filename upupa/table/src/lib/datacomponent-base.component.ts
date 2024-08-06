@@ -44,8 +44,7 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
     @Input() filterControl = new FormControl('')
     @Input() noDataImage: string
-    @Input('add-url') addUrl: string
-    @Input('show-add') showAdd: boolean
+    
     @Output() add = new EventEmitter<any>()
 
     @Input() minAllowed: number

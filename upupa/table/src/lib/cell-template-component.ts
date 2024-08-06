@@ -1,6 +1,6 @@
 import { KeyValue } from "@angular/common";
 import { Component, Input } from "@angular/core";
-import { ColumnDescriptor } from "./data-table.component";
+import { ColumnDescriptor } from './types';
 
 @Component({
     selector: 'default-table-cell-template',

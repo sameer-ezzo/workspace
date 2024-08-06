@@ -1,7 +1,7 @@
 
 import { TranslationModule } from '@upupa/language';
 import { UtilsModule } from '@upupa/common';
-import { ModuleWithProviders, NgModule, Pipe, PipeTransform, Provider } from '@angular/core';
+import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
 
 import { CommonModule, DatePipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -32,24 +32,15 @@ import { DataComponentBase } from './datacomponent-base.component';
 import { DefaultTableCellTemplate } from './cell-template-component';
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
 import { MatBtnComponent } from '@upupa/mat-btn';
-
-
-
-@Pipe({
-    name: 'table-col-selector'
-})
-export class TableColumnSelectorPipe implements PipeTransform {
-    transform(value: any, ...args: any[]): any {
-        return args?.length > 0 ? value?.[args[0]] ?? '' : '';
-    }
-}
+import { TableColumnSelectorPipe } from './table-column-selector.pipe';
+import { DataTableActionsWrapperComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
 
 
 
 const pipes = [DatePipe, TableColumnSelectorPipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe];
 
 const material = [MatCardModule, MatTableModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBarModule, MatMenuModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatSortModule, MatPaginatorModule, MatIconModule, MatButtonModule, MatToolbarModule,];
-const declarations = [DataTableComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
+const declarations = [DataTableComponent, DataTableActionsWrapperComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
 
 
 @NgModule({

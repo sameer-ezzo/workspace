@@ -1,0 +1,20 @@
+@for (a of _actions(); track i; let i = $index){
+<mat-btn class="action-btn" [tabIndex]="i" [descriptor]="a" (action)="onAction(a)" [disabled]="a.disabled">
+</mat-btn>
+}
+@if(_menuActions().length){
+
+<button class="action-btn" mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  @for (menuAction of _menuActions(); track i; let i = $index) {
+  <button mat-menu-item [tabIndex]="_actions().length + i" [attr.color]="menuAction.color"
+    [disabled]="menuAction.disabled" (click)="onAction(menuAction)">
+    <mat-icon>{{menuAction['icon']}}</mat-icon>{{(menuAction.text || menuAction.action) }}
+  </button>
+  }
+
+</mat-menu>
+
+}

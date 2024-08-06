@@ -10,30 +10,12 @@ import { NormalizedItem } from '@upupa/data'
 
 import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
-import { ReplaySubject, firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { DataComponentBase } from './datacomponent-base.component'
 import { animate, state, style, transition, trigger } from '@angular/animations'
-import { SortHeaderArrowPosition } from '@angular/material/sort'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens'
 import { DialogService } from '@upupa/dialog'
-
-export type PipeDescriptor = { pipe: Type<any>, args: string[] }
-export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> }
-
-export type ColumnDescriptor = {
-    header?: string,
-    width?: number,
-    visible?: boolean,
-    sticky?: 'start' | 'end'
-    sortDisabled?: boolean,
-    sortId?: string,
-    sortArrowPosition?: SortHeaderArrowPosition,
-    pipe?: PipeDescriptor | Type<any>
-    component?: Type<any>
-}
-export type ColumnsDescriptor<T = any> = { [key in keyof T]: ColumnDescriptor | 1 | 0 }
-type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
+import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types'
 
 @Component({
     selector: 'data-table',
@@ -54,36 +36,22 @@ type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor }
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges, AfterViewInit {
     @HostBinding('attr.tabindex') tabindex = 0
 
-    @Input() stickyHeader = false
-    @Input() showSearch = undefined // will be set to true if there are terms in the adapter
+    @Input() stickyHeader = true
+    @Input() showSearch = undefined
     hasHeader = computed(() => {
-        return this.showSearch === true || (this.label || '').length > 0 || this.headerActionsList().length > 0
-    }) // will be set to true if showSearch is true or there are bulk actions or header actions
+        return this.showSearch === true || (this.label || '').length > 0
+    })
 
     @Input() label: string
-    @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = [] // this represents the actions that will be shown in each row
-    @Input() headerActions: ActionDescriptor[] | ((all: NormalizedItem<T>[], selected: NormalizedItem<T>[]) => ActionDescriptor[]) = [] // this represents the actions that will be shown in the header of the table
-    @Input() dragDropDisabled = true
+    @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = [] // this represents the actions that will be shown in each row
+    @Input() headerActions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = [] // this represents the actions that will be shown in the header of the table
+
 
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Output() action = new EventEmitter<ActionEvent>()
 
 
-    private _headerActions = signal<ActionDescriptor[]>([])
-
-    headerMenuActions = computed(() => {
-        const selected = this.selectedNormalized()
-        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && ActionDescriptor._menu(a))
-        return actions
-    })
-
-    headerActionsList = computed(() => {
-        const selected = this.selectedNormalized()
-        const actions = (this._headerActions() ?? []).filter(a => ActionDescriptor._header(a) && !ActionDescriptor._menu(a))
-        return actions
-    })
-
-    @Input() pageSizeOptions = [10, 25, 50, 100]
+    @Input() pageSizeOptions = [10, 25, 50, 100, 200]
 
 
     _properties: ColumnsDescriptorStrict = {} //only data columns
@@ -160,17 +128,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             this.showSearch = this.adapter.options?.terms?.length > 0
         }
         if (changes['columns']) this.generateColumns()
-
-        if (changes['actions']) {
-            this.actionsMap = new Map<any, ActionDescriptor[]>()
-            this.actionsMenuMap = new Map<any, ActionDescriptor[]>()
-        }
-
-        const headerActions = changes['headerActions']?.currentValue ?? this.headerActions ?? []
-        this._headerActions.set(
-            ((Array.isArray(headerActions) ? headerActions : headerActions(this.adapter.normalized, this.selectedNormalized())) || [])
-        )
-
     }
 
     private generateColumns() {
@@ -249,49 +206,11 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             .afterClosed())
     }
 
-
-    //actions
-    actionsMap = new Map<any, ActionDescriptor[]>()
-    actionsMenuMap = new Map<any, ActionDescriptor[]>()
-    getActions(item: any): ActionDescriptor[] {
-
-        let actions = this.actionsMap.get(item)
-        if (!actions) {
-
-            if (Array.isArray(this.actions)) actions = this.actions
-            else actions = this.actions(item)
-
-            actions = actions.filter(a => ActionDescriptor._button(a))
-            this.actionsMap.set(item, actions)
-        }
-        return actions
-    }
-    getMenuActions(row: T): ActionDescriptor[] {
-        if (!row) return []
-
-        let actions = this.actionsMenuMap.get(row)
-        if (!actions) {
-
-            if (Array.isArray(this.actions)) actions = this.actions
-            else actions = this.actions(row)
-
-            actions = actions.filter(a => ActionDescriptor._menu(a))
-            this.actionsMenuMap.set(row, actions)
-        }
-        return actions
-    }
-
-    onAction(descriptor: ActionDescriptor, data: NormalizedItem[] | any[]) {
+    onAction(e: ActionEvent) {
         //TODO should action set loading automatically just like filter?
-
-        const d = (data || []).map(x => x.item)
-        const e = { action: descriptor, data: d }
-        if (descriptor.handler) descriptor.handler(e)
         this.action.emit(e)
-        this.bus.emit(`${this.name?.trim().length > 0 ? this.name + '-' : ''}${descriptor.action}`, e, this)
+        this.bus.emit(`${this.name?.trim().length > 0 ? this.name + '-' : ''}${e.action.name}`, e, this)
     }
-
-
 
 
     toggleSelection(event: MatCheckboxChange, row, selectInBetween = false) {
