@@ -27,7 +27,6 @@ export class DataTableActionsWrapperComponent<T = any> implements OnChanges {
     ngOnChanges(changes: SimpleChanges) {
         if (changes['actions'] || changes['context']) {
             const data = Array.isArray(this.context) ? this.context.map(x => x.item) : this.context?.item
-            console.log('data', data);
 
             const actions = Array.isArray(this.actions) ? this.actions : this.actions(data)
             this._actions.set(actions.filter(a => !ActionDescriptor._menu(a)))
