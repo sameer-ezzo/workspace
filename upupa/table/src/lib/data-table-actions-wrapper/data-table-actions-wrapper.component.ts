@@ -1,9 +1,9 @@
 import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, ChangeDetectionStrategy, signal, HostBinding } from '@angular/core'
 import { NormalizedItem } from '@upupa/data'
 import { ActionDescriptor, ActionEvent } from '@upupa/common'
+import { ActionsContext, ActionsWrapperViewModel } from '../types'
 
-export type ActionsWrapperViewModel<T> = NormalizedItem<T> | NormalizedItem<T>[] | null
-export type ActionsContext<T> = T | T[]
+
 
 @Component({
     selector: 'data-table-actions-wrapper',

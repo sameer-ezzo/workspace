@@ -1,26 +1,13 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, ViewChild, inject, signal } from '@angular/core'
+import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, computed, inject, signal } from '@angular/core'
 import { PageEvent } from '@angular/material/paginator'
 import { Sort } from '@angular/material/sort'
-import { Subscription, BehaviorSubject, Subject } from 'rxjs'
-import { debounceTime, distinctUntilChanged, map, shareReplay, startWith, takeUntil } from 'rxjs/operators'
-import { ENTER } from '@angular/cdk/keycodes'
-import { DataAdapter, FilterDescriptor, NormalizedItem } from '@upupa/data'
-import { CdkDragDrop } from '@angular/cdk/drag-drop'
-import { MatTable } from '@angular/material/table'
+import { Subscription, BehaviorSubject, Subject, Observable, of } from 'rxjs'
+import { debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { ClientDataSource, DataAdapter, FilterDescriptor, Key, NormalizedItem } from '@upupa/data'
 import { SelectionModel } from '@angular/cdk/collections'
-import { InputBaseComponent } from '@upupa/common'
+
 import { FormControl } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens'
-
-
-export class Logger {
-    static log(title: string, style: { background: string, color: string }, ...terms: any[]) {
-        console.log(`%c ${title}`, `background: ${style?.background} color: ${style.color}`, ...terms)
-    }
-}
-
-
 
 
 @Component({
@@ -28,23 +15,15 @@ export class Logger {
     template: '',
     styles: []
 })
-export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | Partial<T>[]> {
-
-    private readonly dataTableOptions = inject(DATA_TABLE_OPTIONS) as DataTableOptions
-
+export class DataComponentBase<T = any> {
     loading = signal(false)
+    firstLoad = signal(true)
 
-    firstLoad$ = new BehaviorSubject(false)
-    public get firstLoad() {
-        return this.firstLoad$.value
-    }
-    public set firstLoad(value) {
-        this.firstLoad$.next(value)
-    }
+
 
     @Input() filterControl = new FormControl('')
     @Input() noDataImage: string
-    
+
     @Output() add = new EventEmitter<any>()
 
     @Input() minAllowed: number
@@ -68,23 +47,39 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
     @Input() focusedItem: NormalizedItem<T>
     @Output() focusedItemChange = new EventEmitter<NormalizedItem<T>>()
     @Output() itemClick = new EventEmitter<NormalizedItem<T>>()
-
-
-
     @Input() filterDebounceTime = 200
 
+    viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>('adapter')
+
+    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(
+        switchMap(view => view === 'adapter' ?
+            this.adapter.normalized$ :
+            this.selectedNormalized$)
+    )
+
+
     ngOnInit() {
+        this.subscriptToFilterChanges()
+
+        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async s => {
+            const selectedNormalized = await this.adapter.getItems(s.source.selected)
+            this.selectedNormalized = selectedNormalized
+            this.singleSelected.set(this.selectedNormalized?.[0]?.key)
+        })
+    }
+
+
+    protected subscriptToFilterChanges() {
         this.q$.pipe(startWith(''),
             debounceTime(+this.filterDebounceTime),
-            takeUntil(this.destroy$)
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(x => this.filter$.next(x))
 
         this.filter$.pipe(
             distinctUntilChanged(),
-            takeUntil(this.destroy$)
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(x => this.onFilter(x))
     }
-
 
     refreshData() {
         this.loading.set(true)
@@ -93,52 +88,39 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
 
     protected readonly destroyRef = inject(DestroyRef)
-    override async ngOnChanges(changes: SimpleChanges) {
-        super.ngOnChanges(changes)
+    async ngOnChanges(changes: SimpleChanges) {
         if (changes['adapter']) {
             if (!this.adapter) throw new Error('Adapter is required')
 
             if (this._adapter !== this.adapter) {
                 this._adapter = this.adapter
-                if (this.dataTableOptions.enableLogs) {
-                    Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
-                }
+                this.firstLoad.set(true)
+                // if (this.dataTableOptions.enableLogs) {
+                //     Logger.log("DATA ADAPTER : changed!", { background: 'black', color: 'orange' }, this.name, this.adapter)
+                // }
             }
 
 
-            this.adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(data => this.onDataChange(data))
-            if ('all' in this.adapter.dataSource)
-                this.adapter.refresh() // if it's a client data source
-            this._updateViewModel() //force update view model every time adapter changes to calculate the value data source
+            this.adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(data => {
+                this.onDataChange(data)
+            })
         }
         if (changes['maxAllowed']) this.maxAllowed = +this.maxAllowed
         if (changes['minAllowed']) this.minAllowed = +this.minAllowed
-        if (changes['control'] && this.control) {
-            this.value = this.control?.value //read value from control (but why not write value to control?)
-            this.control?.registerOnChange(value => this.value = value)
-        }
     }
 
-    selectedNormalized = signal<NormalizedItem<T>[]>([])
 
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = []
     onDataChange(data: NormalizedItem<T>[]) {
         if (this.firstLoad)
-            setTimeout(() => this.firstLoad = false, 1000) //delay this to give time to html template to switch
-
-        this.loading.set(false)
+            setTimeout(() => this.firstLoad.set(false), 1000) //delay this to give time to html template to switch
 
         this.dataChangeListeners.forEach(x => x(data))
-        const selected = (this.selected || []).slice()
-        const normalized = selected.map(s => this.adapter.normalized.find(n => n.key === s)).filter(n => n)
-        this.selectedNormalized.set(normalized)
+        this.loading.set(false)
     }
 
-    destroy$ = new Subject<void>()
     ngOnDestroy() {
         this.normalized$sub?.unsubscribe()
-        this.destroy$.next()
-        this.destroy$.complete()
     }
 
 
@@ -170,37 +152,20 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
         this.filterChange.emit(f)
     }
 
-    //todo grouping https://docs.mongodb.com/manual/reference/operator/aggregation/group/
-    isGroup(row: any): boolean { return row.group }
 
 
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    @ViewChild(MatTable) table: MatTable<T>
-
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    @Output() rowDropped = new EventEmitter()
-    drop(event: CdkDragDrop<any[]>) {
-        this.table.renderRows()
-        this.rowDropped.emit({ event, from: event.previousIndex, to: event.currentIndex })
-
-        // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
-        // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
-    }
-    onAdd() { this.add.emit() }
-
-
-
+    singleSelected = signal(undefined)
 
     //selection
-    selectionModel = new SelectionModel<(string | number | symbol)>(true, [], true)
+    selectionModel = new SelectionModel<keyof T>(true, [], true)
     toggleSelectAll() {
         //selection can have items from data from other pages or filtered data so:
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-
-        if (this.adapter.normalized.length === this.selected.length)
-            this.selectionModel.deselect(...(this.selected))
+        const selected = this.selected as (keyof T)[]
+        if (this.adapter.normalized.length === selected.length)
+            this.selectionModel.deselect(...(selected))
         else this.selectionModel.select(...this.adapter.normalized.map(n => n.key))
     }
 
@@ -255,39 +220,25 @@ export class DataComponentBase<T = any> extends InputBaseComponent<Partial<T> | 
 
 
 
-    get selected() {
+    get selected(): (keyof T)[] {
         return this.selectionModel.selected
     }
-    set selected(n: any | any[]) {
+    @Input()
+    set selected(n: keyof T | (keyof T)[]) {
         this.selectionModel.clear(false)
-        if (!n) return
-        if (Array.isArray(n)) this.selectionModel.select(...n as any[])
-        else this.selectionModel.select(n as any)
+        if (n === undefined) return
+        const v = (Array.isArray(n) ? n : [n]) as (keyof T)[]
+        this.selectionModel.select(...v as any[])
     }
 
 
-    //todo: HOT FIX
-    //selection model only for key prop
-    //value is valueDataSource.map(v=>v.value)
+    private readonly _selectedNormalized$ = new BehaviorSubject<NormalizedItem<T>[]>([])
+    selectedNormalized$ = this._selectedNormalized$.pipe(shareReplay(1))
 
-    private readonly _valueDataSource$ = new BehaviorSubject<NormalizedItem<T>[]>([])
-    valueDataSource$ = this._valueDataSource$.pipe(shareReplay(1))
-
-    public get valueDataSource(): NormalizedItem<T>[] {
-        return this._valueDataSource$.value;
+    public get selectedNormalized(): NormalizedItem<T>[] {
+        return this._selectedNormalized$.value;
     }
-    private set valueDataSource(v: NormalizedItem<T>[]) {
-        this._valueDataSource$.next(v)
+    protected set selectedNormalized(v: NormalizedItem<T>[]) {
+        this._selectedNormalized$.next(v)
     }
-
-    override async _updateViewModel() {
-        if (!this.adapter) return
-        const valueKeys = this.adapter.getKeysFromValue(this._value)
-        const fromValueDataSource = valueKeys.map(k => this.valueDataSource.find(v => v.key === k)).filter(n => n)
-        const fromDataAdapter = (await this.adapter.getItems(valueKeys) ?? []).filter(n => n)
-        const v = [...fromValueDataSource, ...fromDataAdapter].filter((v, i, a) => a.findIndex(t => (t.key === v.key)) === i)
-        this.valueDataSource = v
-    }
-
-
 }

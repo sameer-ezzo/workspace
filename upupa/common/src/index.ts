@@ -29,3 +29,5 @@ export * from './lib/to-title-case.func'
 
 export * from './lib/theme.service';
 export * from './lib/action-descriptor';
+
+export * from './lib/logger';

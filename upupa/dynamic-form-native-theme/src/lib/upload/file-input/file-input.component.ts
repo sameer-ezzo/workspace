@@ -9,9 +9,10 @@ import { FileSelectComponent } from '../file-select/file-select.component';
 
 import { AuthService } from '@upupa/auth';
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
-import { DataComponentBase } from '@upupa/table';
+import { ValueDataComponentBase } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
 import { DialogService } from '@upupa/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 
@@ -28,7 +29,7 @@ import { DialogService } from '@upupa/dialog';
         { provide: NG_VALIDATORS, useExisting: forwardRef(() => FileInputComponent), multi: true }
     ]
 })
-export class FileInputComponent extends DataComponentBase {
+export class FileInputComponent extends ValueDataComponentBase {
 
     @Input() includeAccess = false;
     @Input() base = '';
@@ -88,7 +89,7 @@ export class FileInputComponent extends DataComponentBase {
 
         }
         if (this.includeAccess === true) {
-            this.auth.user$.pipe(takeUntil(this.destroy$)).subscribe(t => this.access_token = `?access_token=${this.auth.get_token()}`);
+            this.auth.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(t => this.access_token = `?access_token=${this.auth.get_token()}`);
         }
     }
 

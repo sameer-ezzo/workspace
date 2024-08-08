@@ -1,11 +1,11 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef, SimpleChanges, signal } from '@angular/core'
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef } from '@angular/core'
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatSelect } from '@angular/material/select'
 import { ActionDescriptor, EventBus } from '@upupa/common'
-import { DataComponentBase } from '@upupa/table'
-import { ClientDataSource, NormalizedItem } from '@upupa/data'
+import { DataComponentBase, ValueDataComponentBase } from '@upupa/table'
+import { Key, NormalizedItem } from '@upupa/data'
 
-import { BehaviorSubject, combineLatest, debounceTime, firstValueFrom, map, Subscription, switchMap, takeUntil, tap } from 'rxjs'
+import { firstValueFrom, map, Subscription } from 'rxjs'
 import { InputDefaults } from '../defaults'
 
 @Component({
@@ -16,7 +16,7 @@ import { InputDefaults } from '../defaults'
     { provide: NG_VALIDATORS, useExisting: forwardRef(() => SelectComponent), multi: true }
     ]
 })
-export class SelectComponent<T = any> extends DataComponentBase<T> {
+export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     inlineError = true
     showSearch = false
 
@@ -33,55 +33,16 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     _onlySelected = false
 
     @ViewChild('filterInput') filterInput: ElementRef<HTMLInputElement>
-    constructor(protected readonly bus: EventBus) { super() }
+    constructor(protected readonly bus: EventBus) {
+        super()
+    }
 
-    viewDataSource$ = new BehaviorSubject<'adapter' | 'value'>('value')
 
-    items$ = this.viewDataSource$.pipe(
-        switchMap(view => view === 'adapter' ?
-            this.adapter.normalized$ :
-            this.valueDataSource$)
-    )
 
     clearValue(e) {
         e.stopPropagation();
         this.valueChanged(undefined)
     }
-
-    singleSelected = signal(null)
-    override async _updateViewModel(): Promise<void> {
-        await super._updateViewModel()
-        this.selected = this.valueDataSource.map(v => v.key)
-        if (!Array.isArray(this.value)) {
-            if (this.value !== undefined || this.selected.length > 0)
-                this.singleSelected.set(this.selected[0])
-            else this.singleSelected.set(null)
-        }
-
-    }
-
-    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
-
-        await super.ngOnChanges(changes)
-        if (changes['adapter']) {
-            this.items$ = this.viewDataSource$.pipe(
-                switchMap(view => view === 'adapter' ?
-                    this.adapter.normalized$ :
-                    this.valueDataSource$)
-            )
-            this.firstLoaded = false
-            this.showSearch = this.adapter.options?.terms?.length > 0
-
-            if (this.adapter.dataSource instanceof ClientDataSource) {
-                this.viewDataSource$.next('adapter')
-            }
-            await firstValueFrom(this.adapter.data$)
-            this.firstLoaded = true
-        }
-
-    }
-
-
 
     keyDown(e: KeyboardEvent, input?: { open: () => void, panelOpen: boolean }) {
         if (!input || input.panelOpen === true) return
@@ -118,19 +79,11 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
         await firstValueFrom(this.adapter.normalized$)
     }
 
-    async valueChanged(key: Partial<T> | Partial<T>[]) {
-        const getValueForKey = (all: NormalizedItem[], key: string) => (all.find(a => a.key === key)?.value)
+    async valueChanged(key: keyof T | (keyof T)[]) {
 
-        if (key === undefined) this.value = undefined
-        else {
-            const all = this.valueDataSource.concat(this.adapter?.normalized || [])
-            if (Array.isArray(key)) this.value = key.map(k => getValueForKey(all, k as unknown as string))
-            else this.value = getValueForKey(all, key as unknown as string)
-        }
+        if (Array.isArray(key)) key.forEach(k => this.select(k))
+        else this.select(key)
         this.control.markAsDirty()
-    }
-    findKeyInValue(key: string) {
-        return this.valueDataSource.find(v => v.key === key)
     }
 
     inputChange(target: EventTarget) {
@@ -160,4 +113,11 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
         this.bus.emit(action.name, { msg: action.name }, this) //select-{name}-{action}
     }
 
+    override async _updateViewModel() {
+        if (this.value && this.firstLoad()) {
+            this.viewDataSource$.next('selected')
+        }
+        await super._updateViewModel()
+
+    }
 }

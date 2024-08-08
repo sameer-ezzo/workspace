@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef, computed, HostBinding } from '@angular/core'
+import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, Type, ElementRef, forwardRef, ViewChild, ChangeDetectionStrategy, AfterViewInit, inject, ChangeDetectorRef, WritableSignal, signal, ViewContainerRef, ComponentRef, computed, HostBinding, HostListener } from '@angular/core'
 import { debounceTime, takeUntil } from 'rxjs/operators'
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout'
@@ -11,11 +11,13 @@ import { NormalizedItem } from '@upupa/data'
 import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common'
 import { MatCheckboxChange } from '@angular/material/checkbox'
 import { firstValueFrom } from 'rxjs'
-import { DataComponentBase } from './datacomponent-base.component'
+import { DataComponentBase } from './data-base.component'
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { DialogService } from '@upupa/dialog'
 import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types'
+import { MatTable } from '@angular/material/table'
+
 
 @Component({
     selector: 'data-table',
@@ -36,8 +38,9 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types'
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges, AfterViewInit {
     @HostBinding('attr.tabindex') tabindex = 0
 
+    @Input() name: string
     @Input() stickyHeader = true
-    @Input() showSearch = undefined
+    @Input() showSearch: boolean | 'true' | 'false' = true
     hasHeader = computed(() => {
         return this.showSearch === true || (this.label || '').length > 0
     })
@@ -103,16 +106,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.breakpointObserver.observe([Breakpoints.Handset]).pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(result => { this.handset = result.matches })
 
-        this.selectionModel.changed.pipe(
-            takeUntilDestroyed(this.destroyRef),
-            debounceTime(this.filterDebounceTime))
-            .subscribe(x => {
-                const selectedNormalized = x.source.selected.map(key => this.adapter.normalized.find(y => y.key === key)).filter(x => x)
-                this.selectedNormalized.set(selectedNormalized)
-                this.selectionChange.emit(selectedNormalized)
-            })
-    }
 
+    }
 
 
     ngAfterViewInit(): void {
@@ -122,10 +117,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes)
         if (changes['showSearch']) {
-            this.showSearch = changes['showSearch'].currentValue === true
+            this.showSearch = this.showSearch === true || String(this.showSearch) === 'true'
         }
-        if (changes['adapter'] && this.showSearch === undefined) {
-            this.showSearch = this.adapter.options?.terms?.length > 0
+        if (changes['adapter']) {
+            this.adapter.refresh()
         }
         if (changes['columns']) this.generateColumns()
     }
@@ -213,8 +208,26 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
 
+    // @HostListener key = shift set shiftKeyPressed to true or false when key is pressed or released
+    shiftKeyPressed = false
+    @HostListener('document:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        // set shiftKeyPressed to true when shift key is pressed
+        if (event.key === 'Shift') this.shiftKeyPressed = true
+    }
+
+    @HostListener('document:keyup', ['$event'])
+    handleKeyboardEventUp(event: KeyboardEvent) {
+        // set shiftKeyPressed to false when shift key is released
+        if (event.key === 'Shift') this.shiftKeyPressed = false
+    }
+
     toggleSelection(event: MatCheckboxChange, row, selectInBetween = false) {
         let rows = [row]
+
+        // check if shift key is pressed and select in between
+
+        if (this.shiftKeyPressed === true) selectInBetween = true
         if (selectInBetween) {
             const all = this.adapter.normalized
             const i1 = all.indexOf(row)
@@ -231,6 +244,28 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.setFocusedItem(row)
 
     }
+
+
+    //todo grouping https://docs.mongodb.com/manual/reference/operator/aggregation/group/
+    isGroup(row: any): boolean { return row.group }
+
+
+    // eslint-disable-next-line @typescript-eslint/member-ordering
+    @ViewChild(MatTable) table: MatTable<T>
+
+    // eslint-disable-next-line @typescript-eslint/member-ordering
+    // @Output() rowDropped = new EventEmitter()
+    // drop(event: CdkDragDrop<any[]>) {
+    //     this.table.renderRows()
+    //     this.rowDropped.emit({ event, from: event.previousIndex, to: event.currentIndex })
+
+    //     // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
+    //     // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
+    // }
+    onAdd() { this.add.emit() }
+
+
+
 
 
     isPurePipe(pipe: Type<any>): boolean {

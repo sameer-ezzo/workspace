@@ -64,7 +64,7 @@ export class DataFormComponent<T = any> implements UpupaDialogPortal<DataFormCom
     @Input() recaptcha?: string;
     @Input() theme?: string;
     @Input() initialValueFactory?: () => Promise<T>;
-    @Input() scheme: FormScheme;
+    @Input() fields: FormScheme;
     @Input() value$: Observable<T>
     private _actions: ActionDescriptor[];
     @Input()
@@ -96,7 +96,7 @@ export class DataFormComponent<T = any> implements UpupaDialogPortal<DataFormCom
         if (changes['recaptcha']) this.recaptcha = changes['recaptcha'] as string
         if (changes['theme']) this.theme = changes['theme'] as string
         if (changes['initialValueFactory']) this.initialValueFactory = changes['initialValueFactory'] as () => Promise<T>
-        if (changes['scheme']) this.scheme = changes['scheme'] as FormScheme
+        if (changes['fields']) this.fields = changes['fields'] as FormScheme
         if (changes['value']) this.value$ = changes['value$'] as Observable<T>
         if (changes['actions']) this.actions = changes['actions'] as ActionDescriptor[]
         if (changes['conditions']) this.conditions = changes['conditions'] as Condition<DynamicFormEvents.AnyEvent, DynamicFormCommands.AnyCommands>[]
@@ -111,7 +111,7 @@ export class DataFormComponent<T = any> implements UpupaDialogPortal<DataFormCom
             this.path = '/'
             this.onSubmit = async (path, record) => { return { closeDialog: true } }
         }
-        if (!this.scheme || Object.getOwnPropertyNames(this.scheme).length === 0) throw new Error('DataFormComponent requires a FormScheme')
+        if (!this.fields || Object.getOwnPropertyNames(this.fields).length === 0) throw new Error('DataFormComponent requires a FormScheme')
         if ((this.actions || []).length === 0) this.actions = defaultFormActions
 
     }

@@ -1,4 +1,3 @@
-
 <mat-form-field [appearance]="appearance" (keydown)="keyDown($event, selectInput)" [floatLabel]="floatLabel"
   style="width: 100%;">
   @if(label?.length > 0){
@@ -8,26 +7,26 @@
   <mat-select multiple [disabled]="disabled" #selectInput [class.ng-dirty]="control.dirty"
     (openedChange)="openedChange($event,selectInput)" (keydown)="keyDown($event, selectInput)"
     (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" [panelClass]="panelClass"
-    [(value)]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
+    [value]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
     [required]="required">
 
     <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
     <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
 
 
-    @if(valueDataSource$ | async; as vds){
+    @if(selectedNormalized$ | async; as vds){
     @if(vds.length > 0){
     <div class="selected-wrapper">
       <span>{{selected.length}} Selected</span>
       <span style="flex: 1 1 auto;"></span>
-      <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'value'"
-        (change)="viewDataSource$.next(toggle.checked ? 'value' : 'adapter')">show-only-value
+      <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'selected'"
+        (change)="viewDataSource$.next(toggle.checked ? 'selected' : 'adapter')">Show only selected
       </mat-checkbox>
     </div>
     }
     }
 
-    @for(item of items$ | async; track item.key){
+    @for(item of items$ | async; track i; let i = $index){
 
     <mat-option [value]="item.key">
       @if(itemTemplate){
@@ -49,7 +48,7 @@
 
     <ng-container [ngTemplateOutlet]="noDataTemplate"></ng-container>
 
-    @for(item of actions; track item.action){
+    @for(item of actions; track i; let i = $index){
     <mat-option (click)="onAction($event,item)">
       @if(item.icon?.length){<mat-icon>{{item.icon}}</mat-icon>}
       <span>{{item.text}}</span>
@@ -60,13 +59,13 @@
   <mat-select #selectInput [disabled]="disabled" [class.ng-dirty]="control.dirty"
     (openedChange)="openedChange($event,selectInput)"
     (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" [panelClass]="panelClass"
-    [(value)]="singleSelected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
+    [value]="singleSelected()" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
     [required]="required">
 
     <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
     <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
 
-    @for(item of items$ | async; track item.key){
+    @for(item of items$ | async; track i; let i = $index){
 
     <mat-option [value]="item.key">
       @if(itemTemplate){
@@ -88,7 +87,7 @@
 
 
     <ng-container [ngTemplateOutlet]="noDataTemplate"></ng-container>
-    @for(item of actions; track item.action){
+    @for(item of actions; track i; let i = $index){
     <mat-option (click)="onAction($event,item)">
       @if(item.icon?.length){<mat-icon>{{item.icon}}</mat-icon>}
       <span>{{item.text}}</span>
@@ -114,7 +113,6 @@
   </mat-error>
   }
 </mat-form-field>
-
 
 <ng-template #noDataTemplate>
   @if(adapter?.normalized?.length === 0){

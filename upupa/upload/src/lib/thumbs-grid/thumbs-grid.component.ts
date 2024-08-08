@@ -5,8 +5,9 @@ import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntil } from 'rxjs';
-import { DataComponentBase } from '@upupa/table';
+import { ValueDataComponentBase } from '@upupa/table';
 import { FileInfo } from '../model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'thumbs-grid',
@@ -17,11 +18,11 @@ import { FileInfo } from '../model';
 
   ]
 })
-export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements OnChanges, OnInit, OnDestroy {
+export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implements OnChanges, OnInit, OnDestroy {
 
   @Input() errorMessages = {};
 
-  @Input() thumbs: FileInfo;
+  @Input() thumbs: FileInfo[] = [];
 
   @Output() changed = new EventEmitter();
 
@@ -42,14 +43,14 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
   override async ngOnChanges(changes: SimpleChanges): Promise<void> {
     super.ngOnChanges(changes);
     if (changes['thumbs']) {
-      this.writeValue(this.thumbs);
+      this.writeValue(this.thumbs as any, false);
     }
   }
 
   override ngOnInit() {
     super.ngOnInit()
     this.adapter.refresh();
-    this.adapter.dataSource.refresh().pipe(takeUntil(this.destroy$)).subscribe(x => {
+    this.adapter.dataSource.refresh().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(x => {
       this.loading.set(false);
     });
   }
@@ -60,7 +61,7 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
 
     try {
       await this.client.delete('/' + t.item.path, new URL(this.base).origin);
-      this.adapter.normalized.splice(this.adapter.normalized.indexOf(t), 1);
+      this.adapter.refresh();
       this.loading.set(false);
     } catch (error) {
       console.error(error);

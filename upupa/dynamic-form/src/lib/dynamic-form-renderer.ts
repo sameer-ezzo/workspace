@@ -32,9 +32,11 @@ export class DynamicFormRenderer<T = any> {
         public fb: UntypedFormBuilder,
         public dialog: DialogService,
         public parent: any,
-        public renderer: Renderer2
+        public renderer: Renderer2,
+        public disabled = false
     ) {
         this.form = this.fb.group({});
+        if (this.disabled) this.form.disable();
     }
 
     private get theme() { return this.parent?.theme ?? this.defaultTheme }
@@ -121,6 +123,10 @@ export class DynamicFormRenderer<T = any> {
             if (field.validationTask) {
                 this.setupValidationTask(field, control);
             }
+
+            if (this.disabled) control.disable();
+            else control.enable();
+
         }
 
         control['lot_number'] = this.lot_number;
@@ -129,7 +135,7 @@ export class DynamicFormRenderer<T = any> {
 
     private getValidators(field: Field) {
         const validations = field.validations || [];
-        if(field.ui.inputs['required']) validations.push({ name: 'required', message: 'required' });
+        if (field.ui.inputs['required']) validations.push({ name: 'required', message: 'required' });
         return validations.map(v => this.getValidator(v));
     }
 

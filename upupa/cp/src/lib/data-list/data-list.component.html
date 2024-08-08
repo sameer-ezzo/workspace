@@ -29,7 +29,7 @@
 
 <ng-template #dataTableTemplate let-tableInputs="tableInputs" let-actions="actions">
   @if (tableInputs.adapter) {
-    <data-table [name]="tableInputs.path" [(focusedItem)]="item"
+    <data-table [(focusedItem)]="item"
       [adapter]="tableInputs.adapter" [columns]="tableInputs.listViewModel.columns" [actions]="actions"
       [headerActions]="tableInputs.listViewModel.headerActions"
       (action)="onAction($event)" (selectionChange)="selectionChanged($event)"

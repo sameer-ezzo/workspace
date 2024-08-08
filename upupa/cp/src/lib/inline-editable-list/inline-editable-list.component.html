@@ -4,21 +4,18 @@ border: 1px solid #ddd;
     padding: 0;
     border-radius: 3px;">
   @if (label?.length) {
-    <legend>
-      <mat-label>{{label}}</mat-label>
-    </legend>
+  <legend>
+    <mat-label>{{label}}</mat-label>
+  </legend>
   }
 
-  <!-- <div style="margin: 1em 0; display: flex; flex-direction: column;"> -->
 
+  <data-table [(focusedItem)]="focusedTableItem" [adapter]="adapter" [columns]="tableColumns" [actions]="tableActions"
+    (action)="onTableAction($event)">
+  </data-table>
 
-  @if (adapter) {
-    <data-table [(focusedItem)]="focusedTableItem" [adapter]="adapter" [columns]="tableColumns"
-      [actions]="tableActions" (action)="onTableAction($event)">
-    </data-table>
-  }
 
   <button style="align-self: flex-start; margin: 1rem 0 1rem 1rem;" mat-button color="primary"
-  (click)="onTableAction({action:{name:'add'}})">Add</button>
-<!-- </div> -->
+    (click)="onTableAction({action:{name:'add'}})">Add</button>
+  <!-- </div> -->
 </fieldset>

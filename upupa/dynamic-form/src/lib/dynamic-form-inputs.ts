@@ -9,6 +9,6 @@ export type DynamicFormInputs<T = any> = {
     recaptcha?: string;
     theme?: string;
     initialValueFactory?: () => Promise<T>;
-    scheme: FormScheme;
+    fields?: FormScheme;
     conditions?: Condition[];
 };

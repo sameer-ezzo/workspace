@@ -10,7 +10,7 @@ const _DYNAMIC_FORM_INPUTS: Record<string, DynamicFormInputs> = {};
 
 export const resolveDynamicFormInputsFor = (path: string) => _DYNAMIC_FORM_INPUTS[path] ? Object.assign({}, _DYNAMIC_FORM_INPUTS[path]) : null;
 export const resolveFormValueFactoryOf = (path: string) => resolveDynamicFormInputsFor(path)?.initialValueFactory;
-export const resolveFormSchemeOf = (path: string) => resolveDynamicFormInputsFor(path)?.scheme;
+export const resolveFormSchemeOf = (path: string) => resolveDynamicFormInputsFor(path)?.fields;
 
 export interface IDynamicFormFieldOptions { }
 export class TextFieldOptions { }
@@ -175,7 +175,7 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
         placeholder: opts.placeholder,
         appearance: opts.appearance
     }
-    
+
     if (options.input === 'switch') {
         const switchOptions = opts as any;
         field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
@@ -218,14 +218,14 @@ function addInputToFormScheme(target: any, field: Field, options: FormFieldOptio
     const path = (Reflect.getMetadata('path', target) || null) as string;
     const key = path ?? target.constructor.name
 
-    const dfInputs = resolveDynamicFormInputsFor(key) || { scheme: {} as FormScheme } as DynamicFormInputs;
-    if (!dfInputs.scheme) dfInputs.scheme = {} as FormScheme;
+    const dfInputs = resolveDynamicFormInputsFor(key) || { fields: {} as FormScheme } as DynamicFormInputs;
+    if (!dfInputs.fields) dfInputs.fields = {} as FormScheme;
 
     const segments = field.path.split('/').filter(s => s);
     while (segments.length > 1) {
         const segment = segments.shift()!;
-        if (!dfInputs.scheme[segment]) {
-            dfInputs.scheme[segment] = {
+        if (!dfInputs.fields[segment]) {
+            dfInputs.fields[segment] = {
                 type: 'fieldset',
                 name: segment,
                 items: {}
@@ -233,18 +233,18 @@ function addInputToFormScheme(target: any, field: Field, options: FormFieldOptio
         }
     }
     if (segments.length === 1) {
-        dfInputs.scheme[field.name] = field;
+        dfInputs.fields[field.name] = field;
     }
 
-    Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', { scheme: dfInputs.scheme }, target);
-    _DYNAMIC_FORM_INPUTS[key] = { scheme: dfInputs.scheme };
+    Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', { fields: dfInputs.fields }, target);
+    _DYNAMIC_FORM_INPUTS[key] = { fields: dfInputs.fields };
 }
 function toField(path: string, target: any, propertyKey: string, options: FormFieldOptions) {
     const field = makeFieldItem(path, target, propertyKey, options);
     return field;
 }
 
-export function formScheme(path?: string, options: Omit<DynamicFormInputs, 'scheme'> = {}) {
+export function formScheme(path?: string, options: DynamicFormInputs = {}) {
     return function (target: any) {
         const key = path ?? target.name;
         Reflect.defineMetadata('path', key, target);

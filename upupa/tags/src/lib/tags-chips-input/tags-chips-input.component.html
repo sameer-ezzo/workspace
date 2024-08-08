@@ -6,7 +6,7 @@
   <mat-label>{{label }}</mat-label>
   }
   <mat-chip-grid #chipGrid aria-label="Fruit selection" [disabled]="disabled">
-    @for (item of valueDataSource$ | async; track item.key) {
+    @for (item of selectedNormalized$ | async; track item.key) {
     <mat-chip-row (removed)="remove(item)">
       {{item.display}}
       <button matChipRemove [attr.aria-label]="'remove ' + item.key">

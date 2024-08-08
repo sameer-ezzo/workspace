@@ -1,6 +1,6 @@
 <div id="form-wrapper">
-    @if(scheme){
-    <dynamic-form [fields]="scheme" #dynForm [value]="formValue()" [name]="name" (valueChange)="formValue.set($event)"
+    @if(fields){
+    <dynamic-form [fields]="fields" #dynForm [value]="formValue()" [name]="name" (valueChange)="formValue.set($event)"
         [preventDirtyUnload]="preventDirtyUnload" [initialValueFactory]="initialValueFactory" [recaptcha]="recaptcha"
         [theme]="theme" [conditions]="conditions" (submit)="submit($event)"></dynamic-form>
     }

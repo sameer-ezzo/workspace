@@ -1,15 +1,3 @@
-<!-- ACTIONS MENU -->
-<!-- <mat-menu #actionsMenu="matMenu">
-  @for(a of getMenuActions(focusedItem?.item); track i; let i = $index){
-  <button mat-menu-item [style.color]="a.color" [disabled]="a.disabled" (click)="onAction(a,[focusedItem])">
-    <mat-icon>{{a['icon']}}</mat-icon>{{a.text || a.action}}
-  </button>
-  }
-</mat-menu> -->
-
-
-<!-- TABLE HEADER -->
-
 <div class="table-header">
   @if(label){<h3>{{label}}</h3>}
 
@@ -28,7 +16,7 @@
   <span style="flex:1"></span>
   <div style="display: flex;align-items: center;">
     <data-table-actions-wrapper [actions]="headerActions" (action)="onAction($event)"
-      [context]="selectedNormalized()"></data-table-actions-wrapper>
+      [context]="selectedNormalized$ | async"></data-table-actions-wrapper>
 
     @if(_allowChangeColumnsOptions()){
     <button [disabled]="loading()" mat-icon-button (click)="openColumnsSelectDialog()">
@@ -57,9 +45,9 @@
     <ng-container matColumnDef="select" [sticky]="columns['select']?.sticky === 'start'"
       [stickyEnd]="columns['select']?.sticky === 'end'">
       <th mat-header-cell *matHeaderCellDef>
-        @if(maxAllowed !== 1 && adapter.normalized?.length > 0){
-        <mat-checkbox (change)="toggleSelectAll()" [checked]="selectedNormalized().length > adapter.normalized.length"
-          [indeterminate]="selectedNormalized().length > 0 && selectedNormalized().length !== adapter.normalized.length">
+        @if(maxAllowed !== 1 && selectedNormalized$ | async; as sns){
+        <mat-checkbox (change)="toggleSelectAll()" [checked]="sns.length > adapter.normalized?.length"
+          [indeterminate]="sns.length > 0 && sns.length !== adapter.normalized?.length">
         </mat-checkbox>
         }
       </th>
@@ -116,12 +104,11 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="_columns; sticky: stickyHeader"
-      [class.selected]="selectedNormalized().length > 0"></tr>
+      [class.selected]="selectedNormalized.length > 0"></tr>
     <tr mat-row *matRowDef="let row;let i = index; columns: _columns" cdkDrag cdkDragDisabled="true" [cdkDragData]="row"
-      class="dd-item {{rowClass(row)}}" [class.focused]="focusedItem === row"
+      class="{{rowClass(row)}}" [class.focused]="focusedItem === row"
       [class.selected]="selectionModel.isSelected(row.key)" (click)="onClick(row)" (touch)="onClick(row)"
       (long-press)="onLongPress(row)">
-      <td class="dd-placeholder" *cdkDragPlaceholder></td>
     </tr>
     <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc;"></tr>
     @if(expandable !== 'none' && expandableTemplate){
@@ -139,7 +126,7 @@
 
 
 
-  @if((firstLoad$ | async) === true && (adapter.normalized$ | async)?.length === 0){
+  @if(firstLoad() === true && (adapter.normalized$ | async)?.length === 0){
   <div id="no-data" style="text-align: center; padding: 2rem">
     @if(noDataImage){
     <img style="width: 100%; max-width: 320px;" [src]="noDataImage" alt="no data">

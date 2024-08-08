@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener, inject, HostBinding } from "@angular/core"
+import { Component, EventEmitter, Input, Output, SimpleChanges, forwardRef, ElementRef, ViewChild, OnDestroy, OnInit, OnChanges, ViewEncapsulation, Renderer2, Inject, HostListener, inject, HostBinding, ChangeDetectorRef, ChangeDetectionStrategy } from "@angular/core"
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, NG_VALIDATORS } from "@angular/forms"
 import { Field, FormScheme } from "./types"
 import { Condition } from "@noah-ark/expression-engine"
 import { Subscription } from "rxjs"
-import {  EventBus } from '@upupa/common'
+import { EventBus } from '@upupa/common'
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers"
 import { JsonPointer, Patch } from "@noah-ark/json-patch"
 import { DynamicFormOptions } from "./dynamic-form.options"
@@ -18,6 +18,7 @@ import { DialogService } from "@upupa/dialog"
     selector: "dynamic-form",
     templateUrl: './dynamic-form.component.html',
     styleUrls: ['./dynamic-form.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DynamicFormComponent), multi: true },
     { provide: NG_VALIDATORS, useExisting: forwardRef(() => DynamicFormComponent), multi: true }
@@ -63,6 +64,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     @Input() initialValueFactory: () => Promise<T>
 
+    @Input() disabled = false
+    @Input() readonly = false
 
     @ViewChild('dynForm') formElement: NgForm;
     @Input() control: AbstractControl;
@@ -102,7 +105,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     constructor() {
 
-        this.formRenderer = new DynamicFormRenderer(this.formService, this.theme, this.bus, this.fb, this.dialog, this, this.renderer)
+        this.formRenderer = new DynamicFormRenderer(
+            this.formService, this.theme, this.bus, this.fb, this.dialog, this, this.renderer,
+            this.disabled
+        )
         this.theme = this.formService.defaultThemeName || 'native'
 
         //handlers
@@ -161,12 +167,17 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
 
 
+    private readonly cdRef = inject(ChangeDetectorRef)
     writeValue(val: T): void {
         if (val === this.value) return;
         if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name})`, 'background: #0065ff; color: #fff', val);
         this._value = val;
         this.formRenderer.writeValue(val);
         this.control?.setValue(val, { emitEvent: false, onlySelf: true });
+
+        setTimeout(() => {
+            this.cdRef.detectChanges();
+        }, 100);
     }
 
 
@@ -236,12 +247,3 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this.formRenderer.destroy();
     }
 }
-
-//parent component ==(write)=> [don't notify parent again to avoid echos] (@Input / NgModel / Property set / control.setValue)
-//internal state ==(write)=> [do notify parent] (field / internal events)
-
-// export class PreventUnload {
-//     static prevent(msg = "Unsaved changes!") {
-//         window.onbeforeunload = () => msg;
-//     }
-// }

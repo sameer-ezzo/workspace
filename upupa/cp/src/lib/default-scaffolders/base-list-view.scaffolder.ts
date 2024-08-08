@@ -6,7 +6,7 @@ import { ActionDescriptor } from '@upupa/common';
 import { DataListFilterForm, DataListViewModel, IScaffolder, ListScaffoldingModel } from '../../types';
 import { getListInfoOf, resolvePathScaffolders } from '../decorators/scheme.router.decorator';
 import { ListViewModelOptions, LookUpDescriptor, QueryType } from '../decorators/decorator.types';
-import {  AuthService } from '@upupa/auth';
+import { AuthService } from '@upupa/auth';
 import { evaluatePermission } from '@noah-ark/expression-engine';
 import { AuthorizationService } from '@upupa/authz';
 
@@ -22,7 +22,7 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
         const { path: _path } = resolvePath(path);
         const collection = _path.split('/').filter(s => s).pop();
         const listInfo = getListInfoOf(collection) as ListViewModelOptions;
-        
+
         const evaluatedQuerySelector = await this.authorizeService.getEvaluatedQuerySelector(`api/${collection}`, 'Read', this.authService.user)
 
         const queryFn = resolveQueryFn(listInfo, evaluatedQuerySelector);
@@ -35,14 +35,14 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
         if (actions === undefined) {
             actions = [];
 
-            if (hasEdit) actions.push({ variant: 'icon', name: 'edit', icon: 'edit' })
-            if (hasView) actions.push({ variant: 'icon', name: 'view', icon: 'visibility', menu: true })
-            actions.push({ position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
+            if (hasEdit) actions.push({ path: `api/${collection}`, action: 'Edit', variant: 'icon', name: 'edit', icon: 'edit' })
+            if (hasView) actions.push({ path: `api/${collection}`, action: 'Read', variant: 'icon', name: 'view', icon: 'visibility', menu: true })
+            actions.push({ path: `api/${collection}`, action: 'Delete', position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
 
         }
         if (hasCreate && headerActions === undefined) {
             headerActions = []
-            headerActions.push({ position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
+            headerActions.push({ path: `api/${collection}`, action: 'Create', position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
         }
 
 

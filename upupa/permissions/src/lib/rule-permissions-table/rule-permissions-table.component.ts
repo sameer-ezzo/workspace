@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output, signal } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { AccessType, AuthorizeMessage, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
@@ -17,6 +17,7 @@ export class RulePermissionsTableComponent {
     focused: any;
     permissionTypes = PERMISSIONS_TYPES();
     @Input() action: string;
+
     @Output() permissionsChange = new EventEmitter<SimplePermission[]>()
     private _permissions: SimplePermission[];
     @Input()
@@ -35,23 +36,31 @@ export class RulePermissionsTableComponent {
     permissionsAdapter = new DataAdapter(this.permissionsDataSource, "_id");
 
     constructor(public readonly permissionsService: PermissionsService,
-        private readonly cdRef: ChangeDetectorRef) { }
+        private readonly cdRef: ChangeDetectorRef) {
+        this.permissions = []
+    }
 
     private readonly promptService = inject(PromptService)
     async editFilters(permission: SimplePermission) {
         if (permission.builtIn) return;
 
+        const v = JSON.stringify(permission.selectors ?? {}, null, 2)
         const filtersStr = await this.promptService.open({
             view: 'textarea',
             title: 'Edit Filters',
-            value: JSON.stringify(permission.selectors, null, 2),
+            value: v,
             no: 'Cancel',
             yes: 'Update',
             text: 'Please enter the filters for this permission',
-            placeholder: JSON.stringify({ "createdBy.email": "$principal.email" }, null, 2),
+            placeholder: JSON.stringify({ "query": { "createdBy.email": "$msg.principle.email" } }, null, 2),
         })
-        const filters = JSON.parse(filtersStr)
-        await this.updatePermissionFilters(permission, filters)
+        if (!filtersStr || v === filtersStr) return
+        try {
+            const filters = JSON.parse(filtersStr)
+            await this.updatePermissionFilters(permission, filters)
+        } catch (error) {
+            console.error(error)
+        }
     }
     async updatePermissionFilters(permission: SimplePermission, selectors: Omit<AuthorizeMessage, 'principle'>) {
         if (permission.selectors === selectors) return

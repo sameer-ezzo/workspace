@@ -87,28 +87,34 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         this._sub2 = dataSource.data$.subscribe(() => this._allNormalized = null)
     }
 
-    getKeysFromValue(value: Partial<T> | Partial<T>[]): (string | number | symbol)[] {
+    getKeysFromValue(value: Partial<T> | Partial<T>[]): (keyof T)[] {
         if (!value) return []
         const v = Array.isArray(value) ? value : [value]
         return v.map(x => this.extract(x, this.keyProperty, x))
     }
 
 
-    getItems(keys: (string | number | symbol) | (string | number | symbol)[]): Promise<NormalizedItem<T>[]> {
+    getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
         //todo: What if keyProperty is undefined?
-        if (!keys) return Promise.resolve([])
+        if (!keys || !keys.length) return Promise.resolve([])
 
         const KEYS = Array.isArray(keys) ? keys : [keys]
-        const itemsInAdapter = this.normalized?.filter(n => KEYS.some(k => k === n.key)) ?? []
-        const itemsNotInAdapter = KEYS.filter(k => itemsInAdapter.every(n => n.key != k))
+        const normalized = this.normalized ?? []
+        const itemsInAdapter: NormalizedItem<T>[] = []
+        const itemsNotInAdapter: Key<T> = []
+        for (const key of KEYS) {
+            const n = normalized.find(n => n.key === key)
+            if (n) itemsInAdapter.push(n)
+            else itemsNotInAdapter.push(key)
+        }
+        if (itemsInAdapter.length === KEYS.length) return Promise.resolve(normalized.filter(n => KEYS.includes(n.key)))
 
-        const source = itemsNotInAdapter.length > 0 ?
+        const source =
             this.dataSource.getItems(itemsNotInAdapter, this.keyProperty)
                 .pipe(
-                    map(items => items.filter(x => x).map(i => this.normalize(i))),
-                    map(items => items.concat(itemsInAdapter)),
-                    map(x => KEYS.map(vi => x.find(ni => ni.key === vi))))
-            : of(itemsInAdapter)
+                    map(items => items.filter(x => itemsInAdapter.findIndex(n => n.key === x[this.keyProperty]) === -1)),
+                    map(items => items.map(i => this.normalize(i))),
+                    map(items => items.concat(itemsInAdapter)))
 
         return firstValueFrom(source)
     }

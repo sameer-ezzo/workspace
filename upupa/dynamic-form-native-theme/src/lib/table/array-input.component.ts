@@ -17,7 +17,7 @@ import {
     ActionsDescriptor,
     InputBaseComponent,
 } from "@upupa/common";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, TableFormInput } from "@upupa/table";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
 import { Subject, Subscription, takeUntil } from "rxjs";
 
@@ -33,34 +33,13 @@ import { Subject, Subscription, takeUntil } from "rxjs";
         { provide: NG_VALIDATORS, useExisting: forwardRef(() => ArrayInputComponent), multi: true }
     ],
 })
-export class ArrayInputComponent<T = any>
-    extends InputBaseComponent<any[]>
+export class ArrayInputComponent<T = any> extends TableFormInput<T>
     implements OnDestroy, OnChanges, OnInit {
     dataSource = new ClientDataSource([]);
-    adapter = new DataAdapter<T>(this.dataSource);
+    override adapter = new DataAdapter<T>(this.dataSource);
 
-    @Input() columns: ColumnsDescriptor = {};
-    @Input() label: string = undefined;
+    @Input() override columns: ColumnsDescriptor = {};
 
-    @Input() actions: ActionDescriptor[] | ((item: any) => ActionDescriptor[]) = [];
 
     @Output() action = new EventEmitter<ActionEvent>();
-    destroyed$ = new Subject<void>();
-
-    ngOnInit() {
-        this.dataSource.data$.pipe(takeUntil(this.destroyed$)).subscribe((data) => {
-            if (this.dataSource.all !== this.value) this.value = this.dataSource.all;
-        });
-    }
-
-
-    ngOnDestroy() {
-        this.destroyed$.next();
-        this.destroyed$.complete();
-    }
-
-    override _updateViewModel() {
-        this.dataSource.all = this.value;
-        this.adapter.refresh();
-    }
 }

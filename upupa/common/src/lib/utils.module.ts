@@ -22,6 +22,7 @@ import { FocusDirective } from './directives/focus.directive';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 
+
 const declarations = [
     InputBaseComponent,
     BaseTextInputComponent,
@@ -61,5 +62,11 @@ const imports = [
     ]
 })
 export class UtilsModule {
+    static forRoot(options: { logLevel: 'ERROR' | 'DEBUG' | 'INFO' } = { logLevel: 'ERROR' }): ModuleWithProviders<UtilsModule> {
 
+        return {
+            ngModule: UtilsModule,
+            providers: []
+        }
+    }
 }

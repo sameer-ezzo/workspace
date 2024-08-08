@@ -4,7 +4,8 @@
         type: permissionTypeTemplate, 
         value: permissionValueTemplate,
         selectors: permissionSelectorsTemplate
-    }" [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+}" [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+showSearch="false"
     [actions]="tableActions"></data-table>
 
 <ng-template #permissionInfoTemplate let-permission="element">

@@ -1,6 +1,6 @@
 @if(label){<mat-label>{{label}}</mat-label>}
 @if(template === 'normal'){
-  @if(!maxAllowed || maxAllowed > 1){
+  @if(maxAllowed !== 1){
     <div class="{{direction}} {{template}} choices" (focusleave)="onTouch()">
       @for(item of items$ | async; track item.key){
         <mat-checkbox class="choice" (change)="toggle(item.key);valueChanged(selectionModel.selected)"

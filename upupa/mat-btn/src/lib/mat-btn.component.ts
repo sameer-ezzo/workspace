@@ -1,11 +1,10 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, inject, Renderer2, ElementRef } from '@angular/core';
 
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthorizeModule } from '@upupa/authz';
-import { ActionDescriptor,ActionEvent } from '@upupa/common';
+import { ActionDescriptor, ActionEvent } from '@upupa/common';
 
 
 
@@ -13,18 +12,17 @@ import { ActionDescriptor,ActionEvent } from '@upupa/common';
 @Component({
     selector: 'mat-btn',
     templateUrl: './mat-btn.component.html',
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatTooltipModule, MatBadgeModule],
+    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule],
     standalone: true
 })
 export class MatBtnComponent implements OnChanges {
     @Input() descriptor: ActionDescriptor;
     @Input() disabled: boolean = false;
 
-    @ViewChild('button') button: MatButton;
     color = '';
     @Output() action = new EventEmitter<ActionEvent>();
 
-
+    
 
 
     ngOnChanges(changes: SimpleChanges): void {

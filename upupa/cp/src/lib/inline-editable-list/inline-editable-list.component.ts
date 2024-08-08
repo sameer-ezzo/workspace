@@ -4,7 +4,7 @@ import { inject } from '@angular/core/testing';
 import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ActionDescriptor, } from '@upupa/common';
-import { DataComponentBase } from '@upupa/table';
+import { DataComponentBase, ValueDataComponentBase } from '@upupa/table';
 import { ClientDataSource, DataAdapter } from '@upupa/data'
 import { Field, FormScheme } from '@upupa/dynamic-form';
 import { languageDir, LanguageService } from '@upupa/language';
@@ -21,7 +21,7 @@ import { ConfirmService, DialogService } from '@upupa/dialog';
 
     ]
 })
-export class InlineEditableListComponent extends DataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
+export class InlineEditableListComponent extends ValueDataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
     @Input() appearance = 'legacy';
     @Input() placeholder: string;
 

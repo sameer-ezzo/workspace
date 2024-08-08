@@ -9,7 +9,7 @@ import { LanguageService } from '@upupa/language';
 import { FileInfo } from '@upupa/upload';
 import { BehaviorSubject } from 'rxjs';
 import { FileSelectComponent } from '../file-select/file-select.component';
-import { DataComponentBase } from '@upupa/table';
+import { ValueDataComponentBase } from '@upupa/table';
 import { SnackBarService } from '@upupa/dialog';
 
 
@@ -26,7 +26,7 @@ import { SnackBarService } from '@upupa/dialog';
         { provide: NG_VALIDATORS, useExisting: forwardRef(() => FileBrowserComponent), multi: true }
     ]
 })
-export class FileBrowserComponent extends DataComponentBase<FileInfo> implements OnInit {
+export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> implements OnInit {
 
     private readonly data = inject(DataService)
     public injector = inject(Injector)

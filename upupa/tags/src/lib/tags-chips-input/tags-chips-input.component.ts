@@ -68,9 +68,11 @@ export class TagsChipsInputComponent extends ChipsComponent {
 
     const chip = value
 
-    if (this.findKeyInValue(chip)) return
-    const tag = await this.tagsService.createTag({ _id: chip }, this.parentPath)
-    const nTag = this.adapter.normalize(tag)
+    let nTag = (await this.adapter.getItems(chip))?.[0]
+    if (!nTag) {
+      const tag = await this.tagsService.createTag({ _id: chip }, this.parentPath)
+      nTag = this.adapter.normalize(tag)
+    }
     this.value = [...((this.value ?? []) as string[]), nTag.value]
     this._clearFilter()
     this.control.markAsDirty()

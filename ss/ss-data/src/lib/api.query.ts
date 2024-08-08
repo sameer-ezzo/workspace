@@ -122,7 +122,7 @@ export class QueryParser {
         }
 
         //OPERATOR
-        const o = this._operator(value);
+        const o = this._operator(value, key, model);
         if (o) {
             const { operator, val } = o;
 

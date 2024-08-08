@@ -1,13 +1,12 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes'
-import { Component, DestroyRef, ElementRef, EventEmitter, forwardRef, inject, Input, Output, signal, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, EventEmitter, forwardRef, inject, Input, Output, signal, ViewChild } from '@angular/core'
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
+import { MatAutocomplete } from '@angular/material/autocomplete'
 import { EventBus } from '@upupa/common'
 import { NormalizedItem } from '@upupa/data'
-import { combineLatest, debounceTime, map } from 'rxjs'
 import { SelectComponent } from '../select/select.component'
 import { KeyValue } from '@angular/common'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+
 
 @Component({
     selector: 'form-chips-input',
@@ -31,20 +30,6 @@ export class ChipsComponent extends SelectComponent {
 
 
     protected readonly _bus = inject(EventBus)
-
-
-    override async ngOnChanges(changes: any): Promise<void> {
-        await super.ngOnChanges(changes)
-        if (changes['adapter']) {
-            this.items$ = combineLatest([this.adapter.normalized$, this.valueDataSource$]).pipe(
-                takeUntilDestroyed(this.destroyRef)
-            ).pipe(
-                map(([items, value]) => {
-                    return items.filter(i => !value.some(v => v.key === i.key))
-                })
-            )
-        }
-    }
 
 
 
@@ -87,14 +72,16 @@ export class ChipsComponent extends SelectComponent {
 
 
 
-    onAdding(value: string) {
+    async onAdding(value: string) {
         if (!(value || '').length) return
 
         const chip = value
-        if (this.findKeyInValue(chip)) return
+        this.selectionChange(value)
+
+        let c = (await this.adapter.getItems([chip]))?.[0]
+        if (c) return
 
         if (!this.canAdd) return
         this.adding.emit(chip)
-        this.selectionChange(value)
     }
 }

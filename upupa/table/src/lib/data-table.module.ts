@@ -28,19 +28,23 @@ import { ColumnsSelectComponent } from './columns-select.component/columns-selec
 
 import { MatCardModule } from '@angular/material/card';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { DataComponentBase } from './datacomponent-base.component';
+import { DataComponentBase } from './data-base.component';
 import { DefaultTableCellTemplate } from './cell-template-component';
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { TableColumnSelectorPipe } from './table-column-selector.pipe';
 import { DataTableActionsWrapperComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
+import { TableFormInput } from './table-form-input/table-form-input.component';
+import { ValueDataComponentBase } from './value-data-base.component';
+
+
 
 
 
 const pipes = [DatePipe, TableColumnSelectorPipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe];
 
 const material = [MatCardModule, MatTableModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBarModule, MatMenuModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatSortModule, MatPaginatorModule, MatIconModule, MatButtonModule, MatToolbarModule,];
-const declarations = [DataTableComponent, DataTableActionsWrapperComponent, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase]
+const declarations = [DataTableComponent, DataTableActionsWrapperComponent, TableFormInput, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase, ValueDataComponentBase]
 
 
 @NgModule({
@@ -61,11 +65,11 @@ const declarations = [DataTableComponent, DataTableActionsWrapperComponent, Defa
 })
 export class DataTableModule {
 
-    static forRoot(providers: Provider[], options: { enableLogs: boolean } = { enableLogs: false }): ModuleWithProviders<DataTableModule> {
+    static forRoot(providers: Provider[]): ModuleWithProviders<DataTableModule> {
         return {
             ngModule: DataTableModule,
             providers: [...pipes, ...providers,
-            { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions(), ...options } }
+            { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions() } }
             ]
         }
     }

@@ -69,10 +69,9 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
     public set dataListResolverResult(value: DataListResolverResult<any>) {
         if (!value) return
-        this._dataListResolverResult.set(value);
+        
 
         //todo: make sure to call this only if no filter provided.
-        value.adapter.refresh()
 
         const { page, per_page, sort_by } = this.route.snapshot.queryParams
         if (page) value.adapter.page.pageIndex = +page - 1
@@ -95,6 +94,8 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
             this.setDataTableActions(toFilterDescriptor(this.filterFormValue))
             this.filterDrawerStatus = localStorage.getItem(`${value.path}_dld`)
         }
+
+        this._dataListResolverResult.set(value);
     }
 
     constructor(
