@@ -25,17 +25,20 @@ export interface UpupaDialogPortal<C> {
     templateUrl: "./upupa-dialog.component.html",
     styleUrls: ["./upupa-dialog.component.scss"],
     encapsulation: ViewEncapsulation.None,
+    host: {
+        '[class]': 'panelClass'
+    }
+
 })
 export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, AfterViewInit {
 
-    @HostBinding("class")
-    private _class = "upupa-dialog-container";
+    private _panelClass = "upupa-dialog-container";
     @Input()
-    public get class() {
-        return this._class;
+    public get panelClass() {
+        return this._panelClass;
     }
-    public set class(value) {
-        this._class = 'upupa-dialog-container ' + value.replace('upupa-dialog-container', '')
+    public set panelClass(value) {
+        this._panelClass = 'upupa-dialog-container ' + value.replace('upupa-dialog-container', '')
         this.dialogRef.addPanelClass("upupa-dialog-overlay");
     }
 
@@ -63,7 +66,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
 
         const actions = (this.dialogData.actions || this.dialogData.dialogActions || []) as ActionsDescriptor[];
         this.dialogActions.set(actions);
-        if (actions.length > 0) this._class += ' scroll-y'
+        if (actions.length > 0) this._panelClass += ' scroll-y'
         this.title = dialogData.title;
         this.subTitle = dialogData.subTitle;
         this.showCloseBtn = dialogData.hideCloseBtn !== true;

@@ -1,28 +1,71 @@
 // logger levels array
 const LOG_LEVELS = ['ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'] as const
 export type LogLevel = typeof LOG_LEVELS[number]
-export type LoggerOptions = {
-    logLevel: LogLevel
-}
+export type LoggerOptions = { title?: string, logLevel: LogLevel }
 
 export class Logger {
-    // static l = {['']}
+
+    #enabledLevels = LOG_LEVELS.reduce((acc, level) => {
+        acc[level] = LOG_LEVELS.indexOf(level) <= LOG_LEVELS.indexOf('ERROR')
+        return acc
+    }, {} as Record<LogLevel, boolean>)
+
+
+
     constructor(private options: LoggerOptions) {
-        // generate Map for log levels and set enabled levels
+        const enabledLevel = LOG_LEVELS.findIndex(l => l === this.options.logLevel)
+        this.#enabledLevels = LOG_LEVELS.reduce((acc, level) => {
+            acc[level] = LOG_LEVELS.indexOf(level) <= enabledLevel
+            return acc
+        }, {} as Record<LogLevel, boolean>)
     }
-    // based on log level, log the message
-    error(...terms: any[]) {
-        if (LOG_LEVELS.indexOf(this.options.logLevel) >= LOG_LEVELS.indexOf('ERROR')) {
-            console.error(...terms)
-        }
+
+    log(title: string, style: { background: string, color: string }, ...terms: any[]) {
+        if (!this.#enabledLevels.INFO) return
+        style = style || { background: 'black', color: 'white' }
+        const background = style.background || 'black'
+        const color = style.color || 'white'
+        title = title || new Date().toISOString()
+        console.log(`%c ${title}`, `background: ${background} color: ${color}`, ...terms)
     }
-    static log(title: string, style: { background: string, color: string }, ...terms: any[]) {
-        console.log(`%c ${title}`, `background: ${style?.background} color: ${style.color}`, ...terms)
+
+    warn(title: string, style: { background: string, color: string }, ...terms: any[]) {
+        if (!this.#enabledLevels.INFO) return
+        style = style || { background: 'black', color: 'yellow' }
+        const background = style.background || 'black'
+        const color = style.color || 'yellow'
+        title = title || new Date().toISOString()
+        console.warn(`%c ${title}`, `background: ${background} color: ${color}`, ...terms)
+    }
+    error(title: string, style: { background: string, color: string }, ...terms: any[]) {
+        if (!this.#enabledLevels.INFO) return
+        style = style || { background: 'black', color: 'red' }
+        const background = style.background || 'black'
+        const color = style.color || 'white'
+        title = title || new Date().toISOString()
+        console.error(`%c ${title}`, `background: ${background} color: ${color}`, ...terms)
+    }
+    debug(title: string, style: { background: string, color: string }, ...terms: any[]) {
+        if (!this.#enabledLevels.DEBUG) return
+        style = style || { background: 'yellow', color: 'black' }
+        const background = style.background || 'yellow'
+        const color = style.color || 'black'
+        title = title || new Date().toISOString()
+        console.debug(`%c ${title}`, `background: ${background} color: ${color}`, ...terms)
+    }
+
+    trace(title: string, style: { background: string, color: string }, ...terms: any[]) {
+        if (!this.#enabledLevels.TRACE) return
+        style = style || { background: 'yellow', color: 'black' }
+        const background = style.background || 'yellow'
+        const color = style.color || 'black'
+        title = title || new Date().toISOString()
+        console.trace(`%c ${title}`, `background: ${background} color: ${color}`, ...terms)
     }
 }
 
-// export function loggerFactory(options: LoggerOptions = { logLevel: 'ERROR' }) {
-//     return new Logger(options: LOG_OPTIONS)
-// }
+export function loggerFactory(options: LoggerOptions = { logLevel: 'INFO' }) {
+    return new Logger(options)
+}
 
-// export default logger = new Logger(options: LOG_OPTIONS)
+export const logger = loggerFactory()

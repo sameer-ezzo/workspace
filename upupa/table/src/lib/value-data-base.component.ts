@@ -10,6 +10,7 @@ import { OnChanges } from "@angular/core";
 import { ValidationErrors } from "@angular/forms";
 import { AbstractControl } from "@angular/forms";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { logger, Logger } from "@upupa/common";
 
 
 
@@ -74,9 +75,8 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
                 const valueKeys = this.adapter.getKeysFromValue(this.value)
                 const selectedKeys = selectedNormalized?.map(x => x.key)
                 const set = new Set([...valueKeys, ...selectedKeys])
-                if (selectedKeys.length === set.size) return
+                if (selectedKeys.length === valueKeys.length && valueKeys.length === set.size) return
                 this.value = selectedNormalized?.map(x => x.value)
-
             }
         })
 
@@ -95,13 +95,11 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
         this.value1$.next(v)
         this.control?.setValue(v, { emitEvent })
 
+        if (this.value === undefined) this.selected = [];
         if (this.adapter) {
-            if (this.value === undefined) this.selected = [];
-            else {
-                const _v = (Array.isArray(this.value) ? this.value : [this.value]) as Partial<T>[];
-                if (_v.length === 0) this.selected = [];
-                this.selected = this.adapter.getKeysFromValue(v);
-            }
+            const _v = (Array.isArray(this.value) ? this.value : [this.value]) as Partial<T>[];
+            if (_v.length === 0) this.selected = [];
+            this.selected = this.adapter.getKeysFromValue(v);
         }
         this.singleSelected.set(this.selected?.[0])
 
@@ -123,6 +121,8 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
 
     async _updateViewModel() {
-
+        if (this.value !== undefined && this.firstLoad()) {
+            this.viewDataSource$.next('selected')
+        }
     }
 }

@@ -4,7 +4,7 @@
     [class.active]="menuTrigger.menuOpen ||  (impersonated$ | async)">
     @if (impersonated$ | async) {
     <button mat-icon-button (click)="unimpersonate()" style="flex: 0 0 35px; margin-inline-end: 0.25rem;">
-        <mat-icon style="color: rgba(255, 68, 0, 0.575);">supervised_user_circle
+        <mat-icon style="color: var(--mdc-switch-selected-handle-color);">supervised_user_circle
         </mat-icon>
     </button>
     }

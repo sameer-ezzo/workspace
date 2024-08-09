@@ -80,10 +80,12 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     async valueChanged(key: keyof T | (keyof T)[]) {
-
-        if (Array.isArray(key)) key.forEach(k => this.select(k))
-        else this.select(key)
         this.control.markAsDirty()
+        if (key === undefined) this.selectionModel.clear()
+        else {
+            if (Array.isArray(key)) key.forEach(k => this.select(k))
+            else this.select(key)
+        }
     }
 
     inputChange(target: EventTarget) {
@@ -111,13 +113,5 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
         event.stopPropagation()
         this.action.emit(action)
         this.bus.emit(action.name, { msg: action.name }, this) //select-{name}-{action}
-    }
-
-    override async _updateViewModel() {
-        if (this.value && this.firstLoad()) {
-            this.viewDataSource$.next('selected')
-        }
-        await super._updateViewModel()
-
     }
 }

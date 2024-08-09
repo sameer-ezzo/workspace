@@ -124,39 +124,47 @@ export type FormFieldOptions = ({ from: any } & VisibleFormFieldOptions) |
 
 function makeFieldItem(path: string, targe: any, propertyKey: string, options: FormFieldOptions): Field {
 
+    const opts = options as VisibleFormFieldOptions & FormFieldOptions;
+    const label = opts.label ?? opts.text ?? toTitleCase(propertyKey);
+
     const fieldBase = {
         name: propertyKey,
         validations: options.validations || [],
         path: path ? `${path}/${propertyKey}` : `/${propertyKey}`,
-    }
 
-    if (!('input' in options) || options.input === 'fieldset') {
-        const f = { ...fieldBase } as Fieldset;
-        f.type = 'fieldset'
-        const schemeTarget = options['from'];
-        // get path from metadata of schemeTarget
-        const schemePath = Reflect.getMetadata('path', schemeTarget) || schemeTarget.name;
-        f.items = resolveFormSchemeOf(schemePath) || {};
-        return f
-    }
-
-    const field = {
-        ...fieldBase,
-        input: options.input,
         ui: {
             inputs: {
                 required: options.required,
                 readonly: options['readonly'] === true,
                 disabled: options['disabled'] === true,
-                ...(options['inputs'] || {}),
+                text: opts.text,
+                hidden: opts.hidden,
+                label,
+                placeholder: opts.placeholder,
+                appearance: opts.appearance,
+                ...options,
+                ...(options['inputs'] || {})
             }
-        },
-        type: 'field'
+        }
+    } as Field;
+
+    if (!('input' in options) || options.input === 'fieldset') {
+        fieldBase.type = 'fieldset'
+        const propType = Reflect.getMetadata("design:type", targe, propertyKey);
+        (fieldBase as Fieldset).items = propType && typeof propType === 'function' ? resolveFormSchemeOf(propType.name) ?? {} : {}
+        return fieldBase;
+    }
+
+    const field = {
+        input: options.input,
+        type: 'field',
+        ...fieldBase
     } as FieldItem;
 
 
 
     if (field.input.length === 0) field.input = 'hidden';
+
 
     if (options['adapter']) {
         field.ui.inputs['_adapter'] = options['adapter']
@@ -165,16 +173,7 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
 
     if (options.input === 'hidden') return field;
 
-    const opts = options as VisibleFormFieldOptions & FormFieldOptions;
-    const label = opts.label ?? opts.text ?? toTitleCase(propertyKey);
-    field.ui.inputs = {
-        ...field.ui.inputs,
-        text: opts.text,
-        hidden: opts.hidden,
-        label,
-        placeholder: opts.placeholder,
-        appearance: opts.appearance
-    }
+
 
     if (options.input === 'switch') {
         const switchOptions = opts as any;
