@@ -212,13 +212,11 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     shiftKeyPressed = false
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        // set shiftKeyPressed to true when shift key is pressed
-        if (event.key === 'Shift') this.shiftKeyPressed = true
+        if (event.key === 'Shift') this.shiftKeyPressed = this.maxAllowed !== 1
     }
 
     @HostListener('document:keyup', ['$event'])
     handleKeyboardEventUp(event: KeyboardEvent) {
-        // set shiftKeyPressed to false when shift key is released
         if (event.key === 'Shift') this.shiftKeyPressed = false
     }
 
