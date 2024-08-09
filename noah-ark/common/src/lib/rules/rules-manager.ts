@@ -13,7 +13,7 @@ export class RulesManager {
         return this.rulesPathMatcher.tree
     }
     public set tree(value: TreeBranch<Rule>) {
-        if(value.item.path !== '/') throw new Error('Root path must be /')
+        if(value.item?.path !== '/') throw new Error('Root path must be /')
         this.rulesPathMatcher.tree = value;
     }
 
@@ -42,7 +42,7 @@ export class RulesManager {
     items(path?: string) {
         return this.rulesPathMatcher.items(path)
     }
-    get(path?: string, fallbackToParent = false) {
+    get(path: string = '/', fallbackToParent = false) {
         return this.rulesPathMatcher.get(path, fallbackToParent)
     }
     add(path: string, rule: Rule) {

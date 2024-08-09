@@ -112,9 +112,9 @@ export class DataComponentBase<T = any> {
 
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = []
     onDataChange(data: NormalizedItem<T>[]) {
-        if (this.firstLoad)
-            setTimeout(() => this.firstLoad.set(false), 1000) //delay this to give time to html template to switch
-
+        // if (this.firstLoad)
+        //     setTimeout(() => this.firstLoad.set(false), 1000) //delay this to give time to html template to switch
+        this.firstLoad.set(false)
         this.dataChangeListeners.forEach(x => x(data))
         this.loading.set(false)
     }
@@ -164,13 +164,22 @@ export class DataComponentBase<T = any> {
         //else unselect all items from adapter data only
 
         const selected = this.selected as (keyof T)[]
-        if (this.adapter.normalized.length === selected.length)
-            this.selectionModel.deselect(...(selected))
-        else this.selectionModel.select(...this.adapter.normalized.map(n => n.key))
+        if (this.maxAllowed === 1) {
+            if (this.selected.length > 0) this.selectionModel.clear(false)
+        }
+        else {
+
+            if (this.adapter.normalized.length === selected.length)
+                this.selectionModel.deselect(...(selected))
+            else {
+                this.selectionModel.select(...this.adapter.normalized.map(n => n.key))
+            }
+        }
     }
 
 
     select(key: keyof T) {
+        if (this.maxAllowed === 1) this.selectionModel.clear(false)
         this.selectionModel.select(key)
     }
 

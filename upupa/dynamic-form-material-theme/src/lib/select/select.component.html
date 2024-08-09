@@ -2,7 +2,7 @@
 <mat-form-field [appearance]="appearance" (keydown)="keyDown($event, selectInput)" [floatLabel]="floatLabel"
   style="width: 100%;">
   @if(label?.length > 0){
-  <mat-label>{{label}} {{maxAllowed}}</mat-label>
+  <mat-label>{{label}}</mat-label>
   }
   @if(maxAllowed !== 1){
   <mat-select multiple [disabled]="disabled" #selectInput [class.ng-dirty]="control.dirty"
