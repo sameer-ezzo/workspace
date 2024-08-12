@@ -1,7 +1,6 @@
-import { Component, Input, forwardRef, OnChanges, ViewEncapsulation, inject, signal, ViewChild } from '@angular/core';
+import { Component, Input, forwardRef, OnChanges, ViewEncapsulation, inject, signal } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
-// import { Bold, Essentials, Italic, Mention, Paragraph, Undo } from '@ckeditor/ckeditor5-build-decoupled-document';
 
 
 import { HtmlUploadAdapter } from '../html-upload-adapter';
@@ -12,6 +11,7 @@ import { UploadService } from '@upupa/upload';
 import { Editor, EditorConfig } from '@ckeditor/ckeditor5-core';
 import { ChangeEvent, CKEditorComponent } from '@ckeditor/ckeditor5-angular/ckeditor.component';
 import { AuthService } from '@upupa/auth';
+// import { ClassicEditor, Bold, Essentials, Italic, Mention, Paragraph, Undo } from 'ckeditor5';
 
 import CKSource from '@ckeditor/ckeditor5-build-decoupled-document';
 const ContextWatchdog = CKSource.ContextWatchdog;
@@ -36,16 +36,13 @@ const Context = CKSource.Context;
 export class HtmlEditorComponent extends InputBaseComponent<string> implements OnChanges {
 
     public Editor = DecoupledEditor;
-    // @ViewChild('ckEditor') editorComponent: CKEditorComponent;
-    // public getEditor() {
-    //     return this.editorComponent?.editorInstance;
-    // }
+
+    ready = signal(false);
     watchdog: any;
     @Input() readonly = false;
     @Input() language: string;
     @Input()
     private _placeholder: string;
-    ready = signal(false);
     public get placeholder(): string {
         return this._placeholder;
     }
@@ -58,7 +55,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
     @Input() errorMessages: { [errorCode: string]: string } = {};
     @Input() uploadPath!: string
     config: EditorConfig
-    editor: any;
+
 
     initialized = false
     override _updateViewModel(): void {
@@ -79,7 +76,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
     }
 
     private ls = inject(LanguageService)
-    private baseUrl = inject(HTML_EDITOR_UPLOAD_BASE)
+    // private baseUrl = inject(HTML_EDITOR_UPLOAD_BASE)
     private editorConfig = inject(HTML_EDITOR_CONFIG) as EditorConfig
     private upload = inject(UploadService)
     private readonly auth = inject(AuthService)
@@ -89,20 +86,19 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
     }
 
     async ngOnInit() {
-        if (!this.baseUrl?.trim()) throw `HTML Editor ${this.name} must have baseUrl provided.`
-
-
         this.watchdog = new CKSource.ContextWatchdog(CKSource.Context as any);
         try {
             await this.watchdog.create(this.watchdogConfig)
             this.ready.set(true)
+            console.log('Watchdog is ready to use!', this.watchdog);
+
         } catch (error) {
             console.error(error);
         }
 
         const lang = this.ls.language ?? 'en'
         this.config = {
-            ...(this.editor?.config || {}),
+
             language: { ui: lang, content: lang },
             placeholder: this.placeholder,
             ...this.editorConfig
@@ -113,6 +109,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
 
 
     htmlChanged({ editor }: ChangeEvent) {
+        if(!editor) return;
         const data = editor.data.get();
         if (data === this.value) return;
         this.value = data;
@@ -122,7 +119,8 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
 
 
     public onReady(editor: Editor, ckEditor: any): void {
-        this.editor = editor;
+        // this.Editor = editor;
+
         const element = editor.ui.getEditableElement()!;
         const parent = element.parentElement!;
 
@@ -137,13 +135,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements O
         // )
 
         (editor.plugins.get('FileRepository') as any).createUploadAdapter = (loader) => {
-
-            const path = `${this.baseUrl}/${this.uploadPath}`
-                .split('/')
-                .map(x => x.trim())
-                .filter(x => x.length > 0)
-                .join('/');
-            return new HtmlUploadAdapter(loader, path, this.upload, this.auth) as any //UploadAdapter;
+            return new HtmlUploadAdapter(loader, this.uploadPath, this.upload, this.auth) as any;
         }
 
         if (this.config?.mediaEmbed) this.config.mediaEmbed.previewsInData = true
