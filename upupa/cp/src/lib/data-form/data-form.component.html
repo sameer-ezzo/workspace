@@ -1,8 +1,17 @@
 <div id="form-wrapper">
     @if(fields){
-    <dynamic-form [fields]="fields" #dynForm [value]="formValue()" [name]="name" (valueChange)="formValue.set($event)"
-        [preventDirtyUnload]="preventDirtyUnload" [initialValueFactory]="initialValueFactory" [recaptcha]="recaptcha"
-        [theme]="theme" [conditions]="conditions" (submit)="submit($event)"></dynamic-form>
+    <dynamic-form #dynForm
+    [fields]="fields" 
+    [value]="formValue()"
+    [name]="name"
+    [preventDirtyUnload]="preventDirtyUnload" 
+    [initialValueFactory]="initialValueFactory" 
+    [recaptcha]="recaptcha"
+    [theme]="theme"
+    [conditions]="conditions"
+
+    (valueChange)="formValue.set($event)"
+    (submit)="submit($event)"></dynamic-form>
     }
 </div>
 

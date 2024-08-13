@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Condition } from '@noah-ark/expression-engine';
 import { defaultFormActions } from '../../defaults';
 import { SnackBarService, UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
+import { ScaffoldingService } from '../scaffolding.service';
 
 
 

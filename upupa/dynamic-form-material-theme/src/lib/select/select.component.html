@@ -1,4 +1,3 @@
-
 <mat-form-field [appearance]="appearance" (keydown)="keyDown($event, selectInput)" [floatLabel]="floatLabel"
   style="width: 100%;">
   @if(label?.length > 0){
@@ -11,8 +10,8 @@
     [value]="selected" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
     [required]="required">
 
-    <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
     <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
+    @if(_showSearch()){<ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>}
 
 
     @if(selectedNormalized$ | async; as sns){
@@ -63,8 +62,8 @@
     [value]="singleSelected()" (valueChange)="valueChanged($event)" (blur)="onTouch()" [placeholder]="placeholder"
     [required]="required">
 
-    <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
     <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
+    @if(_showSearch()){<ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>}
 
     @for(item of items$ | async; track i; let i = $index){
 
@@ -131,7 +130,7 @@
 </ng-template>
 
 <ng-template #searchBoxTemplate>
-  @if(showSearch){
+
   <div id="select-filter-wrapper">
     <mat-icon>search</mat-icon>
     <input #filterInput [focus]="true" focusType="select" style="flex: 1;border:none;outline: none;" [value]="q"
@@ -142,15 +141,4 @@
     </button>
     }
   </div>
-  <!-- <mat-form-field class="select-filter-input" style="width: 100%">
-    <span matPrefix><mat-icon>search</mat-icon></span>
-    <input #filterInput autofocus matInput style="flex: 1;border:none;outline: none;" [value]="q"
-      (input)="q=$event.target?.['value']" (keydown.enter)="filter$.next(q)">
-    @if(q.length > 0){
-    <button matSuffix mat-icon-button (click)="$event.stopPropagation(); q=''">
-      <mat-icon>clear</mat-icon>
-    </button>
-    }
-  </mat-form-field> -->
-  }
 </ng-template>

@@ -208,7 +208,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
 
-    // @HostListener key = shift set shiftKeyPressed to true or false when key is pressed or released
     shiftKeyPressed = false
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
@@ -222,9 +221,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     toggleSelection(event: MatCheckboxChange, row, selectInBetween = false) {
         let rows = [row]
-
-        // check if shift key is pressed and select in between
-
         if (this.shiftKeyPressed === true) selectInBetween = true
         if (selectInBetween) {
             const all = this.adapter.normalized

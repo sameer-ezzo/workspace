@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef } from '@angular/core'
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef, signal } from '@angular/core'
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatSelect } from '@angular/material/select'
 import { ActionDescriptor, EventBus } from '@upupa/common'
@@ -18,7 +18,14 @@ import { InputDefaults } from '../defaults'
 })
 export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     inlineError = true
-    showSearch = false
+    _showSearch = signal(false)
+    @Input()
+    public get showSearch() {
+        return this._showSearch()
+    }
+    public set showSearch(value) {
+        this._showSearch.set(value)
+    }
 
 
     @Input() appearance = InputDefaults.appearance

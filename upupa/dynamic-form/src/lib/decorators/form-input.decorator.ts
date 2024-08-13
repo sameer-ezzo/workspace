@@ -143,10 +143,11 @@ function makeFieldItem(path: string, targe: any, propertyKey: string, options: F
                 placeholder: opts.placeholder,
                 appearance: opts.appearance,
                 ...options,
-                ...(options['inputs'] || {})
-            }
+            } as VisibleFormFieldOptions,
         }
     } as Field;
+    delete fieldBase.ui.inputs['inputs'];
+    fieldBase.ui.inputs = { ...fieldBase.ui.inputs, ...(options['inputs'] || {}) };
 
     if (!('input' in options) || options.input === 'fieldset') {
         fieldBase.type = 'fieldset'

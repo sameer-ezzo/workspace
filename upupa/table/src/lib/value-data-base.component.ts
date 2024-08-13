@@ -64,15 +64,15 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
             const selectedNormalized = await this.adapter.getItems(s.source.selected)
             this.selectedNormalized = selectedNormalized
-
+            const v = Array.isArray(this.value) ? this.value : [this.value]
             if (this.maxAllowed === 1) {
-                const valueKey = this.adapter.getKeysFromValue(this.value)?.[0]
+                const valueKey = this.adapter.getKeysFromValue(v)?.[0]
                 const selectedKey = selectedNormalized?.[0]?.key
                 if (valueKey === selectedKey) return
                 this.value = selectedNormalized?.[0]?.value
             }
             else {
-                const valueKeys = this.adapter.getKeysFromValue(this.value)
+                const valueKeys = this.adapter.getKeysFromValue(v)
                 const selectedKeys = selectedNormalized?.map(x => x.key)
                 const set = new Set([...valueKeys, ...selectedKeys])
                 if (selectedKeys.length === valueKeys.length && valueKeys.length === set.size) return
@@ -99,7 +99,7 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
         if (this.adapter) {
             const _v = (Array.isArray(this.value) ? this.value : [this.value]) as Partial<T>[];
             if (_v.length === 0) this.selected = [];
-            this.selected = this.adapter.getKeysFromValue(v);
+            this.selected = this.adapter.getKeysFromValue(_v);
         }
         this.singleSelected.set(this.selected?.[0])
 

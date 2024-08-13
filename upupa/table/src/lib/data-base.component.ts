@@ -112,10 +112,9 @@ export class DataComponentBase<T = any> {
 
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = []
     onDataChange(data: NormalizedItem<T>[]) {
-        // if (this.firstLoad)
-        //     setTimeout(() => this.firstLoad.set(false), 1000) //delay this to give time to html template to switch
         this.firstLoad.set(false)
         this.dataChangeListeners.forEach(x => x(data))
+        this.selectedNormalized = this.selected.map(k => data.find(d => d.key === k)).filter(x => x)
         this.loading.set(false)
     }
 

@@ -47,6 +47,8 @@ export class ScaffoldingService {
     }
 
 
+   
+
     async scaffold(path: string, fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" }, ...params: any[]) {
 
         const scaffolder: Scaffolder = this.matcher.get(path);

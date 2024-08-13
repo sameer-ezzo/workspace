@@ -19,3 +19,14 @@
     }
   }
 }
+.mdc-menu-surface--open {
+  position: relative;
+  mat-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 100;
+  }
+}
