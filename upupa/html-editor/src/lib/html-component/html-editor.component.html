@@ -9,7 +9,7 @@
 
 <ng-template #htmlEditorTemplate>
   @if(ready()){
-  <ckeditor #ckEditor [watchdog]="watchdog" [editor]="editor" [config]="config" [data]="model.data"
+  <ckeditor #ckEditor [watchdog]="watchdog" [editor]="Editor" [config]="config" [data]="model.data"
     [disabled]="disabled || readonly" [editorWatchdogConfig]="watchdogConfig" (change)="htmlChanged($event)"
     (blur)="markAsTouched()" (ready)="onReady($event, ckEditor)"></ckeditor>
   }
