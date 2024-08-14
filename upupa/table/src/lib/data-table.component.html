@@ -1,5 +1,5 @@
 <div class="table-header">
-  @if(label){<h3>{{label}}</h3>}
+  @if(label){<h3 class="label">{{label}}</h3>}
 
   @if(showSearch){
   <div id="search-box-wrapper">
@@ -15,7 +15,7 @@
 
   <span style="flex:1"></span>
   <div style="display: flex;align-items: center;">
-    <data-table-actions-wrapper [actions]="headerActions" (action)="onAction($event)"
+    <data-table-actions-wrapper [actions]="headerActions" style="flex-wrap: wrap;" (action)="onAction($event)"
       [context]="selectedNormalized$ | async"></data-table-actions-wrapper>
 
     @if(_allowChangeColumnsOptions()){
@@ -142,6 +142,7 @@
 
 </div>
 
+<!-- Hide paginator when total data is lte page size -->
 @if(adapter && adapter.page && adapter.page.pageSize){
 <mat-paginator [disabled]="loading() === true" [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length"
   [pageSize]="adapter.page.pageSize" [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)"

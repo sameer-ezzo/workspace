@@ -16,6 +16,11 @@
   }
 }
 
+.label {
+  margin: 0;
+  margin-inline-end: 1rem;
+}
+
 .hidden {
   visibility: hidden !important;
 }
@@ -70,7 +75,6 @@ th {
   border-top: solid 1px;
 }
 
-
 tr[cdk-header-row] > th {
   background: var(--bg-status-bar) !important;
 }
@@ -81,11 +85,11 @@ tr[cdk-header-row] > th {
 /* filter */
 
 .table-header {
-  padding: 0;
+  padding: 0.5rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   height: auto;
-  padding-inline: 0.5rem;
 
   &:not(:empty) {
     // padding: 0.5em 1rem;

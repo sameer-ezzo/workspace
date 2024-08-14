@@ -531,6 +531,30 @@ export class DataService {
         }
     }
 
+    generatePatches(value: any, currentPath: string = ""): Patch[] {
+        let patches: Patch[] = [];
+
+        if (typeof value !== "object" || value === null) {
+            // Base case: if the value is a primitive (or null), create a patch directly
+            patches.push({ op: "replace", path: currentPath, value });
+        } else if (Array.isArray(value)) {
+            // Handle arrays
+            value.forEach((item, index) => {
+                patches = patches.concat(this.generatePatches(item, `${currentPath}/${index}`));
+            });
+        } else {
+            // Handle objects
+            for (const key in value) {
+                if (value.hasOwnProperty(key)) {
+                    patches = patches.concat(this.generatePatches(value[key], `${currentPath}/${key}`));
+                }
+            }
+        }
+
+        return patches;
+    }
+
+
     async patch<T = any>(path: string, patches: Patch[], user: any): Promise<WriteResult<T>> {
         const segments = path.split("/").filter(s => s);
         if (segments.length !== 2) { throw { status: 400, body: "INVALID_PATH_FOR_PATCH" }; }
@@ -541,16 +565,27 @@ export class DataService {
 
         const directPatches = patches.filter(p => p.path === "/");
 
-        let directPatch;
         let result;
 
+        const _directPatches = [] as Patch[];
         if (directPatches.length) {
-            directPatch = directPatches[directPatches.length - 1];
+
+            const directPatch = directPatches[directPatches.length - 1];
             const lastDirectPatchIndex = patches.indexOf(directPatch);
             patches = patches.filter((p, i) => i > lastDirectPatchIndex);
-            result = await model.findByIdAndUpdate(id, { $set: directPatch.value }, { upsert: true });
+            const updatePatches = this.generatePatches(directPatch.value, '');
+            _directPatches.push(...updatePatches);
         }
+
+        patches.push(..._directPatches);
+
         if (patches.length) {
+            patches = patches.map(p => ({
+                op: p.op,
+                path: p.path,
+                value: this.queryParser.autoParseValue(p.value, p.path.split('/').filter(x => x).join('.'), model)
+            }))
+
             const update = toMongodb(patches);
             result = await model.findOneAndUpdate({ _id: id }, update, { new: true, upsert: false });
         }
@@ -559,7 +594,7 @@ export class DataService {
             this.broker.emit(`data-changed/${collection}/${id}`, {
                 path: `/${collection}/${id}`,
                 data: result,
-                patches: directPatch ? [directPatch, ...patches] : patches,
+                patches,
                 user
             })
 
@@ -567,9 +602,7 @@ export class DataService {
         return result
     }
 
-    getPatches(path: string, value: any): Patch[] {
-        return [{ op: "replace", path, value: value }];
-    }
+
     async put<T = any>(path: string, value: any, user: any): Promise<WriteResult<T>> {
 
         const segments = path.split("/").filter(s => s);
@@ -577,8 +610,7 @@ export class DataService {
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
-        const patches = this.getPatches('/' + segments.join('/'), this.queryParser.autoParseValue(value));
-
+        const patches = [{ op: "replace", path: '/' + segments.join('/'), value: value } as Patch];
         return this.patch<T>(`/${collection}/${id}`, patches, user);
     }
 

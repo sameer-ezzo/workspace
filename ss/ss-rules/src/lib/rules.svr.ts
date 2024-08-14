@@ -197,7 +197,7 @@ async function seedPermissions(data: DataService, rulesService: RulesService) {
 
     const rules = rulesService.getRules().filter((r) => r);
     const permissionsModel = await data.getModel('permission');
-    const permissions = await permissionsModel.find({});
+    const permissions = await permissionsModel.find({}).lean() as SimplePermission[];
 
     // Generate Permissions from endpoints with Authorize decorator
     const authorizePermissions = getAuthorizePermissionsFromEndpoints(endPoints, rulesService);
