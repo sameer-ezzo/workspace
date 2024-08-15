@@ -26,38 +26,48 @@ export class AuthorizationService {
         });
     }
 
-    buildAuthorizationMsg(path: string, action: string, principle: Principle): AuthorizeMessage {
-        return { path, operation: action, principle, payload: {}, query: {} };
+    buildAuthorizationMsg(path: string, action: string, principle: Principle,
+        payload?: unknown, query?: unknown, ctx?: unknown
+    ): AuthorizeMessage {
+        return { path, operation: action, principle, payload: payload ?? {}, query: query ?? {}, ctx: ctx ?? {} } as AuthorizeMessage;
     }
 
 
-    async authorize(path: string, action: string, principle: Principle): Promise<AuthorizeResult> {
+    async authorize(path: string, action: string, principle: Principle,
+        payload?: unknown, query?: unknown, ctx?: unknown
+    ): Promise<AuthorizeResult> {
         await firstValueFrom(this.rules$);
         if (isEmpty(action ?? '')) action = undefined;
-        const msg = this.buildAuthorizationMsg(path, action, principle);
+        const message = this.buildAuthorizationMsg(path, action, principle, payload, query, ctx);
         const rule = this.rulesManager.getRule(path, true);
-        const res = authorize(msg, rule, action,{}, true);
+        const res = authorize(message, rule, action, true);
 
         return res;
     }
 
 
-    async getEvaluatedQuerySelector(path: string, action: string, user: Principle, bypassSelectors = false) {
+    async getEvaluatedSelector(path: string, action: string, user: Principle, bypassSelectors = false,
+        payload?: unknown, query?: unknown, ctx?: unknown
+    ): Promise<{ query?: any, payload?: any }> {
         const matches = await this.matchPermissions(path, action, user, bypassSelectors);
-        const msg = this.buildAuthorizationMsg(path, action, user);
+        const msg = this.buildAuthorizationMsg(path, action, user, payload, query, ctx);
         const grantingPermissions = matches.filter(m => evaluatePermission(m.permission, { msg }) === 'grant')
             .map(m => m.permission)
 
-        if (bypassSelectors) grantingPermissions
-
-
+        if (bypassSelectors) return {}
 
         const simplestPermission = grantingPermissions
             .sort((a, b) => Object.keys(a.selectors?.query ?? {}).length - Object.keys(b.selectors?.query ?? {}).length)
             .shift();
 
-        const evaluatedQuerySelector = simplestPermission ? matches.find(m => m.permission === simplestPermission)!.match.evaluated?.query : {};
+        const evaluatedQuerySelector = simplestPermission ? matches.find(m => m.permission === simplestPermission)!.match.evaluated : {};
         return evaluatedQuerySelector;
+    }
+
+    async getEvaluatedQuerySelector(path: string, action: string, user: Principle, bypassSelectors = false,
+        payload?: unknown, query?: unknown, ctx?: unknown
+    ) {
+        return (await this.getEvaluatedSelector(path, action, user, bypassSelectors, payload, query, ctx))?.query;
     }
 
     async matchPermissions(path: string, action: string, principle: Principle, bypassSelectors = false) {

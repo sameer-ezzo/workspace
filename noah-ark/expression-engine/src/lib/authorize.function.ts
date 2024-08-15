@@ -1,5 +1,4 @@
 import { JsonPointer } from "@noah-ark/json-patch"
-import { evaluateOpExpression } from "./op-expression"
 import { _NullPermissionTypes, _StringPermissionTypes, AccessType, AuthorizeContext, AuthorizeFun, AuthorizeMessage, PermissionSelectorsEvaluationContext, AuthorizeResult, FunctionalPermission, isObjectValuePermission, isPermissionSimple, ObjectValuePermission, Permission, permissionKey, Principle, Rule, SimplePermission, StringValuePermission } from "@noah-ark/common"
 
 function _evaluatePermissionSelector(expression: Record<string, string>, ctx: AuthorizeContext): any {
@@ -74,8 +73,8 @@ export function matchPermissions(rule: Rule, action: string, ctx: AuthorizeConte
  * @param additional Any data useful for the authorization function @example { new_data, old_data }
  * @returns grant or deny access for the provided msg/action
  */
-export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, additional?: Record<string, unknown>,
-    bypassSelectors = false
+export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string,
+    bypassSelectors = false, additional?: Record<string, unknown>
 ): AuthorizeResult {
     //BUILD CONTEXT AND ALLOW SUPER ADMIN
     action ??= msg.operation

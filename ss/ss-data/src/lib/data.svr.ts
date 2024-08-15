@@ -373,8 +373,8 @@ export class DataService {
         let projection: any = {};
         if (segments.projectionPath) { projection[segments.projectionPath] = 1; }
 
-        //const model = await this.getModel(segments.collection);
-        const queryInfo = q ? this.queryParser.parse(<any>q) : null;
+        const model = await this.getModel(segments.collection);
+        const queryInfo = q ? this.queryParser.parse(<any>q, model) : null;
         const filter: any = queryInfo ? queryInfo.filter : {};
         const sort = queryInfo ? queryInfo.sort : {};
         const page = queryInfo ? +queryInfo.page : 1;

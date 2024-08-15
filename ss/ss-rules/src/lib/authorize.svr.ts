@@ -8,7 +8,7 @@ import { authorize } from "@noah-ark/expression-engine";
 @Injectable()
 export class AuthorizeService {
 
-    
+
     constructor(public readonly rulesService: RulesService) { }
 
     /**
@@ -20,6 +20,6 @@ export class AuthorizeService {
      */
     authorize(msg: IncomingMessage, action?: string, additional?: Record<string, unknown>): AuthorizeResult {
         const rule = this.rulesService.getRule(msg.path, true)! // use default app rule
-        return authorize(msg as AuthorizeMessage, rule, action, additional)
+        return authorize(msg as AuthorizeMessage, rule, action, false, additional)
     }
 }
