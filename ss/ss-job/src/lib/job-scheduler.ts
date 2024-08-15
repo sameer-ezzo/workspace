@@ -6,6 +6,7 @@ import { appName, RedisClient } from '@ss/common'
 import { logger } from "./logger";
 import { JobSchedulerConfig, JOB_SCHEDULAR_CONFIG } from './job-scheduler.config'
 import { Job, JobOptions } from 'bull'
+import Queue from 'bull'
 import { purgeQueue } from './job-purger'
 
 export namespace JobSchedulerExceptions {
