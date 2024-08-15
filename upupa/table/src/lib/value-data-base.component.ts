@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, SimpleChanges } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, debounceTime } from "rxjs";
 import { DataComponentBase } from "./data-base.component";
 import { FormControl } from "@angular/forms";
 import { ControlValueAccessor } from "@angular/forms";
@@ -60,8 +60,11 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
         this.subscriptToFilterChanges()
 
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async s => {
-
+        this.selectionModel.changed.pipe(
+            debounceTime(50),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(async s => {
+            
             const selectedNormalized = await this.adapter.getItems(s.source.selected)
             this.selectedNormalized = selectedNormalized
             const v = Array.isArray(this.value) ? this.value : [this.value]

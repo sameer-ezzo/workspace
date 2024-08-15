@@ -88,11 +88,10 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
 
     async valueChanged(key: keyof T | (keyof T)[]) {
         this.control.markAsDirty()
-        if (key === undefined) this.selectionModel.clear()
-        else {
-            if (Array.isArray(key)) key.forEach(k => this.select(k))
-            else this.select(key)
-        }
+        this.selectionModel.clear()        
+        if (key === undefined) return
+        if (Array.isArray(key)) key.forEach(k => this.select(k))
+        else this.select(key)
     }
 
     inputChange(target: EventTarget) {
