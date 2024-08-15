@@ -6,7 +6,6 @@ import { appName, RedisClient } from '@ss/common'
 import { logger } from "./logger";
 import { JobSchedulerConfig, JOB_SCHEDULAR_CONFIG } from './job-scheduler.config'
 import { Job, JobOptions } from 'bull'
-import Queue from 'bull'
 import { purgeQueue } from './job-purger'
 
 export namespace JobSchedulerExceptions {
@@ -132,7 +131,7 @@ export class JobScheduler {
             throw new Error(`${JobSchedulerExceptions.NO_PROCESSORS_DEFINED}:${name} ${job.id}`)
         }
 
-        //filter out processors which tried already 
+        //filter out processors which tried already
         if (Array.isArray(job.data._processors) && job.data._processors.length) {
             const current = job.data._processors as string[]
 
