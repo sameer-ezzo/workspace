@@ -2,8 +2,7 @@ import { DynamicModule, Provider, Module, Scope, FactoryProvider } from "@nestjs
 import { HttpAdapterHost } from "@nestjs/core"
 import { ClientsModule, ClientProvider, Transport, ClientRedis } from "@nestjs/microservices"
 
-import { GeoipSrvService } from "./geoip/geoip-srv/geoip-srv.service"
-import { GeoipController } from "./geoip/geoip/geoip.controller"
+
 import { BrokerController } from "./messaging/broker.controller"
 import { Broker, BROKER_CLIENT } from "./messaging/broker.svr"
 import { EventBusService } from "./messaging/event-bus.service"
@@ -38,7 +37,6 @@ if (!prod && !redisClients.find(p => p.provide == 'REDIS_DEFAULT')) {
 }
 
 const providers: Provider[] = [
-    GeoipSrvService,
     EventBusService,
     Broker,
     {
@@ -54,7 +52,7 @@ const providers: Provider[] = [
 
 
 
-const controllers = [BrokerController, GeoipController]
+const controllers = [BrokerController]
 let BROKER_CLIENT_PROVIDER = { provide: BROKER_CLIENT, useClass: EventBusService } as Provider
 @Module({
     controllers: [...controllers],

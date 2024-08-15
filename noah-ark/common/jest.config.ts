@@ -13,5 +13,5 @@ export default {
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
     coverageDirectory: '../../../coverage/libs/workspace/noah-ark/common',
-    preset: '../../../jest.preset.js',
+    preset: '../../../../jest.preset.js',
 };
