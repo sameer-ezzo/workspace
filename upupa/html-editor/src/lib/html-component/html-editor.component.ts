@@ -35,18 +35,15 @@ const Context = CKSource.Context;
 })
 export class HtmlEditorComponent extends InputBaseComponent<string> implements OnChanges {
 
-    public Editor = DecoupledEditor;
-
     ready = signal(false);
     watchdog: any;
     @Input() readonly = false;
     @Input() language: string;
-    @Input()
+
     private _placeholder: string;
-    public get placeholder(): string {
-        return this._placeholder;
-    }
-    public set placeholder(value: string) {
+    @Input()
+    get placeholder(): string { return this._placeholder; }
+    set placeholder(value: string) {
         this._placeholder = value;
         this.config.placeholder = value;
     }
