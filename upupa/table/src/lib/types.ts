@@ -1,8 +1,6 @@
 import { Type } from "@angular/core";
 import { SortHeaderArrowPosition } from "@angular/material/sort";
 import { NormalizedItem } from "@upupa/data";
-export type ActionsWrapperViewModel<T> = NormalizedItem<T> | NormalizedItem<T>[] | null
-export type ActionsContext<T> = T | T[]
 
 export type PipeDescriptor = { pipe: Type<any>; args: string[]; };
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any>; };

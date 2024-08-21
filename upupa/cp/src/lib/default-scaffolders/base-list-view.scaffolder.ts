@@ -37,12 +37,12 @@ export class BaseListViewScaffolder implements IScaffolder<ListScaffoldingModel>
 
             if (hasEdit) actions.push({ path: `api/${collection}`, action: 'Edit', variant: 'icon', name: 'edit', icon: 'edit' })
             if (hasView) actions.push({ path: `api/${collection}`, action: 'Read', variant: 'icon', name: 'view', icon: 'visibility', menu: true })
-            actions.push({ path: `api/${collection}`, action: 'Delete', position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true })
+            actions.push({ path: `api/${collection}`, action: 'Delete', menu: true, name: 'delete', icon: 'delete_outline', text: 'Delete' })
 
         }
         if (hasCreate && headerActions === undefined) {
             headerActions = []
-            headerActions.push({ path: `api/${collection}`, action: 'Create', position: 'header', name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
+            headerActions.push({ path: `api/${collection}`, action: 'Create', header: true, name: 'create', variant: 'stroked', text: 'Create', icon: 'add_circle_outline' })
         }
 
 

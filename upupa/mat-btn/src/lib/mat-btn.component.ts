@@ -22,7 +22,7 @@ export class MatBtnComponent implements OnChanges {
     color = '';
     @Output() action = new EventEmitter<ActionEvent>();
 
-    
+
 
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -45,12 +45,14 @@ export class MatBtnComponent implements OnChanges {
     }
 
 
+    @Input() context: any
+    @Input() data: any
+
     async onAction(event) {
         event.preventDefault();
         event.stopPropagation();
-        let data = undefined
-        if (this.descriptor.handler) data = await this.descriptor.handler({ ...event, action: this.descriptor, data } as ActionEvent);
-        else this.action.emit({ ...event, action: this.descriptor, data } as ActionEvent);
+
+        this.action.emit({ ...event, action: this.descriptor, data: this.data, context: this.context } as ActionEvent);
     }
 
 

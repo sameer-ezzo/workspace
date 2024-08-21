@@ -60,7 +60,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         this.listService.resolve(this.collection, 'list', undefined).then(r => this.dataListResolverResult = r)
     }
 
-    filterButtonActionDescriptor = { action: 'filter', icon: 'filter_list', header: true, variant: 'icon', handler: (event: ActionEvent) => this.toggleFilterDrawer() } as ActionDescriptor
+    filterButtonActionDescriptor = { name: 'filter', action: 'filter', icon: 'filter_list', header: true, variant: 'icon' } as ActionDescriptor
 
     _dataListResolverResult = signal<DataListResolverResult<any>>(null)
     @Input()
@@ -69,7 +69,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
     public set dataListResolverResult(value: DataListResolverResult<any>) {
         if (!value) return
-        
+
 
         //todo: make sure to call this only if no filter provided.
 

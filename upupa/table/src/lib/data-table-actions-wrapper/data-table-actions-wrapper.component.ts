@@ -1,8 +1,5 @@
 import { Component, EventEmitter, OnChanges, Input, Output, SimpleChanges, ChangeDetectionStrategy, signal, HostBinding } from '@angular/core'
-import { NormalizedItem } from '@upupa/data'
 import { ActionDescriptor, ActionEvent } from '@upupa/common'
-import { ActionsContext, ActionsWrapperViewModel } from '../types'
-
 
 
 @Component({
@@ -14,8 +11,8 @@ import { ActionsContext, ActionsWrapperViewModel } from '../types'
 export class DataTableActionsWrapperComponent<T = any> implements OnChanges {
     @HostBinding('attr.tabindex') tabindex = 0
 
-    @Input() context: ActionsWrapperViewModel<T> = null
-    @Input() actions: ActionDescriptor[] | ((context: ActionsContext<T>) => ActionDescriptor[]) = []
+    @Input() context: any
+    @Input() actions: ActionDescriptor[] | ((context: any) => ActionDescriptor[]) = []
     // this represents the actions that will be shown in the header of the table
 
     @Output() action = new EventEmitter<ActionEvent>()
@@ -29,18 +26,14 @@ export class DataTableActionsWrapperComponent<T = any> implements OnChanges {
             const data = Array.isArray(this.context) ? this.context.map(x => x.item) : this.context?.item
 
             const actions = Array.isArray(this.actions) ? this.actions : this.actions(data)
-            this._actions.set(actions.filter(a => !ActionDescriptor._menu(a)))
-            this._menuActions.set(actions.filter(a => ActionDescriptor._menu(a)))
+            this._actions.set(actions.filter(a => !a.menu))
+            this._menuActions.set(actions.filter(a => a.menu))
         }
     }
 
-    onAction(descriptor: ActionDescriptor) {
-        //TODO should action set loading automatically just like filter?
-
-        const data = Array.isArray(this.context) ? this.context : [this.context]
-        const e = { action: descriptor, data: data.map(d => d.item as T) }
-        if (descriptor.handler) descriptor.handler(e)
-        this.action.emit(e)
+    onAction(e: ActionEvent) {
+        const data = e.context.data
+        this.action.emit({ action: e.action, data: data.map(d => d.item as T), context: this.context })
     }
 }
 

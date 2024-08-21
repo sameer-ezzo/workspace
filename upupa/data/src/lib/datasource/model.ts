@@ -31,6 +31,10 @@ export interface ITableDataSource<T = any> {
     getItems(keys: (string | number | symbol)[], keyProperty: string | number | symbol): Observable<T[]>
 }
 
+/**
+ * This type is used to define the key of a type T.
+ * It can be a single key of T or an array of keys of T.
+ */
 export type Key<T> = keyof T | (keyof T)[];
 export type NormalizedItem<T = any> = { key: any, item: T, display: Partial<T>, value: Partial<T>, image?: Partial<T>, defaultSearchTerm?: string }
 
@@ -46,7 +50,7 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
     abstract destroy?();
 
     protected _initialized = false;
-    
+
 
     readonly page$: BehaviorSubject<PageDescriptor> = new BehaviorSubject<PageDescriptor>({ pageIndex: 0 });
     get page(): PageDescriptor { return this.page$.value; }
@@ -77,7 +81,7 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
         this._initialized = true;
         this.refresh(options);
     }
-    
+
     getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
         return of([])
     }

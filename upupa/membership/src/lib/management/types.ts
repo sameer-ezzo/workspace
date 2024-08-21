@@ -25,7 +25,7 @@ export const defaultUserListActions: ActionDescriptor[] = [
 ];
 export const defaultUserListHeaderActions: ActionDescriptor[] = [
     { path: 'auth', action: 'Ban User', variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', bulk: true, header: true, color: 'warn' },
-    { path: 'auth', action: 'Admin Create User', variant: 'stroked', position: 'header', name: 'create', icon: 'person_add', text: 'Create', color: 'primary' }
+    { path: 'auth', action: 'Admin Create User', variant: 'stroked', header: true, name: 'create', icon: 'person_add', text: 'Create', color: 'primary' }
 ];
 
 export const defaultCreateUserFromScheme: FormScheme = {

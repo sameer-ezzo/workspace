@@ -156,7 +156,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent<C>, any>): Promise<any> {
 
         let res = null
-        if (e.action.handler) res = await e['data']
+        if ('handler' in e.action && e.action.handler) res = await e['data']
         else if (this.component.onAction) res = await this.component.onAction(e, ref)
 
 

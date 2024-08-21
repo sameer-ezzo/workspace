@@ -47,7 +47,7 @@ export class ScaffoldingService {
     }
 
 
-   
+
 
     async scaffold(path: string, fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" }, ...params: any[]) {
 
@@ -142,8 +142,8 @@ export class ScaffoldingService {
         const data = await this.scaffold(path, undefined, ...params) as DataFormResolverResult;
         const { formViewModel } = data
         return firstValueFrom(this.dialog.openDialog(DataFormComponent, {
-            ...dialogOptions,
-            inputs: { ...dialogOptions.inputs, path, ...formViewModel }
+            ...dialogOptions??{},
+            inputs: { ...dialogOptions?.inputs??{}, path, ...formViewModel }
         }).afterClosed())
     }
 }

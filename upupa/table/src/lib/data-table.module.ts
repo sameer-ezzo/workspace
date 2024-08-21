@@ -36,6 +36,7 @@ import { TableColumnSelectorPipe } from './table-column-selector.pipe';
 import { DataTableActionsWrapperComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
 import { TableFormInput } from './table-form-input/table-form-input.component';
 import { ValueDataComponentBase } from './value-data-base.component';
+import { ActionDescriptorComponent } from "../../../mat-btn/src/lib/action-descriptor.component";
 
 
 
@@ -50,16 +51,17 @@ const declarations = [DataTableComponent, DataTableActionsWrapperComponent, Tabl
 @NgModule({
     declarations: declarations,
     imports: [
-        CommonModule,
-        UtilsModule,
-        RouterModule,
-        FormsModule,
-        UtilsModule,
-        DragDropModule,
-        ...material,
-        TranslationModule,
-        MatBtnComponent
-    ],
+    CommonModule,
+    UtilsModule,
+    RouterModule,
+    FormsModule,
+    UtilsModule,
+    DragDropModule,
+    ...material,
+    TranslationModule,
+    MatBtnComponent,
+    ActionDescriptorComponent
+],
     exports: [...declarations, DragDropModule],
     providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }]
 })

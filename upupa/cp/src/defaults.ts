@@ -19,7 +19,12 @@ export const defaultListColumns: ColumnsDescriptor = {
 
 export function defaultCreateListItemHandler(scaffolder, value, subject) {
     return {
-        action: 'create', icon: 'add', position: 'header', variant: 'icon', handler: async (event: ActionEvent) => {
+        name: 'create',
+        action: 'create',
+        icon: 'add',
+        header: true,
+        variant: 'icon',
+        handler: async (event: ActionEvent) => {
 
             const result = await scaffolder.dialogForm("/create/event/do", null, value)
             if (result) subject.next({ ...value, do: [...value.do, result] })
@@ -28,9 +33,9 @@ export function defaultCreateListItemHandler(scaffolder, value, subject) {
 }
 
 export const defaultListHeaderActions: ActionDescriptor[] = [
-    { position: 'header', name: 'create', variant:'stroked', icon: 'add_circle_outline', text: 'Create' }
+    { name: 'create', variant: 'stroked', icon: 'add_circle_outline', text: 'Create', header: true }
 ]
 export const defaultListActions: ActionDescriptor[] = [
     { variant: 'icon', name: 'edit', icon: 'edit', menu: false },
-    { position: 'menu', name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
+    { name: 'delete', icon: 'delete_outline', text: 'Delete', menu: true },
 ]
