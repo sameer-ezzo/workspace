@@ -1,0 +1,5 @@
+@if(descriptor['component']) {
+<ng-content *ngComponentOutlet="descriptor['component']; inputs: descriptor['inputs']"></ng-content>
+} @else {
+<mat-btn [descriptor]="descriptor" [context]="context" (action)="onAction($event)"></mat-btn>
+}
