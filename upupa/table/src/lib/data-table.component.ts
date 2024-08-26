@@ -11,20 +11,14 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   AfterViewInit,
-  inject,
-  ChangeDetectorRef,
   WritableSignal,
   signal,
-  ViewContainerRef,
-  ComponentRef,
   computed,
   HostBinding,
   HostListener,
 } from '@angular/core';
-import { debounceTime, takeUntil } from 'rxjs/operators';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { MatDialog } from '@angular/material/dialog';
 import { ColumnsSelectComponent } from './columns-select.component/columns-select.component';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -81,11 +75,19 @@ export class DataTableComponent<T = any>
   @HostBinding('attr.tabindex') tabindex = 0;
 
   @Input() name: string;
-  @Input() stickyHeader = true;
+  private _stickyHeader = signal(false);
+  @Input()
+  public get stickyHeader() {
+    return this._stickyHeader();
+  }
+  public set stickyHeader(value) {
+    this._stickyHeader.set(value);
+  }
+
   @Input() showSearch: boolean | 'true' | 'false' = true;
-  hasHeader = computed(() => {
-    return this.showSearch === true || (this.label || '').length > 0;
-  });
+  hasHeader = signal(false);
+
+
 
   @Input() label: string;
   @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = []; // this represents the actions that will be shown in each row
@@ -125,10 +127,6 @@ export class DataTableComponent<T = any>
     this._allowChangeColumnsOptions.set(value);
   }
 
-  // _updateViewModel(): Promise<void> {
-  //     this.selected = this.value
-  // }
-
   constructor(
     protected host: ElementRef<HTMLElement>,
     private bus: EventBus,
@@ -157,15 +155,20 @@ export class DataTableComponent<T = any>
   }
 
   ngAfterViewInit(): void {
-    if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate;
+    if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate
   }
 
   override async ngOnChanges(changes: SimpleChanges) {
     await super.ngOnChanges(changes);
-    if (changes['showSearch']) {
-      this.showSearch =
-        this.showSearch === true || String(this.showSearch) === 'true';
-    }
+
+    this.showSearch =
+      this.showSearch === true || String(this.showSearch) === 'true';
+    this.hasHeader.set(
+      this.hasHeader() ||
+        !!this.headerActions ||
+        (this.label || '').length > 0 ||
+        this.showSearch === true,
+    );
     if (changes['adapter']) {
       this.adapter.refresh();
     }

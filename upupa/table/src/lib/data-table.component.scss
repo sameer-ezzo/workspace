@@ -42,6 +42,9 @@
   position: relative;
   box-sizing: border-box;
 
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+
   mat-progress-bar {
     position: absolute;
     top: 0;
@@ -51,6 +54,7 @@
     z-index: 9999;
   }
   .table-container {
+    // height: 100% - 56px actions header - table header 56px;
     height: 100%;
     overflow: auto;
     display: flex;
@@ -76,10 +80,10 @@ th {
 }
 
 tr[cdk-header-row] > th {
-  background: var(--bg-status-bar) !important;
+  background: var(--mat-toolbar-container-background-color) !important;
 }
 [mat-row]:hover {
-  background: var(--bg-hover);
+  background: var(--mat-option-hover-state-layer-color) !important;
 }
 
 /* filter */

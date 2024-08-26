@@ -1,7 +1,7 @@
 @for (a of _actions(); track i; let i = $index) {
   <!-- <mat-btn class="action-btn" [tabIndex]="i" [descriptor]="a" (action)="onAction(a)" [disabled]="a.disabled">
     </mat-btn> -->
-  <mat-action
+  <mat-action class="action-btn"
     [descriptor]="a"
     [context]="context"
     (action)="onAction($event)"
