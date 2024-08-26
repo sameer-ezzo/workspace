@@ -46,10 +46,10 @@ export class DataService {
             else path = path + '?' + qs;
         }
 
-        let x = this.cache.get(path);
-        this.cache.refresh(path);
+        // let x = this.cache.get(path);
+        // this.cache.refresh(path);
         //init stream
-        if (!x) {
+        // if (!x) {
 
             //casted observable to be triggered later
             const subject = new ReplaySubject<DataResult<T>>(1);
@@ -64,19 +64,20 @@ export class DataService {
 
             //NEVER.pipe(startWith): to create a strem that only emits 1 and never complete
             //multicast: share to prevent subscribers to activate api call with each subscription
-            const stream = combineLatest([api$, NEVER.pipe(startWith(1))])
-                .pipe(
+            // const stream = combineLatest([api$, NEVER.pipe(startWith(1))])
+            //     .pipe(
 
-                    map(([apiResult]) => apiResult),
-                    multicast(subject),
-                    refCount());
+            //         map(([apiResult]) => apiResult),
+            //         multicast(subject),
+            //         refCount());
 
             //cache
-            this.cache.set(path, { subject, stream, headers });
+            // this.cache.set(path, { subject, stream, headers });
+            const stream = api$ //.pipe(multicast(subject), refCount());
             return stream;
 
-        }
-        else return x.stream;
+        // }
+        // else return x.stream;
     }
 
     get<T>(path: string, query?: QueryDescriptor): Observable<ApiGetResult<T>> {
