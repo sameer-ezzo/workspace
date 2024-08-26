@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThumbsGridComponent } from './thumbs-grid.component';
 
@@ -6,7 +6,7 @@ describe('ThumbsGridComponent', () => {
   let component: ThumbsGridComponent;
   let fixture: ComponentFixture<ThumbsGridComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ ThumbsGridComponent ]
     })

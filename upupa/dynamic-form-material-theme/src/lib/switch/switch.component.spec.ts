@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatSwitchComponent } from './switch.component';
 
@@ -6,7 +6,7 @@ describe('InputComponent', () => {
   let component: MatSwitchComponent;
   let fixture: ComponentFixture<MatSwitchComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ MatSwitchComponent ]
     })

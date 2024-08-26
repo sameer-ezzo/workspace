@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataTableComponent } from './data-table.component';
 
@@ -6,11 +6,10 @@ describe('DataTableComponent', () => {
   let component: DataTableComponent;
   let fixture: ComponentFixture<DataTableComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
-      declarations: [ DataTableComponent ]
-    })
-    .compileComponents();
+      declarations: [DataTableComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

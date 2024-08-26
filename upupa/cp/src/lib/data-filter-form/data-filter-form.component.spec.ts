@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {  ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataFilterFormComponent } from './data-filter-form.component';
 
@@ -6,7 +6,7 @@ describe('DataFilterFormComponent', () => {
     let component: DataFilterFormComponent;
     let fixture: ComponentFixture<DataFilterFormComponent>;
 
-    beforeEach(async(() => {
+    beforeEach((() => {
         TestBed.configureTestingModule({
             declarations: [DataFilterFormComponent]
         })
@@ -17,7 +17,7 @@ describe('DataFilterFormComponent', () => {
         fixture = TestBed.createComponent(DataFilterFormComponent);
         component = fixture.componentInstance;
         component.fields = {}
-        component.filterDescriptor = {}
+        // component.filterDescriptor = {}
 
         fixture.detectChanges();
     });

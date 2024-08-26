@@ -31,12 +31,11 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DataComponentBase } from './data-base.component';
 import { DefaultTableCellTemplate } from './cell-template-component';
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
-import { MatBtnComponent } from '@upupa/mat-btn';
+import { ActionDescriptorComponent, MatBtnComponent } from '@upupa/mat-btn';
 import { TableColumnSelectorPipe } from './table-column-selector.pipe';
 import { DataTableActionsWrapperComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
 import { TableFormInput } from './table-form-input/table-form-input.component';
 import { ValueDataComponentBase } from './value-data-base.component';
-import { ActionDescriptorComponent } from "../../../mat-btn/src/lib/action-descriptor.component";
 
 
 

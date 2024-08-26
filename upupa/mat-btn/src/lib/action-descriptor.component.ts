@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, inject, Renderer2, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
 import { MatBtnComponent } from './mat-btn.component';

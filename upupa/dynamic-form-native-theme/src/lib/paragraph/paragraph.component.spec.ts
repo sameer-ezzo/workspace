@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ParagraphComponent } from './paragraph.component';
 
@@ -6,7 +6,7 @@ describe('ParagraphComponent', () => {
   let component: ParagraphComponent;
   let fixture: ComponentFixture<ParagraphComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ ParagraphComponent ]
     })
@@ -21,5 +21,5 @@ describe('ParagraphComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
+  })
 });

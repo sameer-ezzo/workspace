@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatBtnComponent } from './mat-btn.component';
 
@@ -6,7 +6,7 @@ describe('MatBtnComponent', () => {
     let component: MatBtnComponent;
     let fixture: ComponentFixture<MatBtnComponent>;
 
-    beforeEach(async(() => {
+    beforeEach((() => {
         TestBed.configureTestingModule({
             declarations: [MatBtnComponent]
         })

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {  ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatDateInputComponent } from './date-input.component';
 
@@ -6,7 +6,7 @@ describe('InputComponent', () => {
   let component: MatDateInputComponent;
   let fixture: ComponentFixture<MatDateInputComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ MatDateInputComponent ]
     })

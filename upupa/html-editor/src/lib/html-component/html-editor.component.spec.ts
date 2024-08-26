@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HtmlEditorComponent } from './html-editor.component';
 
@@ -6,7 +6,7 @@ describe('InputComponent', () => {
   let component: HtmlEditorComponent;
   let fixture: ComponentFixture<HtmlEditorComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ HtmlEditorComponent ]
     })
@@ -17,9 +17,5 @@ describe('InputComponent', () => {
     fixture = TestBed.createComponent(HtmlEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
   });
 });

@@ -1,12 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { , ComponentFixture, TestBed } from '@angular/core/testing';
+import { DataListComponent } from '../data-list/data-list.component';
 
-import { DataListComponent } from './media-library.component';
 
 describe('DataListComponent', () => {
   let component: DataListComponent;
   let fixture: ComponentFixture<DataListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ DataListComponent ]
     })

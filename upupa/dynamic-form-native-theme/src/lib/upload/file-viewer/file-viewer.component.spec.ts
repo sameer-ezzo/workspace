@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FilesViewerComponent } from './file-viewer.component';
 
@@ -6,7 +6,7 @@ describe('ThumbsGridComponent', () => {
   let component: FilesViewerComponent;
   let fixture: ComponentFixture<FilesViewerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ FilesViewerComponent ]
     })

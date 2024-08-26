@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RulesListComponent } from './permissions-side-bar.component';
 
@@ -6,7 +6,7 @@ describe('PermissionsComponent', () => {
   let component: RulesListComponent;
   let fixture: ComponentFixture<RulesListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ RulesListComponent ]
     })

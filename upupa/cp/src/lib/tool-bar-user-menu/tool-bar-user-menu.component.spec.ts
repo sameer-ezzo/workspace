@@ -1,10 +1,10 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ToolbarUserMenuComponent } from './tool-bar-user-menu.component'
 describe('ToolbarUserMenuComponent', () => {
     let component: ToolbarUserMenuComponent;
     let fixture: ComponentFixture<ToolbarUserMenuComponent>;
 
-    beforeEach(async(() => {
+    beforeEach((() => {
         TestBed.configureTestingModule({
             declarations: [ToolbarUserMenuComponent]
         })

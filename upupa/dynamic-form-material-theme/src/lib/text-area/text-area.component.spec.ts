@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MatTextAreaComponent } from './text-area.component';
 
@@ -6,12 +6,11 @@ describe('InputComponent', () => {
   let component: MatTextAreaComponent;
   let fixture: ComponentFixture<MatTextAreaComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ MatTextAreaComponent ]
-    })
-    .compileComponents();
-  }));
+      declarations: [MatTextAreaComponent],
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(MatTextAreaComponent);

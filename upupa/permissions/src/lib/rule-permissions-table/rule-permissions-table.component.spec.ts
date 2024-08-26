@@ -1,11 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed } from '@angular/core/testing';
 
 
 describe('PermissionFormComponent', () => {
   let component: PermissionFormComponent;
   let fixture: ComponentFixture<PermissionFormComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       declarations: [ PermissionFormComponent ]
     })
