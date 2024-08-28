@@ -138,12 +138,20 @@ export class ScaffoldingService {
         return Promise.resolve({ path, adapter, listViewModel }) as Promise<DataListResolverResult>;
     }
 
+    /**
+     * Initiates a dialog form for data input or editing.
+     *
+     * @param path The path (collection name if API or the path taken from the decorator) to the scaffolding model for the form, there are 4 verbs to use (create, edit, view, list), syntax is 'create/client' for example. This will likely change
+     * @param dialogOptions Optional configuration for the dialog.
+     * @param params Additional parameters to be passed to the scaffolding model.
+     * @returns A promise that resolves to the form data submitted by the user.
+     */
     async dialogForm<T = any>(path: string, dialogOptions?: DialogServiceConfig, ...params: any[]): Promise<T> {
         const data = await this.scaffold(path, undefined, ...params) as DataFormResolverResult;
         const { formViewModel } = data
         return firstValueFrom(this.dialog.openDialog(DataFormComponent, {
             ...dialogOptions??{},
-            inputs: { ...dialogOptions?.inputs??{}, path, ...formViewModel }
+            inputs: {path, ...formViewModel, ...dialogOptions?.inputs??{}}
         }).afterClosed())
     }
 }

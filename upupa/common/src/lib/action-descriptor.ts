@@ -15,6 +15,30 @@ export type ActionDescriptorBase = {
     meta?: any & { closeDialog: boolean };
 }
 
+/**
+ * Represents the appearance properties of an action descriptor.
+ *
+ * @property {('button' | 'submit')?} type - The type of the action.
+ * @property {string?} text - The text to be displayed on the action.
+ * @property {string?} icon - The icon to be displayed on the action.
+ * @property {string?} icon_url - The URL of the icon to be displayed on the action.
+ *
+ * @property {('primary' | 'accent' | 'warn' | string)?} color - The color of the action.
+ * @property {string?} tooltip - The tooltip text for the action.
+ * @property {('left' | 'right' | 'above' | 'below' | 'before' | 'after')?} tooltipPosition - The position of the tooltip.
+ *
+ * @property {boolean} disabled - Indicates if the action is disabled.
+ *
+ * @property {string?} matBadge - The badge text for the action.
+ * @property {ThemePalette?} matBadgeColor - The color of the badge.
+ * @property {MatBadgePosition?} matBadgePosition - The position of the badge.
+ * @property {MatBadgeSize?} matBadgeSize - The size of the badge.
+ * @property {('button' | 'raised' | 'flat' | 'stroked' | 'icon' | 'fab' | 'mini-fab')?} variant - The variant of the action.
+ *
+ * @property {boolean} bulk - Indicates if the action is a bulk action.
+ * @property {boolean} menu - Indicates if the action is a menu action.
+ * @property {boolean} header - Indicates if the action is a header action.
+ */
 export type ActionDescriptorAppearance = {
     type?: 'button' | 'submit';
     text?: string;
