@@ -14,111 +14,122 @@ import { Condition } from '@noah-ark/expression-engine';
 import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 
 type UserFormOptions = {
-    scheme: FormScheme;
-    conditions?: Condition[];
-}
+  scheme: FormScheme;
+  conditions?: Condition[];
+};
 
 @Component({
-    selector: 'user-form',
-    templateUrl: './user-form.component.html',
-    styleUrls: ['./user-form.component.scss']
+  selector: 'user-form',
+  templateUrl: './user-form.component.html',
+  styleUrls: ['./user-form.component.scss'],
 })
-export class UserFormComponent implements UpupaDialogPortal<UserFormComponent> {
-    @ViewChild('userForm') form: any
-    dialogRef: MatDialogRef<UpupaDialogComponent<UserFormComponent>>;
-    private _loading = signal<boolean>(false)
-    public get loading() { return this._loading() }
-    public set loading(value) { this._loading.set(value) }
+export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent> {
+  @ViewChild('userForm') form: any;
+  dialogRef: MatDialogRef<UpupaDialogComponent<UpupaDialogComponent<any>>>;
+  private _loading = signal<boolean>(false);
+  public get loading() {
+    return this._loading();
+  }
+  public set loading(value) {
+    this._loading.set(value);
+  }
 
-    scheme = signal<FormScheme>(null)
-    conditions = signal<Condition[]>([])
+  scheme = signal<FormScheme>(null);
+  conditions = signal<Condition[]>([]);
 
-    private _updateInputs(mode: 'editUser' | 'createUser' = 'createUser') {
-        this.loading = true
+  private _updateInputs(mode: 'editUser' | 'createUser' = 'createUser') {
+    this.loading = true;
 
-        this.scheme.set(this.options?.scheme)
-        this.conditions.set(this.options?.conditions || [])
-        this.loading = false
+    this.scheme.set(this.options?.scheme);
+    this.conditions.set(this.options?.conditions || []);
+    this.loading = false;
+  }
+
+  _userValue = signal<Partial<User>>(null);
+  @Input()
+  public get user(): Partial<User> {
+    return this._userValue();
+  }
+  public set user(v: Partial<User>) {
+    this.getUser(v).then((u) => {
+      this._userValue.set(u);
+      this._updateInputs();
+    });
+  }
+
+  errors = (form: DynamicFormComponent) =>
+    Array.from(form.controls)
+      .map((c) => c[1].errors)
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
+  _options: UserFormOptions = null;
+  @Input()
+  get options() {
+    return this._options;
+  }
+  set options(options: UserFormOptions) {
+    if (options === this._options) return;
+    this._options = options;
+  }
+
+  private async getUser(user: Partial<User>) {
+    if (!user?._id) return {};
+    try {
+      return await firstValueFrom(
+        this.data
+          .get<DataResult<User>>(`/user/${user._id}`)
+          .pipe(map((u) => u.data?.[0] ?? {})),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
+  }
 
+  constructor(
+    public auth: AuthService,
+    public data: DataService,
+    private http: HttpClient,
+  ) {}
 
-    _userValue = signal<Partial<User>>(null);
-    @Input()
-    public get user(): Partial<User> {
-        return this._userValue();
+  discard() {
+    this.dialogRef?.close();
+  }
+  async save() {
+    const form = this.form;
+    const user = this.user;
+    if (!form.touched || form.invalid) return;
+    try {
+      if (!this.user?._id) {
+        const res = await this._createUser(form.value);
+        this._userValue.set(res);
+      } else {
+        const v = form.getDirtyValue();
+        if (v) await this.data.put(`/user/${this.user._id}`, v);
+      }
+      this.dialogRef.close(this.user);
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
-    public set user(v: Partial<User>) {
-        this.getUser(v).then(u => {
-            this._userValue.set(u)
-            this._updateInputs()
-        })
-    }
+  }
 
-    errors = (form: DynamicFormComponent) => (Array.from(form.controls).map(c => c[1].errors).reduce((a, b) => ({ ...a, ...b }), {}))
+  private async _createUser(user) {
+    const u = { ...user } as User;
+    u.username = u.username ?? u.email;
 
-    _options: UserFormOptions = null
-    @Input()
-    get options() { return this._options }
-    set options(options: UserFormOptions) {
-        if (options === this._options) return
-        this._options = options
-    }
+    return await firstValueFrom(
+      this.http.post<Partial<User>>(`${this.auth.baseUrl}/admincreateuser`, u),
+    );
+  }
 
-    private async getUser(user: Partial<User>) {
-        if (!user?._id) return {}
-        try {
-            return await firstValueFrom(this.data.get<DataResult<User>>(`/user/${user._id}`).pipe(map(u => u.data?.[0] ?? {})))
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    }
-
-    constructor(
-        public auth: AuthService,
-        public data: DataService,
-        private http: HttpClient) {
-    }
-
-
-
-    discard() {
-        this.dialogRef?.close()
-    }
-    async save() {
-        const form = this.form
-        const user = this.user
-        if (!form.touched || form.invalid) return
-        try {
-
-            if (!this.user?._id) {
-                const res = await this._createUser(form.value)
-                this._userValue.set(res)
-            }
-            else {
-                const v = form.getDirtyValue()
-                if (v) await this.data.put(`/user/${this.user._id}`, v);
-            }
-            this.dialogRef.close(this.user)
-        } catch (error) {
-            console.error(error);
-            throw error;
-
-        }
-    }
-
-    private async _createUser(user) {
-        const u = { ...user } as User
-        u.username = u.username ?? u.email;
-
-        return await firstValueFrom(this.http.post<Partial<User>>(`${this.auth.baseUrl}/admincreateuser`, u))
-    }
-
-    async onAction(e: ActionEvent, ref: MatDialogRef<UpupaDialogComponent>) {
-        if (e.action.name === 'save') {
-            e.action.meta.closeDialog = false
-            return this.save()
-        }
-        else return e
-    }
+  async onAction(e: ActionEvent) {
+    const dialogRef = e.context.dialogRef;
+    if (e.action.name === 'save') {
+      try {
+        await this.save();
+        dialogRef.close(this.user);
+      } catch (error) {}
+    } else dialogRef.close();
+  }
 }

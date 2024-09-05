@@ -6,8 +6,8 @@ import { ColumnsDescriptor } from "@upupa/table"
 
 
 export const defaultFormActions: ActionDescriptor[] = [
-    { name: 'cancel', type: 'button', text: 'Cancel', variant: 'stroked', meta: { closeDialog: true } },
-    { variant: 'raised', type: 'submit', name: 'submit', text: 'Submit', color: 'primary', meta: { closeDialog: true } }
+    { name: 'cancel', type: 'button', text: 'Discard', variant: 'stroked' },
+    { variant: 'raised', type: 'submit', name: 'submit', text: 'Submit', color: 'primary' }
 ]
 
 

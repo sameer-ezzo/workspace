@@ -78,7 +78,7 @@
         @if (maxAllowed !== 1 && selectedNormalized$ | async; as sns) {
           <mat-checkbox
             (change)="toggleSelectAll()"
-            [checked]="sns.length > adapter.normalized?.length"
+            [checked]="sns.length >= adapter.normalized?.length"
             [indeterminate]="
               sns.length > 0 && sns.length !== adapter.normalized?.length
             "

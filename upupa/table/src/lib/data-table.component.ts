@@ -87,8 +87,6 @@ export class DataTableComponent<T = any>
   @Input() showSearch: boolean | 'true' | 'false' = true;
   hasHeader = signal(false);
 
-
-
   @Input() label: string;
   @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = []; // this represents the actions that will be shown in each row
   @Input() headerActions:
@@ -152,10 +150,16 @@ export class DataTableComponent<T = any>
       .subscribe((result) => {
         this.handset = result.matches;
       });
+
+    this.selectedNormalized$
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe((selected) => {
+      this.selectionChange.emit(selected);
+    });
   }
 
   ngAfterViewInit(): void {
-    if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate
+    if (!this.cellTemplate) this.cellTemplate = this.defaultTemplate;
   }
 
   override async ngOnChanges(changes: SimpleChanges) {

@@ -39,6 +39,7 @@ export class ConfirmService {
                             text: o.yes ?? "Yes",
                         } as ActionDescriptor,
                     ],
+                    
                     title,
                     img,
                     confirmText,

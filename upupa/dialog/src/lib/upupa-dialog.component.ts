@@ -17,6 +17,7 @@ import {
   PLATFORM_ID,
   signal,
   WritableSignal,
+  Type,
 } from '@angular/core';
 import {
   MatDialogRef,
@@ -42,15 +43,7 @@ import {
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-
-export interface UpupaDialogPortal<C> {
-  dialogRef?: MatDialogRef<UpupaDialogComponent<C>>;
-  dialogActions?: WritableSignal<ActionDescriptor[]>;
-  onAction?(
-    e: ActionEvent,
-    ref: MatDialogRef<UpupaDialogComponent<C>>,
-  ): Promise<any | ActionEvent>;
-}
+import { UpupaDialogActionContext, UpupaDialogPortal } from './dialog.service';
 
 @Component({
   selector: 'upupa-dialog',
@@ -94,9 +87,11 @@ export class UpupaDialogComponent<C = any>
   private readonly destroyRef = inject(DestroyRef);
   @HostListener('keyup', ['$event'])
   keyup(e) {
-    if (e.key !== 'Escape') return;
-    if (this.dialogData.canEscape !== true) return;
-    this.close();
+    if (e.key === 'Escape' && this.dialogData.canEscape === true) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.close();
+    }
   }
 
   dialogRef: MatDialogRef<UpupaDialogComponent<C>>;
@@ -113,11 +108,16 @@ export class UpupaDialogComponent<C = any>
     this.title = dialogData.title;
     this.subTitle = dialogData.subTitle;
     this.showCloseBtn = dialogData.hideCloseBtn !== true;
+    dialogData.outputs ?? { action: () => {} };
   }
 
   // inject platform id
   private readonly platformId = inject(PLATFORM_ID);
   ngAfterViewInit() {
+    this.registerWidthWatcher();
+  }
+
+  private registerWidthWatcher() {
     if (isPlatformBrowser(this.platformId))
       fromEvent(window, 'resize')
         .pipe(
@@ -126,14 +126,11 @@ export class UpupaDialogComponent<C = any>
           takeUntilDestroyed(this.destroyRef),
         )
         .subscribe((e) => {
-          this._setWidth();
+          if (window.innerWidth < 790) this.dialogRef.updateSize('80%');
+          else this.dialogRef.updateSize('100%');
         });
   }
 
-  private _setWidth() {
-    if (window.innerWidth < 790) this.dialogRef.updateSize('80%');
-    else this.dialogRef.updateSize('100%');
-  }
   onAttached(portalOutletRef: CdkPortalOutletAttachedRef) {
     portalOutletRef = portalOutletRef as ComponentRef<any>;
     this.component = portalOutletRef.instance;
@@ -143,8 +140,8 @@ export class UpupaDialogComponent<C = any>
     const meta = reflectComponentType(this.dialogData.component);
     const { inputs, outputs } = meta;
 
-    if (this.dialogData?.inputs) {
-      const inputsData = this.dialogData?.inputs;
+    if (this.dialogData.inputs) {
+      const inputsData = this.dialogData.inputs;
       const inputsKeys = Object.getOwnPropertyNames(inputsData);
       if (inputsKeys.length > 0) {
         const changes = {} as SimpleChanges;
@@ -169,8 +166,8 @@ export class UpupaDialogComponent<C = any>
       }
     }
 
-    if (this.dialogData?.outputs) {
-      const outputsData = this.dialogData?.outputs;
+    if (this.dialogData.outputs) {
+      const outputsData = this.dialogData.outputs;
       const outputsKeys = Object.getOwnPropertyNames(outputsData);
       if (outputsKeys.length > 0) {
         for (const outputName of outputsKeys) {
@@ -180,8 +177,12 @@ export class UpupaDialogComponent<C = any>
           if (output)
             this.component[outputName]
               .pipe(takeUntil(this.dialogRef.afterClosed()))
-              .subscribe((r) => {
-                this.dialogData?.outputs[outputName]?.(r, this.dialogRef);
+              .subscribe((e) => {
+                this.dialogData.outputs[outputName]?.(e, {
+                  dialogRef: this.dialogRef,
+                  component: this.component,
+                  host: this,
+                });
               });
           else
             console.warn(
@@ -192,13 +193,20 @@ export class UpupaDialogComponent<C = any>
     }
   }
 
-  async onAction(e: ActionEvent): Promise<void> {
-    if (this.component.onAction) await this.component.onAction(e, this.dialogRef);
+  async onAction(e: ActionEvent<any, UpupaDialogActionContext<C>>) {
+    e.context = {
+      ...e.context,
+      dialogRef: this.dialogRef,
+      component: this.component,
+      host: this,
+    };
+    if (this.component.onAction) await this.component.onAction(e);
     else {
-      if (this.dialogRef.getState() === MatDialogState.OPEN)
-        if (e.action.meta?.closeDialog === true)
-          if (e.action.type === 'submit') this.dialogRef.close(this.component);
-          else this.dialogRef.close();
+      this.dialogData.outputs?.action?.(e);
+      // if (this.dialogRef.getState() === MatDialogState.OPEN)
+      //   if (e.action.meta?.closeDialog === true)
+      //     if (e.action.type === 'submit') this.dialogRef.close(this.component);
+      //     else this.dialogRef.close();
     }
   }
 

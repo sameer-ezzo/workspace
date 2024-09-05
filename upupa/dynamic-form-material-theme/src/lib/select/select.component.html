@@ -133,7 +133,7 @@
 
   <div id="select-filter-wrapper">
     <mat-icon>search</mat-icon>
-    <input #filterInput [focus]="true" focusType="select" style="flex: 1;border:none;outline: none;" [value]="q"
+    <input #filterInput [focus]="true" [placeholder]="placeholder??''" focusType="select" style="flex: 1;border:none;outline: none;" [value]="q"
       (input)="q=$event.target?.['value']" (keydown.enter)="filter$.next(q)">
     @if(filterInput.value.length > 0){
     <button mat-icon-button (click)="$event.stopPropagation(); q=''">
