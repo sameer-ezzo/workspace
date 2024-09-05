@@ -18,12 +18,10 @@ import {
   defaultRolesListActions,
   defaultRolesListColumns,
   defaultRolesListHeaderActions,
-  defaultUserListColumns,
 } from '../types';
 import { RoleFormComponent } from '../role-form/role-form.component';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmService, DialogService, SnackBarService } from '@upupa/dialog';
-import { defaultFormActions } from '@upupa/cp';
 
 @Component({
   selector: 'roles-list',
