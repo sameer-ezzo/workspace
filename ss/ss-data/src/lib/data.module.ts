@@ -40,7 +40,6 @@ function getDbsProviders(databasesCollections: DatabasesCollections = {}, databa
                 const collections = databaseInfo.collections ?? {}
                 const migrations = databaseInfo.migrations ?? []
 
-                logger.info("provide: ", provide, url, options, Object.keys(collections), migrations?.map(m => m.name))
                 return {
                     provide,
                     useFactory: (broker: Broker) => DataService.create(provide, url, options, collections, migrations, broker),

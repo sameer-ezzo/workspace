@@ -22,19 +22,9 @@ const redisClients = Object.keys(process.env)
             provide,
             useFactory: () => RedisClient.create(provide, parseRedisConfig(provide)),
             scope: Scope.TRANSIENT
-        } as FactoryProvider
+        }
     })
 
-const prod = process.env['NODE_PROD'] === 'production'
-if (!prod && !redisClients.find(p => p.provide == 'REDIS_DEFAULT')) {
-    const provide = "REDIS_DEFAULT"
-    redisClients.push({
-        provide,
-        useFactory: () => RedisClient.create(provide, [{ host: 'localhost', port: 6379 }]),
-        scope: Scope.TRANSIENT
-    } as FactoryProvider
-    )
-}
 
 const providers: Provider[] = [
     EventBusService,
@@ -45,11 +35,15 @@ const providers: Provider[] = [
         inject: [HttpAdapterHost]
     },
     WebsocketsGateway,
-    ...redisClients,
-    { provide: RedisClient, useFactory: (redis) => redis, inject: ['REDIS_DEFAULT'], scope: Scope.TRANSIENT },
+    ...redisClients
 
 ]
 
+// PROVIDE THE DEFAULT REDIS CLIENT (IF ANY)
+if (redisClients.length) providers.push({
+    provide: RedisClient,
+    useFactory: (redis) => redis, inject: ['REDIS_DEFAULT'], scope: Scope.TRANSIENT
+})
 
 
 const controllers = [BrokerController]
