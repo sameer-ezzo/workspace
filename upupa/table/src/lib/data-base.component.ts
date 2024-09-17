@@ -158,21 +158,15 @@ export class DataComponentBase<T = any> {
     //selection
     selectionModel = new SelectionModel<keyof T>(true, [], true)
     toggleSelectAll() {
-        //selection can have items from data from other pages or filtered data so:
-        //if selected items n from this adapter data < adapter data -> select the rest
-        //else unselect all items from adapter data only
-
-        const selected = this.selected as (keyof T)[]
-        if (this.maxAllowed === 1) {
-            if (this.selected.length > 0) this.selectionModel.clear(false)
-        }
+        const selected = this.selectionModel.selected
+        if (selected.length) this.selectionModel.clear()
         else {
-
-            if (this.adapter.normalized.length === selected.length)
-                this.selectionModel.deselect(...(selected))
-            else {
-                this.selectionModel.select(...this.adapter.normalized.map(n => n.key))
-            }
+            this.selectionModel.clear(false)
+            const noOfSelecting = Math.max(1, this.maxAllowed ?? this.adapter.normalized.length)
+            const toBeSelected = this.adapter.normalized
+                .map(n => n.key)
+                .slice(0, noOfSelecting)
+            this.selectionModel.select(...toBeSelected)
         }
     }
 
