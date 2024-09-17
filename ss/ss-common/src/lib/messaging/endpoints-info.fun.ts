@@ -44,17 +44,15 @@ export function completeEndpointsInfo() {
         x.prefix = _controllerPrefix(x.controller);
 
         //check if enpoints have any undefined property
-        if (x.prefix === undefined)
-            logger.warn(`Undefined prefix for ${x.prefix ?? x.controller} ${x.method} ${x.path}`);
-        if (x.method === undefined)
-            logger.warn(`Undefined method for ${x.prefix ?? x.controller} ${x.method} ${x.path}`);
+        if (x.prefix === undefined) logger.warn(`Undefined prefix for ${x.controller.constructor.name} ${x.method} ${x.path}`);
+        if (x.method === undefined) logger.warn(`Undefined method for ${x.controller.constructor.name} ${x.method} ${x.path}`);
         if (x.path === undefined) {
-            logger.warn(`Undefined path for ${x.prefix ?? x.controller} ${x.method} ${x.path}`);
+            logger.warn(`Undefined path for ${x.controller.constructor.name} ${x.method} ${x.path}`);
             continue
         }
 
         if (x.path?.startsWith('/'))
-            logger.warn(`Path should not start with / for ${x.prefix ?? x.controller} ${x.method} ${x.path}`);
+            logger.warn(`Path should not start with / for ${x.controller.constructor.name} ${x.path} (METHOD: ${x.method})`);
 
         const p = join(x.prefix, x.path)
         const route = p.startsWith('/') ? p.substring(1) : p
