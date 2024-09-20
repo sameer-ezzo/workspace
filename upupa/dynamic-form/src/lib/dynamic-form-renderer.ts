@@ -135,6 +135,8 @@ export class DynamicFormRenderer<T = any> {
 
     private getValidators(field: Field) {
         const validations = field.validations || [];
+        if(!field.ui) field.ui = {}
+        if(!field.ui.inputs) field.ui.inputs = {}
         if (field.ui.inputs['required']) validations.push({ name: 'required', message: 'required' });
         return validations.map(v => this.getValidator(v));
     }

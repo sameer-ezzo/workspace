@@ -25,3 +25,4 @@ export * from './lib/decorators/decorator.types';
 export * from './lib/tool-bar-user-menu/tool-bar-user-menu.component';
 export * from './lib/dbI18n.pipe';
 export * from './lib/cp-layout-routes';
+export * from './lib/form-view-model/form-view-model.component';

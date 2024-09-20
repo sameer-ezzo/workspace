@@ -12,21 +12,77 @@ export type ElementUi = {
 
 
 
-
-
-
 export type FieldBase = {
-    type: 'fieldset' | 'field' | 'page-breaker',
-    name: string,
-    path?: string,
+    /** @description The type of the field:
+     *  - 'fieldset': represents a group of fields for nesting. inspired by HTML
+     *  - 'field': represents single input
+     *  - 'page-breaker': pseudo element
+     **/
+    // type: 'fieldset' | 'field' | 'page-breaker'
+
+    /** @description The name of the field */
+    name: string
+
+    /** @description Optional. The path of the value model bond to */
+    path?: string
+
+    /** @description Optional. The text associated with the field */
     text?: string,
+
+    /** @description Optional. UI configuration for the field */
     ui?: ElementUi,
+
+    /** @description Optional. Array of validators for the field */
     validations?: Validator[],
+
+    /** @description Optional. Validation task for the field */
     validationTask?: ValidationTask,
 }
-export type Field = FieldItem | Fieldset; // | PageBreaker;
 
-type ValidatorName = 'required' | 'requiredTrue' | 'latin' | 'email' | 'includes' | 'startsWith' | 'endsWith' | 'maxLength' | 'minLength' | 'length' | 'pattern' | 'regex' | 'max' | 'min' | 'greaterThan' | 'lessThan' | 'before' | 'after' | 'timeSpanMax' | 'timeSpanMin'
+
+const INPUTS = ['hidden', 'recaptcha', 'text', 'textarea', 'paragraph', 'color', 'autocomplete', 'number', 'number', 'date', 'phone', 'password', 'slider', 'reviews', 'email', 'date', 'date', 'select', 'array', 'radios', 'checks', 'chips', 'file', 'local', 'tree', 'switch', 'address'] as const
+export type INPUTS_TYPES = typeof INPUTS[number]
+
+export type FieldItem = {
+    type: 'field' | 'page-breaker'
+    /**
+    * @description input type inspired by html, it can be a string for any custom component or an INPUT_TYPE.
+    * @example text, select, number, textarea
+    */
+    input: string | INPUTS_TYPES
+    validations?: Validator[]
+} & FieldBase
+
+
+
+export type Fieldset = {
+    type: 'fieldset',
+    /**
+     * @description the form scheme inside the fieldset in case type fieldset was chosen
+     */
+    items: FormScheme
+} & FieldBase
+
+// export type PageBreaker = FieldBase & {
+//   type: 'page-breaker'
+// };
+
+export type Field =  Fieldset | FieldItem; // | PageBreaker;
+
+export type FormScheme = { [name: string]: Field }
+
+export type ComponentInputs = { [name: string]: any };
+export type DynamicComponentMapping = {
+    component: Type<any>;
+    field?: Partial<FieldItem>;
+};
+export class DynamicComponentMapper {
+    [type: string]: DynamicComponentMapping;
+}
+
+
+
+export type ValidatorName = 'required' | 'requiredTrue' | 'latin' | 'email' | 'includes' | 'startsWith' | 'endsWith' | 'maxLength' | 'minLength' | 'length' | 'pattern' | 'regex' | 'max' | 'min' | 'greaterThan' | 'lessThan' | 'before' | 'after' | 'timeSpanMax' | 'timeSpanMin'
 export type RequiredValidator = { name: 'required' | 'requiredTrue', arguments?: boolean, message?: string }
 export type EmailValidator = { name: 'email', arguments?: RegExp, message?: string }
 export type LatinValidator = { name: 'latin', arguments?: RegExp, message?: string }
@@ -40,7 +96,7 @@ export type MinLengthValidator = { name: 'minLength', arguments: number, message
 
 export type PatternValidator = { name: 'pattern', arguments: RegExp, message?: string }
 export type RegexValidator = { name: 'regex', arguments: RegExp, message?: string }
- 
+
 export type MaxValidator = { name: 'max', arguments: number, message?: string }
 export type MinValidator = { name: 'min', arguments: number, message?: string }
 export type GreaterThanValidator = { name: 'greaterThan', arguments: number, message?: string }
@@ -56,62 +112,6 @@ export type Validator = RequiredValidator | EmailValidator | LatinValidator | In
 type StringValidator = RequiredValidator | EmailValidator | LatinValidator | IncludesValidator | StartsWithValidator | EndsWithValidator
 type NumberValidator = RequiredValidator | MaxValidator | MinValidator | GreaterThanValidator | LessThanValidator
 type DateTimeValidator = BeforeValidator | AfterValidator | TimeSpanMaxValidator | TimeSpanMinValidator
-export type FieldItem = FieldBase & { type: 'field' | 'page-breaker' } & (
-    { input: string, validations?: Validator[] } |
-    { input: 'hidden', validations?: Validator[] } |
-    { input: 'recaptcha', validations?: Validator[] } |
-
-    { input: 'text', validations?: StringValidator[] } |
-    { input: 'textarea', validations?: StringValidator[] } |
-    { input: 'paragraph', validations?: StringValidator[] } |
-    { input: 'color', validations?: StringValidator[] } |
-    { input: 'autocomplete-text', validations?: StringValidator[] } |
-
-    { input: 'number', validations?: NumberValidator[] } |
-    { input: 'number-range', validations?: NumberValidator[] } |
-    { input: 'date', validations?: DateTimeValidator[] } |
-
-    { input: 'phone', validations?: (StringValidator | RegexValidator | PatternValidator)[] } |
-    { input: 'password', validations?: StringValidator[] } |
-
-    { input: 'slider', validations?: NumberValidator[] } |
-    { input: 'reviews', validations?: NumberValidator[] } |
-    { input: 'email', validations?: EmailValidator[] } |
-    { input: 'date', validations?: DateTimeValidator[] } |
-    { input: 'date-range', validations?: DateTimeValidator[] } |
-    { input: 'select', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'array', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'radios', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'checks', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'chips', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'file', validations?: RequiredValidator[] } |
-    { input: 'local-file', validations?: RequiredValidator[] } |
-    { input: 'tree', validations?: (RequiredValidator | LengthValidator | MaxLengthValidator | MinLengthValidator)[] } |
-    { input: 'switch', validations?: RequiredValidator[] } |
-    { input: 'address', validations?: RequiredValidator[] }
-)
-
-
-
-export type Fieldset = FieldBase & {
-    type: 'fieldset',
-    items: FormScheme
-};
-
-// export type PageBreaker = FieldBase & {
-//   type: 'page-breaker'
-// };
-
-export type FormScheme = { [name: string]: Field }
-
-export type ComponentInputs = { [name: string]: any };
-export type DynamicComponentMapping = {
-    component: Type<any>;
-    field?: Partial<FieldItem>;
-};
-export class DynamicComponentMapper {
-    [type: string]: DynamicComponentMapping;
-}
 
 export type ValidationTaskResult = null | boolean | { code: ValidationTask } | { [code: string]: any };
 export class ValidationTask {

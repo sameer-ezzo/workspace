@@ -4,12 +4,15 @@
   "targetDefaults": {
     "build": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     },
     "lint": {
       "cache": true
+    }
+  },
+  "generators": {
+    "@nx/angular:component": {
+      "style": "css"
     }
   }
 }
