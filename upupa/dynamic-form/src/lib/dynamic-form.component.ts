@@ -6,7 +6,7 @@ import { Subscription } from "rxjs"
 import { EventBus } from '@upupa/common'
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers"
 import { JsonPointer, Patch } from "@noah-ark/json-patch"
-import { DynamicFormOptions } from "./dynamic-form.options"
+import { DynamicFormModuleOptions } from "./dynamic-form.options"
 import { DYNAMIC_FORM_OPTIONS } from "./di.token"
 import { DynamicFormRenderer } from "./dynamic-form-renderer"
 import { DynamicFormService } from "./dynamic-form.service"
@@ -34,7 +34,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     public readonly bus = inject(EventBus)
     public readonly dialog = inject(DialogService)
     protected readonly formService = inject(DynamicFormService)
-    public readonly options: DynamicFormOptions = inject(DYNAMIC_FORM_OPTIONS)
+    public readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS)
 
     @Input()
     @HostBinding('class')

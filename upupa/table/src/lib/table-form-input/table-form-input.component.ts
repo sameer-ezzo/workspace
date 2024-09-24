@@ -20,11 +20,11 @@ export class TableFormInput<T = any> extends ValueDataComponentBase<T> {
     @Input() stickyHeader = true
     @Input() showSearch: boolean | 'true' | 'false' = true
     @Input() label: string
-    @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = [] // this represents the actions that will be shown in each row
-    @Input() headerActions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = [] // this represents the actions that will be shown in the header of the table
+    @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor)[] = [] // this represents the actions that will be shown in each row
+    @Input() headerActions: ActionDescriptor[] | ((context) => ActionDescriptor)[] = [] // this represents the actions that will be shown in the header of the table
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Input() pageSizeOptions = [10, 25, 50, 100, 200]
-    @Input() columns: string[] | ColumnsDescriptor | 'auto' = 'auto' //eventually columns are the container of all and it's a dictionary
+    @Input() columns: ColumnsDescriptor | 'auto' = 'auto' //eventually columns are the container of all and it's a dictionary
     @Input() templates: any = {}
 
     @Input() expandable: 'single' | 'multi' | 'none' = 'none'

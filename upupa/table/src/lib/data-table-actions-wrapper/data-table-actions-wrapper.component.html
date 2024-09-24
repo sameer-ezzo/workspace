@@ -3,7 +3,7 @@
     </mat-btn> -->
   <mat-action class="action-btn"
     [descriptor]="a"
-    [context]="context"
+    [context]="context()"
     (action)="onAction($event)"
   ></mat-action>
 }
@@ -19,7 +19,7 @@
         [attr.color]="menuAction.color"
         [disabled]="menuAction.disabled"
         (click)="
-          onAction({ action: menuAction, context: context, data: context.data })
+          onAction({ action: menuAction, context: context(), data: context().data })
         "
       >
         <mat-icon>{{ menuAction['icon'] }}</mat-icon

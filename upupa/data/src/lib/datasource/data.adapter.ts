@@ -23,7 +23,7 @@ import { HttpServerDataSourceOptions } from './http-server-data-source';
 export type DataAdapterType = 'server' | 'client' | 'http';
 export type DataAdapterDescriptor<
   T extends DataAdapterType = 'server',
-  TData = any,
+  TData = any
 > = {
   type: T;
   keyProperty?: keyof TData;
@@ -31,7 +31,10 @@ export type DataAdapterDescriptor<
   valueProperty?: Key<TData>;
   imageProperty?: Key<TData>;
   options?: ProviderOptions<TData>;
-} & (T extends 'client' ? { data: Promise<TData[]> } : {}) &
+} & (T extends 'server'
+  ? { path: string | ((url: string, ...args: any[]) => string) }
+  : {}) &
+  (T extends 'client' ? { data: Promise<TData[]> } : {}) &
   (T extends 'http'
     ? { url: string; httpOptions?: HttpServerDataSourceOptions }
     : {});
@@ -90,7 +93,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     readonly displayProperty?: Key<T>,
     readonly valueProperty?: Key<T>,
     readonly imageProperty?: Key<T>,
-    readonly options?: ProviderOptions<T>,
+    readonly options?: ProviderOptions<T>
   ) {
     super(dataSource.data$);
 
@@ -135,12 +138,12 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
           items.filter(
             (x) =>
               itemsInAdapter.findIndex(
-                (n) => n.key === x?.[this.keyProperty],
-              ) === -1,
-          ),
+                (n) => n.key === x?.[this.keyProperty]
+              ) === -1
+          )
         ),
         map((items) => items.map((i) => this.normalize(i))),
-        map((items) => items.concat(itemsInAdapter)),
+        map((items) => items.concat(itemsInAdapter))
       );
 
     return firstValueFrom(source);
@@ -176,14 +179,14 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     item: Partial<T>,
     property: Key<T>,
     fallback: Partial<T>,
-    flatten = false,
+    flatten = false
   ) {
     if (property && item) {
       if (Array.isArray(property)) {
         if (property.length === 1) return this.__extract(item, property[0]);
         const result: Partial<T> = {};
         property.forEach(
-          (k) => (result[k] = this.__extract(item, k as string)),
+          (k) => (result[k] = this.__extract(item, k as string))
         );
         if (flatten) return Object.values(result).join(' ');
         else return result;
@@ -254,7 +257,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         this.filter,
         this.sort,
         this.page,
-        terms.map((t) => t.field),
+        terms.map((t) => t.field)
       );
     } else {
       this.dataSource.init({

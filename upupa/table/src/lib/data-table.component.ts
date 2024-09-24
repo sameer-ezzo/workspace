@@ -63,7 +63,7 @@ import { MatTable } from '@angular/material/table';
       state('expanded', style({ height: '*' })),
       transition(
         'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
       ),
     ]),
   ],
@@ -88,10 +88,10 @@ export class DataTableComponent<T = any>
   hasHeader = signal(false);
 
   @Input() label: string;
-  @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor[]) = []; // this represents the actions that will be shown in each row
+  @Input() actions: ActionDescriptor[] | ((context) => ActionDescriptor)[] = []; // this represents the actions that will be shown in each row
   @Input() headerActions:
     | ActionDescriptor[]
-    | ((context) => ActionDescriptor[]) = []; // this represents the actions that will be shown in the header of the table
+    | ((context) => ActionDescriptor)[] = []; // this represents the actions that will be shown in the header of the table
 
   @Input() rowClass: (item: NormalizedItem<T>) => string = (item) =>
     item.key.toString();
@@ -101,7 +101,7 @@ export class DataTableComponent<T = any>
 
   _properties: ColumnsDescriptorStrict = {}; //only data columns
   _columns: string[] = [];
-  @Input() columns: string[] | ColumnsDescriptor | 'auto' = 'auto'; //eventually columns are the container of all and it's a dictionary
+  @Input() columns: ColumnsDescriptor | 'auto' = 'auto'; //eventually columns are the container of all and it's a dictionary
   @Input() templates: any = {};
 
   expanded: { [key: string]: WritableSignal<boolean> } = {};
@@ -129,7 +129,7 @@ export class DataTableComponent<T = any>
     protected host: ElementRef<HTMLElement>,
     private bus: EventBus,
     protected breakpointObserver: BreakpointObserver,
-    protected dialog: DialogService,
+    protected dialog: DialogService
   ) {
     super();
     this.maxAllowed = Infinity;
@@ -152,10 +152,10 @@ export class DataTableComponent<T = any>
       });
 
     this.selectedNormalized$
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe((selected) => {
-      this.selectionChange.emit(selected);
-    });
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((selected) => {
+        this.selectionChange.emit(selected);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -171,7 +171,7 @@ export class DataTableComponent<T = any>
       this.hasHeader() ||
         !!this.headerActions ||
         (this.label || '').length > 0 ||
-        this.showSearch === true,
+        this.showSearch === true
     );
     if (changes['adapter']) {
       this.adapter.refresh();
@@ -185,7 +185,7 @@ export class DataTableComponent<T = any>
       if (this.adapter.normalized && this.adapter.normalized.length) {
         const columns: any = {};
         this.adapter.normalized.forEach((x) =>
-          Object.keys(x.item).forEach((k) => (columns[k] = 1)),
+          Object.keys(x.item).forEach((k) => (columns[k] = 1))
         );
         Object.keys(columns).forEach((k) => {
           if (!k.startsWith('_')) this._properties[k] = {};
@@ -193,8 +193,8 @@ export class DataTableComponent<T = any>
       }
     } else if (Array.isArray(this.columns)) {
       this._properties = {};
-      this.columns.forEach((k) => {
-        this._properties[k] = {};
+      this.columns.forEach(([k, v]) => {
+        this._properties[k] = { displayPath: k, ...v };
       });
     } else {
       this._properties = {};
@@ -264,7 +264,7 @@ export class DataTableComponent<T = any>
           width: '60%',
           inputs: { data: { table: this.name, columns: this._properties } },
         })
-        .afterClosed(),
+        .afterClosed()
     );
   }
 
@@ -274,7 +274,7 @@ export class DataTableComponent<T = any>
     this.bus.emit(
       `${this.name?.trim().length > 0 ? this.name + '-' : ''}${e.action.name}`,
       e,
-      this,
+      this
     );
   }
 

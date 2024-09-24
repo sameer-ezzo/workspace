@@ -1,0 +1,70 @@
+:host {
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+
+  #form-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+.dynamic > form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dynamic > form > * {
+  margin: 0 5px;
+  border-radius: 2px;
+}
+
+.dynamic > form > fieldset {
+  margin: 6px 0;
+}
+
+.horizontal.choices {
+  margin: 0.5rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// .mat-dialog-container {
+//     padding: 0 !important;
+//     overflow-y: hidden !important;
+//     overflow: hidden !important;
+// }
+
+.mat-form-field-subscript-wrapper {
+  position: relative !important;
+}
+
+.toolbar {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 1rem !important;
+  margin: 0 !important;
+
+  &.footer {
+    justify-content: flex-end;
+    border-radius: 0 0 3px 3px;
+    & > mat-btn:not(:last-child) {
+      margin-inline-end: 0.5rem;
+    }
+  }
+}

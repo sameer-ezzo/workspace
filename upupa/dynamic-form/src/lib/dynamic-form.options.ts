@@ -1,2 +1,2 @@
 
-export type DynamicFormOptions = { enableLogs: boolean; };
+export type DynamicFormModuleOptions = { enableLogs: boolean; };

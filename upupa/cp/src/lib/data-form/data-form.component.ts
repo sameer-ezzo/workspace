@@ -108,7 +108,7 @@ export class DataFormComponent<T = any>
   ngOnInit() {
     const formResolverResult = this.activatedRoute.snapshot.data[
       'scheme'
-    ] as DataFormResolverResult<T>;
+    ] as DataFormResolverResult;
     if (formResolverResult) {
       const changes = { path: this.path, ...formResolverResult };
       this.init(changes);

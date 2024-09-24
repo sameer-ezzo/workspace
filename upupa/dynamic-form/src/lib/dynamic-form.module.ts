@@ -14,7 +14,7 @@ import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } fr
 import { DynamicFormThemes } from './dynamic-form-themes.type';
 import { DynamicFieldDirective } from './dynamic-field.directive';
 import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme'
-import { DynamicFormOptions } from './dynamic-form.options';
+import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { MatBtnComponent } from '@upupa/mat-btn';
 
 const nativeTheme = {
@@ -53,7 +53,7 @@ export class DynamicFormModule {
     static forRoot(providers?: Provider[],
         themes?: DynamicFormThemes,
         defaultThemeName?: 'native' | string,
-        options: DynamicFormOptions = { enableLogs: false }):
+        options: DynamicFormModuleOptions = { enableLogs: false }):
         ModuleWithProviders<DynamicFormModule> {
         defaultThemeName ??= NATIVE_THEME_NAME
         themes = { ...nativeTheme, ...themes }

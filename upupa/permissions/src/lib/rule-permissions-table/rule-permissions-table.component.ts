@@ -68,7 +68,7 @@ export class RulePermissionsTableComponent {
         await this._updatePermission(permission)
     }
 
-    tableActions = (item) => {
+    tableActions = [(item) => {
         return item?.builtIn === true ? [] : [
 
             {
@@ -80,7 +80,7 @@ export class RulePermissionsTableComponent {
 
             } as ActionDescriptor,
         ]
-    };
+    }];
 
 
     private async _updatePermission(permission) {

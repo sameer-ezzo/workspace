@@ -2,157 +2,85 @@
 // export * from './lib/decorators/form-field.decorator';
 import 'reflect-metadata';
 import { Field, FieldItem, Fieldset, FormScheme, Validator } from '../types';
-import { toTitleCase } from '@upupa/common';
+import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
 import { DynamicFormInputs } from '../dynamic-form-inputs';
+import { JsonPointer } from '@noah-ark/json-patch';
+import { FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
 
-const _DYNAMIC_FORM_INPUTS: Record<string, DynamicFormInputs> = {};
+const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
-export const resolveDynamicFormInputsFor = (path: string) =>
-  _DYNAMIC_FORM_INPUTS[path]
-    ? Object.assign({}, _DYNAMIC_FORM_INPUTS[path])
-    : null;
-export const resolveFormValueFactoryOf = (path: string) =>
-  resolveDynamicFormInputsFor(path)?.initialValueFactory;
-export const resolveFormSchemeOf = (path: string) =>
-  resolveDynamicFormInputsFor(path)?.fields;
-
-export interface IDynamicFormFieldOptions {}
-export class TextFieldOptions {}
-export class NumberFieldOptions {}
-export class BooleanFieldOptions {}
-export class AdapterFieldOptions {
-  minAllowed?: number = 1;
-  maxAllowed?: number = 1;
-  adapter: SimpleDataAdapter = { dataSource: 'client', data: [] };
-}
-
-export type SimpleDataAdapter =
-  | SimpleServerDataAdapter
-  | SimpleClientDataAdapter
-  | SimpleUrlDataAdapter;
-
-type SimpleDataAdapterBase = {
-  dataSource: 'server' | 'client' | 'url';
-  keyProperty?: string;
-  displayProperty?: string;
-  valueProperty?: string | string[];
-  imageProperty?: string;
-  providerOptions?: any;
-  selectedColumns?: string[];
-};
-
-export type SimpleServerDataAdapter = SimpleDataAdapterBase & {
-  dataSource: 'server';
-  path: string;
-};
-
-export type SimpleClientDataAdapter = SimpleDataAdapterBase & {
-  dataSource: 'client';
-  data: any[];
-};
-
-export type SimpleUrlDataAdapter = SimpleDataAdapterBase & {
-  dataSource: 'url';
-  url: string;
-};
-
-type BaseFormFieldOptions = {
-  required?: boolean;
-  validations?: Validator[];
-};
-type VisibleFormFieldOptions = BaseFormFieldOptions & {
-  label?: string;
-  placeholder?: string;
-  text?: string;
-  hint?: string;
-  appearance?: 'fill' | 'outline';
-  disabled?: boolean;
-  readonly?: boolean;
-  hidden?: boolean;
-};
-type FileInputOptions = {
-  includeAccess?: boolean;
-  base?: string;
-  path?: string;
-  color?: 'primary' | 'accent' | 'warn';
-  dateFormat?: string;
-  minAllowedFiles?: number;
-  maxAllowedFiles?: number;
-  minSize?: number;
-  maxSize?: number;
-  accept?: string;
-  view?: 'list' | 'grid';
-  fileSelector?: 'browser' | 'system';
-};
-type ChoicesFieldOptions = VisibleFormFieldOptions &
-  AdapterFieldOptions & {
-    direction?: 'horizontal' | 'vertical';
-    template?: 'normal' | 'thumbs';
-    thumbSize?: number;
-    renderer?: 'markdown' | 'html' | 'none';
+export type DynamicFormOptionsMetaData = DynamicFormOptions & {
+  fields: FormScheme;
+  onSubmitAction?: Omit<ActionDescriptor, 'name'> & {
+    name: 'onSubmit';
+    handlerName: string;
   };
-export type FormFieldOptions =
-  | ({ from: any } & VisibleFormFieldOptions)
-  | (
-      | ({ input: 'fieldset' } & VisibleFormFieldOptions & BaseFormFieldOptions)
-      | ({ input: 'hidden' } & BaseFormFieldOptions)
-      | ({ input: 'text' } & VisibleFormFieldOptions & TextFieldOptions)
-      | ({ input: 'textarea' } & VisibleFormFieldOptions &
-          TextFieldOptions & {
-            cdkAutosizeMinRows?: number;
-            cdkAutosizeMaxRows?: number;
-            cdkTextareaAutosize?: boolean;
-          })
-      | ({ input: 'phone' } & VisibleFormFieldOptions & TextFieldOptions)
-      | ({ input: 'password' } & VisibleFormFieldOptions &
-          TextFieldOptions & {
-            showConfirmPasswordInput?: boolean;
-            showPassword?: boolean;
-            canGenerateRandomPassword?: boolean;
-            passwordStrength?: PasswordStrength;
-            autocomplete?: 'current-password' | 'new-password';
-          })
-      | ({ input: 'number' } & VisibleFormFieldOptions & NumberFieldOptions)
-      | ({ input: 'switch' } & VisibleFormFieldOptions &
-          BooleanFieldOptions & {
-            template?: 'checkbox' | 'toggle';
-            renderer?: 'markdown' | 'html' | 'none';
-          })
-      | ({ input: 'checks' } & ChoicesFieldOptions)
-      | ({ input: 'radios' } & ChoicesFieldOptions)
-      | ({ input: 'select' } & VisibleFormFieldOptions & AdapterFieldOptions)
-      | ({ input: 'date' } & VisibleFormFieldOptions)
-      | ({ input: 'file' } & VisibleFormFieldOptions & FileInputOptions)
-      | ({ input: 'html' } & VisibleFormFieldOptions)
-      | ({ input: 'chips' } & VisibleFormFieldOptions &
-          AdapterFieldOptions & {
-            parentPath?: string;
-            visible?: boolean;
-            selectable?: boolean;
-            removable?: boolean;
-            separatorKeysCodes?: string[];
-          })
-      | ({ input: string } & Partial<
-          VisibleFormFieldOptions &
-            AdapterFieldOptions & { inputs: Record<string, any> }
-        >)
-    );
+  actions: (ActionDescriptor & {
+    handlerName: string;
+  })[];
+};
+
+const setDynamicFormOptionsMetadataFor = (
+  target: any,
+  value: DynamicFormOptionsMetaData
+) => {
+  let metadata = resolveDynamicFormOptionsFor(target);
+  const parent = target.prototype
+    ? Object.getPrototypeOf(target.prototype)?.constructor
+    : null;
+  if (parent && parent.constructor)
+    metadata = { ...resolveDynamicFormOptionsFor(parent), ...metadata };
+  Reflect.defineMetadata(
+    formSchemeMetadataKey,
+    { ...metadata, ...value },
+    target
+  );
+
+  Reflect.defineMetadata(
+    formSchemeMetadataKey,
+    { ...metadata, ...value },
+    target.constructor
+  );
+};
+
+export const resolveDynamicFormOptionsFor = (
+  target: any
+): DynamicFormOptionsMetaData =>
+  Object.assign(
+    {},
+    Reflect.getMetadata(formSchemeMetadataKey, target.constructor),
+    Reflect.getMetadata(formSchemeMetadataKey, target)
+  );
+
+export const resolveFormValueFactoryOf = (target: any) =>
+  resolveDynamicFormOptionsFor(target)?.initialValueFactory;
+
+export const resolveFormSchemeOf = (target: any) =>
+  resolveDynamicFormOptionsFor(target)?.fields;
 
 function makeFieldItem(
-  path: string,
-  targe: any,
+  target: any,
   propertyKey: string,
   options: FormFieldOptions
 ): Field {
+  if (!options['input']) {
+    // get the type of the property
+    const type = Reflect.getMetadata('design:type', target, propertyKey);
+    if (type === Number) options['input'] = 'number';
+    else if (type === Boolean) options['input'] = 'switch';
+    else if (type === Array) options['input'] = 'select';
+    else if (type === Date) options['input'] = 'date';
+    else if (type === Object) options['input'] = 'fieldset';
+    else options['input'] = 'text';
+  }
+
   const opts = options as VisibleFormFieldOptions & FormFieldOptions;
   const label = opts.label ?? opts.text ?? toTitleCase(propertyKey);
 
   const fieldBase = {
     name: propertyKey,
     validations: options.validations || [],
-    path: path ? `${path}/${propertyKey}` : `/${propertyKey}`,
-
     ui: {
       inputs: {
         required: options.required,
@@ -173,37 +101,38 @@ function makeFieldItem(
     ...(options['inputs'] || {}),
   };
 
-  if (!('input' in options) || options.input === 'fieldset') {
+  if (options['input'] === 'fieldset') {
     fieldBase.type = 'fieldset';
-    const propType = Reflect.getMetadata('design:type', targe, propertyKey);
+    const propType = Reflect.getMetadata('design:type', target, propertyKey);
     (fieldBase as Fieldset).items =
       propType && typeof propType === 'function'
-        ? resolveFormSchemeOf(propType.name) ?? {}
+        ? resolveFormSchemeOf(propType) ?? {}
         : {};
     return fieldBase;
   }
 
+  const input = options['input'];
   const field = {
-    input: options.input,
+    input,
     type: 'field',
     ...fieldBase,
   } as FieldItem;
 
-  if (field.input.length === 0) field.input = 'hidden';
+  if (input.length === 0) field.input = 'hidden';
 
   if (options['adapter']) {
     field.ui.inputs['_adapter'] = options['adapter'];
     delete field.ui.inputs['adapter'];
   }
 
-  if (options.input === 'hidden') return field;
+  if (input === 'hidden') return field;
 
-  if (options.input === 'switch') {
+  if (input === 'switch') {
     const switchOptions = opts as any;
     field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
     field.ui.inputs['renderer'] = switchOptions.renderer ?? 'none';
   }
-  if (options.input === 'password') {
+  if (input === 'password') {
     const pwdOptions = opts as any;
     field.ui.inputs['showConfirmPasswordInput'] =
       pwdOptions.showConfirmPasswordInput ?? false;
@@ -216,7 +145,7 @@ function makeFieldItem(
     return field;
   }
 
-  if (options.input === 'file') {
+  if (input === 'file') {
     const fileOptions = opts as any;
     field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
     field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
@@ -231,127 +160,183 @@ function makeFieldItem(
     field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
     return field;
   }
-  if (options.input === 'html') {
+  if (input === 'html') {
     const htmlOptions = opts as any;
     field.ui.inputs['uploadPath'] = htmlOptions.path || '';
     return field;
   }
   return field;
 }
-function addInputToFormScheme(
-  target: any,
-  field: Field,
-  options: FormFieldOptions
-) {
-  const path = (Reflect.getMetadata('path', target) || null) as string;
-  const key = path ?? target.constructor.name;
+function addInputToFormScheme(path: string, field: Field, target: any) {
+  const formOptions =
+    resolveDynamicFormOptionsFor(target) ?? ({} as DynamicFormOptionsMetaData);
+  const fields = formOptions.fields ?? {};
 
-  const dfInputs =
-    resolveDynamicFormInputsFor(key) ||
-    ({ fields: {} as FormScheme } as DynamicFormInputs);
-  if (!dfInputs.fields) dfInputs.fields = {} as FormScheme;
+  path ??= field.name;
 
-  const segments = field.path.split('/').filter((s) => s);
-  while (segments.length > 1) {
-    const segment = segments.shift()!;
-    if (!dfInputs.fields[segment]) {
-      dfInputs.fields[segment] = {
-        type: 'fieldset',
-        name: segment,
-        items: {},
-      } as Fieldset;
+  const segments = path.split('/').filter((s) => s);
+  if (segments.length === 1) {
+    field.path = `/${field.name}`;
+    JsonPointer.set(fields, path, field as FieldItem);
+  } else {
+    let p = path;
+    while (segments.length > 1) {
+      const segment = segments.shift()!;
+      p = `${p}/${segment}`;
+      const vos = JsonPointer.get(fields, p);
+      if (!vos) {
+        JsonPointer.set(fields, p, {
+          type: 'fieldset',
+          name: segment,
+          path: p,
+          items: {},
+        } as Fieldset);
+      }
     }
   }
-  if (segments.length === 1) {
-    dfInputs.fields[field.name] = field;
-  }
-
-  Reflect.defineMetadata(
-    'DYNAMIC_FORM_INPUTS',
-    { fields: dfInputs.fields },
-    target
-  );
-  _DYNAMIC_FORM_INPUTS[key] = { fields: dfInputs.fields };
+  setDynamicFormOptionsMetadataFor(target.constructor, {
+    ...formOptions,
+    fields,
+  });
 }
-function toField(
-  path: string,
+export const toField = (
   target: any,
   propertyKey: string,
   options: FormFieldOptions
-) {
-  const field = makeFieldItem(path, target, propertyKey, options);
-  return field;
-}
+) => makeFieldItem(target, propertyKey, options);
 
-export function formScheme(path?: string, options: DynamicFormInputs = {}) {
+export type DynamicFormOptions<T = any> = Omit<
+  DynamicFormInputs<T>,
+  'fields'
+> & {
+  locales?: { defaultLocale: string; translations: string[] };
+  path?: string;
+};
+
+export function formScheme(options?: DynamicFormOptions) {
   return function (target: any) {
-    const key = path ?? target.name;
-    Reflect.defineMetadata('path', key, target);
-    const formInputs = (Reflect.getMetadata('DYNAMIC_FORM_INPUTS', target) ??
-      _DYNAMIC_FORM_INPUTS[key] ??
-      _DYNAMIC_FORM_INPUTS[target.name] ??
-      {}) as DynamicFormInputs;
-    const args = Reflect.getMetadata('design:paramtypes', target) || [];
+    const formOptions =
+      resolveDynamicFormOptionsFor(target) ??
+      ({} as DynamicFormOptionsMetaData);
 
-    const opts = { ...formInputs, ...options } as DynamicFormInputs;
-    if ((options.name || '').trim().length === 0)
-      opts.name = key.replace(/\//g, '-').toLowerCase();
-    if (options.initialValueFactory !== null)
+    const f1s = formOptions?.['fields'] ?? {};
+    const f2s = options?.['fields'] ?? {};
+    const fields = { ...f1s, ...f2s } as FormScheme;
+    const opts = {
+      ...formOptions,
+      ...options,
+      fields,
+    };
+    if ((opts.name || '').trim().length === 0)
+      opts.name = target.name.replace(/\//g, '-').toLowerCase();
+    if (!opts.initialValueFactory) {
+      const args = Reflect.getMetadata('design:paramtypes', target) || [];
       opts.initialValueFactory = () => Promise.resolve(new target(...args));
-    _DYNAMIC_FORM_INPUTS[key] = opts;
-    Reflect.defineMetadata('DYNAMIC_FORM_INPUTS', opts, target);
+    }
+
+    setDynamicFormOptionsMetadataFor(target.constructor, opts);
+    applyLocalesInputs(opts, target.constructor);
   };
 }
 
-export function localizedInput(
-  options: FormFieldOptions & {
-    locales: { defaultLocale: string; translations: string[] };
-  } = {
-    input: 'text',
-    locales: { defaultLocale: 'en', translations: [] },
-  }
-) {
-  const translations = options.locales.translations;
-  const defaultLocale = options.locales.defaultLocale;
+// type DataTableRowActionDescriptor = { order?: number } & (
+//   | ActionDescriptor
+//   | ((row: any) => ActionDescriptor)
+// );
 
+export function submitAction(action: Partial<Omit<ActionDescriptor, 'name'>>) {
   return function (target: any, propertyKey: string) {
-    options['label'] = `${propertyKey} (${defaultLocale})`;
-    const field = toField(propertyKey, target, propertyKey, options);
-    addInputToFormScheme(target, field, options);
+    const inputs =
+      resolveDynamicFormOptionsFor(target) ??
+      ({} as DynamicFormOptionsMetaData);
+
+    const submitAction = {
+      ...action,
+      name: 'onSubmit',
+      type: 'submit',
+      handlerName: propertyKey,
+    };
+    inputs.onSubmitAction = submitAction as any;
+    setDynamicFormOptionsMetadataFor(target.constructor, inputs);
+  };
+}
+
+export function formAction(
+  action: Partial<ActionDescriptor> & { order?: number }
+) {
+  return function (target: any, propertyKey: string) {
+    const inputs =
+      resolveDynamicFormOptionsFor(target) ??
+      ({} as DynamicFormOptionsMetaData);
+    inputs.actions ??= [];
+
+    const _action = {
+      ...action,
+      name: action.name || propertyKey,
+      handlerName: propertyKey,
+      order: action.order ?? inputs.actions.length,
+    };
+    inputs.actions.push(_action);
+    setDynamicFormOptionsMetadataFor(target.constructor, inputs);
+  };
+}
+const applyLocalesInputs = (
+  formOptions: DynamicFormOptionsMetaData,
+  target: any
+) => {
+  const { locales } = formOptions;
+  if (!locales) return;
+  const defaultLocale = (locales.defaultLocale ?? '').trim();
+  const translations = (locales.translations ?? []).filter((x) =>
+    (x ?? '').trim()
+  );
+
+  if (!locales || !defaultLocale.length || !translations.length) return;
+
+  const fields = formOptions['fields'];
+  const fieldEntries = Object.entries(fields);
+  for (const [name, field] of fieldEntries) {
+    if (field['ui']?.['inputs']?.['localize'] !== true) continue;
+    field['ui']['inputs'][
+      'label'
+    ] = `${field['ui']['inputs']['label']} (${defaultLocale})`;
+    field['path'] = `/${name}`;
+
     translations.forEach((locale) => {
-      options['label'] = `${propertyKey} (${locale})`;
-      const field = toField(
-        `translations.${propertyKey}`,
-        target,
-        locale,
-        options
+      const translationField = { ...(field as any) };
+      translationField.name = `${name}`;
+      translationField.path = `translations/${translationField.name}`;
+      translationField.ui.inputs['label'] = `${name} (${locale})`;
+
+      JsonPointer.set(
+        fields,
+        `translations/${translationField.name}/${locale}`,
+        translationField
       );
-      addInputToFormScheme(target, field, options);
     });
+  }
+  formOptions['fields'] = fields;
+
+  setDynamicFormOptionsMetadataFor(target.constructor, formOptions);
+};
+
+export function localizedInput(options: FormFieldOptions) {
+  return function (target: any, propertyKey: string) {
+    // const formOptions = resolveDynamicFormOptionsFor(target);
+    options['localize'] = true;
+    formInput(options)(target, propertyKey);
   };
 }
 
 export function formInput(options: FormFieldOptions = { input: 'text' }) {
   return function (target: any, propertyKey: string) {
-    if ('from' in options) options['input'] = 'fieldset';
-
-    if (!options['input']) {
-      // get the type of the property
-      const type = Reflect.getMetadata('design:type', target, propertyKey);
-      if (type === String) options['input'] = 'text';
-      else if (type === Number) options['input'] = 'number';
-      else if (type === Boolean) options['input'] = 'switch';
-      else if (type === Array) options['input'] = 'select';
-      else options['input'] = 'text';
-    }
-    const path = Reflect.getMetadata('path', target) || '';
-    const field = toField(path, target, propertyKey, options);
-    addInputToFormScheme(target, field, options);
+    const field = toField(target, propertyKey, options);
+    addInputToFormScheme(propertyKey, field, target);
   };
 }
 
 export function formField(
   options: FormFieldOptions & { name: string; type: 'field' }
 ) {
-  return toField('', undefined, options.name, options);
+  return toField(undefined, options.name, options);
 }

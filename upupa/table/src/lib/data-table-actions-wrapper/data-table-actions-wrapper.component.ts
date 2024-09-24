@@ -8,6 +8,8 @@ import {
   ChangeDetectionStrategy,
   signal,
   HostBinding,
+  input,
+  computed,
 } from '@angular/core';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
 
@@ -17,40 +19,37 @@ import { ActionDescriptor, ActionEvent } from '@upupa/common';
   styleUrls: ['./data-table-actions-wrapper.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableActionsWrapperComponent<T = any> implements OnChanges {
+export class DataTableActionsWrapperComponent<T = any> {
   @HostBinding('attr.tabindex') tabindex = 0;
 
-  @Input() context: any;
-  @Input() actions:
-    | ActionDescriptor[]
-    | ((context: any) => ActionDescriptor[]) = [];
+  context = input.required<any>();
+  actions = input.required<
+    ActionDescriptor[] | ((context: any) => ActionDescriptor)[]
+  >();
   // this represents the actions that will be shown in the header of the table
 
   @Output() action = new EventEmitter<ActionEvent>();
 
-  _actions = signal<ActionDescriptor[]>([]);
-  _menuActions = signal<ActionDescriptor[]>([]);
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['actions'] || changes['context']) {
-      const { data } = this.context;
-      const items = data.map((x) => x.item);
-
-      const actions = Array.isArray(this.actions)
-        ? this.actions
-        : this.actions(items);
-
-      this._actions.set(actions.filter((a) => !a.menu));
-      this._menuActions.set(actions.filter((a) => a.menu));
-    }
-  }
+  __actions = computed<ActionDescriptor[]>(() => {
+    const actions = this.actions();
+    const { data } = this.context();
+    return actions
+      .map((fn) => (typeof fn === 'function' ? fn : (data) => fn))
+      .map((fn) => fn(data));
+  });
+  _actions = computed<ActionDescriptor[]>(() =>
+    this.__actions().filter((a) => !a.menu)
+  );
+  _menuActions = computed<ActionDescriptor[]>(() =>
+    this.__actions().filter((a) => a.menu)
+  );
 
   onAction(e: ActionEvent) {
     const data = e.context.data;
     this.action.emit({
       action: e.action,
       data: data.map((d) => d.item as T),
-      context: this.context,
+      context: this.context(),
     });
   }
 }

@@ -1,4 +1,4 @@
-import { FieldItem, FormScheme, formField } from "@upupa/dynamic-form";
+import { FieldItem, formField, FormScheme, switchField } from "@upupa/dynamic-form";
 
 
 
@@ -22,14 +22,7 @@ export const defaultEmailField: FieldItem = {
 export const defaultLoginFormFields: FormScheme = {
     email: defaultEmailField,
     password: { type: 'field', input: 'text', name: 'password', ui: { inputs: { label: 'Password', type: 'password', placeholder: 'Password', PasswordStrength: null } }, validations: [{ name: 'required' }] },
-    rememberMe: formField({
-        input: 'switch',
-        template: 'checkbox',
-        renderer: 'none',
-        name: 'rememberMe',
-        type: 'field',
-        label: 'Remember me',
-    }),
+    rememberMe: switchField('rememberMe', 'Remember Me'),
 
 };
 

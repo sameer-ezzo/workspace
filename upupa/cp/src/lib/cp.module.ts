@@ -2,8 +2,7 @@ import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { DataListComponent } from "./data-list/data-list.component";
-import { CP_SIDE_BAR_ITEMS, CP_OPTIONS, SCAFFOLDING_SCHEME, USER_PICTURE_RESOLVER } from "./di.token";
-import { ScaffoldingScheme } from "../types";
+import {  CP_OPTIONS, SCAFFOLDING_SCHEME, USER_PICTURE_RESOLVER } from "./di.token";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import {
     InlineEditableListComponent,
@@ -34,6 +33,8 @@ import { catchError, map, of, switchMap } from "rxjs";
 import { DbI18nPipe } from "./dbI18n.pipe";
 import { AuthorizeModule } from "@upupa/authz";
 import { MatBtnComponent } from "@upupa/mat-btn";
+import { DataListWithInputsComponent } from "./data-list-with-inputs/data-list-with-inputs.component";
+import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
@@ -59,7 +60,9 @@ const declarations = [
     CpLayoutComponent,
     InlineEditableListComponent,
     InlineEditableListFormComponent,
-    MediaLibraryComponent
+    MediaLibraryComponent,
+    DataListWithInputsComponent,
+    DataFormWithViewModelComponent
 ];
 @NgModule({
     declarations,

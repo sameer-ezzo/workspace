@@ -47,8 +47,6 @@ export class ScaffoldingService {
     }
 
 
-
-
     async scaffold(path: string, fallback?: Partial<ScaffoldingModel> & { type: "form" | "list" }, ...params: any[]) {
 
         const scaffolder: Scaffolder = this.matcher.get(path);
@@ -93,7 +91,7 @@ export class ScaffoldingService {
         path: string,
         scaffoldingModel: ListScaffoldingModel
     ): Promise<DataListResolverResult> {
-        const listViewModel = scaffoldingModel.viewModel;
+        const listViewModel = scaffoldingModel.viewModel as any;
         const pathInfo = PathInfo.parse(path, 1).path;
         listViewModel.rowActions ??= scaffoldingModel.actions ?? defaultListActions;
         const filter = (listViewModel.query?.() ?? []) as any[];

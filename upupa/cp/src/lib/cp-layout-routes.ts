@@ -3,9 +3,9 @@ import { Route } from "@angular/router";
 import { Observable } from "rxjs";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import { DataListComponent } from "./data-list/data-list.component";
-import { mergeScaffoldingScheme } from "./decorators/decorator.types";
 import { SCAFFOLDING_SCHEME, CP_SIDE_BAR_ITEMS } from "./di.token";
 import { SideBarViewModel } from "./side-bar-group-item";
+import { mergeScaffoldingScheme } from "./decorators/scheme.router.decorator";
 
 
 

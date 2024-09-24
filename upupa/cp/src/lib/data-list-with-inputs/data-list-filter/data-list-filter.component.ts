@@ -42,12 +42,13 @@ import {
   styleUrls: ['./data-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataListComponent implements AfterViewInit, OnDestroy {
+export class DataListFilterComponent implements AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private _filterFormValue: any;
   private _listViewModelActions:
     | ActionDescriptor[]
     | ((row: any) => ActionDescriptor[]);
+
   dataTableActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
   public get filterFormValue(): any {
     return this._filterFormValue;
@@ -87,18 +88,17 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     variant: 'icon',
   } as ActionDescriptor;
 
-  _dataListResolverResult = signal<DataListResolverResult>(null);
+  _dataListResolverResult = signal<DataListResolverResult<any>>(null);
   @Input()
-  public get dataListResolverResult(): DataListResolverResult {
+  public get dataListResolverResult(): DataListResolverResult<any> {
     return this._dataListResolverResult();
   }
-  public set dataListResolverResult(value: DataListResolverResult) {
+  public set dataListResolverResult(value: DataListResolverResult<any>) {
     if (!value) return;
 
     //todo: make sure to call this only if no filter provided.
 
     const { page, per_page, sort_by } = this.route.snapshot.queryParams;
-    const viewModel = value.listViewModel as any;
     if (page) value.adapter.page.pageIndex = +page - 1;
     if (per_page) value.adapter.page.pageSize = +per_page;
     if (sort_by) {
@@ -107,8 +107,8 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
     if (value.adapter.options.sort)
       this.updateSortInfo(value.adapter.options.sort);
-    this.filterFormVm = viewModel.filterForm;
-    this._listViewModelActions = viewModel.rowActions;
+    this.filterFormVm = value.listViewModel.filterForm;
+    this._listViewModelActions = value.listViewModel.rowActions;
     this.dataTableActions = Array.isArray(this._listViewModelActions)
       ? [...(this._listViewModelActions ?? [])]
       : this._listViewModelActions;
@@ -120,7 +120,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         this.filterFormVm.fields === undefined
       )
         throw new Error(
-          `${DataListComponent.name} at ${value.path} filterForm fields is null or undefined`,
+          `${DataListComponent.name} at ${value.path} filterForm fields is null or undefined`
         );
 
       const toFilterDescriptor =
@@ -146,7 +146,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     private confirmService: ConfirmService,
     public snack: SnackBarService,
     private listService: DataListResolverService,
-    public bus: EventBus,
+    public bus: EventBus
   ) {}
 
   async ngAfterViewInit() {
@@ -166,7 +166,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
   }
 
   filterDrawerStatus = 'closed';
-  inputs$: Observable<DataListResolverResult>;
+  inputs$: Observable<DataListResolverResult<any>>;
 
   private listenOnQueryParamsChange() {
     this.route.queryParams
@@ -192,7 +192,10 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
           // toFilterDescriptor: this.filterFormVm.toFilterDescriptor
         },
         outputs: {
-          filterChanged: async (e: FilterDescriptor, context: UpupaDialogActionContext<DataListComponent>) => {
+          filterChanged: async (
+            e: FilterDescriptor,
+            context: UpupaDialogActionContext<DataListComponent>
+          ) => {
             this.filterValueChangeHandler(e);
           },
         },
@@ -201,7 +204,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
       this.filterDrawer?.toggle();
       localStorage.setItem(
         `${this.dataListResolverResult.path}_dld`,
-        this.filterDrawer?.opened ? 'opened' : 'closed',
+        this.filterDrawer?.opened ? 'opened' : 'closed'
       );
     }
   }
@@ -255,7 +258,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
       ? { [this.filterFormVm.groupBy]: this.toBase64(this.filterFormValue) }
       : this.filterFormValue;
 
-    const vm = this.dataListResolverResult.listViewModel as any;
+    const vm = this.dataListResolverResult.listViewModel;
     const _q = vm.query?.() ?? [];
     const _qps = vm.queryParams?.() ?? [];
     const query = Object.entries(_q);
@@ -293,7 +296,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
   private setDataTableActions(e: FilterDescriptor) {
     const filterLength = Object.keys(e ?? {}).filter(
-      (k) => e[k] !== undefined,
+      (k) => e[k] !== undefined
     ).length;
     if (filterLength > 0) {
       this.filterButtonActionDescriptor.matBadge = '' + filterLength;
@@ -382,7 +385,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
             msg: id,
             ...x,
           },
-          this,
+          this
         );
         break;
     }
