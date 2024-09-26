@@ -35,3 +35,4 @@ export * from './lib/data-list-with-inputs/viewmodels/api-data-table-viewmodel';
 export * from './lib/data-form-with-view-model/data-form-with-view-model.component';
 export * from './lib/data-form-with-view-model/viewmodels/api-data-form.viewmodel';
 export * from './lib/data-form-with-view-model/viewmodels/data-form.viewmodel';
+export * from './lib/form-view-model/form-view-model.component';

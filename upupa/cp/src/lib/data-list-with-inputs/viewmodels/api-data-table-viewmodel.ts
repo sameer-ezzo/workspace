@@ -115,7 +115,7 @@ export class ApiDataListViewModel implements DataListViewModel {
 
     const ds = this.injector.get(DataService);
     const deleteTasks = items.map(
-      (item) => () => ds.delete(`/${this.collection}/${item._id}`)
+      (item) => ds.delete(`/${this.collection}/${item._id}`)
     );
     const report = await Promise.allSettled(deleteTasks);
     const failed = report.filter((x) => x.status === 'rejected');

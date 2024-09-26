@@ -78,11 +78,11 @@ export type ScaffoldingViewModel = {
 export type FormScaffoldingModel = ScaffoldingViewModel & {
   type: 'form';
   viewModel: DataFormViewModel;
-};
+} & any;
 export type ListScaffoldingModel = ScaffoldingViewModel & {
   type: 'list';
   viewModel: DataListViewModel;
-};
+} & any;;
 export type ScaffoldingModel = FormScaffoldingModel | ListScaffoldingModel;
 
 export interface IScaffolder<T extends ScaffoldingModel> {

@@ -443,7 +443,7 @@ export function apiDataListViewModel(
   options?: Partial<ApiDataListViewModelOptions>
 ) {
   const dataAdapterDescriptor = {
-    path: (url: string, params: Record<string, string>) =>
+    path:options.path?options.path: (url: string, params: Record<string, string>) =>
       params['collection'] ?? url,
     adapterOptions: options?.adapterOptions,
     type: 'server',

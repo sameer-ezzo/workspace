@@ -133,10 +133,10 @@ export class DataFormWithViewModelComponent<T = any>
       throw new Error(
         `Handler ${submitAction.handlerName} not found in ViewModel`
       );
-
+      
     const formEl = this.form?.formElement;
     if (!formEl) return;
-    if (formEl.invalid && formEl.touched) return this.form.scrollToError();
+    if (this.form.invalid && this.form.touched) return this.form.scrollToError();
 
     const value = this.form.value;
     const action = this.actions()[0];
