@@ -1,19 +1,21 @@
+import { MongooseModuleOptions } from '@nestjs/mongoose';
 
-export class DbConnectionOptions {
-    prefix?: string
-
-    allowReadAnonymous = process.env.allowReadAnonymous === 'true' ?? true
-    allowWriteAnonymous = process.env.allowWriteAnonymous === 'true' ?? false
-
-    //MONGO CONNECTION OPTIONS
-    user?: string
-    pass?: string
-    bufferCommands?: boolean
-    autoIndex?= true
-    autoCreate?= false
-    autoCreateModel?= false
+export interface DataBaseOptions {
+  prefix?: string;
+  autoCreateModel?: boolean;
 }
+export type DbConnectionOptions = MongooseModuleOptions & DataBaseOptions;
 
-
-
-
+export class DbConnectionOptionsFactory {
+  static createMongooseOptions(
+    dbName?: string,
+    params?: Partial<DbConnectionOptions>,
+  ): DbConnectionOptions {
+    const prefix =
+      process.env[dbName + '_PREFIX'] ?? process.env.DBPREFIX ?? '';
+    
+    const options = {} as DbConnectionOptions;
+    options.prefix = prefix;
+    return Object.assign(options, params ?? {});
+  }
+}

@@ -1,4 +1,4 @@
-export * from './lib/ss.factory'
+// export * from './lib/ss.factory'
 export * from './lib/common.module'
 export * from './lib/redis'
 export * from './lib/bootstrap.fun'

@@ -13,7 +13,7 @@ export class NotificationController {
 
 
     constructor(public notification: NotificationService, @Inject("DB_NOTIFICATION") public data: DataService) {
-        data.addModel('notification', new Schema({}, { strict: false }))
+        // data.addModel('notification', new Schema({}, { strict: false }))
     }
 
     @EndPoint({ http: { path: "public-key" } })

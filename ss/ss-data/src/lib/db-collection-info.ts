@@ -1,5 +1,12 @@
-import { Model, Schema } from "mongoose";
+import { ModelDefinition } from '@nestjs/mongoose';
+import { Model, Schema } from 'mongoose';
 
-export type DbCollectionInfo = {
-    [collection: string]: { schema: Schema; model?: Model<unknown>; exclude?: string[]; };
+export type ModelDefinitionInfo = Omit<ModelDefinition, 'schema' | 'name'> & {
+  schema: Schema;
+  model?: Model<unknown>;
+  exclude?: string[];
+};
+
+export type DbModelDefinitionInfo = {
+  [modelName: string]: ModelDefinitionInfo;
 };

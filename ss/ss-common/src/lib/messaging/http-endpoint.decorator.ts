@@ -8,8 +8,9 @@ export function HttpEndpoint(route: EndPointOptions['http'], meta?: Pick<EndPoin
     type NewType = Type<unknown>;
 
     let httpDecorator: MethodDecorator;
-    const path = route.path.startsWith('/') ? route.path.substring(1) : route.path
-    switch (route.method) {
+    const _route = route!
+    const path = _route.path.startsWith('/') ? _route.path.substring(1) : _route.path
+    switch (_route.method) {
         case undefined:
         case 'GET': httpDecorator = Get(path); break
         case 'POST': httpDecorator = Post(path); break
@@ -20,7 +21,7 @@ export function HttpEndpoint(route: EndPointOptions['http'], meta?: Pick<EndPoin
         default: throw new HttpException('Invalid http method', HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-    return applyDecorators((target: NewType, property: string, descriptor: PropertyDescriptor) => {
+    return applyDecorators((target: any, property: string, descriptor: PropertyDescriptor) => {
         const method = route.method ?? 'GET';
         const path = meta.path ?? route.path;
         const operation = meta?.operation ?? property;

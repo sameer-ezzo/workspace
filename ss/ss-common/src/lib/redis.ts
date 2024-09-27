@@ -32,7 +32,7 @@ export class RedisClient {
         return client
     }
 
-    redis: Cluster | Redis;
+    redis!: Cluster | Redis;
 
     protected acceptPinging = false;
 

@@ -9,7 +9,7 @@ import { RedisClient } from '../redis'
 
 export class RedisIoAdapter extends IoAdapter {
 
-    redisAdapter: SocketIORedis.RedisAdapter
+    redisAdapter!: SocketIORedis.RedisAdapter
 
     constructor(app: INestApplicationContext, public readonly redisClient: RedisClient) {
         super(app)

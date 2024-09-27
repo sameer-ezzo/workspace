@@ -1,15 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PathMatcher } from '@noah-ark/path-matcher';
 import { Permission, Rule, AuthorizeFun, SimplePermission, Principle, RulesManager } from '@noah-ark/common';
 import { JsonPointer } from '@noah-ark/json-patch';
 import { DataService } from '@ss/data';
-import { EndpointsInfo, ENDPOINT_OPERATION, ENDPOINT_PATH, _controllerPrefix, EndpointInfoRecord } from '@ss/common';
+import { EndpointsInfo, _controllerPrefix, EndpointInfoRecord } from '@ss/common';
 import { join } from 'path';
 import { groupBy } from 'lodash';
 
 import { logger } from './logger';
-import { SimplePermissionSchema } from './simple-permission.schema';
-import { AUTHORIZE_PERMISSIONS, PermissionsSource } from './constants';
+import { AUTHORIZE_PERMISSIONS } from './constants';
 
 export function joinPaths(...segments: string[]): string {
     return '/' + segments.flatMap((c) => (c ?? '').split('/').filter((s) => s)).join('/');
@@ -18,33 +16,32 @@ export function joinPaths(...segments: string[]): string {
 @Injectable()
 export class RulesService {
     async restorePermissions(permissionsTree: any, principle: Principle) {
-        const restoreRules = (rs: { name: string, rule: any, actions: any, children: [] }[]) => {
+        const restoreRules = (rs: { name: string; rule: any; actions: any; children: [] }[]) => {
             for (const r of rs) {
-                restoreRule(r)
+                restoreRule(r);
             }
-        }
-        const restoreRule = async (item: { name: string, rule: any, actions: any, children: [] }) => {
-            const rule = item.rule as Rule
-            restoreActions(rule.name, rule.actions)
-            restoreRules(item.children)
-        }
+        };
+        const restoreRule = async (item: { name: string; rule: any; actions: any; children: [] }) => {
+            const rule = item.rule as Rule;
+            restoreActions(rule.name, rule.actions);
+            restoreRules(item.children);
+        };
 
         const restoreActions = async (name: string, actions: any) => {
             for (const action in actions) {
-                const permissions = actions[action] as unknown as SimplePermission[]
+                const permissions = actions[action] as unknown as SimplePermission[];
                 for (const permission of permissions) {
-                    if (!permission._id) continue
+                    if (!permission._id) continue;
                     try {
-                        await this.updatePermission(name, action, permission, principle)
-                    }
-                    catch (e) {
-                        logger.error(`Failed to restore permission ${permission.name} for rule ${name}`)
+                        await this.updatePermission(name, action, permission, principle);
+                    } catch (e) {
+                        logger.error(`Failed to restore permission ${permission.name} for rule ${name}`);
                     }
                 }
             }
-        }
+        };
 
-        restoreRules(permissionsTree)
+        restoreRules(permissionsTree);
     }
 
     rulesManager!: RulesManager;
@@ -54,9 +51,7 @@ export class RulesService {
         public readonly dataService: DataService,
     ) {
         this.rulesManager = new RulesManager(rootRule);
-        dataService.addModel('permission', SimplePermissionSchema, undefined, [], true).then(() => {
-            this._seedRules(appRules);
-        });
+        this._seedRules(appRules);
     }
 
     getRules(path?: string) {
@@ -135,16 +130,22 @@ function createRulesTreeFromEndpoints(endPoints, rulesService: RulesService) {
         }
         const permissions = Reflect.getMetadata(AUTHORIZE_PERMISSIONS, descriptor ? descriptor.value : controller) ?? [];
 
-        const result = { prefix, path: _path, fullPath: _fullPath, operation, permissions }
-        return result
-    })
+        const result = {
+            prefix,
+            path: _path,
+            fullPath: _fullPath,
+            operation,
+            permissions,
+        };
+        return result;
+    });
 
     const groups = groupBy(list, 'fullPath');
     for (const fullPath in groups) {
         const g = groups[fullPath];
         if (g.length === 0) continue;
 
-        const rulePath = g[0].prefix;
+        const rulePath = g[0].prefix ?? '';
         const segments = rulePath.split('/').filter((s) => s.length > 0);
 
         for (let i = 0; i < segments.length; i++) {
@@ -190,14 +191,14 @@ function detectOrphanPermissions(rules: Rule[], permissions: SimplePermission[])
 }
 
 async function seedPermissions(data: DataService, rulesService: RulesService) {
-    const endPoints = [...EndpointsInfo.httpEndpoints, ...EndpointsInfo.wsEndpoints].map((e) => ({ ...e, fullPath: join(e.prefix, e.path) }));
+    const endPoints = [...EndpointsInfo.httpEndpoints, ...EndpointsInfo.wsEndpoints].map((e) => ({ ...e, fullPath: join(e.prefix ?? '', e.path ?? '') }));
 
     //Create Rules tree from endpoints
     createRulesTreeFromEndpoints(endPoints, rulesService);
 
     const rules = rulesService.getRules().filter((r) => r);
     const permissionsModel = await data.getModel('permission');
-    const permissions = await permissionsModel.find({}).lean() as SimplePermission[];
+    const permissions = (await permissionsModel.find({}).lean()) as SimplePermission[];
 
     // Generate Permissions from endpoints with Authorize decorator
     const authorizePermissions = getAuthorizePermissionsFromEndpoints(endPoints, rulesService);

@@ -22,7 +22,7 @@ export type WsEvent<T = any> = {
     }
 }
 
-async function verifyToken(token: string): Promise<Principle> {
+async function verifyToken(token: string): Promise<Principle | undefined> {
     const secret = __secret()
     try {
         const result = await jose.jwtVerify(token, new TextEncoder().encode(secret))
@@ -42,7 +42,7 @@ export class WebsocketsGateway {
     connected = this._onConnected.asObservable()
 
 
-    private _server: Server
+    private _server!: Server
     ioServerPromise: Promise<Server>
 
     constructor(public adapterHost: HttpAdapterHost, @Inject('IO_SERVER_PROMISE') deferredServer: Deferred<Server>) {

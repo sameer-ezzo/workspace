@@ -31,7 +31,6 @@ export class PaymentService {
     }
 
     async init(): Promise<void> {
-        this.ds.addModel(TRANSACTION, transactionSchema)
 
 
         for (const paymentOption of this.paymentConfig.paymentOptions) {

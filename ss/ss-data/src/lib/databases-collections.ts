@@ -1,21 +1,24 @@
-import { DbCollectionInfo } from "./db-collection-info";
-import { DbConnectionOptions } from "./data-options";
-import { DataService } from "./data.svr";
-import { Schema } from "mongoose";
-
+import { DbModelDefinitionInfo } from './db-collection-info';
+import { DbConnectionOptions } from './data-options';
+import { DataService } from './data.svr';
+import { Schema } from 'mongoose';
 
 export interface IDbMigration {
-    name: string,
-    collectionName: string,
-    schema: Schema,
-    up(dataService: DataService): Promise<void>
-    down(dataService: DataService): Promise<void>
+  name: string;
+  collectionName: string;
+  schema: Schema;
+  up(dataService: DataService, ctx: { session: any }): Promise<void>;
+  down(dataService: DataService, ctx: { session: any }): Promise<void>;
 }
 
-export type DatabasesCollections = {
-    [database: `DB_${string}`]: {
-        collections: DbCollectionInfo;
-        dbConnectionOptions?: DbConnectionOptions;
-        migrations?: IDbMigration[]
-    };
+export type DatabaseInfo = {
+  uri: string;
+  models: DbModelDefinitionInfo;
+  dbConnectionOptions?: DbConnectionOptions;
+  migrations?: IDbMigration[];
+};
+
+export type DatabasesOptions = {
+  DB_DEFAULT: DatabaseInfo;
+  [database: string]: DatabaseInfo;
 };

@@ -1,6 +1,6 @@
 export type PostedFileStream = any//NodeJS.ReadableStream
 export type FileBase = { fieldname: string, originalname: string, encoding: string, mimetype: string, meta?: Record<string, unknown> }
-export type PostedFile = FileBase & { stream: PostedFileStream }
+export type PostedFile = Omit<FileBase, 'fieldname'> & { stream: PostedFileStream, fieldname?: string }
 
 
 

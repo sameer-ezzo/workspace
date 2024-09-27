@@ -6,19 +6,6 @@ import { JobSchedulerConfig, JOB_SCHEDULAR_CONFIG } from "./job-scheduler.config
 
 const defaultConfig = new JobSchedulerConfig();
 
-
-@Module({
-    imports: [CommonModule],
-    providers: [{
-        provide: JOB_SCHEDULAR_CONFIG,
-        useValue: new JobSchedulerConfig()
-    }, {
-        provide: JobScheduler,
-        useFactory: (config: JobSchedulerConfig, redis: RedisClient, module: ModuleRef) => new JobScheduler(config, redis, module),
-        inject: [JOB_SCHEDULAR_CONFIG, defaultConfig.redis, ModuleRef]
-    }],
-    exports: [JobScheduler]
-})
 export class JobSchedulerModule {
     static register<T extends JobProcessor>(
         config: JobSchedulerConfig = defaultConfig,
@@ -35,7 +22,9 @@ export class JobSchedulerModule {
             } as Provider
         })
         return {
+            global: true,
             module: JobSchedulerModule,
+            imports: [CommonModule],
             providers: [
                 { provide: JOB_SCHEDULAR_CONFIG, useValue: _config },
                 {

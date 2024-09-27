@@ -2,10 +2,10 @@ import { Schema, Document } from "mongoose";
 import { FileRecord } from "@noah-ark/common";
 
 
-export interface FileDocumnet extends Document<string>, FileRecord { }
+export interface FileDocument extends Document<string>, FileRecord { }
 
 
-const fileSchema = new Schema({
+export const fileSchema = new Schema({
     fieldname: { type: String, index: true },
     originalname: String,
     encoding: String,

@@ -1,19 +1,23 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common'
-import { APP_INTERCEPTOR } from '@nestjs/core'
-import { AuthOptions } from './auth-options'
-import { AuthenticationInterceptor } from './auth.middleware'
+import { DynamicModule, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthOptions } from './auth-options';
+import { AuthenticationInterceptor } from './auth.middleware';
 
-import { CommonModule, __secret } from '@ss/common'
-import { randomString } from '@noah-ark/common'
-import { logger } from "./logger";
+import { Broker, CommonModule, __secret } from '@ss/common';
+import { randomString } from '@noah-ark/common';
+import { logger } from './logger';
 
-import { PassportModule } from '@nestjs/passport'
-import { FacebookStrategy } from './external/facebook.strategy'
-import { GoogleStrategy } from './external/google.strategy'
-import { DataModule } from '@ss/data'
-import { AuthService } from './auth.svr'
+import { PassportModule } from '@nestjs/passport';
+import { FacebookStrategy } from './external/facebook.strategy';
+import { GoogleStrategy } from './external/google.strategy';
+import { DatabaseInfo, DataModule, DataService, DbConnectionOptions, getDataServiceToken } from '@ss/data';
+import { AuthService } from './auth.svr';
+import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
+import userSchema from './user.schema';
+import { roleSchema } from './role.schema';
+import { Connection } from 'mongoose';
 
-const defaultAuthOptions = new AuthOptions()
+const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
     secret: __secret(),
     accessTokenExpiry: process.env.accessTokenExpiry || defaultAuthOptions.accessTokenExpiry,
@@ -21,88 +25,75 @@ const _authOptions = {
     forceEmailVerification: process.env.forceEmailVerification === 'true',
     forcePhoneVerification: process.env.forcePhoneVerification === 'true',
     issuer: process.env.issuer || defaultAuthOptions.issuer,
-    maximumAllowedLoginAttempts: process.env.maximumAllowedLoginAttempts
-        ? +process.env.maximumAllowedLoginAttempts
-        : defaultAuthOptions.maximumAllowedLoginAttempts,
-    maximumAllowedLoginAttemptsExpiry: process.env.maximumAllowedLoginAttemptsExpiry
-        ? +process.env.maximumAllowedLoginAttemptsExpiry
-        : defaultAuthOptions.maximumAllowedLoginAttemptsExpiry,
+    maximumAllowedLoginAttempts: process.env.maximumAllowedLoginAttempts ? +process.env.maximumAllowedLoginAttempts : defaultAuthOptions.maximumAllowedLoginAttempts,
+    maximumAllowedLoginAttemptsExpiry: process.env.maximumAllowedLoginAttemptsExpiry ? +process.env.maximumAllowedLoginAttemptsExpiry : defaultAuthOptions.maximumAllowedLoginAttemptsExpiry,
     resetTokenExpiry: process.env.resetTokenExpiry || defaultAuthOptions.resetTokenExpiry,
-    sendWelcomeEmail: process.env.sendWelcomeEmail === 'true'
-} as AuthOptions
+    sendWelcomeEmail: process.env.sendWelcomeEmail === 'true',
+} as AuthOptions;
 
 if (process.env.GOOGLE_CLIENT_ID) {
-    _authOptions.externalAuth ??= {}
+    _authOptions.externalAuth ??= {};
     _authOptions.externalAuth.google ??= {
         client_id: process.env.GOOGLE_CLIENT_ID || '',
         client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
         client_url: process.env.CLIENT_URL || '',
-        callback_base: process.env.CALLBACK_BASE || ''
-    }
+        callback_base: process.env.CALLBACK_BASE || '',
+    };
 }
 
 if (process.env.FACEBOOK_APP_ID) {
-    _authOptions.externalAuth ??= {}
+    _authOptions.externalAuth ??= {};
     _authOptions.externalAuth.facebook ??= {
         app_id: process.env.FACEBOOK_APP_ID || '',
         app_secret: process.env.FACEBOOK_APP_SECRET || '',
         client_url: process.env.CLIENT_URL || '',
-        callback_base: process.env.CALLBACK_BASE || ''
-    }
+        callback_base: process.env.CALLBACK_BASE || '',
+    };
 }
-const providers: Provider[] = [
-    AuthService,
-    { provide: 'AUTH_OPTIONS', useValue: _authOptions },
-    { provide: 'AUTH_DB', useExisting: process.env['DB_AUTH'] ? 'DB_AUTH' : 'DB_DEFAULT' }
-]
 
-@Module({
-    controllers: [],
-    providers: [
-        { provide: APP_INTERCEPTOR, useClass: AuthenticationInterceptor },
-        ...providers
-    ],
-    exports: [...providers],
-    imports: [DataModule, CommonModule, PassportModule],
-})
-export class AuthModule {
-    static register(authOptions: Partial<AuthOptions> = {}): DynamicModule {
+// @Module({})
+export class AuthModule implements OnModuleInit {
+    constructor(@Inject('DB_AUTH') public readonly data: DataService) {}
+    onModuleInit() {
+        this.data.addModel('user', userSchema);
+        this.data.addModel('role', roleSchema);
+    }
 
-        authOptions = { ..._authOptions, ...authOptions } as AuthOptions
+    static register(dbName = 'DB_DEFAULT', authOptions: Partial<AuthOptions> = {}): DynamicModule {
+        authOptions = { ..._authOptions, ...authOptions } as AuthOptions;
         if (authOptions.secret !== __secret()) {
-            logger.warn('Auth secret has been overridden (the one passed in env is used)')
-            authOptions.secret = __secret()
+            logger.warn('Auth secret has been overridden (the one passed in env is used)');
+            authOptions.secret = __secret();
         }
         if (!authOptions.secret) {
+            logger.error('Auth secret is not set');
 
-            logger.error('Auth secret is not set')
-
-            const prod = process.env.NODE_PROD === 'production'
-            authOptions.secret = prod ? randomString(10) : 'dev-secret-PLEASE-CHANGE!'
-            process.env.secret = authOptions.secret
-            process.env.SECRET = authOptions.secret
+            const prod = process.env.NODE_PROD === 'production';
+            authOptions.secret = prod ? randomString(10) : 'dev-secret-PLEASE-CHANGE!';
+            process.env.secret = authOptions.secret;
+            process.env.SECRET = authOptions.secret;
         }
 
         const providers: Provider[] = [
             AuthService,
             { provide: 'AUTH_OPTIONS', useValue: authOptions },
-            { provide: 'AUTH_DB', useExisting: process.env['DB_AUTH'] ? 'DB_AUTH' : 'DB_DEFAULT' },
-
-        ]
-
+            {
+                provide: 'DB_AUTH',
+                useExisting: getDataServiceToken(dbName),
+            },
+        ];
 
         //EXTERNAL AUTH
-        if (authOptions.externalAuth?.google) providers.push(GoogleStrategy)
-        if (authOptions.externalAuth?.facebook) providers.push(FacebookStrategy)
+        if (authOptions.externalAuth?.google) providers.push(GoogleStrategy);
+        if (authOptions.externalAuth?.facebook) providers.push(FacebookStrategy);
 
         return {
+            global: true,
             module: AuthModule,
             exports: [...providers],
+            imports: [DataModule, CommonModule, PassportModule],
             controllers: [],
-            providers: [
-                { provide: APP_INTERCEPTOR, useClass: AuthenticationInterceptor },
-                ...providers
-            ]
+            providers: [{ provide: APP_INTERCEPTOR, useClass: AuthenticationInterceptor }, ...providers],
         };
     }
 }
