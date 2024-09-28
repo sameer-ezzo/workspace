@@ -48,9 +48,9 @@ export function EndPoint(options: string | EndPointOptions): MethodDecorator {
     if (!options) throw new HttpException('MISSING_ARGUMENT_OPTIONS', HttpStatus.INTERNAL_SERVER_ERROR)
 
     if (typeof options === 'string') {
-        const path = options.startsWith('/') ? options : `/${options}`
+        const path = options
         return applyDecorators(
-            _HttpEndpoint({ method: 'POST', path: path }, { operation: 'POST', path: path }),
+            _HttpEndpoint({ method: 'GET', path: path }, { operation: 'GET', path: path }),
             EventHandler(path),
             WebSocketsEndpoint(path)
         )
