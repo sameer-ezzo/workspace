@@ -51,7 +51,7 @@ export type DataListViewModelInputs = {
 };
 
 export function resolveDataListInputsFor(target: any): DataListViewModelInputs {
-    return Reflect.getMetadata(dataListInputsMetadataKey, target);
+    return Reflect.getMetadata(dataListInputsMetadataKey, target) ?? {};
 }
 
 const setDataListMetadataFor = (

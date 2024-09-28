@@ -28,6 +28,7 @@ import { DataTableComponent, DataTableModule } from "@upupa/table";
 import { DataListViewModel } from "./viewmodels/api-data-table-viewmodel";
 import { DataListViewModelQueryParam, DataTableActionDescriptor, resolveDataListInputsFor } from "../decorators/scheme.router.decorator";
 import { JsonPointer } from "@noah-ark/json-patch";
+import { unreachable } from "@noah-ark/common";
 
 @Component({
     selector: "cp-data-list-with-inputs",
@@ -38,6 +39,9 @@ import { JsonPointer } from "@noah-ark/json-patch";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
+    viewModel = input.required<Type<DataListViewModel>>();
+    dataAdapterDescriptor = input.required<DataAdapterDescriptor<DataAdapterType>>();
+
     public readonly injector = inject(Injector);
     public readonly auth = inject(AuthService);
     public readonly http = inject(HttpClient);
@@ -61,7 +65,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
         vm.injector = this.injector;
         vm.component = this;
-        vm.columns = inputs.columns;
+        vm.columns = inputs.columns ?? {};
         vm.inputs = inputs;
 
         const dataAdapterDescriptor = {
@@ -69,6 +73,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         } as DataAdapterDescriptor<DataAdapterType>;
         if ("path" in adapterDescriptor) {
             if (typeof adapterDescriptor.path === "function") {
+                // TODO @samir why is this a function?
                 dataAdapterDescriptor["path"] = adapterDescriptor.path(
                     this.route.snapshot.toString(),
                     this.route.snapshot.params,
@@ -89,9 +94,6 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         vm.dataAdapter = createDataAdapter(this.injector, dataAdapterDescriptor);
         return vm;
     });
-
-    viewModel = input.required<Type<DataListViewModel>>();
-    dataAdapterDescriptor = input.required<DataAdapterDescriptor<DataAdapterType>>();
 
     rowActions = computed(() => (this.vm().inputs.rowActions ?? []).map((x) => x.descriptor));
     headerActions = computed(() => (this.vm().inputs.headerActions ?? []).map((x) => x.descriptor));
@@ -187,14 +189,24 @@ function createDataAdapter(
     descriptor: DataAdapterDescriptor<DataAdapterType>, // path should be a string not a function
 ): DataAdapter {
     let dataSource: ITableDataSource;
-    if (descriptor.type === "client") dataSource = new ClientDataSource(descriptor["data"]);
-    else if (descriptor.type === "server") {
-        const dataService = injector.get(DataService);
-        dataSource = new ServerDataSource(dataService, descriptor["path"], []);
-    } else if (descriptor.type === "http") {
-        const http = injector.get(HttpClient);
-        dataSource = new HttpServerDataSource(http, descriptor["url"], descriptor["httpOptions"]);
-    } else throw new Error(`Invalid data adapter type ${descriptor.type}`);
+
+    switch (descriptor.type) {
+        case "client":
+            dataSource = new ClientDataSource(descriptor["data"]);
+            break;
+        case "server":
+            const dataService = injector.get(DataService);
+            dataSource = new ServerDataSource(dataService, descriptor["path"] as any, []);
+            break;
+        case "http":
+            const http = injector.get(HttpClient);
+            dataSource = new HttpServerDataSource(http, descriptor["url"], descriptor["httpOptions"]);
+            break;
+        default:
+            throw unreachable("data adapter type:", descriptor);
+    }
+
+    // throw new Error(`Invalid data adapter type ${descriptor.type}`);
 
     return new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, descriptor.options);
 }
