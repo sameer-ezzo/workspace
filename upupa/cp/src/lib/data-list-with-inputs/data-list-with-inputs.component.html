@@ -1,21 +1,21 @@
 <data-table
-  #dataTable
-  [adapter]="vm()?.dataAdapter"
-  [columns]="vm()?.columns"
-  [actions]="rowActions()"
-  [headerActions]="headerActions()"
-  (action)="onAction($event)"
-  (selectionChange)="onSelectionChange($event)"
-  (pageChange)="onPageChange($event)"
-  (sortChange)="onSortChange($event)"
-  (focusedItem)="onFocusedItemChanged($event)"
+    #dataTable
+    [adapter]="vm()?.dataAdapter"
+    [columns]="vm()?.columns"
+    [actions]="rowActions()"
+    [headerActions]="headerActions()"
+    (action)="onAction($event)"
+    (selectionChange)="onSelectionChange($event)"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (focusedItem)="onFocusedItemChanged($event)"
 >
 </data-table>
 
 <!-- @if(_dataListResolverResult(); as _inputs){
   @if (filterFormVm && filterFormVm.position !== 'dialog') {
-    <ng-container *ngTemplateOutlet="withSideFilterForm; context: { 
-            tableInputs: _inputs, 
+    <ng-container *ngTemplateOutlet="withSideFilterForm; context: {
+            tableInputs: _inputs,
             actions: dataTableActions,
             fields: filterFormVm.fields,
             path: _inputs.path

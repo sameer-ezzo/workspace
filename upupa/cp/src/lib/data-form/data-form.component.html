@@ -1,26 +1,27 @@
 <div id="form-wrapper">
-    @if(fields){
-    <dynamic-form #dynForm
-    [fields]="fields" 
-    [value]="formValue()"
-    [name]="name"
-    [preventDirtyUnload]="preventDirtyUnload" 
-    [initialValueFactory]="initialValueFactory" 
-    [recaptcha]="recaptcha"
-    [theme]="theme"
-    [conditions]="conditions"
-
-    (valueChange)="formValue.set($event)"
-    (submit)="submit($event)"></dynamic-form>
+    @if (fields) {
+        <dynamic-form
+            #dynForm
+            [fields]="fields"
+            [value]="formValue()"
+            [name]="name"
+            [preventDirtyUnload]="preventDirtyUnload"
+            [initialValueFactory]="initialValueFactory"
+            [recaptcha]="recaptcha"
+            [theme]="theme"
+            [conditions]="conditions"
+            (valueChange)="setFormValue($event)"
+            (submit)="submit($event)"
+        ></dynamic-form>
     }
 </div>
 
-@if(!dialogRef){
-@if(dialogActions(); as _actions){
-<div class="toolbar footer">
-    @for(descriptor of _actions; track descriptor.action){
-    <mat-btn (action)="onAction($event)" [descriptor]="descriptor"></mat-btn>
+@if (!dialogRef) {
+    @if (dialogActions(); as _actions) {
+        <div class="toolbar footer">
+            @for (descriptor of _actions; track descriptor.action) {
+                <mat-btn (action)="onAction($event)" [descriptor]="descriptor"></mat-btn>
+            }
+        </div>
     }
-</div>
-}
 }

@@ -9,25 +9,27 @@ import { EventBus } from "@upupa/common";
 import { ScaffoldingService } from "../scaffolding.service";
 import { FileInfo } from "@noah-ark/common";
 import { SnackBarService } from "@upupa/dialog";
-
-
-
+import { CommonModule } from "@angular/common";
+import { UploadModule } from "@upupa/upload";
+import { AuthorizeModule } from "@upupa/authz";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 
 @Component({
     selector: "cp-media-library",
+    standalone: true,
+    imports: [CommonModule, UploadModule, AuthorizeModule, UploadModule,DynamicFormNativeThemeModule],
     templateUrl: "./media-library.component.html",
     styleUrls: ["./media-library.component.scss"],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MediaLibraryComponent implements OnDestroy {
-
     // @ViewChild("filterDrawer") filterDrawer: any;
     destroyed$ = new Subject<void>();
 
-    view$ = new BehaviorSubject<'list' | 'grid'>('list')
-    files = []
-    focused = undefined as FileInfo | undefined
-    path$ = new BehaviorSubject<string>('/')
+    view$ = new BehaviorSubject<"list" | "grid">("list");
+    files = [];
+    focused = undefined as FileInfo | undefined;
+    path$ = new BehaviorSubject<string>("/");
     // adapter$ = this.path$.pipe(map())
     // filterButtonActionDescriptor = { name: 'filter', icon: 'filter_list', header: true, variant: 'icon', handler: (event: ActionEvent) => this.toggleFilterDrawer() } as ActionDescriptor
     constructor(
@@ -39,8 +41,8 @@ export class MediaLibraryComponent implements OnDestroy {
         public ds: DataService,
         public route: ActivatedRoute,
         public snack: SnackBarService,
-        public bus: EventBus) { }
-
+        public bus: EventBus,
+    ) {}
 
     ngOnDestroy() {
         this.destroyed$.next();

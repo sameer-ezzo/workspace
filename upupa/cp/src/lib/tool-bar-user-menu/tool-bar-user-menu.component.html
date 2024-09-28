@@ -1,56 +1,47 @@
-@if(auth.user$ | async; as _user && _user){
-
-<div id="avatar-wrapper" [class.impersonated]="impersonated$ | async"
-    [class.active]="menuTrigger.menuOpen ||  (impersonated$ | async)">
-    @if (impersonated$ | async) {
-    <button mat-icon-button (click)="unimpersonate()" style="flex: 0 0 35px; margin-inline-end: 0.25rem;">
-        <mat-icon style="color: var(--mdc-switch-selected-handle-color);">supervised_user_circle
-        </mat-icon>
-    </button>
-    }
-    <div style="display: flex; align-items: center;" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
-        @if(userImageResolver | async; as userImage){
-        @if(userImage){
-        <img [src]="userImage" (error)="handelImageError($event)" [attr.alt]="auth.user.name || auth.user.email">
-        <mat-icon style="flex: 0 0 25px;">expand_more</mat-icon>
+@if (auth.user$ | async; as _user && _user) {
+    <div id="avatar-wrapper" [class.impersonated]="impersonated$ | async" [class.active]="menuTrigger.menuOpen || (impersonated$ | async)">
+        @if (impersonated$ | async) {
+            <button mat-icon-button (click)="unimpersonate()" style="flex: 0 0 35px; margin-inline-end: 0.25rem">
+                <mat-icon style="color: var(--mdc-switch-selected-handle-color)">supervised_user_circle </mat-icon>
+            </button>
         }
-        @else {
-        <mat-icon style="flex: 0 0 25px;">person</mat-icon>
-        }
-        }
+        <div style="display: flex; align-items: center" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
+            @if (userImageResolver | async; as userImage) {
+                @if (userImage) {
+                    <img [src]="userImage" (error)="handelImageError($event)" [attr.alt]="auth.user.name || auth.user.email" />
+                    <mat-icon style="flex: 0 0 25px">expand_more</mat-icon>
+                } @else {
+                    <mat-icon style="flex: 0 0 25px">person</mat-icon>
+                }
+            }
+        </div>
     </div>
-</div>
-<mat-menu #menu="matMenu">
-    <button (click)="umcClicked({action:{name: 'user-profile'}}); menuTrigger.closeMenu()" mat-menu-item>
-        <span style="display: flex; flex-direction: column; flex: 1 1 auto; font-size: 10pt; line-height: 1rem;">
-            {{userName$ | async}}
-        </span>
-    </button>
-    <mat-divider></mat-divider>
+    <mat-menu #menu="matMenu">
+        <button (click)="umcClicked({ action: { name: 'user-profile' } }); menuTrigger.closeMenu()" mat-menu-item>
+            <span style="display: flex; flex-direction: column; flex: 1 1 auto; font-size: 10pt; line-height: 1rem">
+                {{ userName$ | async }}
+            </span>
+        </button>
+        <mat-divider></mat-divider>
 
-    @if(commands?.length > 0){
-    @for (umc of commands; track $index) {
-    <button mat-menu-item authAction [path]="umc['path']" [action]="umc['action']"
-        (click)="umcClicked($event); menuTrigger.closeMenu()">
-
-        @if(umc.icon){
-        <mat-icon>{{umc.icon}}</mat-icon>
-        }@else if (umc.icon_url) {
-        <img [src]="umc.icon_url" width="40px" height="40px" />
+        @if (commands?.length > 0) {
+            @for (umc of commands; track $index) {
+                <button mat-menu-item authAction [path]="umc['path']" [action]="umc['action']" (click)="umcClicked($event); menuTrigger.closeMenu()">
+                    @if (umc.icon) {
+                        <mat-icon>{{ umc.icon }}</mat-icon>
+                    } @else if (umc.icon_url) {
+                        <img [src]="umc.icon_url" width="40px" height="40px" />
+                    }
+                    <span style="margin: 0 0.5rem">{{ umc.text }}</span>
+                </button>
+            }
+            <mat-divider></mat-divider>
         }
-        <span style="margin: 0 .5rem">{{ umc.text}}</span>
-    </button>
-    }
-    <mat-divider></mat-divider>
-    }
-    <button (click)="signout()" mat-menu-item>
-        <mat-icon>logout</mat-icon>
-        Sign out
-    </button>
-</mat-menu>
-}
-@else {
-<button mat-stroked-button color="accent" (click)="navigateToLogin()">
-    Login
-</button>
+        <button (click)="signout()" mat-menu-item>
+            <mat-icon>logout</mat-icon>
+            Sign out
+        </button>
+    </mat-menu>
+} @else {
+    <button mat-stroked-button color="accent" (click)="navigateToLogin()">Login</button>
 }

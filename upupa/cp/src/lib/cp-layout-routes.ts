@@ -9,20 +9,20 @@ import { mergeScaffoldingScheme } from "./decorators/scheme.router.decorator";
 
 
 
-export function layoutRoute(options: {
+export function layoutRoute(layout: {
     layout?: Type<CpLayoutComponent>;
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[]; };
 }, route: Omit<Route, 'component'>): Route {
     return {
         ...route,
-        component: options.layout ?? CpLayoutComponent,
+        component: layout.layout ?? CpLayoutComponent,
         providers: [
             { provide: SCAFFOLDING_SCHEME, useValue: mergeScaffoldingScheme() },
-            Array.isArray(options.sidebar) ? { provide: CP_SIDE_BAR_ITEMS, useValue: options.sidebar } : { provide: CP_SIDE_BAR_ITEMS, useFactory: options.sidebar.useFactory, deps: options.sidebar.deps },
+            Array.isArray(layout.sidebar) ? { provide: CP_SIDE_BAR_ITEMS, useValue: layout.sidebar } : { provide: CP_SIDE_BAR_ITEMS, useFactory: layout.sidebar.useFactory, deps: layout.sidebar.deps },
         ],
         data: {
             ...route.data,
-            ...options
+            ...layout
         }
     };
 }

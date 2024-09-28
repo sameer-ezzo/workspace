@@ -52,20 +52,8 @@ const userImageProvider = {
     }, deps: [AuthService, DataService]
 }
 const ScaffoldersProvider = { provide: SCAFFOLDING_SCHEME, useValue: scaffoldingScheme }
-const declarations = [
-    ToolbarUserMenuComponent,
-    DataFormComponent,
-    DataFilterFormComponent,
-    DataListComponent,
-    CpLayoutComponent,
-    InlineEditableListComponent,
-    InlineEditableListFormComponent,
-    MediaLibraryComponent,
-    DataListWithInputsComponent,
-    DataFormWithViewModelComponent
-];
+
 @NgModule({
-    declarations,
     imports: [
         CommonModule,
         UtilsModule,
@@ -93,8 +81,7 @@ const declarations = [
         ScaffoldersProvider,
         { provide: CP_OPTIONS, useValue: { userAvatarMode: 'avatar' } },
         userImageProvider,
-    ],
-    exports: [...declarations],
+    ]
 })
 export class ControlPanelModule {
     public static register(options: {
