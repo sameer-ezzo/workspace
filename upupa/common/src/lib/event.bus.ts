@@ -9,7 +9,7 @@ export class EventBus extends EventBusBase {
     }
 
     async init() {
-        if ('serviceWorker' in navigator) {
+        if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
             await navigator.serviceWorker.ready
             navigator.serviceWorker.onmessage = (event) => {
                 const data = event.data
