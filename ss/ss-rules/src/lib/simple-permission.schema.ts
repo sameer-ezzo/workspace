@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose';
 
 export const SimplePermissionSchema = new Schema(
     {
@@ -14,5 +14,5 @@ export const SimplePermissionSchema = new Schema(
         access: { type: String, required: false },
         selectors: { type: Object, required: false },
     },
-    { strict: true }
-)
+    { strict: true, timestamps: true }
+);

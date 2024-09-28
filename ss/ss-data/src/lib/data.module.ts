@@ -33,8 +33,8 @@ export class DataModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
         await this.data.addModel('migration', migrationSchema);
-        this.data.addModel('tag', tagSchema);
-        this.data.addModel('change', changeSchema);
+        await this.data.addModel('tag', tagSchema);
+        await this.data.addModel('change', changeSchema);
     }
 
     static register(databasesCollections: DatabasesOptions): DynamicModule {

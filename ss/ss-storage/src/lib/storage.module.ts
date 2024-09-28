@@ -8,20 +8,21 @@ import { ImageController } from './image.controller';
 import { StorageController } from './storage.controller';
 import { StorageService } from './storage.service';
 import fileSchema from './schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 export class StorageModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
-    onModuleInit() {
-        this.data.addModel('storage', fileSchema);
+    async onModuleInit() {
+        // await this.data.addModel('storage', fileSchema);
     }
     static register(): DynamicModule {
         return {
             global: true,
             module: StorageModule,
-            imports: [RulesModule, CommonModule, DataModule],
+            imports: [RulesModule, CommonModule, DataModule, MongooseModule.forFeature([{ name: 'storage', schema: fileSchema }], 'DB_DEFAULT')],
             controllers: [StorageController, ImageController],
             providers: [StorageService, ImageService],
-            exports: [StorageService, ImageService],
+            exports: [StorageService, ImageService, MongooseModule],
         };
     }
 }
