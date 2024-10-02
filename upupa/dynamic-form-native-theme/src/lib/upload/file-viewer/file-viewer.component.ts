@@ -84,7 +84,7 @@ export class FilesViewerComponent implements OnChanges {
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
 
-        const getFileType = (f: any) => ((f.mimetype ?? f.type)?.split('/')?.[0] ?? 'file').toLowerCase()
+        const getFileType = (f: any) => (f ? (f.mimetype ?? f.type)?.split('/')?.[0] ?? 'file' : 'file').toLowerCase()
         const fileToVm = (f: SelectInputFileVm, actions: ActionDescriptor[]) => {
             const fileType = getFileType(f.file)
             return {

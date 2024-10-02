@@ -1,10 +1,14 @@
 import {
     Component,
+    DestroyRef,
     HostBinding,
     HostListener,
     Input,
     OnDestroy,
     forwardRef,
+    inject,
+    input,
+    signal,
 } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
@@ -25,7 +29,9 @@ import { AuthService } from '@upupa/auth';
 import { FileUploadService } from '../file-upload.service';
 import { FileEvent, SelectInputFileVm } from '../viewer-file.vm';
 import { DialogService } from '@upupa/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+type ViewType = 'list' | 'grid';
 @Component({
     selector: 'file-select',
     templateUrl: './file-select.component.html',
@@ -43,11 +49,11 @@ import { DialogService } from '@upupa/dialog';
         },
     ],
     exportAs: 'fileSelect',
+    host: {
+        class: 'view()',
+    },
 })
-export class FileSelectComponent
-    extends InputBaseComponent<FileInfo[]>
-    implements OnDestroy
-{
+export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     @Input() color: ThemePalette = 'accent';
     @Input() dateFormat = 'dd MMM yyyy';
     @Input() placeholder: string;
@@ -59,7 +65,12 @@ export class FileSelectComponent
     @Input() hideSelectButton = false;
     @Input() includeAccess = false;
     // @Input() base = this.uploadClient.baseOrigin;
-    @Input() path = '';
+    path = input<string, string>('', {
+        transform: (v) => {
+            const v_lower = (v ?? '').toLocaleLowerCase();
+            return v_lower === 'undefined' || v_lower === 'null' ? '' : v;
+        },
+    });
 
     @Input() minAllowedFiles = 0;
     @Input() maxAllowedFiles = 1;
@@ -67,15 +78,18 @@ export class FileSelectComponent
     @Input() maxFileSize = 1024 * 1024 * 10; //10 MB
     @Input() maxSize = 1024 * 1024 * 10; //10 MB
 
-    @Input() accept: string;
+    accept = input<string, string>('*.*', {
+        transform: (v) => (v ?? '*.*').toLocaleLowerCase(),
+    });
 
-    @HostBinding('class')
-    @Input()
-    view: 'list' | 'grid' = 'list';
+    view = input.required<ViewType, ViewType>({
+        transform: (v: ViewType) => v ?? 'list',
+    });
     @Input() fileSelector: 'browser' | 'system' = 'system';
+    viewFiles = input(true);
+
     @Input() fileValidator: (file: File) => Promise<Record<string, string>>;
     @Input() enableDragDrop = false;
-    @Input() viewFiles = false;
 
     @Input() actions = [
         {
@@ -92,8 +106,8 @@ export class FileSelectComponent
         } as ActionDescriptor,
     ];
     dragging = false;
-    viewModel: SelectInputFileVm[] = [];
-    private readonly destroyed$ = new Subject<void>();
+    viewModel = signal<SelectInputFileVm[]>([]);
+    private readonly destroyRef = inject(DestroyRef);
 
     @HostListener('blur', ['$event'])
     onBlur(event) {
@@ -112,14 +126,19 @@ export class FileSelectComponent
         super();
         // this.base ??= uploadClient.baseUrl
 
-        this.value1$.pipe(takeUntil(this.destroyed$)).subscribe((v) => {
-            this.viewModel = (v ?? []).map(
-                (f, id) => ({ id, file: f, error: null } as SelectInputFileVm)
-            );
-        });
+        this.value1$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((v) => {
+                this.viewModel.set(
+                    (v ?? []).map(
+                        (f, id) =>
+                            ({ id, file: f, error: null } as SelectInputFileVm)
+                    )
+                );
+            });
 
         this.clipboard.paste$
-            .pipe(takeUntil(this.destroyed$))
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(async (event) => {
                 // make sure this component is focused or active
                 if (
@@ -134,21 +153,18 @@ export class FileSelectComponent
             });
     }
 
-    ngOnDestroy(): void {
-        this.destroyed$.next();
-        this.destroyed$.complete();
-    }
-
     selectFile() {
-        if (this.fileSelector === 'browser') this.showFileExplorer();
+        const viewer = this.fileSelector;
+        if (viewer === 'browser') this.showFileExplorer();
         else this.showFileDialog();
     }
 
     uploading = false;
     files: File[];
     private async showFileDialog() {
+        const accept = (this.accept) ?? this.accept?.() ?? '';
         const files = await openFileDialog(
-            this.accept,
+            accept as string,
             this.maxAllowedFiles !== 1
         );
         this.files = Array.from(files);
@@ -197,7 +213,7 @@ export class FileSelectComponent
             .map(async (file, id) => {
                 const extensionErrors = this.validateFileExtensions(
                     file,
-                    this.accept
+                    this.accept as any
                 );
                 const maxSizeErrors = this.validateFileMaxSize(
                     file,
@@ -217,6 +233,7 @@ export class FileSelectComponent
                     maxSizeErrors,
                     minSizeErrors
                 );
+
                 const res = {
                     id,
                     file,
@@ -240,20 +257,22 @@ export class FileSelectComponent
         });
         const errors = validatedFilesReport.filter((f) => f.error);
         if (errors.length > 0) {
-            this.viewModel = [...this.viewModel, ...errors];
+            this.viewModel.set([...this.viewModel(), ...errors]);
             return;
         }
-        const tasks = validatedFilesReport
-            .map((f) => this.setUploadTask(f))
-            .map((f) => lastValueFrom(f.uploadTask.response$));
+        // const tasks = validatedFilesReport.map((f) => this.setUploadTask(f));
+        // .map((f) => lastValueFrom(f.uploadTask.response$));
 
-        this.viewModel = [...this.viewModel, ...validatedFilesReport];
+        this.viewModel.set([...this.viewModel(), ...validatedFilesReport]);
 
-        await Promise.allSettled(tasks);
+        // await Promise.allSettled(tasks);
     }
 
     private setUploadTask(fvm: SelectInputFileVm) {
-        fvm.uploadTask = this.fileUploader.upload(this.path, fvm.file as File);
+        fvm.uploadTask = this.fileUploader.upload(
+            this.path(),
+            fvm.file as File
+        );
 
         fvm.uploadTask?.response$
             .pipe(
@@ -267,18 +286,21 @@ export class FileSelectComponent
             .subscribe({
                 next: (f) => {
                     fvm.file = f;
+                    this.viewModel.set(this.viewModel().slice());
                 },
                 error: (e) => {
-                    fvm.error =
-                        e.status === 0 ? { error: 'canceled' } : e.error;
+                    fvm.error = { error: e.error.message };
                     fvm.uploadTask = null;
                     this.control.markAsDirty();
-                    this.viewModel = this.viewModel.slice();
+                    this.viewModel.set(this.viewModel().slice());
                 },
                 complete: () => {
                     fvm.uploadTask = null;
-                    this.viewModel = this.viewModel.slice();
-                    if (this.viewModel.filter((v) => v.uploadTask).length === 0)
+                    this.viewModel.set(this.viewModel().slice());
+                    if (
+                        this.viewModel().filter((v) => v.uploadTask).length ===
+                        0
+                    )
                         this.value = [
                             ...(this.value ?? []),
                             fvm.file as FileInfo,
@@ -298,12 +320,12 @@ export class FileSelectComponent
     viewerEventsHandler(e: FileEvent) {
         if (e.name === 'removed') {
             e.files.forEach((f) =>
-                this.viewModel.splice(
-                    this.viewModel.findIndex((c) => c.id === f.id),
+                this.viewModel().splice(
+                    this.viewModel().findIndex((c) => c.id === f.id),
                     1
                 )
             );
-            this.viewModel = this.viewModel.slice();
+            this.viewModel.set(this.viewModel().slice());
         }
         if (e.name === 'requestResume') {
             e.files.forEach((f) => {

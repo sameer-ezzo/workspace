@@ -149,7 +149,7 @@ function makeFieldItem(
     const fileOptions = opts as any;
     field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
     field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
-    field.ui.inputs['path'] = fileOptions.path || `${field.path}`;
+    field.ui.inputs['path'] = fileOptions.path || field.path || '';
     field.ui.inputs['accept'] = fileOptions.accept || '*.*';
     field.ui.inputs['view'] = fileOptions.view || 'list';
     field.ui.inputs['fileSelector'] = fileOptions.fileSelector || 'system';

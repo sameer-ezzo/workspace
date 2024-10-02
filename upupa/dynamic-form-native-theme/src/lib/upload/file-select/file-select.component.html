@@ -19,17 +19,32 @@
     <span>{{ file.name }}</span>
     }
 </div>
-} @if(enableDragDrop === true){
-<ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
-} @else if(viewFiles){
-<ng-container *ngTemplateOutlet="content"></ng-container>
+} @if(viewFiles()){
+<ng-container
+    *ngTemplateOutlet="
+        contentTemplate;
+        context: { viewModel: viewModel(), view, path: path }
+    "
+></ng-container>
+} @else if(enableDragDrop === true){
+<ng-container
+    *ngTemplateOutlet="
+        dragDropTemplate;
+        context: { viewModel: viewModel(), view, path: path }
+    "
+></ng-container>
 } @if(placeholder && value?.length === 0){
 <div class="mt-16" style="display: flex; flex-flow: column">
     {{ placeholder }}
 </div>
 }
 
-<ng-template #content>
+<ng-template
+    #contentTemplate
+    let-viewModel="viewModel"
+    let-path="path"
+    let-view="view"
+>
     <file-viewer
         [path]="path"
         [files]="viewModel"
@@ -44,7 +59,12 @@
     ></file-viewer>
 </ng-template>
 
-<ng-template #dragDropTemplate>
+<ng-template
+    #dragDropTemplate
+    let-viewModel="viewModel"
+    let-path="path"
+    let-view="view"
+>
     <div
         #dr
         class="drop-zone"
@@ -57,7 +77,12 @@
         (drop)="onDrop($event)"
     >
         @if(viewModel.length > 0){
-        <ng-container *ngTemplateOutlet="content"></ng-container>
+        <ng-container
+            *ngTemplateOutlet="
+                contentTemplate;
+                context: { viewModel, path, view }
+            "
+        ></ng-container>
         }@else {
         <p class="placeholder">Drop files here</p>
         }

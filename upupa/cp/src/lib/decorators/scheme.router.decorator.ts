@@ -301,76 +301,10 @@ export function scaffolder(path: string, options?: any) {
 
 // generate property decorator for header action that register the action in the parent class meta data in array.
 
-export type DataTableActionDescriptor<TRow = any[]> = { order?: number } & (
-    | ActionDescriptor
-    | ((rows: TRow) => ActionDescriptor)
-);
-type DataTableHeaderActionDescriptor = DataTableActionDescriptor<any[]>;
-
-export function headerAction(action: DataTableHeaderActionDescriptor) {
-    return function (target: any, propertyKey: string) {
-        const inputs = resolveDataListInputsFor(target.constructor);
-        const headerActions = inputs?.headerActions ?? [];
-        const actionFn =
-            typeof action === 'function' ? action : (rows: any[]) => action;
-
-        const descriptorFn = (rows: any): DataTableActionDescriptor => {
-            return {
-                ...actionFn(rows),
-                name: propertyKey,
-            } as DataTableActionDescriptor;
-        };
-        headerActions.push({
-            order: action.order || headerActions.length,
-            descriptor: descriptorFn,
-        });
-        headerActions.sort((a, b) => (a.order || 0) - (b.order || 0));
-        setDataListMetadataFor(target.constructor, {
-            ...inputs,
-            headerActions,
-        });
-    };
-}
-
-type DataTableRowActionDescriptor = DataTableActionDescriptor<any>;
-
-// export function ActionButton(action?: Partial<DataTableActionDescriptor>) {
-//     return function (target: any, propertyKey: string) {
-//         const actionFn =
-//             typeof action === 'function' ? action : (rows: any[]) => action;
-
-//         const descriptorFn = (rows: any): DataTableActionDescriptor => {
-//             return {
-//                 name: propertyKey,
-//                 text: toTitleCase(propertyKey),
-//                 ...actionFn(rows),
-//             } as DataTableActionDescriptor;
-//         };
-//         Reflect.defineMetadata('ActionButton', descriptorFn, target);
-//         Reflect.defineMetadata('ActionButton', descriptorFn, target.constructor);
-//     };
-// }
-
-export function rowAction(action: Partial<DataTableRowActionDescriptor>) {
-    return function (target: any, propertyKey: string) {
-        const inputs = resolveDataListInputsFor(target.constructor);
-        const rowActions = inputs?.rowActions ?? [];
-        const actionFn =
-            typeof action === 'function' ? action : (row: any) => action;
-        const descriptorFn = (row: any): DataTableActionDescriptor => {
-            return {
-                ...actionFn(row),
-                name: propertyKey,
-            } as DataTableActionDescriptor;
-        };
-        rowActions.push({
-            order: action.order || rowActions.length,
-            descriptor: descriptorFn,
-        });
-        rowActions.sort((a, b) => (a.order || 0) - (b.order || 0));
-        setDataListMetadataFor(target.constructor, { ...inputs, rowActions });
-    };
-}
+type DataTableAD = { order?: number } & Partial<ActionDescriptor>;
+export type DataTableActionDescriptor<TRow = any[]> =
+    | DataTableAD
+    | ((rows: TRow) => DataTableAD | null | undefined);
 
 export function queryParam(param?: string) {
     return function (target: any, propertyKey: string) {
