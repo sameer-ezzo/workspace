@@ -301,6 +301,7 @@ async function getValue(path: string, ds: DataService) {
     );
     return res;
 }
+
 async function openDataFormDialog(
     e: ActionEvent,
     action: string,
@@ -346,11 +347,15 @@ export function provideHeaderActions(options: { createViewModel?: any }) {
         );
     actions.push(
         DeleteAction({
-            action: {
-                name: 'delete',
-                icon: 'delete_outline',
-                text: 'Delete',
-                bulk: true,
+            action: (items: any[]) => {
+                return items.length === 0
+                    ? undefined
+                    : {
+                          name: 'delete',
+                          icon: 'delete_outline',
+                          text: 'Delete',
+                          bulk: true,
+                      };
             },
         })
     );

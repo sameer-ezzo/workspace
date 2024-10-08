@@ -58,15 +58,15 @@ const setDataListMetadataFor = (
     target: any,
     value: Record<string, unknown>
 ) => {
-    let metadata = resolveDataListInputsFor(target);
+    let targetMeta = resolveDataListInputsFor(target);
     const parent = target.prototype
         ? Object.getPrototypeOf(target.prototype)?.constructor
         : null;
     if (parent && parent.constructor)
-        metadata = { ...resolveDataListInputsFor(parent), ...metadata };
+        targetMeta = { ...resolveDataListInputsFor(parent), ...targetMeta };
     Reflect.defineMetadata(
         dataListInputsMetadataKey,
-        { ...metadata, ...value },
+        { ...targetMeta, ...value },
         target
     );
 };

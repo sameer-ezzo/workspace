@@ -1,37 +1,64 @@
 form.dynamic-form {
-  display: flex;
-  width: 100%;
-  //  height: 100%;
-  flex-direction: column;
-  position: relative;
+    display: flex;
+    width: 100%;
+    //  height: 100%;
+    flex-direction: column;
+    position: relative;
 
-  .ff-container.hidden-input {
-    display: none;
-  }
+    .ff-container.hidden-input {
+        display: none;
+    }
 
-  input[type='submit'] {
-    margin-block-start: -1rem;
-  }
+    input[type='submit'] {
+        margin-block-start: -1rem;
+    }
 
-  .ff-container:not(.hidden-input):not(:last-child) {
-    margin-block-end: 1rem;
-  }
+    .ff-container:not(.hidden-input):not(:last-child) {
+        margin-block-end: 1rem;
+    }
 
-  .ff-container.hidden-input ~ .ff-container:not(.hidden-input) {
-    margin-block-start: 0rem;
-  }
+    .ff-container.hidden-input ~ .ff-container:not(.hidden-input) {
+        margin-block-start: 0rem;
+    }
 
-  .hidden-input.ff-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 0 !important;
-  }
+    .hidden-input.ff-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
+    }
 
-  .mat-form-field-appearance-outline .mat-form-field-wrapper {
-    margin: 0 !important;
-  }
+    .mat-form-field-appearance-outline .mat-form-field-wrapper {
+        margin: 0 !important;
+    }
 
-  .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
-    display: none !important;
-  }
+    .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+        display: none !important;
+    }
+
+    fieldset {
+        legend {
+            color: var(--mdc-outlined-text-field-label-text-color);
+        }
+        &:hover {
+            legend {
+                color: var(--mdc-outlined-text-field-hover-label-text-color);
+            }
+        }
+        &:not(:disabled) {
+            border: var(--mdc-outlined-text-field-outline-width) solid
+                var(--mdc-outlined-text-field-outline-color);
+        }
+        &:disabled {
+            border: 1px solid
+                var(--mdc-outlined-text-field-disabled-outline-color);
+        }
+        &:not(:disabled):hover {
+            border: var(--mdc-outlined-text-field-outline-width) solid
+                var(--mdc-outlined-text-field-hover-outline-color);
+        }
+
+        border-radius: var(--mdc-outlined-text-field-container-shape);
+        padding: 1rem;
+        // margin: 1rem 0;
+    }
 }

@@ -199,9 +199,10 @@ td.mat-footer-cell {
   padding: 0 0.5rem;
 
   & > input {
+    color: var(--mat-app-text-color);
     letter-spacing: (--mat-table-header-headline-tracking);
     &::placeholder {
-      color: var(--fg-hint-text);
+      color: var(--mat-select-placeholder-text-color);
     }
   }
 }

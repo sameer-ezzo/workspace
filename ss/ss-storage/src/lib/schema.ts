@@ -6,6 +6,7 @@ export interface FileDocument extends Document<string>, FileRecord { }
 
 
 export const fileSchema = new Schema({
+    _id: String,
     fieldname: { type: String, index: true },
     originalname: String,
     encoding: String,

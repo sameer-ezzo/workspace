@@ -1,4 +1,4 @@
-@for (a of _actions(); track i; let i = $index) {
+@for (a of inlineActions(); track i; let i = $index) {
   <!-- <mat-btn class="action-btn" [tabIndex]="i" [descriptor]="a" (action)="onAction(a)" [disabled]="a.disabled">
     </mat-btn> -->
   <mat-action class="action-btn"
@@ -7,15 +7,15 @@
     (action)="onAction($event)"
   ></mat-action>
 }
-@if (_menuActions().length) {
+@if (menuActions().length) {
   <button class="action-btn" mat-icon-button [matMenuTriggerFor]="menu">
     <mat-icon>more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu">
-    @for (menuAction of _menuActions(); track i; let i = $index) {
+    @for (menuAction of menuActions(); track i; let i = $index) {
       <button
         mat-menu-item
-        [tabIndex]="_actions().length + i"
+        [tabIndex]="i"
         [attr.color]="menuAction.color"
         [disabled]="menuAction.disabled"
         (click)="

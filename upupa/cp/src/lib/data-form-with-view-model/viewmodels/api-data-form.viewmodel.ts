@@ -17,7 +17,7 @@ export class ApiDataFormViewModel implements DataFormViewModel {
   component: any;
   inputs!: DynamicFormOptionsMetaData;
 
-  @submitAction({ text: 'Submit', color: 'primary' })
+  // @submitAction({ text: 'Submit', color: 'primary' })
   async onSubmit(value: any, e: ActionEvent) {
     const { path } = this.inputs;
     if (!path)
@@ -75,7 +75,7 @@ export class ApiDataFormViewModel implements DataFormViewModel {
     // todo: implement errors input in the dynamic form
   }
 
-  @formAction({ text: 'Discard' })
+  // @formAction({ text: 'Discard' })
   onDiscard(e: ActionEvent) {
     e.context.dialogRef?.close();
   }

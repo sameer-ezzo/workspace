@@ -63,7 +63,7 @@ export function isFile(path: string) {
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
     try {
         return mongoose.Types.ObjectId.createFromHexString(
-            id,
+            id
         ) as mongoose.Types.ObjectId;
     } catch (error) {
         return undefined;
@@ -72,7 +72,7 @@ export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
 
 export async function saveStreamToTmp(
     path: string,
-    file: PostedFile,
+    file: PostedFile
 ): Promise<File> {
     return new Promise<File>((resolve, reject) => {
         const segments = path
@@ -91,7 +91,7 @@ export async function saveStreamToTmp(
             segments.push(filename); //path originally points to dir so put the file name back
             ext = Path.extname(file.originalname);
             _id = file.originalname.substring(
-                file.originalname.length - ext.length,
+                file.originalname.length - ext.length
             );
             if (!toObjectId(_id))
                 _id = new mongoose.Types.ObjectId().toHexString();
@@ -104,7 +104,7 @@ export async function saveStreamToTmp(
         const ws = createWriteStream(tmp);
 
         fileStream.on('error', (err: any) =>
-            reject({ msg: 'FileStreamError', error: err }),
+            reject({ msg: 'FileStreamError', error: err })
         );
         fileStream.on('end', () => {
             ws.close();
@@ -144,7 +144,12 @@ export class StorageService {
     }
 
     async saveToDb(f: File, principle: any) {
-        await this.data.put(`/storage/${f._id}`, f, principle);
+        const { path, patches } = this.data.toPatches(`/storage/${f._id}`, f);
+        await this.data.patch(path, patches, principle, {
+            upsert: true,
+            new: true,
+            lean: true,
+        });
     }
 
     async delete(path: string, principle: any) {

@@ -29,7 +29,7 @@ import {
     ServerDataSource,
 } from '@upupa/data';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionEvent, EventBus } from '@upupa/common';
+import { ActionDescriptor, ActionEvent, EventBus } from '@upupa/common';
 import { ScaffoldingService } from '../scaffolding.service';
 import { DataListResolverService } from '../list-resolver.service';
 import { ConfirmService, DialogService, SnackBarService } from '@upupa/dialog';
@@ -121,27 +121,34 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         );
         return vm;
     });
-
-    rowActionsList = input<DataListAction[]>([]);
-    headerActionsList = input<DataListAction[]>([]);
-
-    rowActions = computed(() => {
-        const actionsFromInput = this.rowActionsList();
-        const info = actionsFromInput.map((x) => {
+    private transformActions(
+        actionsFromInput
+    ): ActionDescriptor[] | ((context: any) => ActionDescriptor)[] {
+        const info = (actionsFromInput ?? []).map((x) => {
             const a =
                 typeof x.action === 'function' ? x.action : (items) => x.action;
-            return (item) => ({ ...a(item), handler: x.handler });
+            return (item) => {
+                const res = a(item);
+                return !res ? res : { ...res, handler: x.handler };
+            };
         });
-        return info;
+        return info as
+            | ActionDescriptor[]
+            | ((context: any) => ActionDescriptor)[];
+    }
+    rowActions = input<
+        ActionDescriptor[] | ((context: any) => ActionDescriptor)[],
+        DataListAction[]
+    >([], {
+        transform: (actionsFromInput) =>
+            this.transformActions(actionsFromInput),
     });
-    headerActions = computed(() => {
-        const actionsFromInput = this.headerActionsList();
-        const info = actionsFromInput.map((x) => {
-            const a =
-                typeof x.action === 'function' ? x.action : (items) => x.action;
-            return (item) => ({ ...a(item), handler: x.handler });
-        });
-        return info;
+    headerActions = input<
+        ActionDescriptor[] | ((context: any) => ActionDescriptor)[],
+        DataListAction[]
+    >([], {
+        transform: (actionsFromInput) =>
+            this.transformActions(actionsFromInput),
     });
 
     private readonly router = inject(Router);

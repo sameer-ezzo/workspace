@@ -1,10 +1,8 @@
 import {
     Component,
     DestroyRef,
-    HostBinding,
     HostListener,
     Input,
-    OnDestroy,
     forwardRef,
     inject,
     input,
@@ -17,7 +15,7 @@ import {
     EventBus,
     InputBaseComponent,
 } from '@upupa/common';
-import { Subject, firstValueFrom, lastValueFrom, takeUntil, tap } from 'rxjs';
+import { lastValueFrom, tap } from 'rxjs';
 import {
     ClipboardService,
     FileInfo,
@@ -129,12 +127,11 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.value1$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((v) => {
-                this.viewModel.set(
-                    (v ?? []).map(
-                        (f, id) =>
-                            ({ id, file: f, error: null } as SelectInputFileVm)
-                    )
+                const val = (v ?? []).map(
+                    (f, id) =>
+                        ({ id, file: f, error: null } as SelectInputFileVm)
                 );
+                this.viewModel.set(val);
             });
 
         this.clipboard.paste$
@@ -162,7 +159,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     uploading = false;
     files: File[];
     private async showFileDialog() {
-        const accept = (this.accept) ?? this.accept?.() ?? '';
+        const accept = this.accept ?? this.accept?.() ?? '';
         const files = await openFileDialog(
             accept as string,
             this.maxAllowedFiles !== 1
@@ -260,17 +257,18 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             this.viewModel.set([...this.viewModel(), ...errors]);
             return;
         }
-        // const tasks = validatedFilesReport.map((f) => this.setUploadTask(f));
-        // .map((f) => lastValueFrom(f.uploadTask.response$));
 
-        this.viewModel.set([...this.viewModel(), ...validatedFilesReport]);
-
-        // await Promise.allSettled(tasks);
+        for (const f of validatedFilesReport) {
+            if (f.error) {
+                this.viewModel.set([...this.viewModel(), f]);
+            }
+            this.setUploadTask(f);
+        }
     }
 
     private setUploadTask(fvm: SelectInputFileVm) {
         fvm.uploadTask = this.fileUploader.upload(
-            this.path(),
+            this.path as any,
             fvm.file as File
         );
 

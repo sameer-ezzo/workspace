@@ -18,6 +18,10 @@ export class UploadClient {
     return this._baseUrl;
   }
 
+  public get baseOrigin(): string {
+    return new URL(this.baseUrl).origin + '/';
+  }
+
 
   constructor(@Inject(STORAGE_BASE) private readonly _baseUrl: string,
     private uploadService: UploadService) {

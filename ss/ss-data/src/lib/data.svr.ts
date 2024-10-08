@@ -184,7 +184,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         sort?: any,
         page = 1,
         per_page = 100
-    ): Promise<T | T[]> {
+    ): Promise<T | undefined> {
         if (!query) query = {};
         if (!sort) sort = {};
         if (!projection) projection = {};
@@ -204,27 +204,27 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         let model = await this.getModel(modelName);
 
         if (id) {
-            if (!model) return null;
-            const result = (await model.findById(id, projection).lean()) as T;
+            if (!model) return undefined as T;
+            const result = await model.findById(id, projection).lean();
             // const result = (await model.findOne({ _id:  }).lean()) as T
-            if (!result) return null;
+            if (!result) return undefined as T;
 
             try {
-                return pointer
-                    ? JsonPointer.get(result, `/${pointer}`)
-                    : result;
+                return (
+                    pointer ? JsonPointer.get(result, `/${pointer}`) : result
+                ) as T;
             } catch (error) {
                 return null;
             }
         } else {
-            if (!model) return [];
+            if (!model) return [] as T;
             const result = await model
                 .find(query, projection)
                 .limit(per_page)
                 .skip((page - 1) * per_page)
                 .sort(sort)
                 .lean();
-            return (result ?? []) as T[];
+            return (result ?? []) as T;
         }
     }
 
@@ -514,7 +514,12 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     async patch<T = any>(
         path: string,
         patches: Patch[],
-        user: any
+        user: any,
+        updateOptions: Partial<mongoose.QueryOptions<any>> = {
+            new: true,
+            upsert: false,
+            lean: false,
+        }
     ): Promise<WriteResult<T>> {
         const segments = path.split('/').filter((s) => s);
         if (segments.length !== 2) {
@@ -556,8 +561,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             const update = toMongodb(patches);
             result = await model.findOneAndUpdate({ _id: id }, update, {
-                new: true,
-                upsert: false,
+                ...updateOptions,
             });
         }
 
@@ -572,11 +576,10 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         return result;
     }
 
-    async put<T = any>(
+    toPatches<T = any>(
         path: string,
-        value: any,
-        user: any
-    ): Promise<WriteResult<T>> {
+        value: any
+    ): { path: string; patches: Patch[] } {
         const segments = path.split('/').filter((s) => s);
         if (segments.length < 2)
             throw { status: 400, body: 'INVALID_DOCUMENT_PATH' };
@@ -590,7 +593,17 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 value: value,
             } as Patch,
         ];
-        return this.patch<T>(`/${collection}/${id}`, patches, user);
+
+        return { path: `/${collection}/${id}`, patches };
+    }
+
+    async put<T = any>(
+        path: string,
+        value: any,
+        user: any
+    ): Promise<WriteResult<T>> {
+        const { path: _path, patches } = this.toPatches(path, value);
+        return this.patch<T>(_path, patches, user);
     }
 
     async delete<T = any>(path: string, user: any): Promise<WriteResult<T>> {

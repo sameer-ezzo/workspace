@@ -19,7 +19,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
     selector: 'file-input',
     templateUrl: './file-input.component.html',
-    styleUrls: ['./file-input.component.css'],
+    styleUrls: ['./file-input.component.scss'],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
