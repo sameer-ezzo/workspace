@@ -1,12 +1,12 @@
-import { Injector } from '@angular/core';
-import { DataAdapter, DataService } from '@upupa/data';
-import { ColumnsDescriptor, DataTableComponent } from '@upupa/table';
-import { DataTableActionDescriptor } from '../../decorators/scheme.router.decorator';
-import { ActionEvent, toTitleCase } from '@upupa/common';
-import { ConfirmService, DialogService } from '@upupa/dialog';
-import { firstValueFrom, map } from 'rxjs';
-import { DataFormWithViewModelComponent } from '../../data-form-with-view-model/data-form-with-view-model.component';
-import { DataListWithInputsComponent } from '../data-list-with-inputs.component';
+import { Injector } from "@angular/core";
+import { DataAdapter, DataService } from "@upupa/data";
+import { ColumnsDescriptor, DataTableComponent } from "@upupa/table";
+import { DataTableActionDescriptor } from "../../decorators/scheme.router.decorator";
+import { ActionEvent, toTitleCase } from "@upupa/common";
+import { ConfirmService, DialogService } from "@upupa/dialog";
+import { firstValueFrom, map } from "rxjs";
+import { DataFormWithViewModelComponent } from "../../data-form-with-view-model/data-form-with-view-model.component";
+import { DataListWithInputsComponent } from "../data-list-with-inputs.component";
 
 export type DataListViewModelActionContext = {
     component: DataListWithInputsComponent;
@@ -22,44 +22,19 @@ export interface DataListViewModel {
     columns: ColumnsDescriptor;
     inputs: any;
 
-    onQueryChange?(
-        query: Record<string, string | string[]>,
-        context?: DataListViewModelActionContext
-    ): void;
-    onQueryParamsChange?(
-        params: Record<string, string | string[]>,
-        context?: DataListViewModelActionContext
-    ): void;
-    onSelectionChange?(
-        event: any,
-        context?: DataListViewModelActionContext
-    ): void;
+    onQueryChange?(query: Record<string, string | string[]>, context?: DataListViewModelActionContext): void;
+    onQueryParamsChange?(params: Record<string, string | string[]>, context?: DataListViewModelActionContext): void;
+    onSelectionChange?(event: any, context?: DataListViewModelActionContext): void;
     onPageChange?(page: number, context?: DataListViewModelActionContext): void;
-    onPageSizeChange?(
-        pageSize: number,
-        context?: DataListViewModelActionContext
-    ): void;
-    onSearchChange?(
-        search: string,
-        context?: DataListViewModelActionContext
-    ): void;
-    onFilterChange?(
-        filter: Record<string, string | string[]>,
-        context?: DataListViewModelActionContext
-    ): void;
+    onPageSizeChange?(pageSize: number, context?: DataListViewModelActionContext): void;
+    onSearchChange?(search: string, context?: DataListViewModelActionContext): void;
+    onFilterChange?(filter: Record<string, string | string[]>, context?: DataListViewModelActionContext): void;
     onSortChange?(sort: string, context?: DataListViewModelActionContext): void;
-    onFocusedItemChanged?(
-        item: any,
-        context?: DataListViewModelActionContext
-    ): void;
+    onFocusedItemChanged?(item: any, context?: DataListViewModelActionContext): void;
 }
 
 export function isClass(func: any): boolean {
-    return (
-        typeof func === 'function' &&
-        func.prototype &&
-        func.prototype.constructor === func
-    );
+    return typeof func === "function" && func.prototype && func.prototype.constructor === func;
 }
 
 export function isNonClassFunction(func: any): boolean {
@@ -179,90 +154,51 @@ export interface ActionHandler {
 
 export type DataListAction<T = any> = {
     action: DataTableActionDescriptor;
-    handler: (
-        e: ActionEvent<T, DataListViewModelActionContext>
-    ) => void | Promise<void>;
+    handler: (e: ActionEvent<T, DataListViewModelActionContext>) => void | Promise<void>;
 };
 export type DataListActionWithViewModel<T = any> = {
     viewModel: any;
 } & Partial<DataListAction<T>>;
 
-function actionDialog<T>(
-    options: DataListActionWithViewModel<T>
-): DataListAction<any> {
+function actionDialog<T>(options: DataListActionWithViewModel<T>): DataListAction<any> {
     return {
         action: options.action,
         handler: options.handler,
     };
 }
 
-export function CreateActionDialog<T>(
-    options: DataListActionWithViewModel<T>
-): DataListAction<any> {
-    if (!options.viewModel)
-        throw new Error('CreateActionDialog ViewModel is required');
+export function CreateActionDialog<T>(options: DataListActionWithViewModel<T>): DataListAction<any> {
+    if (!options.viewModel) throw new Error("CreateActionDialog ViewModel is required");
 
-    if (!options.action)
-        options.action = { name: 'create', text: 'Create', icon: 'add' };
-    if (!options.handler)
-        options.handler = (e) =>
-            openDataFormDialog(
-                e,
-                'create',
-                options.viewModel,
-                e.context.component.injector
-            );
+    if (!options.action) options.action = { name: "create", text: "Create", icon: "add" };
+    if (!options.handler) options.handler = (e) => openDataFormDialog(e, "create", options.viewModel, e.context.component.injector);
 
     return actionDialog(options);
 }
-export function EditActionDialog<T>(
-    options: DataListActionWithViewModel<T>
-): DataListAction<any> {
-    if (!options.viewModel)
-        throw new Error('EditActionDialog ViewModel is required');
-    if (!options.handler)
-        options.handler = (e) =>
-            openDataFormDialog(
-                e,
-                'edit',
-                options.viewModel,
-                e.context.component.injector
-            );
-    if (!options.action)
-        options.action = { name: 'edit', text: 'Edit', icon: 'edit' };
+export function EditActionDialog<T>(options: DataListActionWithViewModel<T>): DataListAction<any> {
+    if (!options.viewModel) throw new Error("EditActionDialog ViewModel is required");
+    if (!options.handler) options.handler = (e) => openDataFormDialog(e, "edit", options.viewModel, e.context.component.injector);
+    if (!options.action) options.action = { name: "edit", text: "Edit", icon: "edit" };
 
     return actionDialog(options);
 }
 
-export function ViewActionDialog<T>(
-    options: DataListActionWithViewModel<T>
-): DataListAction<any> {
-    if (!options.viewModel)
-        throw new Error('ViewActionDialog ViewModel is required');
-    if (!options.handler)
-        options.handler = (e) =>
-            openDataFormDialog(
-                e,
-                'view',
-                options.viewModel,
-                e.context.component.injector
-            );
-    if (!options.action)
-        options.action = { name: 'view', text: 'Details', icon: 'visibility' };
+export function ViewActionDialog<T>(options: DataListActionWithViewModel<T>): DataListAction<any> {
+    if (!options.viewModel) throw new Error("ViewActionDialog ViewModel is required");
+    if (!options.handler) options.handler = (e) => openDataFormDialog(e, "view", options.viewModel, e.context.component.injector);
+    if (!options.action) options.action = { name: "view", text: "Details", icon: "visibility" };
 
     return actionDialog(options);
 }
 
-export function DeleteAction<T>(
-    options?: Partial<DataListAction<T>>
-): DataListAction<any> {
+export function DeleteAction<T>(options?: Partial<DataListAction<T>>): DataListAction<any> {
     options ??= {};
     if (!options.handler) options.handler = (e) => onDelete(e);
     if (!options.action)
         options.action = {
-            name: 'delete',
-            text: 'Delete',
-            icon: 'delete',
+            name: "delete",
+            text: "Delete",
+            icon: "delete",
             menu: true,
         };
 
@@ -274,51 +210,38 @@ async function onDelete(e: ActionEvent<any, DataListViewModelActionContext>) {
     const injector = e.context.component.injector;
     const confirm = injector.get(ConfirmService);
     const confirmRes = await confirm.openWarning({
-        title: 'Delete',
-        confirmText: `Are you sure you want to delete this item${
-            items.length > 1 ? 's' : ''
-        }?`,
-        yes: 'Yes, delete',
-        no: 'No, cancel',
-        yesColor: 'warn',
+        title: "Delete",
+        confirmText: `Are you sure you want to delete this item${items.length > 1 ? "s" : ""}?`,
+        yes: "Yes, delete",
+        no: "No, cancel",
+        yesColor: "warn",
     });
     if (!confirmRes) return;
 
     const ds = injector.get(DataService);
-    const path = e.context.component.dataTable.adapter.dataSource['path'];
+    const path = e.context.component.dataTable().adapter.dataSource["path"];
     const deleteTasks = items.map((item) => ds.delete(`/${path}/${item._id}`));
     const report = await Promise.allSettled(deleteTasks);
-    const failed = report.filter((x) => x.status === 'rejected');
+    const failed = report.filter((x) => x.status === "rejected");
     if (failed.length > 0) {
-        console.error('Failed to delete items', failed);
+        console.error("Failed to delete items", failed);
     }
-    await e.context.component.refreshData();
+    e.context.dataTable.adapter.refresh();
 }
 
 async function getValue(path: string, ds: DataService) {
-    const res = await firstValueFrom(
-        ds.get<{ _id: string }[]>(path).pipe(map((x) => x.data?.[0]))
-    );
+    const res = await firstValueFrom(ds.get<{ _id: string }[]>(path).pipe(map((x) => x.data?.[0])));
     return res;
 }
 
-async function openDataFormDialog(
-    e: ActionEvent,
-    action: string,
-    formViewModel: any,
-    injector: Injector
-) {
+async function openDataFormDialog(e: ActionEvent, action: string, formViewModel: any, injector: Injector) {
     const ds = injector.get(DataService);
-    if (!formViewModel) throw new Error('formViewModel is required');
+    if (!formViewModel) throw new Error("formViewModel is required");
 
-    const formViewModelCls = isNonClassFunction(formViewModel)
-        ? (formViewModel as Function)(e)
-        : formViewModel;
+    const formViewModelCls = isNonClassFunction(formViewModel) ? (formViewModel as Function)(e) : formViewModel;
 
-    const path = e.context.component.dataTable.adapter.dataSource['path'];
-    const value = await (action === 'create'
-        ? new formViewModelCls()
-        : getValue(`${path}/${e.data?.[0]._id}`, ds));
+    const path = e.context.component.dataTable.adapter.dataSource["path"];
+    const value = await (action === "create" ? new formViewModelCls() : getValue(`${path}/${e.data?.[0]._id}`, ds));
 
     const dialog = injector.get(DialogService);
 
@@ -326,14 +249,14 @@ async function openDataFormDialog(
         dialog
             .openDialog(DataFormWithViewModelComponent, {
                 title: toTitleCase(`${action}`),
-                width: '100%',
-                maxWidth: '800px',
+                width: "100%",
+                maxWidth: "800px",
                 inputs: {
                     viewModel: formViewModelCls,
                     value,
                 },
             })
-            .afterClosed()
+            .afterClosed(),
     );
     if (!res) return;
     await e.context.component.refreshData();
@@ -341,40 +264,28 @@ async function openDataFormDialog(
 
 export function provideHeaderActions(options: { createViewModel?: any }) {
     const actions = [];
-    if (options.createViewModel)
-        actions.push(
-            CreateActionDialog({ viewModel: options.createViewModel })
-        );
+    if (options.createViewModel) actions.push(CreateActionDialog({ viewModel: options.createViewModel }));
     actions.push(
         DeleteAction({
             action: (items: any[]) => {
                 return items.length === 0
                     ? undefined
                     : {
-                          name: 'delete',
-                          icon: 'delete_outline',
-                          text: 'Delete',
+                          name: "delete",
+                          icon: "delete_outline",
+                          text: "Delete",
                           bulk: true,
                       };
             },
-        })
+        }),
     );
     return actions;
 }
-export function provideRowActions<T = any>(options: {
-    createViewModel?: any;
-    editViewModel?: any;
-    detailsViewModel?: any;
-}) {
+export function provideRowActions<T = any>(options: { createViewModel?: any; editViewModel?: any; detailsViewModel?: any }) {
     const actions = [];
-    if (options.createViewModel)
-        actions.push(
-            CreateActionDialog({ viewModel: options.createViewModel })
-        );
-    if (options.editViewModel)
-        actions.push(EditActionDialog({ viewModel: options.editViewModel }));
-    if (options.detailsViewModel)
-        actions.push(ViewActionDialog({ viewModel: options.detailsViewModel }));
+    if (options.createViewModel) actions.push(CreateActionDialog({ viewModel: options.createViewModel }));
+    if (options.editViewModel) actions.push(EditActionDialog({ viewModel: options.editViewModel }));
+    if (options.detailsViewModel) actions.push(ViewActionDialog({ viewModel: options.detailsViewModel }));
     actions.push(DeleteAction());
     return actions;
 }

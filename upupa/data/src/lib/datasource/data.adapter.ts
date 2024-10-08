@@ -1,9 +1,9 @@
 import { JsonPointer } from "@noah-ark/json-patch";
-import { Subscription, Observable, ReplaySubject, of, firstValueFrom } from "rxjs";
+import { Subscription, Observable, ReplaySubject, firstValueFrom } from "rxjs";
 import { ClientDataSource } from "./client.data.source";
 import { filterNormalized } from "./filter.fun";
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
-import { map, tap } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { HttpServerDataSourceOptions } from "./http-server-data-source";
 
 export type DataAdapterType = "server" | "client" | "http";
@@ -16,7 +16,7 @@ export type DataAdapterDescriptor<TData = any> = {
     imageProperty?: Key<TData>;
     options?: ProviderOptions<TData>;
 } & (
-    | { type: "server"; path: string | ((url: string, ...args: any[]) => string) }
+    | { type: "server"; path: string }
     | { type: "client"; data: TData[] | Promise<TData[]> }
     | { type: "http"; url: string; httpOptions?: HttpServerDataSourceOptions }
 );
@@ -259,3 +259,5 @@ export class SmartMap<V> {
         else return this._strong.set(key, value);
     }
 }
+
+

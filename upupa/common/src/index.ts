@@ -31,3 +31,21 @@ export * from './lib/theme.service';
 export * from './lib/action-descriptor';
 
 export * from './lib/logger';
+
+export * from './lib/metadata/metadata.service';
+export * from './lib/metadata/metadata';
+export * from './lib/metadata/route-modifiers';
+export * from './lib/metadata/strategies/open-graph.strategy';
+export * from './lib/metadata/strategies/page-metadata.strategy';
+export * from './lib/metadata/strategies/twitter.strategy';
+
+export * from './lib/routing/navigate-to.directive';
+export * from './lib/routing/reuse-all-strategy';
+export * from './lib/routing/route-feature';
+export * from './lib/routing/route-preload';
+export * from './lib/routing/route-resolver';
+export * from './lib/routing/with-content-projection';
+
+export * from './lib/view-transitions/view-transitions';
+
+export * from './lib/ssr/http-tokens';

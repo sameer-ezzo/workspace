@@ -71,14 +71,14 @@ export type ModelSchemeRouteOptions = {
 };
 
 // export type DataFormWithHttpSourceOptions = {
-    
+
 //     path: string;
-//     verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'; 
+//     verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 //   }
 // export type DataFormWithApiSourceOptions = {
 
 //     path: string;
-//     verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'; 
+//     verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 //   }
 // export type DataFormSourceOptions = DataFormWithApiSourceOptions
 // export type DataFormViewModelOptions = Partial<DataFormViewModel> & ;
