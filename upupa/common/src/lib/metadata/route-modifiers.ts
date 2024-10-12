@@ -2,7 +2,6 @@ import { RouteFeature } from "../routing/route-feature";
 import { ResolverRequest, contentResolver } from "../routing/route-resolver";
 import { PageMetadata } from "./metadata";
 
-
 /**
  * provide content the page as route.data = {content}.
  * Ideally used feature withComponentInputBinding to automatically pass content to the component input named `content`
@@ -10,7 +9,10 @@ import { PageMetadata } from "./metadata";
  * @param content static content to be provided.
  */
 export function withContent<TContent>(content: TContent): RouteFeature {
-    return () => ({ data: { content } });
+    return {
+        name: "withContent",
+        modify: () => ({ data: { content } }),
+    };
 }
 
 /**
@@ -19,29 +21,30 @@ export function withContent<TContent>(content: TContent): RouteFeature {
  * Also, this content object is passed to the meta function to help generate metadata derived from content.
  * @param contentFn dynamic content to be provided.
  */
-export function withResolveContent(
-    url: (resolveRequest: ResolverRequest) => string,
-    options?: { headers?: { [header: string]: string } }
-): RouteFeature {
-    return () => ({ resolve: contentResolver(url, options) }); //TODO add CONTENT provider
+export function withResolveContent(url: (resolveRequest: ResolverRequest) => string, options?: { headers?: { [header: string]: string } }): RouteFeature {
+    return {
+        name: "withResolveContent",
+        modify: () => ({ resolve: contentResolver(url, options) }),
+    };
 }
-
-
 
 //TODO why meta function is dependent on content? it should be independent and if content is needed it should be injected
 /**
  * provide metadata for the page for meta data service to update the page header
  * @param pageData static metadata for the page
  */
-export function withPageMetadata(pageData: PageMetadata): RouteFeature
+export function withPageMetadata(pageData: PageMetadata): RouteFeature;
 /**
  * provide metadata for the page for meta data service to update the page header
  * @param pageDataFn dynamic metadata for the page
  */
-export function withPageMetadata<TContent = unknown>(pageDataFn: ((content?: TContent) => PageMetadata)): RouteFeature
+export function withPageMetadata<TContent = unknown>(pageDataFn: (content?: TContent) => PageMetadata): RouteFeature;
 export function withPageMetadata<TContent = unknown>(pageData: PageMetadata | ((content?: TContent) => PageMetadata)): RouteFeature {
-    if (typeof pageData === 'function') return () => ({ data: { meta: pageData } });
-    else return () => ({ data: { meta: () => pageData } });
+    return {
+        name: "withPageMetadata",
+        modify: () => {
+            if (typeof pageData === "function") return { data: { meta: pageData } };
+            else return { data: { meta: () => pageData } };
+        },
+    };
 }
-
-

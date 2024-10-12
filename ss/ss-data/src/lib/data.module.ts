@@ -1,23 +1,23 @@
-import { DynamicModule, FactoryProvider, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
-import { Broker, CommonModule, appName } from '@ss/common';
-import { DbConnectionOptions, DbConnectionOptionsFactory } from './data-options';
-import { DataChangeService } from './data.change.service';
-import { DataService } from './data.svr';
-import { DatabaseInfo, DatabasesOptions, IDbMigration } from './databases-collections';
-import { logger } from './logger';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DynamicModule, FactoryProvider, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
+import { Broker, CommonModule, appName } from "@ss/common";
+import { DbConnectionOptions, DbConnectionOptionsFactory } from "./data-options";
+import { DataChangeService } from "./data.change.service";
+import { DataService } from "./data.svr";
+import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collections";
+import { logger } from "./logger";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
-import { MongooseModule, InjectConnection, getConnectionToken, Schema, ModelDefinition, AsyncModelFactory } from '@nestjs/mongoose';
-import mongoose, { Connection, models } from 'mongoose';
-import { name } from 'platform';
-import { DbModelDefinitionInfo, ModelDefinitionInfo } from './db-collection-info';
-import migrationSchema from './migration-schema';
-import { options } from 'marked';
-import tagSchema from './tag.schema';
-import changeSchema from './change-schema';
-import { MigrationsService } from './migrations.svr';
+import { MongooseModule, InjectConnection, getConnectionToken, Schema, ModelDefinition, AsyncModelFactory } from "@nestjs/mongoose";
+import mongoose, { Connection, models } from "mongoose";
+import { name } from "platform";
+import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
+import migrationSchema from "./migration-schema";
+import { options } from "marked";
+import tagSchema from "./tag.schema";
+import changeSchema from "./change-schema";
+import { MigrationsService } from "./migrations.svr";
 
-const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions('DB_DEFAULT', {
+const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions("DB_DEFAULT", {
     retryAttempts: 5,
     retryDelay: 5000,
 });
@@ -32,9 +32,9 @@ if (process.env.DBPASS) logger.error(`DBPASS is deprecated. Use DB_[NAME] conven
 export class DataModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
-        await this.data.addModel('migration', migrationSchema);
-        await this.data.addModel('tag', tagSchema);
-        await this.data.addModel('change', changeSchema);
+        await this.data.addModel("migration", migrationSchema);
+        await this.data.addModel("tag", tagSchema);
+        await this.data.addModel("change", changeSchema);
     }
 
     static register(databasesCollections: DatabasesOptions): DynamicModule {
@@ -75,19 +75,19 @@ function toDataOptions(options: DatabasesOptions): DataOptions[] {
 
 function extractMongooseFeatures(options: DataOptions[]) {
     return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
-        const prefix = connectionOptions.prefix ?? '';
+        const prefix = connectionOptions.prefix ?? "";
         return MongooseModule.forFeature(
             Object.getOwnPropertyNames(models).map((modelName) => {
                 const model = models[modelName] as unknown as ModelDefinitionInfo;
                 const schemaObj = model.schema?.obj ?? {};
-                const schemaOptions = model.schema?.['options'] ?? {};
+                const schemaOptions = model.schema?.["options"] ?? {};
                 const schema = new mongoose.Schema(schemaObj, {
                     strict: false,
                     timestamps: true,
                     ...schemaOptions,
                 });
                 if ((model.exclude ?? []).length) {
-                    schema.set('toJSON', {
+                    schema.set("toJSON", {
                         transform: function (doc: any, ret: any) {
                             for (const ex of model.exclude) {
                                 delete ret[ex];
@@ -135,7 +135,7 @@ function extractDataServiceProviders(options: DataOptions[]) {
     });
     providers.push({
         provide: DataService,
-        useExisting: getDataServiceToken('DB_DEFAULT'),
+        useExisting: getDataServiceToken("DB_DEFAULT"),
     });
 
     return providers;
@@ -155,7 +155,7 @@ function extractDataMigrationProviders(options: DataOptions[]) {
     });
     providers.push({
         provide: MigrationsService,
-        useExisting: getDataMigratorToken('DB_DEFAULT'),
+        useExisting: getDataMigratorToken("DB_DEFAULT"),
     });
     return providers;
 }

@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, Type } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DynamicFormModule } from "../../../../dynamic-form/src/lib/dynamic-form.module";
-import { FormScheme, textField } from '@upupa/dynamic-form';
+import { DynamicFormModule, FormScheme, textField } from '@upupa/dynamic-form';
 import { extractFormScheme } from '../decorators/form-view-model.decorator';
 
 @Component({

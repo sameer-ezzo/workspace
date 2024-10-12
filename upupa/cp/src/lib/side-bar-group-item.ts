@@ -8,6 +8,7 @@ export type SideBarItem = ActionDescriptor & {
     href?: string;
     target?: string;
     external?: boolean;
+    expanded?: boolean;
 
     component?: Type<any>
     viewModel?: any
