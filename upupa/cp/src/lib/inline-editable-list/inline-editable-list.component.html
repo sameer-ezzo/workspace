@@ -4,8 +4,8 @@
             <mat-label>{{ label }}</mat-label>
         </legend>
     }
-
-    <data-table [(focusedItem)]="focusedTableItem" [adapter]="adapter" [columns]="tableColumns" [actions]="tableActions" (action)="onTableAction($event)"> </data-table>
+    <!-- [actions]="tableActions" -->
+    <data-table [(focusedItem)]="focusedTableItem" [adapter]="adapter" [columns]="tableColumns"  (action)="onTableAction($event)"> </data-table>
 
     <button style="align-self: flex-start; margin: 1rem 0 1rem 1rem" mat-button color="primary" (click)="onTableAction({ action: { name: 'add' } })">Add</button>
     <!-- </div> -->

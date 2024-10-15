@@ -1,25 +1,10 @@
-import { CommonModule, DOCUMENT } from "@angular/common";
-import { Component, inject, EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef, signal } from "@angular/core";
+import { DOCUMENT } from "@angular/common";
+import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef, signal } from "@angular/core";
 import { RouteFeature } from "./route-feature";
 import { EnvironmentContext } from "twilio/lib/rest/serverless/v1/service/environment";
+import { DynamicComponent, WrapperComponent } from "../wrapper.component";
 
-export type ContentNode = string | Type<any> | { component: Type<any>; inputs?: Record<string, any>; content?: ContentNode[][] } | ComponentRef<any> | TemplateRef<any>;
-
-@Component({
-    selector: "wrapper",
-    standalone: true,
-    imports: [CommonModule],
-    host: { ngSkipHydration: "true" },
-    template: ` <ng-container *ngComponentOutlet="component(); inputs: inputs(); content: content()"></ng-container> `,
-})
-export class WrapperComponent {
-    environmentInjector = inject(EnvironmentInjector);
-    component = input.required<Type<any>>();
-    inputs = input({});
-    content = input(undefined, {
-        transform: (content: ContentNode[][]) => createContentNodes(content, this.environmentInjector),
-    });
-}
+export type ContentNode = string | DynamicComponent | ComponentRef<any> | TemplateRef<any>;
 
 /**
  * a wrapper for function @angular/core:createComponent that enables dynamic projection of content nodes to the component.
@@ -56,7 +41,7 @@ export function provideComponent(
     return ref;
 }
 
-function createContentNodes(content: ContentNode[][], environmentInjector: EnvironmentInjector): Node[][] {
+export function createContentNodes(content: ContentNode[][], environmentInjector: EnvironmentInjector): Node[][] {
     if (!content) return [];
     return content.map((projectedContents) => projectedContents.map((content) => createContentNode(content, environmentInjector)));
 }

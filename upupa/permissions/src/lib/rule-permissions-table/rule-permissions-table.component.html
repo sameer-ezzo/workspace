@@ -1,12 +1,14 @@
-<data-table (action)="onTableAction($event)" [templates]="{
-        info: permissionInfoTemplate,
-        access: permissionAccessTemplate,
-        type: permissionTypeTemplate, 
-        value: permissionValueTemplate,
-        selectors: permissionSelectorsTemplate
-}" [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+<!-- [templates]="{
+    info: permissionInfoTemplate,
+    access: permissionAccessTemplate,
+    type: permissionTypeTemplate,
+    value: permissionValueTemplate,
+    selectors: permissionSelectorsTemplate
+}" -->
+<data-table (action)="onTableAction($event)"  [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
 showSearch="false"
-    [actions]="tableActions"></data-table>
+></data-table>
+<!-- [actions]="tableActions" -->
 
 <ng-template #permissionInfoTemplate let-permission="element">
 

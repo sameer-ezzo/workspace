@@ -1,6 +1,6 @@
 
 import { TranslationModule } from '@upupa/language';
-import { UtilsModule } from '@upupa/common';
+import { UtilsModule, WrapperComponent } from '@upupa/common';
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
 
 import { CommonModule, DatePipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe } from '@angular/common';
@@ -59,7 +59,8 @@ const declarations = [DataTableComponent, DataTableActionsWrapperComponent, Tabl
     ...material,
     TranslationModule,
     MatBtnComponent,
-    ActionDescriptorComponent
+    ActionDescriptorComponent,
+    WrapperComponent
 ],
     exports: [...declarations, DragDropModule],
     providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }]

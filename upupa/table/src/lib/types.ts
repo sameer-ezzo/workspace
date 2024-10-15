@@ -1,9 +1,12 @@
 import { Type } from '@angular/core';
 import { SortHeaderArrowPosition } from '@angular/material/sort';
+import { DynamicComponent } from '@upupa/common';
 import { NormalizedItem } from '@upupa/data';
 
 export type PipeDescriptor = { pipe: Type<any>; args: string[] };
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> };
+
+
 
 export type ColumnDescriptor = {
   displayPath?: string;
@@ -16,7 +19,7 @@ export type ColumnDescriptor = {
   sortId?: string;
   sortArrowPosition?: SortHeaderArrowPosition;
   pipe?: PipeDescriptor | Type<any>;
-  component?: Type<any>;
+  template?: DynamicComponent | DynamicComponent[]
 };
 
 export type ColumnsDescriptor<T = any> =

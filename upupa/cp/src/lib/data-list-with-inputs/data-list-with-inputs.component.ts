@@ -13,6 +13,7 @@ import { DataListViewModelQueryParam, resolveDataListInputsFor } from "../decora
     templateUrl: "./data-list-with-inputs.component.html",
     styleUrls: ["./data-list-with-inputs.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [{ provide: DataAdapter, useFactory: (component) => component.dataAdapter(), deps: [DataListWithInputsComponent] }],
 })
 export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     readonly injector = inject(Injector);
@@ -48,12 +49,16 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
             vm["onInit"]?.();
         });
 
-        vm.injector = this.injector;
+        vm.dataAdapter = this.dataAdapter();
+
+        vm.injector = Injector.create({
+            providers: [{ provide: DataAdapter, useValue: vm.dataAdapter }],
+            parent: this.injector,
+        });
         vm.component = this;
         vm.columns = inputs.columns ?? {};
         vm.inputs = inputs;
 
-        vm.dataAdapter = this.dataAdapter();
         return vm;
     });
 

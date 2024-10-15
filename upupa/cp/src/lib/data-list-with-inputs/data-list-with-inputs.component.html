@@ -2,7 +2,6 @@
     #dataTable
     [adapter]="vm()?.dataAdapter"
     [columns]="vm()?.columns"
-    [actions]="rowActions()"
     [headerActions]="headerActions()"
     (action)="onAction($event)"
     (selectionChange)="onSelectionChange($event)"
