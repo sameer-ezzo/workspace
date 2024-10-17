@@ -33,14 +33,13 @@
     </mat-drawer-container>
 </ng-template>
 
+<!-- [headerActions]="tableInputs.listViewModel.headerActions" -->
 <ng-template #dataTableTemplate let-tableInputs="tableInputs" let-actions="actions">
     @if (tableInputs.adapter) {
         <data-table
             [(focusedItem)]="item"
             [adapter]="tableInputs.adapter"
             [columns]="tableInputs.listViewModel.columns"
-            [headerActions]="tableInputs.listViewModel.headerActions"
-            (action)="onAction($event)"
             (selectionChange)="selectionChanged($event)"
             (pageChange)="updatePageInfo($event)"
             (sortChange)="updateSortInfo($event)"

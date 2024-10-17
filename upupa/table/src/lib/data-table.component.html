@@ -1,36 +1,5 @@
-<div class="table-header">
-    @if (label) {
-        <h3 class="label">{{ label }}</h3>
-    }
-
-    @if (showSearch) {
-        <div id="search-box-wrapper">
-            <input style="background: transparent; outline: none; border: none; display: flex; flex: 1" placeholder="Search" [(ngModel)]="q" (keydown.enter)="filter$.next(q)" />
-            <button mat-icon-button matSuffix (click)="filter$.next(q)">
-                <mat-icon>search</mat-icon>
-            </button>
-        </div>
-    }
-
-    <span style="flex: 1"></span>
-    <div style="display: flex; align-items: center">
-        <data-table-actions-wrapper
-            [actions]="headerActions"
-            style="flex-wrap: wrap"
-            (action)="onAction($event)"
-            [context]="{ data: selectedNormalized$ | async }"
-        ></data-table-actions-wrapper>
-
-        @if (_allowChangeColumnsOptions()) {
-            <button [disabled]="loading()" mat-icon-button (click)="openColumnsSelectDialog()">
-                <mat-icon>shelf_position</mat-icon>
-            </button>
-        }
-    </div>
-</div>
-
+<ng-content select=".table-header"></ng-content>
 <mat-progress-bar [class.hidden]="!loading()" mode="query"></mat-progress-bar>
-
 <div class="table-container">
     <table
         #table
@@ -38,7 +7,7 @@
         multiTemplateDataRows
         [dataSource]="adapter.normalized$ | async"
         matSort
-        class="{{ stickyHeader ? 'sticky-header' : '' }}"
+        [class.sticky-header]="stickyHeader()"
         [matSortDisabled]="loading()"
         [matSortDirection]="adapter.sort?.direction"
         [matSortActive]="adapter.sort?.active"
@@ -73,24 +42,33 @@
                     [disabled]="descriptor.value?.sortDisabled === true"
                     [class.none]="descriptor.value?.visible === false"
                     [ngStyle]="{ width: descriptor.value?.width + 'px' }"
+                    [ngClass]="descriptor.value.class"
                 >
                     {{ descriptor.value.header || descriptor.key }}
                 </th>
-                <td mat-cell *matCellDef="let row; let i = index" [class.none]="descriptor.value?.visible === false" [ngStyle]="{ width: descriptor.value?.width + 'px' }">
-                    @for (template of descriptor.value.template ?? []; track $index) {
-                        <portal
-                            [component]="template['component']"
-                            [inputs]="merge(template.inputs, { value: row.item | jpointer: descriptor.key, element: row, descriptor, index: i })"
-                            [outputs]="template['outputs']"
-                        ></portal>
-                    } @empty {
-                        <cell-template [value]="row.item | jpointer: descriptor.key" [descriptor]="descriptor"></cell-template>
-                    }
+                <td
+                    mat-cell
+                    *matCellDef="let element; let dataIndex = dataIndex"
+                    [class.none]="descriptor.value?.visible === false"
+                    [ngStyle]="{ width: descriptor.value?.width + 'px' }"
+                    [ngClass]="descriptor.value.class"
+                >
+                    <div>
+                        @for (template of descriptor.value.template ?? []; track $index) {
+                            <portal
+                                [component]="template['component']"
+                                [inputs]="merge(template.inputs, { value: element.item | jpointer: descriptor.key, element, descriptor, dataIndex })"
+                                [outputs]="template['outputs']"
+                            ></portal>
+                        } @empty {
+                            <cell-template [value]="element.item | jpointer: descriptor.key" [descriptor]="descriptor"></cell-template>
+                        }
+                    </div>
                 </td>
             </ng-container>
         }
 
-        <tr mat-header-row *matHeaderRowDef="_columns; sticky: stickyHeader" [class.selected]="selectedNormalized.length > 0"></tr>
+        <tr mat-header-row *matHeaderRowDef="_columns; sticky: stickyHeader()" [class.selected]="selectedNormalized.length > 0"></tr>
         <tr
             mat-row
             *matRowDef="let row; let i = $index; columns: _columns"
@@ -104,7 +82,9 @@
             (touch)="onClick(row)"
             (long-press)="onLongPress(row)"
         ></tr>
+
         <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc"></tr>
+
         @if (expandable !== "none" && expandableTemplate) {
             <ng-container matColumnDef="expandedDetail" [sticky]="columns['actions']?.sticky === 'start'">
                 <td
@@ -129,6 +109,7 @@
             <p>No Data</p>
         </div>
     }
+
     @if (loading() === true) {
         <div style="text-align: center; padding: 2rem">
             <p>Loading</p>
@@ -137,7 +118,7 @@
 </div>
 
 <!-- Hide paginator when total data is lte page size -->
-@if (adapter && adapter.page && adapter.page.pageSize) {
+@if (adapter.page && adapter.page.pageSize) {
     <mat-paginator
         [disabled]="loading() === true"
         [pageIndex]="adapter.page.pageIndex"

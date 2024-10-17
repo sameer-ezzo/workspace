@@ -10,6 +10,7 @@ export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> };
 
 export type ColumnDescriptor = {
   displayPath?: string;
+  class?: string; // css class
   order?: number;
   header?: string;
   width?: number;
@@ -19,7 +20,7 @@ export type ColumnDescriptor = {
   sortId?: string;
   sortArrowPosition?: SortHeaderArrowPosition;
   pipe?: PipeDescriptor | Type<any>;
-  template?: DynamicComponent | DynamicComponent[]
+  template?: (Type<any> | DynamicComponent) | (Type<any> | DynamicComponent)[]
 };
 
 export type ColumnsDescriptor<T = any> =

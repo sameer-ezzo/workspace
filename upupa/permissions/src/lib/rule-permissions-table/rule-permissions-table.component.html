@@ -4,8 +4,9 @@
     type: permissionTypeTemplate,
     value: permissionValueTemplate,
     selectors: permissionSelectorsTemplate
+    (action)="onTableAction($event)"
 }" -->
-<data-table (action)="onTableAction($event)"  [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
+<data-table   [(focusedItem)]="focused" [adapter]="permissionsAdapter" [columns]="tableColumns"
 showSearch="false"
 ></data-table>
 <!-- [actions]="tableActions" -->

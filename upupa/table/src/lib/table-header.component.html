@@ -1,0 +1,19 @@
+@if (label()) {
+    <h3 class="label">{{ label() }}</h3>
+}
+@if (showSearch()) {
+    <!-- (click)="onFilter(q())"  (keydown.enter)="onFilter(q())" -->
+    <div id="search-box-wrapper">
+        <input style="background: transparent; outline: none; border: none; display: flex; flex: 1" placeholder="Search" [(ngModel)]="q"  />
+        <button mat-icon-button >
+            <mat-icon>search</mat-icon>
+        </button>
+    </div>
+}
+
+<span style="flex: 1"></span>
+<div style="display: flex; align-items: center">
+    @for (template of inlineEndSlot() ?? []; track $index) {
+        <portal [component]="template['component']" [inputs]="template.inputs" [outputs]="template['outputs']"></portal>
+    }
+</div>

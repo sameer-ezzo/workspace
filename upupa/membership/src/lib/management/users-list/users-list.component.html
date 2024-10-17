@@ -1,8 +1,8 @@
 @if(dataAdapter()){
-    <!-- [actions]="actions" [templates]="_templates" -->
+    <!-- [actions]="actions" [templates]="_templates" [headerActions]="headerActions" (action)="onAction($event)"-->
 <data-table name="users-list"  [(focusedItem)]="focusedUser" [adapter]="adapter"
   [columns]="columns"
-  [headerActions]="headerActions"  (action)="onAction($event)"></data-table>
+    ></data-table>
 }
 <ng-template #emailTemplate let-descriptor="descriptor" let-element="element">
   <span>

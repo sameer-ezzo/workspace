@@ -1,15 +1,17 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, ViewChild, computed, inject, input, runInInjectionContext, viewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from "@angular/core";
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
-import { ActionDescriptor, ActionEvent } from "@upupa/common";
+import { ActionEvent, DynamicComponent } from "@upupa/common";
 import { DataTableComponent, DataTableModule } from "@upupa/table";
-import { DataListAction, DataListViewModel } from "./viewmodels/api-data-table-viewmodel";
+import { DataListViewModel } from "./viewmodels/api-data-table-viewmodel";
 import { DataListViewModelQueryParam, resolveDataListInputsFor } from "../decorators/scheme.router.decorator";
+import { CommonModule } from "@angular/common";
+import { PortalComponent } from "../../../../common/src/lib/portal.component";
 
 @Component({
     selector: "cp-data-list-with-inputs",
     standalone: true,
-    imports: [DataTableModule],
+    imports: [CommonModule, DataTableModule, PortalComponent],
     templateUrl: "./data-list-with-inputs.component.html",
     styleUrls: ["./data-list-with-inputs.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +20,13 @@ import { DataListViewModelQueryParam, resolveDataListInputsFor } from "../decora
 export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     readonly injector = inject(Injector);
     readonly route = inject(ActivatedRoute);
+
+    tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
+        transform: (c) => {
+            if (c instanceof Type) return { component: c };
+            return c;
+        },
+    });
 
     viewModel = input.required<Type<DataListViewModel>>();
 
@@ -30,12 +39,8 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         },
     });
 
-    rowActions = input<ActionDescriptor[] | ((context: any) => ActionDescriptor)[], DataListAction[]>([], {
-        transform: (actionsFromInput) => this.transformActions(actionsFromInput),
-    });
-    headerActions = input<ActionDescriptor[] | ((context: any) => ActionDescriptor)[], DataListAction[]>([], {
-        transform: (actionsFromInput) => this.transformActions(actionsFromInput),
-    });
+
+
 
     dataTable = viewChild(DataTableComponent);
 
@@ -61,17 +66,6 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
         return vm;
     });
-
-    private transformActions(actionsFromInput): ActionDescriptor[] | ((context: any) => ActionDescriptor)[] {
-        const info = (actionsFromInput ?? []).map((x) => {
-            const a = typeof x.action === "function" ? x.action : (items) => x.action;
-            return (item) => {
-                const res = a(item);
-                return !res ? res : { ...res, handler: x.handler };
-            };
-        });
-        return info as ActionDescriptor[] | ((context: any) => ActionDescriptor)[];
-    }
 
     async ngOnInit() {
         const vm = this.vm();

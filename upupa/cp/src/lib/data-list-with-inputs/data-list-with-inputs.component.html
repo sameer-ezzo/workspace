@@ -1,14 +1,18 @@
+<!-- [headerActions]="headerActions()" (action)="onAction($event)" -->
 <data-table
     #dataTable
     [adapter]="vm()?.dataAdapter"
     [columns]="vm()?.columns"
-    [headerActions]="headerActions()"
-    (action)="onAction($event)"
     (selectionChange)="onSelectionChange($event)"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
     (focusedItem)="onFocusedItemChanged($event)"
 >
+    @if (tableHeaderComponent(); as template) {
+        <portal class="table-header" [component]="template.component" [inputs]="template.inputs" [outputs]="template.outputs" [content]="template.content" [className]="template.class"></portal>
+    } @else {
+        <ng-content class="table-header"></ng-content>
+    }
 </data-table>
 
 <!-- @if(_dataListResolverResult(); as _inputs){

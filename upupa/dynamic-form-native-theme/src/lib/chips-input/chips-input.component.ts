@@ -40,7 +40,7 @@ export class ChipsComponent extends SelectComponent {
     }
 
     protected _clearFilter() {
-        this.q = this.filterInput.nativeElement.value = ''
+        // this.q = this.filterInput.nativeElement.value = ''
     }
 
     getErrorMessage(error: KeyValue<unknown, unknown>) {

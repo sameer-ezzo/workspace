@@ -10,27 +10,23 @@ import {
     forwardRef,
     ViewChild,
     ChangeDetectionStrategy,
-    AfterViewInit,
     WritableSignal,
     signal,
-    computed,
     HostBinding,
     HostListener,
+    inject,
+    input,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { ColumnsSelectComponent } from "./columns-select.component/columns-select.component";
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { NormalizedItem } from "@upupa/data";
 
-import { ActionDescriptor, ActionEvent, EventBus, WrapperComponent } from "@upupa/common";
 import { MatCheckboxChange } from "@angular/material/checkbox";
-import { firstValueFrom } from "rxjs";
 import { DataComponentBase } from "./data-base.component";
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DialogService } from "@upupa/dialog";
 import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable } from "@angular/material/table";
 
@@ -62,27 +58,17 @@ import { MatTable } from "@angular/material/table";
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
     @HostBinding("attr.tabindex") tabindex = 0;
 
+    host: ElementRef<HTMLElement> = inject(ElementRef);
+    breakpointObserver = inject(BreakpointObserver);
+
+    stickyHeader = input(false);
+
     @Input() name: string;
-    private _stickyHeader = signal(false);
-    @Input()
-    public get stickyHeader() {
-        return this._stickyHeader();
-    }
-    public set stickyHeader(value) {
-        this._stickyHeader.set(value);
-    }
-
-    @Input() showSearch: boolean | "true" | "false" = true;
-    hasHeader = signal(false);
-
-    @Input() label: string;
-
-    @Input() headerActions: ActionDescriptor[] | ((context) => ActionDescriptor)[] = []; // this represents the actions that will be shown in the header of the table
+    @Input() pageSizeOptions = [10, 25, 50, 100, 200];
+    @Input() override maxAllowed = Infinity;
 
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString();
-    @Output() action = new EventEmitter<ActionEvent>();
 
-    @Input() pageSizeOptions = [10, 25, 50, 100, 200];
 
     _properties: ColumnsDescriptorStrict = {}; //only data columns
     _columns: string[] = [];
@@ -97,24 +83,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.expanded[row.key].set(!v);
     }
 
-    readonly _allowChangeColumnsOptions = signal(false);
-    @Input()
-    public get allowChangeColumnsOptions() {
-        return this._allowChangeColumnsOptions();
-    }
-    public set allowChangeColumnsOptions(value) {
-        this._allowChangeColumnsOptions.set(value);
-    }
 
-    constructor(
-        protected host: ElementRef<HTMLElement>,
-        private bus: EventBus,
-        protected breakpointObserver: BreakpointObserver,
-        protected dialog: DialogService,
-    ) {
-        super();
-        this.maxAllowed = Infinity;
-    }
+
+
 
     handset: boolean;
     @Output() selectionChange = new EventEmitter<NormalizedItem<T>[]>();
@@ -140,11 +111,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes);
 
-        this.showSearch = this.showSearch === true || String(this.showSearch) === "true";
-        this.hasHeader.set(this.hasHeader() || !!this.headerActions || (this.label || "").length > 0 || this.showSearch === true);
-        if (changes["adapter"]) {
-            this.adapter.refresh();
-        }
+        if (changes["adapter"]) this.adapter.refresh();
         if (changes["columns"]) this.generateColumns();
     }
 
@@ -196,7 +163,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
             const storageColumnsInfoStr = localStorage.getItem(`table#${this.name}`);
             const storageColumnsInfo = parseJson(storageColumnsInfoStr, []);
-            this.allowChangeColumnsOptions = this.allowChangeColumnsOptions || storageColumnsInfo.length > 0;
             if (storageColumnsInfo.length > 0) {
                 for (const prop in this._properties) {
                     const colInfo = storageColumnsInfo.find((x) => x.name === prop) ?? {
@@ -222,24 +188,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         if (selectCol === undefined || selectCol.visible !== false) this._columns.push("select");
 
         this._columns.push(...Object.keys(this._properties));
-    }
-
-    async openColumnsSelectDialog() {
-        await firstValueFrom(
-            this.dialog
-                .openDialog(ColumnsSelectComponent, {
-                    title: "Select columns",
-                    width: "60%",
-                    inputs: { data: { table: this.name, columns: this._properties } },
-                })
-                .afterClosed(),
-        );
-    }
-
-    onAction(e: ActionEvent) {
-        //TODO should action set loading automatically just like filter?
-        this.action.emit(e);
-        this.bus.emit(`${this.name?.trim().length > 0 ? this.name + "-" : ""}${e.action.name}`, e, this);
     }
 
     shiftKeyPressed = false;
@@ -297,9 +245,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         return !!pipe.prototype.constructor.ɵpipe.pure;
     }
 
-
-    merge(obj1:any,obj2:any){
-        return {...obj1,...obj2}
-
+    merge(obj1: any, obj2: any) {
+        return { ...obj1, ...obj2 };
     }
 }

@@ -17,9 +17,9 @@
             </button>
             <span class="spacer"></span>
             <!-- add native search input paced inside wrapper -->
-            <div class="search-wrapper">
+            <!-- <div class="search-wrapper">
                 <input #searchInput matInput placeholder="Search" [value]="q" (input)="q$.next(searchInput.value)">
-            </div>
+            </div> -->
 
             <mat-button-toggle-group #viewGroup="matButtonToggleGroup" [value]="view()"
                 (change)="view.set($event.value)">
@@ -45,7 +45,7 @@
         <mat-paginator [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length"
             [pageSize]="adapter.page.pageSize" showFirstLastButtons></mat-paginator>
         }
-        <!-- [disabled]="(loading$ | async) === true" 
+        <!-- [disabled]="(loading$ | async) === true"
     [pageSizeOptions]="pageSizeOptions"
     (page)="onPageChange($event)"  -->
 

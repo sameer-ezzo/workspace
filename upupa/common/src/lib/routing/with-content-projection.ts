@@ -2,9 +2,9 @@ import { DOCUMENT } from "@angular/common";
 import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef, signal } from "@angular/core";
 import { RouteFeature } from "./route-feature";
 import { EnvironmentContext } from "twilio/lib/rest/serverless/v1/service/environment";
-import { DynamicComponent, WrapperComponent } from "../wrapper.component";
+import { DynamicComponent, PortalComponent } from "../portal.component";
 
-export type ContentNode = string | DynamicComponent | ComponentRef<any> | TemplateRef<any>;
+export type ContentNode = string | Type<any> | DynamicComponent | ComponentRef<any> | TemplateRef<any>;
 
 /**
  * a wrapper for function @angular/core:createComponent that enables dynamic projection of content nodes to the component.
@@ -94,7 +94,7 @@ export function withContentProjection(projectedNodes: ContentNode[][]): RouteFea
         name: "withContentProjection",
         modify: (route) => ({
             sealed: true,
-            component: WrapperComponent, // override route.component
+            component: PortalComponent, // override route.component
             data: {
                 component: route.component,
                 content: projectedNodes,

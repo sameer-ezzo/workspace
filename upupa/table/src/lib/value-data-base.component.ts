@@ -56,15 +56,13 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     }
 
     override ngOnInit(): void {
-        // super.ngOnInit()
-
-        this.subscriptToFilterChanges()
+        super.ngOnInit()
 
         this.selectionModel.changed.pipe(
             debounceTime(50),
             takeUntilDestroyed(this.destroyRef)
         ).subscribe(async s => {
-            
+
             const selectedNormalized = await this.adapter.getItems(s.source.selected)
             this.selectedNormalized = selectedNormalized
             const v = Array.isArray(this.value) ? this.value : [this.value]

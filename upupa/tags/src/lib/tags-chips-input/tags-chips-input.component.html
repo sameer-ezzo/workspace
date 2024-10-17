@@ -15,10 +15,11 @@
     </mat-chip-row>
     }
   </mat-chip-grid>
+  <!-- (input)="filter$.next($event.target['value'])" -->
   <input #filterInput [disabled]="disabled" [readOnly]="readonly" (focus)="openedChange(true)"
     [formControl]="filterControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
     [matChipInputSeparatorKeyCodes]="separatorKeysCodes" type="text" matInput
-    (input)="updateFilter($event.target['value'])" [required]="required" (blur)="openedChange(false); onTouch()"
+     [required]="required" (blur)="openedChange(false); onTouch()"
     [placeholder]="placeholder" (matChipInputTokenEnd)="onAdding($event.value)">
 
 

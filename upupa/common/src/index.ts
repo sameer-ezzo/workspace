@@ -49,4 +49,4 @@ export * from './lib/routing/with-content-projection';
 export * from './lib/view-transitions/view-transitions';
 
 export * from './lib/ssr/http-tokens';
-export * from './lib/wrapper.component';
+export * from './lib/portal.component';

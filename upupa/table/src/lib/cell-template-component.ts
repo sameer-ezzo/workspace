@@ -3,9 +3,9 @@ import { Component, input, Input, InputSignal } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 
 export interface ITableCellTemplate<TValue = any, TElement = any> {
-    value: InputSignal<TValue>;
+    value?: InputSignal<TValue>;
     element?: InputSignal<{ item: TElement }>;
-    index?: InputSignal<number>;
+    dataIndex?: InputSignal<number>;
     descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
 
