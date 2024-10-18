@@ -25,12 +25,11 @@ export class TableFormInput<T = any> extends ValueDataComponentBase<T> {
     @Input() rowClass: (item: NormalizedItem<T>) => string = (item) => item.key.toString()
     @Input() pageSizeOptions = [10, 25, 50, 100, 200]
     @Input() columns: ColumnsDescriptor | 'auto' = 'auto' //eventually columns are the container of all and it's a dictionary
-    @Input() templates: any = {}
 
     @Input() expandable: 'single' | 'multi' | 'none' = 'none'
     @Input() expandableTemplate: any = null
 
-    @Input() cellTemplate: any
+
     @Input() allowChangeColumnsOptions = false
 
     selectionChange(event) {

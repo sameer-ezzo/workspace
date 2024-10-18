@@ -2,28 +2,28 @@ import { KeyValue } from "@angular/common";
 import { Component, input, Input, InputSignal } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 
-export interface ITableCellTemplate<T = any> {
-    element: InputSignal<{ item: T }>;
-    index: InputSignal<number>;
-    descriptor: InputSignal<KeyValue<string, ColumnDescriptor>>;
+export interface ITableCellTemplate<TValue = any, TElement = any> {
+    value?: InputSignal<TValue>;
+    element?: InputSignal<{ item: TElement }>;
+    dataIndex?: InputSignal<number>;
+    descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
 
 @Component({
-    selector: "default-table-cell-template",
+    selector: "cell-template",
     template: `
         @if (descriptor().value.pipe) {
             @if (descriptor().value.pipe["pipe"]) {
-                <div [innerHTML]="element().item[descriptor().key] | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
             } @else {
-                <div [innerHTML]="element().item[descriptor().key] | dynamic: descriptor().value.pipe"></div>
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
             }
         } @else {
-            {{ element().item | jpointer: descriptor().key }}
+            {{ value() }}
         }
     `,
 })
-export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate<T> {
-    element = input.required<{ item: T }>();
-    index = input<number>();
+export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
+    value = input.required();
     descriptor = input<KeyValue<string, ColumnDescriptor>>();
 }

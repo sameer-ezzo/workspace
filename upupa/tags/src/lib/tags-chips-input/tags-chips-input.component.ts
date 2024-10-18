@@ -52,9 +52,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
     this.control.markAsDirty()
   }
 
-  updateFilter(f: string) {
-    this.q = f
-  }
+
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const v = event.option.value
     super.selectionChange(v)

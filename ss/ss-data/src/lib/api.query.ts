@@ -19,7 +19,7 @@ Number/Date operators: {gte},{gt},{lte},{lt} = greater_that_or_equal , greater_t
 Date operators: {year},{month},{date},{hour},{minute},{second} ex: birthDate={yeah}1987
 Array operators: {in},{all},{nin} = in array ex: tags={in}red , all in array , not in array
 ## Value type
-values will be automatically converted to corrosponding types
+values will be automatically converted to corresponding types
 'true' => true
 'DATE_ZOLU_FORMAT' => Date()
 'some*text' => REGEX
@@ -35,17 +35,17 @@ If {operator} is not provided it's considred as {eq} but value conversion for nu
 //SORT
 ## SYNTAX:
 ?sort_by=field,[asc|desc]?
-Sorting can be performed by only one field, direction is ascinding by default
+Sorting can be performed by only one field, direction is ascending by default
 */
 
 /*
 //LOOKUP (JOIN)
-SYNTAX: ?lookup=lookup1;lookup2 WHERE: lookup1=collection:foriegnField:localField:as:[unwind]
+SYNTAX: ?lookup=lookup1;lookup2 WHERE: lookup1=collection:foreignField:localField:as:[unwind]
 * collection is the name of the collection that you want to lookup
-* foriegnField is the name of the field to match to inside the other collectionn
+* foreignField is the name of the field to match to inside the other collection
 * localField is the name of the field to match to inside the current collection
 * as is the name of the resulted data to be added as an array field to the current result
-* unwind (optional) if provided the as field will be converted from array to object by getting the first element (this is usful for one-to-one joins)
+* unwind (optional) if provided the as field will be converted from array to object by getting the first element (this is useful for one-to-one joins)
 Example:  /blogs?lookup=tag:name:category:categoryInfo:unwind,tag:name:tags:tagsInfo
 This will add 2 fields to the resulted 'blogs' the first field is called 'categoryInfo' containing the 'tag' object that is matched from 'tag' collection where tag.name=blog.category, and it's an object because of the 'unwind' operator passed ar the end.
 The second field is called 'tagsInfo' which is an array of 'tag' objects matched from 'tag' collection where tag.name=blog.tags*

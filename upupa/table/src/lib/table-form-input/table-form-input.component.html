@@ -1,6 +1,15 @@
-<data-table [name]="name" [stickyHeader]="stickyHeader" [showSearch]="showSearch" [label]="label" [actions]="actions"
-  [headerActions]="headerActions" [rowClass]="rowClass" [pageSizeOptions]="pageSizeOptions" [columns]="columns"
-  [templates]="templates" [expandable]="expandable" [expandableTemplate]="expandableTemplate"
-  [cellTemplate]="cellTemplate" [allowChangeColumnsOptions]="allowChangeColumnsOptions" [selected]="selected"
-  (selectionChange)="selectionChange($event)">
+<!-- [actions]="actions" [headerActions]="headerActions" -->
+{{ label }}
+<data-table
+    [adapter]="adapter"
+    [name]="name"
+    [stickyHeader]="stickyHeader"
+    [rowClass]="rowClass"
+    [pageSizeOptions]="pageSizeOptions"
+    [columns]="columns"
+    [expandable]="expandable"
+    [expandableTemplate]="expandableTemplate"
+    [selected]="selected"
+    (selectionChange)="selectionChange($event)"
+>
 </data-table>

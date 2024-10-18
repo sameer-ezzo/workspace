@@ -33,7 +33,7 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
 
   _valueChanged(value: any) {
     this._value = value;
-    this.q = value as string;
+    // this.q = value as string;
     this.adapter.refresh()
     this._propagateChange();
     this.control.markAsDirty()
