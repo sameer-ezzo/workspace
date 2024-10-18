@@ -6,7 +6,7 @@
   "prefix": "raptor7-workspace",
   "targets": {
     "build": {
-      "executor": "@nrwl/angular:package",
+      "executor": "@nx/angular:package",
       "options": {
         "tsConfig": "libs/workspace/upupa/tags/tsconfig.lib.json",
         "project": "libs/workspace/upupa/tags/ng-package.json"
@@ -18,7 +18,7 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "options": {
         "lintFilePatterns": [
           "libs/workspace/upupa/tags/src/**/*.ts",
@@ -27,7 +27,7 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": [
         "{workspaceRoot}/coverage/libs/workspace/upupa/tags"
       ],

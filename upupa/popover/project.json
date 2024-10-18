@@ -5,7 +5,7 @@
   "prefix": "raptor7-workspace",
   "targets": {
     "build": {
-      "executor": "@nrwl/angular:package",
+      "executor": "@nx/angular:package",
       "options": {
         "tsConfig": "libs/workspace/upupa/popover/tsconfig.lib.json",
         "project": "libs/workspace/upupa/popover/ng-package.json"
@@ -17,7 +17,7 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "options": {
         "lintFilePatterns": [
           "libs/workspace/upupa/popover/src/**/*.ts",
@@ -26,7 +26,7 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": [
         "{workspaceRoot}/coverage/libs/workspace/upupa/popover"
       ],
