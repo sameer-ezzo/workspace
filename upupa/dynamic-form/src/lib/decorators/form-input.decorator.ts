@@ -248,11 +248,6 @@ export function formScheme(options?: DynamicFormOptions) {
         const translationFieldset = makeLocalesInputs(opts);
         if (translationFieldset) {
             addInputToFormScheme('translations', translationFieldset, target);
-            // opts.fields['translations'] = translationFieldset;
-            console.log(
-                'Translation fieldset',
-                resolveDynamicFormOptionsFor(target)?.fields
-            );
         }
     };
 }
