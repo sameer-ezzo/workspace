@@ -1,25 +1,22 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from "@angular/core";
 
-import { ActionDescriptor, ActionEvent } from '@upupa/common';
-import { MatBtnComponent } from './mat-btn.component';
-import { CommonModule } from '@angular/common';
-
+import { ActionDescriptor, ActionEvent } from "@upupa/common";
+import { MatBtnComponent } from "./mat-btn.component";
+import { CommonModule } from "@angular/common";
 
 @Component({
-    selector: 'mat-action',
-    templateUrl: './action-descriptor.component.html',
+    selector: "mat-action",
+    templateUrl: "./action-descriptor.component.html",
     imports: [CommonModule, MatBtnComponent],
-    standalone: true
+    standalone: true,
 })
 export class ActionDescriptorComponent {
     @Input() descriptor: ActionDescriptor;
-    @Input() context: any
+    @Input() context: any;
 
     @Output() action = new EventEmitter<ActionEvent>();
 
     async onAction(event: ActionEvent) {
         this.action.emit({ ...event, data: this.context?.data, context: { ...this.context, ...event.context } });
     }
-
-
 }
