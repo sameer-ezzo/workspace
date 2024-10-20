@@ -1,17 +1,11 @@
-import {
-    DynamicModule,
-    Inject,
-    Module,
-    OnModuleInit,
-    Provider,
-} from '@nestjs/common';
-import { UsersController } from './users.controller';
-import { CommonModule, logger } from '@ss/common';
-import { DataModule, DataService } from '@ss/data';
-import { RulesModule } from '@ss/rules';
-import { AuthModule, AuthService } from '@ss/auth';
-import { UsersOptions } from './types';
-import { User } from '@noah-ark/common';
+import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
+import { UsersController } from "./users.controller";
+import { CommonModule, logger } from "@ss/common";
+import { DataModule, DataService } from "@ss/data";
+import { RulesModule } from "@ss/rules";
+import { AuthModule, AuthService } from "@ss/auth";
+import { UsersOptions } from "./types";
+import { User } from "@noah-ark/common";
 
 const defaultOptions = new UsersOptions();
 
@@ -19,19 +13,15 @@ const providers: Provider[] = [];
 
 export class UsersModule implements OnModuleInit {
     constructor(
-        @Inject('DB_AUTH') public readonly data: DataService,
+        @Inject("DB_AUTH") public readonly data: DataService,
         private auth: AuthService,
-        @Inject('USERS_OPTIONS') private readonly options: UsersOptions
+        @Inject("USERS_OPTIONS") private readonly options: UsersOptions,
     ) {}
 
     async onModuleInit() {
         if (this.options.superAdmin.password) {
             const { password, email, username, name } = this.options.superAdmin;
-            await this.installSuperAdmin(
-                { email, username: username ?? email, name },
-                password,
-                'super-admin'
-            );
+            await this.installSuperAdmin({ email, username: username ?? email, name }, password, "super-admin");
         }
     }
     static register(userOptions: Partial<UsersOptions> = {}): DynamicModule {
@@ -42,62 +32,39 @@ export class UsersModule implements OnModuleInit {
 
         const superAdminErrors = this.validateSuperAdmin(options.superAdmin);
         if (superAdminErrors) {
-            if (process.env.NODE_ENV === 'production')
-                throw new Error(
-                    `Invalid super admin options: ${JSON.stringify(
-                        superAdminErrors
-                    )}`
-                );
-            else
-                logger.error(
-                    `Invalid super admin options: ${JSON.stringify(
-                        superAdminErrors
-                    )}`
-                );
+            logger.error(`Invalid super admin options: ${JSON.stringify(superAdminErrors)}`);
         }
 
         return {
             global: true,
             module: UsersModule,
             imports: [AuthModule, RulesModule, DataModule, CommonModule],
-            providers: [
-                ...providers,
-                { provide: 'USERS_OPTIONS', useValue: options },
-            ],
+            providers: [...providers, { provide: "USERS_OPTIONS", useValue: options }],
             controllers: [UsersController],
         };
     }
 
-    static validateSuperAdmin(
-        superAdmin: UsersOptions['superAdmin']
-    ): Record<string, string> | undefined {
+    static validateSuperAdmin(superAdmin: UsersOptions["superAdmin"]): Record<string, string> | undefined {
         const errors: Record<string, string> = {};
         const email = superAdmin.email?.trim();
-        if (!email) errors.email = 'Super admin email is required';
+        if (!email) errors.email = "Super admin email is required";
         //make sure email is lowercase and does not contain invalid chars
-        if (/[^a-zA-Z0-9@._-]/.test(email))
-            errors.email = 'Super admin email contains invalid characters';
+        if (/[^a-zA-Z0-9@._-]/.test(email)) errors.email = "Super admin email contains invalid characters";
 
         const password = superAdmin.password?.trim();
-        if (!password) errors.password = 'Super admin password is required';
+        if (!password) errors.password = "Super admin password is required";
 
         return Object.keys(errors).length ? errors : undefined;
     }
 
-    private async installSuperAdmin(
-        user: Partial<User>,
-        password: string,
-        role = 'super-admin'
-    ) {
-        const usersModel = await this.data.getModel('user');
-        if (!usersModel) throw new Error('MISSING_USER_MODEL');
+    private async installSuperAdmin(user: Partial<User>, password: string, role = "super-admin") {
+        const usersModel = await this.data.getModel("user");
+        if (!usersModel) throw new Error("MISSING_USER_MODEL");
         try {
             const dbUser = await usersModel.findOne({ email: user.email });
             let u = dbUser;
             if (u) {
-                logger.info(
-                    `Super admin user already exists, Setting password.`
-                );
+                logger.info(`Super admin user already exists, Setting password.`);
                 await this.auth.changeUserPassword(dbUser._id, password);
             } else {
                 logger.info(`Creating super admin user.`);
