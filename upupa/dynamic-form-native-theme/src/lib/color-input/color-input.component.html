@@ -1,14 +1,33 @@
-<div style="width: 100%; display: flex; padding-block: 0.5em; flex-flow: row nowrap; justify-content: space-between; align-items: center;">
-  @if (label) {
-    <mat-label>{{label }}</mat-label>
-  }
-  <div style="position: relative;width: 50px; height: 50px">
-    <span class="cph" (click)="colorInput.click()" [style.backgroundColor]="colorInput.value"></span>
-    <input style="z-index: -1; position: absolute; visibility: collapse;"
-      (input)="inputChange($event.target, colorInput)" type="color" #colorInput [formControl]="control" [value]="value"
-      (ngModelChange)="_propagateChange(); control.markAsDirty()">
-  </div>
+<div
+    style="
+        width: 100%;
+        display: flex;
+        padding-block: 0.5em;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+    "
+>
+    @if (label()) {
+    <mat-label>{{ label() }}</mat-label>
+    }
+    <div style="position: relative; width: 50px; height: 50px">
+        <span
+            class="cph"
+            (click)="colorInput.click()"
+            [style.backgroundColor]="colorInput.value"
+        ></span>
+        <input
+            style="z-index: -1; position: absolute; visibility: collapse"
+            (input)="inputChange($event.target, colorInput)"
+            type="color"
+            #colorInput
+            [formControl]="control()"
+            [value]="value"
+            (ngModelChange)="_propagateChange(); control().markAsDirty()"
+        />
+    </div>
 </div>
-@for (error of control?.errors | keyvalue; track error) {
-  <mat-error>{{errorMessages?.[error.key+''] || error.key }}</mat-error>
+@for (error of control().errors | keyvalue; track error) {
+<mat-error>{{errorMessages()?.[error.key+''] || error.key }}</mat-error>
 }

@@ -1,41 +1,71 @@
-@if(label){<mat-label>{{label}}</mat-label>}
-@if(template === 'normal'){
-  @if(maxAllowed !== 1){
-    <div class="{{direction}} {{template}} choices" (focusleave)="onTouch()">
-      @for(item of items$ | async; track item.key){
-        <mat-checkbox class="choice" (change)="toggle(item.key);valueChanged(selectionModel.selected)"
-          [checked]="selectionModel.isSelected(item.key)">
-          <paragraph [text]="item.display + ''" [renderer]="renderer"></paragraph>
-        </mat-checkbox>
-      }
-    </div>
-    }@else{
-    <mat-radio-group (focusleave)="onTouch()" class="{{direction}} {{template}} choices" [(ngModel)]="selected"
-      (ngModelChange)="valueChanged($event)">
-      @for(item of items$ | async; track item.key){
-        <mat-radio-button class="choice" [value]="item.key">
-          <paragraph [text]="item.display + ''" [renderer]="renderer"></paragraph>
-        </mat-radio-button>
-      }
-    </mat-radio-group>
-  }
-}
-@else {
-<div class="{{direction}} {{template}} choices" (focusleave)="onTouch()" tabindex="0">
-  @for(item of items$ | async; track item.key){
-    <button type="button" [style.width]="thumbSize+'px'" [style.height]="thumbSize+'px'" class="choice"
-      (click)="toggle(item.key);valueChanged(selectionModel.selected)">
-      @if (item.image) {
-<img style="width: 100%; height: 100%; object-fit: contain; object-position: center; padding: 20%;
-            box-sizing: border-box;" [src]="item.image" alt="{{item.display}}">
-      }
-      @if (selectionModel.isSelected(item.key)) {
-        <mat-icon>check</mat-icon>
-      }
-    </button>
-  }
+@if(label()){<mat-label>{{ label() }}</mat-label
+>} @if(template() === 'normal'){ @if(maxAllowed() !== 1){
+<div
+    class="{{ direction() }} {{ template() }} choices"
+    (focusleave)="onTouch()"
+>
+    @for(item of items$ | async; track item.key){
+    <mat-checkbox
+        class="choice"
+        (change)="toggle(item.key); valueChanged(selectionModel.selected)"
+        [checked]="selectionModel.isSelected(item.key)"
+    >
+        <paragraph
+            [text]="item.display + ''"
+            [renderer]="renderer()"
+        ></paragraph>
+    </mat-checkbox>
+    }
 </div>
-}
-@if (hint?.length > 0) {
-  <mat-hint>{{hint }}</mat-hint>
+}@else{
+<mat-radio-group
+    (focusleave)="onTouch()"
+    class="{{ direction() }} {{ template() }} choices"
+    [(ngModel)]="selected"
+    (ngModelChange)="valueChanged($event)"
+>
+    @for(item of items$ | async; track item.key){
+    <mat-radio-button class="choice" [value]="item.key">
+        <paragraph
+            [text]="item.display + ''"
+            [renderer]="renderer()"
+        ></paragraph>
+    </mat-radio-button>
+    }
+</mat-radio-group>
+} } @else {
+<div
+    class="{{ direction() }} {{ template() }} choices"
+    (focusleave)="onTouch()"
+    tabindex="0"
+>
+    @for(item of items$ | async; track item.key){
+    <button
+        type="button"
+        [style.width]="thumbSize() + 'px'"
+        [style.height]="thumbSize() + 'px'"
+        class="choice"
+        (click)="toggle(item.key); valueChanged(selectionModel.selected)"
+    >
+        @if (item.image) {
+        <img
+            style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                object-position: center;
+                padding: 20%;
+                box-sizing: border-box;
+            "
+            [src]="item.image"
+            alt="{{ item.display }}"
+        />
+        } @if (selectionModel.isSelected(item.key)) {
+        <mat-icon>check</mat-icon>
+        }
+    </button>
+    }
+</div>
+} @if (hint()) {
+<mat-hint>{{ hint() }}</mat-hint>
 }

@@ -1,78 +1,113 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, computed, inject, signal } from "@angular/core";
-import { PageEvent } from "@angular/material/paginator";
-import { Sort } from "@angular/material/sort";
-import { Subscription, BehaviorSubject, Subject, Observable, of } from "rxjs";
-import { debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap, takeUntil, tap } from "rxjs/operators";
-import { ClientDataSource, DataAdapter, FilterDescriptor, Key, NormalizedItem } from "@upupa/data";
-import { SelectionModel } from "@angular/cdk/collections";
+import {
+    Component,
+    DestroyRef,
+    EventEmitter,
+    Input,
+    Output,
+    SimpleChanges,
+    computed,
+    inject,
+    input,
+    model,
+    output,
+    signal,
+} from '@angular/core';
+import { PageEvent } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
+import { Subscription, BehaviorSubject, Subject, Observable, of } from 'rxjs';
+import {
+    debounceTime,
+    distinctUntilChanged,
+    map,
+    shareReplay,
+    startWith,
+    switchMap,
+    takeUntil,
+    tap,
+} from 'rxjs/operators';
+import {
+    ClientDataSource,
+    DataAdapter,
+    FilterDescriptor,
+    Key,
+    NormalizedItem,
+} from '@upupa/data';
+import { SelectionModel } from '@angular/cdk/collections';
 
-import { FormControl } from "@angular/forms";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { FormControl } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-    selector: "data-base",
-    template: "",
+    selector: 'data-base',
+    template: '',
     styles: [],
 })
 export class DataComponentBase<T = any> {
+    add = output();
     loading = signal(false);
     firstLoad = signal(true);
 
-    @Input() filterControl = new FormControl("");
-    @Input() noDataImage: string;
+    noDataImage = input<string>('');
 
-    @Output() add = new EventEmitter<any>();
+    minAllowed = input(0);
+    maxAllowed = input(null);
 
-    @Input() minAllowed: number;
-    @Input() maxAllowed = 1;
-
-    @Input({ required: true }) adapter: DataAdapter<T>;
+    adapter = input.required<DataAdapter<T>>();
     normalized$sub: Subscription;
+    filterDebounceTime = input(300);
 
+    focusedItem = model<NormalizedItem<T>>(null);
+    focusedItemChange = output<NormalizedItem<T>>();
+    itemClick = output<NormalizedItem<T>>();
 
+    viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>('adapter');
 
-
-    @Input() focusedItem: NormalizedItem<T>;
-    @Output() focusedItemChange = new EventEmitter<NormalizedItem<T>>();
-    @Output() itemClick = new EventEmitter<NormalizedItem<T>>();
-    @Input() filterDebounceTime = 200;
-
-    viewDataSource$ = new BehaviorSubject<"adapter" | "selected">("adapter");
-
-    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(switchMap((view) => (view === "adapter" ? this.adapter.normalized$ : this.selectedNormalized$)));
+    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(
+        switchMap((view) =>
+            view === 'adapter'
+                ? this.adapter().normalized$
+                : this.selectedNormalized$
+        )
+    );
 
     ngOnInit() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (s) => {
-            const selectedNormalized = await this.adapter.getItems(s.source.selected);
-            this.selectedNormalized = selectedNormalized;
-            this.singleSelected.set(this.selectedNormalized?.[0]?.key);
-        });
+        this.selectionModel.changed
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(async (s) => {
+                const selectedNormalized = await this.adapter().getItems(
+                    s.source.selected
+                );
+                this.selectedNormalized = selectedNormalized;
+                this.singleSelected.set(this.selectedNormalized?.[0]?.key);
+            });
     }
 
     refreshData() {
         this.loading.set(true);
-        this.adapter?.refresh();
+        this.adapter()?.refresh();
     }
 
     protected readonly destroyRef = inject(DestroyRef);
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes["adapter"]) {
-            if (!this.adapter) throw new Error("Adapter is required");
+        if (changes['adapter']) {
+            if (!this.adapter) throw new Error('Adapter is required');
             this.firstLoad.set(true);
 
-            this.adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-                this.onDataChange(data);
-            });
+            this.adapter()
+                .normalized$.pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((data) => {
+                    this.onDataChange(data);
+                });
         }
-        if (changes["maxAllowed"]) this.maxAllowed = +this.maxAllowed;
-        if (changes["minAllowed"]) this.minAllowed = +this.minAllowed;
     }
 
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = [];
     onDataChange(data: NormalizedItem<T>[]) {
         this.firstLoad.set(false);
         this.dataChangeListeners.forEach((x) => x(data));
-        this.selectedNormalized = this.selected.map((k) => data.find((d) => d.key === k)).filter((x) => x);
+        this.selectedNormalized = this.selected
+            .map((k) => data.find((d) => d.key === k))
+            .filter((x) => x);
         this.loading.set(false);
     }
 
@@ -84,7 +119,7 @@ export class DataComponentBase<T = any> {
     @Output() pageChange = new EventEmitter<PageEvent>();
     onPageChange(page: PageEvent) {
         this.loading.set(true);
-        this.adapter.page = page;
+        this.adapter().page = page;
         this.pageChange.emit(page);
     }
 
@@ -92,10 +127,9 @@ export class DataComponentBase<T = any> {
     @Output() sortChange = new EventEmitter<Sort>();
     onSortData(sort: Sort) {
         this.loading.set(true);
-        this.adapter.sort = sort;
+        this.adapter().sort = sort;
         this.sortChange.emit(sort);
     }
-
 
     singleSelected = signal(undefined);
 
@@ -107,18 +141,21 @@ export class DataComponentBase<T = any> {
         //else unselect all items from adapter data only
 
         const selected = this.selected as (keyof T)[];
-        if (this.maxAllowed === 1) {
+        if (this.maxAllowed() === 1) {
             if (this.selected.length > 0) this.selectionModel.clear(false);
         } else {
-            if (this.adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
+            if (this.adapter().normalized.length === selected.length)
+                this.selectionModel.deselect(...selected);
             else {
-                this.selectionModel.select(...this.adapter.normalized.map((n) => n.key));
+                this.selectionModel.select(
+                    ...this.adapter().normalized.map((n) => n.key)
+                );
             }
         }
     }
 
     select(key: keyof T) {
-        if (this.maxAllowed === 1) this.selectionModel.clear(false);
+        if (this.maxAllowed() === 1) this.selectionModel.clear(false);
         this.selectionModel.select(key);
     }
 
@@ -132,33 +169,38 @@ export class DataComponentBase<T = any> {
 
     setFocusedItem(row) {
         this.focusedItem = row;
-        this.focusedItemChange.emit(this.focusedItem);
+        this.focusedItemChange.emit(this.focusedItem());
     }
     nextFocusedItem() {
-        const i = this.focusedItem ? this.adapter.normalized.indexOf(this.focusedItem) : -1;
-        this.focusedItem = this.adapter.normalized[i + 1];
-        this.focusedItemChange.emit(this.focusedItem);
+        const i = this.focusedItem()
+            ? this.adapter().normalized.indexOf(this.focusedItem())
+            : -1;
+        this.focusedItem.set(this.adapter().normalized[i + 1]);
+        this.focusedItemChange.emit(this.focusedItem());
     }
     prevFocusedItem() {
-        const i = this.focusedItem ? this.adapter.normalized.indexOf(this.focusedItem) : this.adapter.normalized.length;
-        this.focusedItem = this.adapter.normalized[i - 1];
-        this.focusedItemChange.emit(this.focusedItem);
+        const i = this.focusedItem()
+            ? this.adapter().normalized.indexOf(this.focusedItem())
+            : this.adapter().normalized.length;
+        this.focusedItem.set(this.adapter().normalized[i - 1]);
+        this.focusedItemChange.emit(this.focusedItem());
     }
 
     onLongPress(row: NormalizedItem<T>) {
-        this.focusedItem = row;
+        this.focusedItem.set(row);
         this.selectionModel.toggle(row.key);
         this.longPressed = row; //to notify click about it
     }
     longPressed: NormalizedItem<T>;
     onClick(row: NormalizedItem<T>) {
-        this.focusedItem = row;
-        this.focusedItemChange.emit(this.focusedItem);
+        this.focusedItem.set(row);
+        this.focusedItemChange.emit(this.focusedItem());
 
         if (this.longPressed) this.select(row.key);
         else {
-            if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
-            else this.itemClick.emit(this.focusedItem);
+            if (this.selectionModel.selected.length > 0)
+                this.selectionModel.toggle(row.key);
+            else this.itemClick.emit(this.focusedItem());
         }
 
         this.longPressed = null; //clear long press notification
@@ -175,7 +217,9 @@ export class DataComponentBase<T = any> {
         this.selectionModel.select(...(v as any[]));
     }
 
-    private readonly _selectedNormalized$ = new BehaviorSubject<NormalizedItem<T>[]>([]);
+    private readonly _selectedNormalized$ = new BehaviorSubject<
+        NormalizedItem<T>[]
+    >([]);
     selectedNormalized$ = this._selectedNormalized$.pipe(shareReplay(1));
 
     public get selectedNormalized(): NormalizedItem<T>[] {

@@ -27,7 +27,7 @@ export class MatInputComponent extends InputComponent { }
 @Component({
   selector: 'mat-form-hidden-input',
   template: `
-    <input #input type="hidden" [value]="value || ''" [required]="required">
+    <input #input type="hidden" [value]="value || ''" [required]="required()">
   `,
   styleUrls: [],
   encapsulation: ViewEncapsulation.None,

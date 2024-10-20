@@ -1,21 +1,37 @@
 @if (design?.bgImage?.url) {
-  <div class="cbgi" [ngStyle]="{'background-image': 'url(' + (design.bgImage.url ) + ')'}" [style.background-position]="design.bgImage.position" [style.background-repeat]="design.bgImage.repeat" [style.background-size]="design.bgImage.size"></div>
+<div
+    class="cbgi"
+    [ngStyle]="{ 'background-image': 'url(' + design.bgImage.url + ')' }"
+    [style.background-position]="design.bgImage.position"
+    [style.background-repeat]="design.bgImage.repeat"
+    [style.background-size]="design.bgImage.size"
+></div>
 }
 <div class="qs-wrapper">
-  <dynamic-form class="collector-dform" #dynForm [initialValueFactory]="initialValueFactory" [fields]="fields" [(value)]="value" [conditions]="conditions" [name]="name" (submit)="onSubmit()" (valueChange)="_checkPageInvalid(activePage); _propagateChange()">
-  </dynamic-form>
+    <dynamic-form
+        class="collector-dform"
+        #dynForm
+        [fields]="fields"
+        [(value)]="value"
+        [conditions]="conditions"
+        [name]="name()"
+        (submit)="onSubmit()"
+        (valueChange)="_checkPageInvalid(activePage); _propagateChange()"
+    >
+    </dynamic-form>
 </div>
 <div class="form-actions">
-  @if (nextBtn && canGoNext()) {
+    @if (nextBtn && canGoNext()) {
     <mat-btn [descriptor]="nextBtn" (action)="next()"></mat-btn>
-  }
-  @if (prevBtn && canGoPrev()) {
+    } @if (prevBtn && canGoPrev()) {
     <mat-btn [descriptor]="prevBtn" (action)="prev()"></mat-btn>
-  }
-  @if (submitBtn) {
-    <mat-btn [disabled]="_pageInvalid || loading" [descriptor]="submitBtn" (action)="onSubmit()"></mat-btn>
-  }
-  @for (act of actions; track act) {
+    } @if (submitBtn) {
+    <mat-btn
+        [disabled]="_pageInvalid || loading"
+        [descriptor]="submitBtn"
+        (action)="onSubmit()"
+    ></mat-btn>
+    } @for (act of actions; track act) {
     <mat-btn [descriptor]="act" (action)="actionClicked(act)"></mat-btn>
-  }
+    }
 </div>

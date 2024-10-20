@@ -51,10 +51,6 @@ export class FormViewScaffolder<T>
 
     const dfInputs = resolveDynamicFormOptionsFor(collection);
 
-    if (view === 'create') {
-      if (dfInputs.initialValueFactory)
-        this.create = dfInputs.initialValueFactory;
-    }
 
     const v = this.value$(path);
 

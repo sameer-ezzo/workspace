@@ -8,7 +8,6 @@ export type DynamicFormInputs<T = any> = {
     preventDirtyUnload?: boolean;
     recaptcha?: string;
     theme?: string;
-    initialValueFactory?: () => Promise<T>;
     fields?: FormScheme;
     conditions?: Condition[];
 };

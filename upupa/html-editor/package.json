@@ -2,7 +2,6 @@
     "name": "@upupa/html-editor",
     "version": "0.0.3",
     "peerDependencies": {
-        "@ckeditor/ckeditor5-angular": "^8.0.0",
         "@ckeditor/ckeditor5-build-classic": "^42.0.2",
         "@ckeditor/ckeditor5-build-decoupled-document": "^42.0.2",
         "@ckeditor/ckeditor5-core": "^42.0.2",

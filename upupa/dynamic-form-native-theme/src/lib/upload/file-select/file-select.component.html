@@ -1,15 +1,15 @@
-@if(label){
-<mat-label class="mbe-1">{{ label }}</mat-label>
-} @if(!hideSelectButton){
+@if(label()){
+<mat-label class="mbe-1">{{ label() }}</mat-label>
+} @if(!hideSelectButton()){
 <div class="upload-button">
     <button
         mat-raised-button
         class="mbe-1"
         type="button"
         (click)="selectFile()"
-        [color]="color"
+        [color]="color()"
     >
-        @if(uploading){
+        @if(uploading()){
         <mat-icon class="rotate">loop</mat-icon>
         } @else {
         <mat-icon>upload_file</mat-icon>
@@ -20,52 +20,32 @@
     }
 </div>
 } @if(viewFiles()){
-<ng-container
-    *ngTemplateOutlet="
-        contentTemplate;
-        context: { viewModel: viewModel(), view, path: path }
-    "
-></ng-container>
-} @else if(enableDragDrop === true){
-<ng-container
-    *ngTemplateOutlet="
-        dragDropTemplate;
-        context: { viewModel: viewModel(), view, path: path }
-    "
-></ng-container>
-} @if(placeholder && value?.length === 0){
+<ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
+} @else if(enableDragDrop() === true){
+<ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
+} @if(placeholder() && value?.length === 0){
 <div class="mt-16" style="display: flex; flex-flow: column">
-    {{ placeholder }}
+    {{ placeholder() }}
 </div>
 }
 
-<ng-template
-    #contentTemplate
-    let-viewModel="viewModel"
-    let-path="path"
-    let-view="view"
->
+<ng-template #contentTemplate>
     <file-viewer
         [base]="uploadClient.baseOrigin"
-        [path]="path"
-        [files]="viewModel"
-        [view]="view"
+        [path]="path()"
+        [files]="viewModel()"
+        [view]="view()"
         (click)="$event.stopPropagation()"
         [selectable]="false"
-        [includeAccess]="includeAccess"
+        [includeAccess]="includeAccess()"
         (event)="viewerEventsHandler($event)"
-        [actions]="actions"
+        [actions]="actions()"
         (action)="onAction($event)"
         (changed)="selectionChanged($event)"
     ></file-viewer>
 </ng-template>
 
-<ng-template
-    #dragDropTemplate
-    let-viewModel="viewModel"
-    let-path="path"
-    let-view="view"
->
+<ng-template #dragDropTemplate>
     <div
         #dr
         class="drop-zone"
@@ -77,13 +57,8 @@
         (dragover)="$event.preventDefault(); dragOver($event)"
         (drop)="onDrop($event)"
     >
-        @if(viewModel.length > 0){
-        <ng-container
-            *ngTemplateOutlet="
-                contentTemplate;
-                context: { viewModel, path, view }
-            "
-        ></ng-container>
+        @if(viewModel().length > 0){
+        <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
         }@else {
         <p class="placeholder">Drop files here</p>
         }

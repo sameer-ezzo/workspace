@@ -219,14 +219,14 @@ async function onDelete(e: ActionEvent<any, DataListViewModelActionContext>) {
     if (!confirmRes) return;
 
     const ds = injector.get(DataService);
-    const path = e.context.component.dataTable().adapter.dataSource["path"];
+    const path = e.context.component.dataTable().adapter().dataSource["path"];
     const deleteTasks = items.map((item) => ds.delete(`/${path}/${item._id}`));
     const report = await Promise.allSettled(deleteTasks);
     const failed = report.filter((x) => x.status === "rejected");
     if (failed.length > 0) {
         console.error("Failed to delete items", failed);
     }
-    e.context.dataTable.adapter.refresh();
+    e.context.dataTable.adapter().refresh();
 }
 
 async function getValue(path: string, ds: DataService) {

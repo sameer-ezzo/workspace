@@ -5,7 +5,6 @@
         [value]="formValue()"
         [name]="inputs().name"
         [preventDirtyUnload]="inputs().preventDirtyUnload"
-        [initialValueFactory]="inputs().initialValueFactory"
         [recaptcha]="inputs().recaptcha"
         [theme]="inputs().theme"
         [conditions]="inputs().conditions"
@@ -18,7 +17,7 @@
     @if (dialogActions(); as _actions) {
         <div class="toolbar footer">
             @for (descriptor of _actions; track descriptor.action) {
-                <mat-btn (action)="onAction($event)" [descriptor]="descriptor"></mat-btn>
+                <mat-btn (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
             }
         </div>
     }

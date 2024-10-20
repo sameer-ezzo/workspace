@@ -36,7 +36,7 @@ import { Subject, Subscription, takeUntil } from "rxjs";
 export class ArrayInputComponent<T = any> extends TableFormInput<T>
     implements OnDestroy, OnChanges, OnInit {
     dataSource = new ClientDataSource([]);
-    override adapter = new DataAdapter<T>(this.dataSource);
+    // override adapter = new DataAdapter<T>(this.dataSource);
 
     @Input() override columns: ColumnsDescriptor = {};
 

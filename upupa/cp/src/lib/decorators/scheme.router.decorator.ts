@@ -227,7 +227,6 @@ function applyFormScheme(
 ) {
     const opts = {
         name: options.name,
-        initialValueFactory: options.initialValueFactory,
         recaptcha: options.recaptcha,
         preventDirtyUnload: options.preventDirtyUnload,
         conditions: options.conditions,

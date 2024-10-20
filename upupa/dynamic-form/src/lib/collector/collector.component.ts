@@ -53,8 +53,8 @@ export class CollectorComponent extends InputBaseComponent<any> {
   @Input() submitBtn: ActionDescriptor = { name: "submit", type: 'submit', variant: "stroked", text: "Submit", color: "primary" };
   @Input() nextBtn: ActionDescriptor = { name: "next", type: 'button', text: "Next" };
   @Input() prevBtn: ActionDescriptor = { name: "prev", type: 'button', text: "Previous" };
-  @Input() initialValueFactory: () => Promise<any>;
 
+  
   private formFieldsInfo: { [name: string]: { index: number; page: number } } = null;
   private _focusedField: Field;
   @Input()
@@ -116,7 +116,6 @@ export class CollectorComponent extends InputBaseComponent<any> {
 
   override async ngOnChanges(changes: SimpleChanges) {
     super.ngOnChanges(changes);
-    if (changes["initialValueFactory"] && this.initialValueFactory) this.value = await this.initialValueFactory();
     if (changes["fields"] && !changes["fields"].firstChange) this.populatePagesInFields();
   }
 
@@ -180,7 +179,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
   }
 
   next() {
-    this.dynamicForm?.formElement.control.markAsTouched();
+    this.dynamicForm?.formElement().control.markAsTouched();
     if (this.canGoNext()) this.activePage++;
   }
 

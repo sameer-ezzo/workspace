@@ -1,31 +1,33 @@
-<div style="margin: 0; display: flex; align-items: flex-start;">
-  @if(template !== 'toggle'){
-    <mat-slide-toggle style="max-width: 40px; margin-inline-end: .5rem;"
-      (change)="value= control.value;control.markAsDirty()" [checked]="value" (blur)="onTouch();"
-      [formControl]="control" [required]="required">
+<div style="margin: 0; display: flex; align-items: flex-start">
+    @if(template() !== 'toggle'){
+    <mat-slide-toggle
+        style="max-width: 40px; margin-inline-end: 0.5rem"
+        (change)="value = control().value; control().markAsDirty()"
+        [checked]="value"
+        (blur)="onTouch()"
+        [formControl]="control()"
+        [required]="required()"
+    >
     </mat-slide-toggle>
-  } @else {
-    @if (template) {
-      <mat-checkbox style="max-width: 40px; margin-inline-end: .5rem;"
-        (change)="value = control.value; control.markAsDirty()" [checked]="value" (blur)="onTouch();"
-        [formControl]="control" [required]="required">
-      </mat-checkbox>
-    }
-  }
-
-  @if(label){
-    <label for="{{name}}">
-      <paragraph [text]="label" [renderer]="renderer"></paragraph>
+    } @else { @if (template()) {
+    <mat-checkbox
+        style="max-width: 40px; margin-inline-end: 0.5rem"
+        (change)="value = control().value; control().markAsDirty()"
+        [checked]="value"
+        (blur)="onTouch()"
+        [formControl]="control()"
+        [required]="required()"
+    >
+    </mat-checkbox>
+    } } @if(label()){
+    <label [attr.for]="name()">
+        <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
     </label>
-  }
-
+    }
 </div>
-@if (hint?.length > 0) {
-  <mat-hint>{{hint }}</mat-hint>
-}
-@if (control.touched && control.invalid) {
-  @for (error of control?.errors | keyvalue; track error) {
-    <mat-error>{{errorMessages[error.key+''] || error.key }}
-    </mat-error>
-  }
-}
+@if (hint()) {
+<mat-hint>{{ hint() }}</mat-hint>
+} @if (control().touched && control().invalid) { @for (error of
+control()?.errors | keyvalue; track error) {
+<mat-error>{{ errorMessages()[error.key + ''] || error.key }} </mat-error>
+} }

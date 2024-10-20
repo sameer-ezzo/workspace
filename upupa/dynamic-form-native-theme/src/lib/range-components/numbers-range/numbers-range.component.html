@@ -1,17 +1,39 @@
-@if (label) {
-  <mat-label>{{label }}</mat-label>
+@if (label()) {
+<mat-label>{{ label() }}</mat-label>
 }
-<div style="display: flex; width: 100%;">
-  <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
-    <input type="number" placeholder="min'}}" matInput [(ngModel)]="from" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
-  </mat-form-field>
-  <span style="min-width: 5px"></span>
-  <mat-form-field style="flex: 1;" [appearance]="appearance" [floatLabel]="floatLabel">
-    <input type="number" placeholder="max'}}" matInput [(ngModel)]="to" (ngModelChange)="_propagateChange()" (blur)="onTouch()">
-  </mat-form-field>
+<div style="display: flex; width: 100%">
+    <mat-form-field
+        style="flex: 1"
+        [appearance]="appearance()"
+        [floatLabel]="floatLabel()"
+    >
+        <input
+            type="number"
+            placeholder="min"
+            matInput
+            [(ngModel)]="from"
+            (ngModelChange)="_propagateChange()"
+            (blur)="onTouch()"
+        />
+    </mat-form-field>
+    <span style="min-width: 5px"></span>
+    <mat-form-field
+        style="flex: 1"
+        [appearance]="appearance()"
+        [floatLabel]="floatLabel()"
+    >
+        <input
+            type="number"
+            placeholder="max"
+            matInput
+            [(ngModel)]="to"
+            (ngModelChange)="_propagateChange()"
+            (blur)="onTouch()"
+        />
+    </mat-form-field>
 </div>
-@if (hint?.length > 0) {
-  <mat-hint>{{hint }}</mat-hint>
+@if (hint()) {
+<mat-hint>{{ hint() }}</mat-hint>
 }
 <!--
 <ng-container *ngIf="template === 'thumbs'">

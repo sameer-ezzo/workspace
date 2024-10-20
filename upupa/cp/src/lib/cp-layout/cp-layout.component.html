@@ -1,10 +1,11 @@
 <main>
     <mat-toolbar class="mat-elevation-z2">
-        @if (drawer() && sideBarItems(); as items) { @if(items | async){
+        @if (sideBarItems() | async; as items) {
+
         <button mat-icon-button (click)="drawer().toggle()">
             <mat-icon>reorder</mat-icon>
         </button>
-        } }
+        }
         <img [src]="logo()" class="logo" />
         <span class="spacer"></span>
         <toolbar-user-menu [commands]="userMenuCommands()"></toolbar-user-menu>
@@ -12,17 +13,16 @@
     <mat-drawer-container
         autosize
         [dir]="languageService.dir$ | async"
-        autosize
         style="flex: 1"
     >
-        @if (sideBarItems(); as sItems) { @if(sItems | async; as items){
+        @if (sideBarItems() | async; as sItems){
         <mat-drawer
             #drawer
             class="sidenav"
             [mode]="sideBarMode()"
-            [opened]="isSidebarOpened() && items?.length > 0"
+            [opened]="isSidebarOpened()"
         >
-            @for (g of items; track i; let i = $index) { @if (g['items'] &&
+            @for (g of sItems; track i; let i = $index) { @if (g['items'] &&
             g['items'].length > 0) {
             <mat-accordion
                 #accordion
@@ -64,7 +64,7 @@
             ></ng-container>
             } }
         </mat-drawer>
-        }}
+        }
         <router-outlet #outlet="outlet"></router-outlet>
     </mat-drawer-container>
     <ng-content select="footer"></ng-content>

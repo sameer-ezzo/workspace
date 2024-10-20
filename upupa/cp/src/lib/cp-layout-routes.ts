@@ -6,7 +6,9 @@ import { DataListComponent } from "./data-list/data-list.component";
 import { SCAFFOLDING_SCHEME, CP_SIDE_BAR_ITEMS } from "./di.token";
 import { SideBarViewModel } from "./side-bar-group-item";
 import { mergeScaffoldingScheme } from "./decorators/scheme.router.decorator";
-import { RouteFeature } from "@upupa/common";
+import { DynamicComponent, RouteFeature } from "@upupa/common";
+import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
+import { DataListWithInputsComponent } from "./data-list-with-inputs/data-list-with-inputs.component";
 
 export function withLayoutComponent(config: {
     layout?: Type<CpLayoutComponent>;
@@ -37,5 +39,24 @@ export function layoutListRoute(options: { component?: Route["component"] } = { 
         ...route,
         component: options.component,
         runGuardsAndResolvers: "pathParamsChange",
+    };
+}
+
+
+export function withTableComponent(config: {
+    viewModel: new () => unknown;
+    dataAdapter: DataAdapter | DataAdapterDescriptor;
+    tableHeaderComponent?: Type<any> | DynamicComponent;
+}): RouteFeature {
+    return {
+        name: "withTableComponent",
+        modify: () => ({
+            component: DataListWithInputsComponent,
+            data: {
+                viewModel: config.viewModel,
+                dataAdapter: config.dataAdapter,
+                tableHeaderComponent: config.tableHeaderComponent,
+            },
+        }),
     };
 }

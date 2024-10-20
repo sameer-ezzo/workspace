@@ -4,6 +4,7 @@ import { ActionDescriptor } from '@upupa/common';
 import { CollectorComponent, FormScheme } from '@upupa/dynamic-form';
 import { defaultSignupFormFields } from '../default-values';
 import { Condition } from '@noah-ark/expression-engine';
+import { FormControl } from '@angular/forms';
 
 @Component({
     selector: 'signup-form',
@@ -15,6 +16,7 @@ export class SignUpFormComponent {
     loading = signal<boolean>(false);
     public readonly auth: AuthService = inject(AuthService);
 
+    control = new FormControl();
     @Output() success = new EventEmitter();
     @Output() fail = new EventEmitter();
 

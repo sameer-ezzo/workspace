@@ -52,16 +52,17 @@ type ViewType = 'list' | 'grid';
     },
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
-    @Input() color: ThemePalette = 'accent';
-    @Input() dateFormat = 'dd MMM yyyy';
-    @Input() placeholder: string;
-    @Input() label: string;
-    @Input() hint: string;
-    @Input() readonly = false;
-    @Input() errorMessages: { [errorCode: string]: string } = {};
+    color = input<ThemePalette>('accent');
+    dateFormat = input('dd MMM yyyy');
+    placeholder = input('');
+    label = input('');
+    hint = input('');
+    readonly = input(false);
+    errorMessages = input<{ [errorCode: string]: string }>({});
 
-    @Input() hideSelectButton = false;
-    @Input() includeAccess = false;
+    hideSelectButton = input(false);
+    includeAccess = input(false);
+
     // @Input() base = this.uploadClient.baseOrigin;
     path = input<string, string>('', {
         transform: (v) => {
@@ -70,26 +71,26 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         },
     });
 
-    @Input() minAllowedFiles = 0;
-    @Input() maxAllowedFiles = 1;
-    @Input() minSize = 0;
-    @Input() maxFileSize = 1024 * 1024 * 10; //10 MB
-    @Input() maxSize = 1024 * 1024 * 10; //10 MB
+    minAllowedFiles = input(0);
+    maxAllowedFiles = input(1);
+    minSize = input(0);
+    maxFileSize = input(1024 * 1024 * 10); //10 MB
+    maxSize = input(1024 * 1024 * 10); //10 MB
 
     accept = input<string, string>('*.*', {
         transform: (v) => (v ?? '*.*').toLocaleLowerCase(),
     });
 
-    view = input.required<ViewType, ViewType>({
+    view = input('list', {
         transform: (v: ViewType) => v ?? 'list',
     });
-    @Input() fileSelector: 'browser' | 'system' = 'system';
+
+    fileSelector = input<'browser' | 'system'>('system');
     viewFiles = input(true);
 
-    @Input() fileValidator: (file: File) => Promise<Record<string, string>>;
-    @Input() enableDragDrop = false;
+    enableDragDrop = input(false);
 
-    @Input() actions = [
+    actions = input([
         {
             action: 'download',
             variant: 'icon',
@@ -102,7 +103,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             text: 'Remove',
             icon: 'delete',
         } as ActionDescriptor,
-    ];
+    ]);
     dragging = false;
     viewModel = signal<SelectInputFileVm[]>([]);
     private readonly destroyRef = inject(DestroyRef);
@@ -110,7 +111,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     @HostListener('blur', ['$event'])
     onBlur(event) {
         event.preventDefault();
-        this.control?.markAsTouched();
+        this.control()?.markAsTouched();
     }
 
     constructor(
@@ -151,24 +152,24 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     selectFile() {
-        const viewer = this.fileSelector;
+        const viewer = this.fileSelector();
         if (viewer === 'browser') this.showFileExplorer();
         else this.showFileDialog();
     }
 
-    uploading = false;
+    uploading = signal(false);
     files: File[];
     private async showFileDialog() {
-        const accept = this.accept ?? this.accept?.() ?? '';
+        const accept = this.accept() ?? '';
         const files = await openFileDialog(
             accept as string,
-            this.maxAllowedFiles !== 1
+            this.maxAllowedFiles() !== 1
         );
         this.files = Array.from(files);
         try {
-            this.uploading = true;
+            this.uploading.set(true);
             await this.uploadFileList(files);
-            this.uploading = false;
+            this.uploading.set(false);
         } catch (e) {
             console.error(e);
         }
@@ -177,7 +178,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     private async showFileExplorer() {
         // FileBrowserComponent depends on this component so we need to find a better solution to use it
 
-        if (this.value?.length >= this.maxAllowedFiles) return;
+        if (this.value?.length >= this.maxAllowedFiles()) return;
 
         // const dref = this.dialog.openDialog(FileBrowserComponent, {
         //     title: 'upload',
@@ -210,22 +211,19 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             .map(async (file, id) => {
                 const extensionErrors = this.validateFileExtensions(
                     file,
-                    this.accept as any
+                    this.accept()
                 );
                 const maxSizeErrors = this.validateFileMaxSize(
                     file,
-                    this.maxFileSize
+                    this.maxFileSize()
                 );
                 const minSizeErrors = this.validateFileMinSize(
                     file,
-                    this.minSize
+                    this.minSize()
                 );
-                const validatorError = this.fileValidator
-                    ? await this.fileValidator(file)
-                    : null;
+
                 const error = Object.assign(
                     {},
-                    validatorError,
                     extensionErrors,
                     maxSizeErrors,
                     minSizeErrors
@@ -289,7 +287,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                 error: (e) => {
                     fvm.error = { error: e.error.message };
                     fvm.uploadTask = null;
-                    this.control.markAsDirty();
+                    this.control().markAsDirty();
                     this.viewModel.set(this.viewModel().slice());
                 },
                 complete: () => {
@@ -312,7 +310,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     selectionChanged(e) {
         this.value = e;
         this._propagateChange();
-        this.control.markAsDirty();
+        this.control().markAsDirty();
     }
 
     viewerEventsHandler(e: FileEvent) {
@@ -342,7 +340,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         const i = this.value.indexOf(file);
         this.value.splice(i, 1);
         this.value = this.value.slice();
-        this.control.markAsDirty();
+        this.control().markAsDirty();
     }
 
     downloadFile(file: FileInfo) {

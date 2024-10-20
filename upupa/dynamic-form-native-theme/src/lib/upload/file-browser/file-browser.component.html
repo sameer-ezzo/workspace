@@ -40,10 +40,10 @@
 
 
 
-        <file-select #fileSelect [hideSelectButton]="true" [value]="this.files$ | async" [view]="view()"></file-select>
+        <file-select [control]="control()" #fileSelect [hideSelectButton]="true" [value]="this.files$ | async" [view]="view()"></file-select>
 
-        <mat-paginator [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length"
-            [pageSize]="adapter.page.pageSize" showFirstLastButtons></mat-paginator>
+        <mat-paginator [pageIndex]="adapter().page.pageIndex" [length]="adapter().page.length"
+            [pageSize]="adapter().page.pageSize" showFirstLastButtons></mat-paginator>
         }
         <!-- [disabled]="(loading$ | async) === true"
     [pageSizeOptions]="pageSizeOptions"

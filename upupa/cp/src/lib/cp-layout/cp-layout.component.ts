@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    computed,
     effect,
     ElementRef,
     inject,
@@ -13,7 +14,11 @@ import {
 import { LanguageService } from '@upupa/language';
 import { AuthService } from '@upupa/auth';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { MatDrawer, MatDrawerMode, MatSidenavModule } from '@angular/material/sidenav';
+import {
+    MatDrawer,
+    MatDrawerMode,
+    MatSidenavModule,
+} from '@angular/material/sidenav';
 import { SideBarItem, SideBarViewModel } from '../side-bar-group-item';
 import { CP_SIDE_BAR_ITEMS } from '../di.token';
 import {
@@ -28,7 +33,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthorizeModule } from '@upupa/authz';
 import { MatButtonModule } from '@angular/material/button';
-import { from, Observable, of } from 'rxjs';
+import { from, map, Observable, of } from 'rxjs';
 
 function sideBarItemsTransform(
     items:
@@ -36,9 +41,11 @@ function sideBarItemsTransform(
         | Promise<SideBarViewModel>
         | Observable<SideBarViewModel>
 ) {
+    if (!items) return of([]);
+    if ('subscribe' in items) return items;
+    if ('then' in items) return from(items);
     if (Array.isArray(items)) return of(items);
-    else if (items instanceof Promise) return from(items);
-    return items;
+    return of([items]);
 }
 @Component({
     selector: 'cp-layout',
@@ -61,13 +68,13 @@ function sideBarItemsTransform(
 })
 export class CpLayoutComponent {
     drawer = viewChild(MatDrawer);
-    sideBarItems = input<
-        Observable<SideBarViewModel>,
-        | SideBarViewModel
-        | Promise<SideBarViewModel>
-        | Observable<SideBarViewModel>
-    >(sideBarItemsTransform(inject(CP_SIDE_BAR_ITEMS)), {
-        transform: (items) => sideBarItemsTransform(items),
+    sidebar = input();
+    cp_side_bar_items = inject(CP_SIDE_BAR_ITEMS);
+    sideBarItems = computed(() => {
+        const sidebar = this.sidebar();
+        return sideBarItemsTransform(this.cp_side_bar_items).pipe(
+            map((items) => items.concat(sidebar ?? []))
+        );
     });
 
     getId = (g, i) => 'accordion_' + (g.name || i);
@@ -79,7 +86,7 @@ export class CpLayoutComponent {
 
     userMenuCommands = input<SideBarItem[]>();
     sideBarMode = input<MatDrawerMode>('side');
-    isSidebarOpened = input<false>();
+    isSidebarOpened = input(true);
 
     public languageService = inject(LanguageService);
     public breakPointObserver = inject(BreakpointObserver);

@@ -1,30 +1,17 @@
-@if (label) {
-    <fieldset>
-        <legend>{{ label }}</legend>
-        <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
-    </fieldset>
-} @else {
+@if (label()) {
+<fieldset>
+    <legend>{{ label() }}</legend>
     <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
+</fieldset>
+} @else {
+<ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
 }
 
 <ng-template #htmlEditorTemplate>
-    @if (ready()) {
-        <ckeditor
-            #ckEditor
-            [watchdog]="watchdog"
-            [config]="config"
-            [data]="model.data"
-            [disabled]="disabled || readonly"
-            [editorWatchdogConfig]="watchdogConfig"
-            (change)="htmlChanged($event)"
-            (blur)="markAsTouched()"
-            (ready)="onReady($event, ckEditor)"
-        ></ckeditor>
-    }
-    @if (hint?.length > 0) {
-        <mat-hint>{{ hint }}</mat-hint>
-    }
-    @for (error of control?.errors | keyvalue; track error) {
-        <mat-error>{{ errorMessages[error.key + ""] || error.key }} </mat-error>
+    <div #editor></div>
+    @if (hint()) {
+    <mat-hint>{{ hint() }}</mat-hint>
+    } @for (error of control()?.errors | keyvalue; track $index) {
+    <mat-error>{{ errorMessages()[error.key + ''] || error.key }} </mat-error>
     }
 </ng-template>

@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, forwardRef, input } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputDefaults } from '../../defaults';
 import { NumbersRangeComponent } from '../numbers-range/numbers-range.component';
@@ -18,7 +18,7 @@ import { NumbersRangeComponent } from '../numbers-range/numbers-range.component'
   ]
 })
 export class DateRangeComponent extends NumbersRangeComponent<Date> {
-	@Input() readonly = false;
+	readonly = input(false);
 
 }
 

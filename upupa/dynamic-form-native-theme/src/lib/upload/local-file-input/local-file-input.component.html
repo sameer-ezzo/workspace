@@ -1,32 +1,28 @@
-<div (blur)="control?.markAsTouched()">
-  @if(label){
-    <label>{{label}}</label>
+<div (blur)="control()?.markAsTouched()">
+    @if(label()){
+    <label>{{ label() }}</label>
     <br />
-  }
+    }
 
-  <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-
-    <button class="margin-5" type="button" (click)="selectFile()"> Select file </button>
-    <span style="width: 10px;"></span>
-    <div class="margin-5">
-      @if (!value) {
-        @if (placeholder) {
-          <div>{{placeholder}}</div>
-        }
-        @if (!placeholder) {
-          <div>No selected files</div>
-        }
-      }
-      @if(maxSize){
-        <small>Up to {{maxSize}}</small>
-        <!-- |fileSize -->
-      }
-      @if(hint){
-        <small>{{hint}}</small>
-      }
+    <div style="display: flex; align-items: center; margin-bottom: 1rem">
+        <button class="margin-5" type="button" (click)="selectFile()">
+            Select file
+        </button>
+        <span style="width: 10px"></span>
+        <div class="margin-5">
+            @if (!value) { @if (placeholder()) {
+            <div>{{ placeholder() }}</div>
+            } @if (!placeholder()) {
+            <div>No selected files</div>
+            } } @if(maxSize()){
+            <small>Up to {{ maxSize() }}</small>
+            <!-- |fileSize -->
+            } @if(hint()){
+            <small>{{ hint() }}</small>
+            }
+        </div>
     </div>
-  </div>
 </div>
-@for (error of control?.errors | keyvalue; track error) {
-  <span class="error">{{errorMessages[error.key+''] || error.key}}</span>
+@for (error of control()?.errors | keyvalue; track error) {
+<span class="error">{{ errorMessages()[error.key + ''] || error.key }}</span>
 }

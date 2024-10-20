@@ -29,7 +29,7 @@
         class="action {{ descriptor.name }}"
         [context]="{ source: component }"
         [tabIndex]="actions.length - i - 1"
-        (action)="onAction($event)"
+        (onClick)="onAction($event)"
         [descriptor]="descriptor"
       ></mat-btn>
     }

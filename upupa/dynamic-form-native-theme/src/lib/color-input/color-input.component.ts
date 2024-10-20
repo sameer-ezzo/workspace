@@ -1,7 +1,7 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, forwardRef, input } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
-import { InputDefaults } from '../defaults'
+import { InputDefaults } from '../defaults';
 
 @Component({
     selector: 'form-color-input-field',
@@ -13,25 +13,25 @@ import { InputDefaults } from '../defaults'
             useExisting: forwardRef(() => ColorInputComponent),
             multi: true,
         },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => ColorInputComponent), multi: true }
-    ]
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => ColorInputComponent),
+            multi: true,
+        },
+    ],
 })
 export class ColorInputComponent extends InputBaseComponent {
+    appearance = input(InputDefaults.appearance);
+    floatLabel = input(InputDefaults.floatLabel);
+    placeholder = input('');
 
-
-    @Input() appearance = InputDefaults.appearance;
-    @Input() floatLabel = InputDefaults.floatLabel;
-    @Input() placeholder: string;
-
-
-    @Input() label: string;
-    @Input() hint: string;
-    @Input() readonly = false;
-    @Input() errorMessages: { [errorCode: string]: string } = {};
-
+    label = input('');
+    hint = input('');
+    readonly = input(false);
+    errorMessages = input<{ [errorCode: string]: string }>({});
 
     inputChange(target: EventTarget, closable: { close: () => void } & any) {
-        this.value = (target as HTMLInputElement).value
-        closable.close()
+        this.value = (target as HTMLInputElement).value;
+        closable.close();
     }
 }

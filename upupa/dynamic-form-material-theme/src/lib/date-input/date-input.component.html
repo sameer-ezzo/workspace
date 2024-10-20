@@ -1,17 +1,35 @@
-<mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
-  @if (label && appearance === 'outline') {
-    <mat-label>{{label }}</mat-label>
-  }
-  <input matInput [matDatepicker]="picker" (dateChange)="change($event.value)" [value]="value" #input (blur)="onTouch()" [readonly]="readonly" [placeholder]="placeholder " [formControl]="control">
-  <mat-datepicker-toggle matSuffix touchUi [for]="picker"></mat-datepicker-toggle>
-  @if (hint?.length > 0) {
-    <mat-hint>{{hint }}</mat-hint>
-  }
-
-  @for (error of control?.errors | keyvalue; track error) {
-    <mat-error>{{errorMessages?.[error.key+''] || error.key }}
-    </mat-error>
-  }
-
+<mat-form-field
+    [appearance]="appearance()"
+    [floatLabel]="floatLabel()"
+    style="width: 100%"
+>
+    @if (label()) {
+    <mat-label>{{ label() }}</mat-label>
+    }
+    <input
+        matInput
+        [matDatepicker]="picker"
+        (dateChange)="change($event.value)"
+        [value]="value"
+        #input
+        (blur)="onTouch()"
+        [readonly]="readonly()"
+        [placeholder]="placeholder()"
+        [formControl]="control()"
+    />
+    <mat-datepicker-toggle
+        matSuffix
+        touchUi
+        [for]="picker"
+    ></mat-datepicker-toggle>
+    @if (hint()) {
+    <mat-hint>{{ hint() }}</mat-hint>
+    } @for (error of control().errors | keyvalue; track error) {
+    <mat-error>{{errorMessages()?.[error.key+''] || error.key }} </mat-error>
+    }
 </mat-form-field>
-<mat-datepicker #picker [startView]="startView" [touchUi]="touchUi"></mat-datepicker>
+<mat-datepicker
+    #picker
+    [startView]="startView()"
+    [touchUi]="touchUi()"
+></mat-datepicker>

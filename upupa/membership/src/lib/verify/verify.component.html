@@ -1,14 +1,29 @@
 <div class="account-page-wrapper">
-
     <div style="display: flex; align-items: center">
-        <h4 style="margin-inline-end: 1rem;">Use this   {{name  | titlecase}}</h4>
-        <change-user-prop [prop]="name" [(value)]="value"></change-user-prop>
+        <h4 style="margin-inline-end: 1rem">
+            Use this {{ name() | titlecase }}
+        </h4>
+        <!-- <change-user-prop
+            [prop]="name()"
+            [(value)]="value()"
+        ></change-user-prop> -->
     </div>
-    <collector #verifyCollector [submitBtn]="null" [fields]="form" [design]="design" [value]="model"
-        (valueChange)="formValueChange($event)" collectStyle="linear">
+    <!-- <collector #verifyCollector [submitBtn]="null" [fields]="form" [design]="design" [value]="model"
+        (valueChange)="formValueChange($event)" collectStyle="linear"> 
     </collector>
-    <div style="display: flex; justify-content: space-between;">
-        <button mat-raised-button color="primary" (click)="verify()">verify </button>
-        <button type="button" mat-button color="accent" (click)="resendCode()" [disabled]="loading">Resend Code</button>
+    -->
+    <div style="display: flex; justify-content: space-between">
+        <button mat-raised-button color="primary" (click)="verify()">
+            verify
+        </button>
+        <button
+            type="button"
+            mat-button
+            color="accent"
+            (click)="resendCode()"
+            [disabled]="loading"
+        >
+            Resend Code
+        </button>
     </div>
 </div>

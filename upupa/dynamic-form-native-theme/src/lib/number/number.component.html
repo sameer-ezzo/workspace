@@ -1,8 +1,18 @@
-@if (label) {
-  <label>{{label }}</label>
+@if (label()) {
+<label>{{ label() }}</label>
 }
-<input matInput #input type="number" [value]="value" (input)="value = $event.target?.['value']; _propagateChange(); control.markAsDirty()" (blur)="onTouch();" [readonly]="readonly" [placeholder]="placeholder " [formControl]="control" [required]="required">
-@for (error of control?.errors | keyvalue; track error) {
-  <span class="error">{{errorMessages?.[error.key+''] || error.key |
-  text}}</span>
+<input
+    matInput
+    #input
+    type="number"
+    [value]="value"
+    (input)="value = $event.target?.['value']; _propagateChange(); control().markAsDirty()"
+    (blur)="onTouch()"
+    [readonly]="readonly()"
+    [placeholder]="placeholder()"
+    [formControl]="control()"
+    [required]="required()"
+/>
+@for (error of control()?.errors | keyvalue; track error) {
+<span class="error">{{errorMessages()?.[error.key+''] || error.key}}</span>
 }

@@ -56,9 +56,6 @@ export const resolveDynamicFormOptionsFor = (
         Reflect.getMetadata(formSchemeMetadataKey, target)
     );
 
-export const resolveFormValueFactoryOf = (target: any) =>
-    resolveDynamicFormOptionsFor(target)?.initialValueFactory;
-
 export const resolveFormSchemeOf = (target: any) =>
     resolveDynamicFormOptionsFor(target)?.fields;
 
@@ -238,11 +235,6 @@ export function formScheme(options?: DynamicFormOptions) {
         };
         if ((opts.name || '').trim().length === 0)
             opts.name = target.name.replace(/\//g, '-').toLowerCase();
-        if (!opts.initialValueFactory) {
-            const args = Reflect.getMetadata('design:paramtypes', target) || [];
-            opts.initialValueFactory = () =>
-                Promise.resolve(new target(...args));
-        }
 
         setDynamicFormOptionsMetadataFor(target.constructor, opts);
         const translationFieldset = makeLocalesInputs(opts);
