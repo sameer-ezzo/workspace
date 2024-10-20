@@ -1,20 +1,6 @@
-import {
-    Component,
-    Input,
-    Output,
-    EventEmitter,
-    OnChanges,
-    SimpleChanges,
-    ViewChild,
-    inject,
-    Renderer2,
-    ElementRef,
-    output,
-    input,
-    computed,
-} from '@angular/core';
+import { Component, output, input, computed } from '@angular/core';
 
-import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthorizeModule } from '@upupa/authz';

@@ -8,7 +8,6 @@ import {
     SimpleChanges,
     AfterViewInit,
     reflectComponentType,
-    HostBinding,
     Input,
     ViewEncapsulation,
     HostListener,
@@ -16,12 +15,9 @@ import {
     DestroyRef,
     PLATFORM_ID,
     signal,
-    WritableSignal,
-    Type,
 } from '@angular/core';
 import {
     MatDialogRef,
-    MatDialogState,
     MAT_DIALOG_DATA,
     MatDialogModule,
 } from '@angular/material/dialog';
@@ -35,11 +31,7 @@ import { fromEvent } from 'rxjs';
 import { debounceTime, startWith, takeUntil } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
-import {
-    ActionDescriptor,
-    ActionEvent,
-    ActionsDescriptor,
-} from '@upupa/common';
+import { ActionEvent, ActionsDescriptor } from '@upupa/common';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
