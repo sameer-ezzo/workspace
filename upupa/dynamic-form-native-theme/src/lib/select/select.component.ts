@@ -128,10 +128,6 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     //   }
 
     // }
-    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        super.ngOnChanges(changes);
-        console.log('SelectComponent.ngOnChanges', changes);
-    }
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Input() actions: ActionDescriptor[] = [];
     onAction(event: any, action: ActionDescriptor) {
