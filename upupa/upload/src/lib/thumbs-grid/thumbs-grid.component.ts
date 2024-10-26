@@ -43,7 +43,6 @@ export class ThumbsGridComponent
     extends ValueDataComponentBase<FileInfo>
     implements OnChanges, OnInit, OnDestroy
 {
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     thumbs = input<FileInfo[]>([]);
     changed = output<Partial<FileInfo> | Partial<FileInfo>[]>();
@@ -96,6 +95,6 @@ export class ThumbsGridComponent
     }
 
     apply() {
-        this.changed.emit(this.value);
+        this.changed.emit(this.value());
     }
 }

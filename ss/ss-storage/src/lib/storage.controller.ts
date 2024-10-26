@@ -294,10 +294,7 @@ export class StorageController {
         const fname = Path.basename(msg.path);
 
         const ext = Path.extname(msg.path);
-        const decodedPath = decodeURIComponent(msg.path)
-        .split('/')
-        .filter((x) => x.trim().length)
-        .join('/');
+        const decodedPath = decodeURIComponent(msg.path);
         
         const _id = fname.substring(0, fname.length - ext.length);
         
@@ -306,13 +303,9 @@ export class StorageController {
         });
         const file = files.find((f) => f._id === _id);
 
-        if (!file) {
-            logger.error(`File not found: ${msg.path}`);
-            throw new HttpException('File not found', HttpStatus.NOT_FOUND);
-        }
 
-        const fullPath = join(__dirname, file!.path);
-        if (!file || !fs.existsSync(fullPath))
+        const fullPath = join(__dirname, file ? file!.path : msg.path);
+        if (!file && !fs.existsSync(fullPath))
             throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND);
 
         if (msg.query!.view === '1') {
@@ -330,7 +323,7 @@ export class StorageController {
                 'Access-Control-Expose-Headers',
                 'Content-Disposition'
             );
-            res.download(fullPath, file!.originalname);
+            res.download(fullPath, file ? file!.originalname : _id);
         }
     }
 }

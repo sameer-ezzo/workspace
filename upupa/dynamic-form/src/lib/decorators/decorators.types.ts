@@ -46,6 +46,7 @@ export type BaseFormFieldOptions = {
     validations?: Validator[];
 };
 export type VisibleFormFieldOptions = BaseFormFieldOptions & {
+    name?: string;
     label?: string;
     placeholder?: string;
     text?: string;
@@ -54,6 +55,8 @@ export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     disabled?: boolean;
     readonly?: boolean;
     hidden?: boolean;
+
+    localize?: boolean;
 };
 export type FileInputOptions = {
     includeAccess?: boolean;
@@ -85,51 +88,47 @@ export type TableInputOptions = {
     };
 };
 export type FormFieldOptions =
-    | ({ from: any } & VisibleFormFieldOptions)
-    | (
-          | ({ input: 'fieldset' } & VisibleFormFieldOptions &
-                BaseFormFieldOptions)
-          | ({ input: 'hidden' } & BaseFormFieldOptions)
-          | ({ input: 'text' } & VisibleFormFieldOptions & TextFieldOptions)
-          | ({ input: 'textarea' } & VisibleFormFieldOptions &
-                TextFieldOptions & {
-                    cdkAutosizeMinRows?: number;
-                    cdkAutosizeMaxRows?: number;
-                    cdkTextareaAutosize?: boolean;
+    | ({ input: 'hidden' } & BaseFormFieldOptions)
+    | (VisibleFormFieldOptions &
+          (
+              | ({ input: 'fieldset' } & BaseFormFieldOptions)
+              | ({ input: 'text' } & TextFieldOptions)
+              | ({ input: 'textarea' } & TextFieldOptions & {
+                        cdkAutosizeMinRows?: number;
+                        cdkAutosizeMaxRows?: number;
+                        cdkTextareaAutosize?: boolean;
+                    })
+              | ({ input: 'phone' } & TextFieldOptions)
+              | ({ input: 'password' } & TextFieldOptions & {
+                        showConfirmPasswordInput?: boolean;
+                        showPassword?: boolean;
+                        canGenerateRandomPassword?: boolean;
+                        passwordStrength?: PasswordStrength;
+                        autocomplete?: 'current-password' | 'new-password';
+                    })
+              | ({ input: 'number' } & NumberFieldOptions)
+              | ({ input: 'switch' } & BooleanFieldOptions & {
+                        template?: 'checkbox' | 'toggle';
+                        renderer?: 'markdown' | 'html' | 'none';
+                    })
+              | ({ input: 'checks' } & ChoicesFieldOptions)
+              | ({ input: 'radios' } & ChoicesFieldOptions)
+              | ({ input: 'select' } & AdapterFieldOptions)
+              | { input: 'date' }
+              | ({ input: 'file' } & FileInputOptions)
+              | ({ input: 'html' } & {
+                    uploadPath: string;
+                    editorType: 'decoupled' | 'classic';
                 })
-          | ({ input: 'phone' } & VisibleFormFieldOptions & TextFieldOptions)
-          | ({ input: 'password' } & VisibleFormFieldOptions &
-                TextFieldOptions & {
-                    showConfirmPasswordInput?: boolean;
-                    showPassword?: boolean;
-                    canGenerateRandomPassword?: boolean;
-                    passwordStrength?: PasswordStrength;
-                    autocomplete?: 'current-password' | 'new-password';
-                })
-          | ({ input: 'number' } & VisibleFormFieldOptions & NumberFieldOptions)
-          | ({ input: 'switch' } & VisibleFormFieldOptions &
-                BooleanFieldOptions & {
-                    template?: 'checkbox' | 'toggle';
-                    renderer?: 'markdown' | 'html' | 'none';
-                })
-          | ({ input: 'checks' } & ChoicesFieldOptions)
-          | ({ input: 'radios' } & ChoicesFieldOptions)
-          | ({ input: 'select' } & VisibleFormFieldOptions &
-                AdapterFieldOptions)
-          | ({ input: 'date' } & VisibleFormFieldOptions)
-          | ({ input: 'file' } & VisibleFormFieldOptions & FileInputOptions)
-          | ({ input: 'html' } & VisibleFormFieldOptions)
-          | ({ input: 'table' } & VisibleFormFieldOptions & TableInputOptions)
-          | ({ input: 'chips' } & VisibleFormFieldOptions &
-                AdapterFieldOptions & {
+              | ({ input: 'table' } & TableInputOptions)
+              | ({ input: 'chips' } & {
                     parentPath?: string;
                     visible?: boolean;
                     selectable?: boolean;
                     removable?: boolean;
                     separatorKeysCodes?: string[];
                 })
-          | ({ input: string } & Partial<
-                VisibleFormFieldOptions &
+              | ({ input: string } & Partial<
                     AdapterFieldOptions & { inputs: Record<string, any> }
-            >)
-      );
+                >)
+          ));

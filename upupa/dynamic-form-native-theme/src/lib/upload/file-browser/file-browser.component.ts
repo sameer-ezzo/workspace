@@ -8,6 +8,7 @@ import {
     signal,
     inject,
     input,
+    model,
 } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -76,7 +77,7 @@ export class FileBrowserComponent
         'meta',
     ] as (keyof FileInfo)[];
 
-    override adapter = input(
+    override adapter = model(
         new DataAdapter<FileInfo>(
             new ServerDataSource(this.data, '/storage', this.valueProperty),
             this.keyProperty,

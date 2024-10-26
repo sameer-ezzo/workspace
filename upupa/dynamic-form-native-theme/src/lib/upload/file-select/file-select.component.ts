@@ -3,6 +3,7 @@ import {
     DestroyRef,
     HostListener,
     Input,
+    effect,
     forwardRef,
     inject,
     input,
@@ -58,7 +59,6 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     hideSelectButton = input(false);
     includeAccess = input(false);
@@ -111,7 +111,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     @HostListener('blur', ['$event'])
     onBlur(event) {
         event.preventDefault();
-        this.control()?.markAsTouched();
+        this.markAsTouched();
     }
 
     constructor(
@@ -124,17 +124,16 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     ) {
         super();
         // this.base ??= uploadClient.baseUrl
-
-        this.value1$
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((v) => {
-                const val = (v ?? []).map(
+        effect(
+            () => {
+                const val = (this.value() ?? []).map(
                     (f, id) =>
                         ({ id, file: f, error: null } as SelectInputFileVm)
                 );
                 this.viewModel.set(val);
-            });
-
+            },
+            { allowSignalWrites: true }
+        );
         this.clipboard.paste$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(async (event) => {
@@ -287,7 +286,6 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                 error: (e) => {
                     fvm.error = { error: e.error.message };
                     fvm.uploadTask = null;
-                    this.control().markAsDirty();
                     this.viewModel.set(this.viewModel().slice());
                 },
                 complete: () => {
@@ -297,10 +295,10 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                         this.viewModel().filter((v) => v.uploadTask).length ===
                         0
                     )
-                        this.value = [
-                            ...(this.value ?? []),
+                        this.value.set([
+                            ...(this.value() ?? []),
                             fvm.file as FileInfo,
-                        ];
+                        ]);
                 },
             });
 
@@ -310,7 +308,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     selectionChanged(e) {
         this.value = e;
         this._propagateChange();
-        this.control().markAsDirty();
+        this.markAsTouched();
     }
 
     viewerEventsHandler(e: FileEvent) {
@@ -337,10 +335,12 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     removeFile(file: FileInfo) {
-        const i = this.value.indexOf(file);
-        this.value.splice(i, 1);
-        this.value = this.value.slice();
-        this.control().markAsDirty();
+        const v = this.value();
+        const i = v.indexOf(file);
+        v.splice(i, 1);
+        this.value.set(v);
+        this._propagateChange();
+        this.markAsTouched();
     }
 
     downloadFile(file: FileInfo) {

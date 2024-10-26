@@ -1,11 +1,11 @@
 import {
     Component,
     DestroyRef,
+    Directive,
     EventEmitter,
     Input,
     Output,
     SimpleChanges,
-    computed,
     inject,
     input,
     model,
@@ -14,27 +14,11 @@ import {
 } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { Subscription, BehaviorSubject, Subject, Observable, of } from 'rxjs';
-import {
-    debounceTime,
-    distinctUntilChanged,
-    map,
-    shareReplay,
-    startWith,
-    switchMap,
-    takeUntil,
-    tap,
-} from 'rxjs/operators';
-import {
-    ClientDataSource,
-    DataAdapter,
-    FilterDescriptor,
-    Key,
-    NormalizedItem,
-} from '@upupa/data';
+import { Subscription, BehaviorSubject, Observable } from 'rxjs';
+import { shareReplay, switchMap } from 'rxjs/operators';
+import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
 import { SelectionModel } from '@angular/cdk/collections';
 
-import { FormControl } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -52,7 +36,7 @@ export class DataComponentBase<T = any> {
     minAllowed = input(0);
     maxAllowed = input(null);
 
-    adapter = input.required<DataAdapter<T>>();
+    adapter = model.required<DataAdapter<T>>();
     normalized$sub: Subscription;
     filterDebounceTime = input(300);
 

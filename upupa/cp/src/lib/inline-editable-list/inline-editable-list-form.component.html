@@ -1,6 +1,13 @@
 @if (value && fields) {
-    <dynamic-form #inlineForm [value]="value" [fields]="fields"></dynamic-form>
-    <div>
-        <button mat-button [disabled]="inlineForm?.formElement().invalid" color="primary" (click)="save(inlineForm?.value)">Save</button>
-    </div>
+<dynamic-form #inlineForm [value]="value" [fields]="fields"></dynamic-form>
+<div>
+    <button
+        mat-button
+        [disabled]="inlineForm.invalid"
+        color="primary"
+        (click)="save(inlineForm?.value)"
+    >
+        Save
+    </button>
+</div>
 }

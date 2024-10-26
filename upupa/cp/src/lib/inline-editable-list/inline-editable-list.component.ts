@@ -50,11 +50,6 @@ import { InputDefaults } from '@upupa/dynamic-form-native-theme';
             useExisting: forwardRef(() => InlineEditableListComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => InlineEditableListComponent),
-            multi: true,
-        },
     ],
 })
 export class InlineEditableListComponent
@@ -132,9 +127,9 @@ export class InlineEditableListComponent
             }
         }
 
-        this.value = (value ?? []).slice();
-        this.control().setValue(this.value);
-        this.clientDataSource.all = this.value as any[];
+        this.value.set((value ?? []).slice());
+
+        this.clientDataSource.all = this.value() as any[];
     }
 }
 

@@ -56,16 +56,15 @@ export class ChangeUserPropComponent<T = any> extends MatInputComponent {
             });
     }
 
-    override ngOnChanges(changes: SimpleChanges) {
-        super.ngOnChanges(changes);
+    ngOnChanges(changes: SimpleChanges) {
         this._generateFields(this.propToBeChanged());
     }
     valueChanged(v: any) {
-        this._value = v[this.propToBeChanged()];
+        this.value.set(v[this.propToBeChanged()]);
     }
 
     revert() {
-        this._value = this.user[this.propToBeChanged()];
+        this.value.set(this.user[this.propToBeChanged()]);
     }
     private _generateFields(propToBeChanged: string) {
         if (!this.propToBeChanged)
@@ -123,17 +122,17 @@ export class ChangeUserPropComponent<T = any> extends MatInputComponent {
         try {
             const e = {
                 oldValue: this.user[this.propToBeChanged()],
-                newValue: this.value,
+                newValue: this.value(),
             };
             await this.data.patch(`/user/${this.user.sub}`, [
                 {
                     op: 'replace',
                     path: '/' + this.propToBeChanged(),
-                    value: this.value,
+                    value: this.value(),
                 },
             ]);
             await this.auth.refresh();
-            this.value = this.user[this.propToBeChanged()];
+            this.value.set(this.user[this.propToBeChanged()]);
 
             this.changed.emit(e);
         } catch (error) {
@@ -141,7 +140,6 @@ export class ChangeUserPropComponent<T = any> extends MatInputComponent {
                 const e = error.error;
                 if (e.message.indexOf('duplicate key') > -1) {
                     this.snack.openFailed('duplicate-phone');
-                    this.control()?.setErrors({ 'duplicate-phone': true });
                 }
             } else {
                 this.snack.openFailed('not-saved');

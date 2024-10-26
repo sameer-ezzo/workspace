@@ -1,29 +1,21 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
-    @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
-    }
-    <textarea
-        matInput
-        #input
-        [value]="value"
-        (input)="inputChange($event.target)"
-        (blur)="onTouch()"
-        [readonly]="readonly()"
-        [placeholder]="placeholder()"
-        [formControl]="control()"
-        #autosize="cdkTextareaAutosize"
-        [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
-        [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
-        [cdkTextareaAutosize]="cdkTextareaAutosize()"
-    >
-    </textarea>
-    @if (hint()) {
-    <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control().errors | keyvalue; track error) {
-    <mat-error>{{ errorMessages()[error.key + ''] || error.key }}</mat-error>
-    }
-</mat-form-field>
+@if (label()) {
+<label>{{ label() }}</label>
+}
+
+<textarea
+    matInput
+    #input
+    [value]="value()"
+    (input)="onInput($event, $event.target?.['value']);"
+    (blur)="markAsTouched()"
+    [readonly]="readonly()"
+    [required]="required()"
+    [placeholder]="placeholder()"
+    #autosize="cdkTextareaAutosize"
+    [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
+    [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
+    [cdkTextareaAutosize]="cdkTextareaAutosize()"
+></textarea>
+@for (error of errorMessages() | keyvalue; track error.key) {
+<span class="error">{{ error.key }}</span>
+}

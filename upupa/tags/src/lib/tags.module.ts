@@ -20,7 +20,6 @@ const declarations = [TagsComponent, TagsChipsInputComponent, TagFormComponent];
   declarations,
   exports: [...declarations, MatDialogModule], imports: [CommonModule,
     MatDialogModule,
-    DataTableModule,
     FormsModule,
     ReactiveFormsModule,
     TranslationModule,

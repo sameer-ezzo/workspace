@@ -3,7 +3,7 @@
     (ngSubmit)="onSubmit($event)"
     [formGroup]="addressFormGroup"
 >
-    <input type="hidden" [formControl]="control()" />
+    <input type="hidden" [value]="value()" />
     @if (label()) {
     <fieldset>
         <legend>{{ label() }}</legend>
@@ -19,7 +19,7 @@
                 [adapter]="countryAdapter"
                 placeholder="Country"
                 label="country"
-                [control]="getControl('country')"
+                formArrayName="country"
             ></form-select>
             @if (getControl('state')) {
             <span style="width: 2rem"></span>
@@ -145,7 +145,7 @@
                     [adapter]="countryAdapter"
                     placeholder="Country"
                     label="Country"
-                    [control]="getControl('country')"
+                    formArrayName="country"
                 ></form-select>
                 @if (getControl('state')) {
                 <span style="width: 2rem"></span>

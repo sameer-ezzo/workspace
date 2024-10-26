@@ -1,4 +1,4 @@
-<div (blur)="control()?.markAsTouched()">
+<div (blur)="markAsTouched()">
     @if(label()){
     <label>{{ label() }}</label>
     <br />
@@ -23,6 +23,6 @@
         </div>
     </div>
 </div>
-@for (error of control()?.errors | keyvalue; track error) {
-<span class="error">{{ errorMessages()[error.key + ''] || error.key }}</span>
+@for (error of errorMessages() | keyvalue; track error.key) {
+<span class="error">{{ error.key }}</span>
 }

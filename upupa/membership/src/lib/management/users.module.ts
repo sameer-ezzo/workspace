@@ -25,12 +25,14 @@ import { RoleFormComponent } from './role-form/role-form.component';
 import { UserManagementRoutingModule } from './users-management-routing.module';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 import { AdminUserPasswordRestComponent } from './admin-userpwd-reset/admin-userpwd-reset.component';
 import { EditUserRolesComponent } from './edit-user-roles/edit-user-roles.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
 
 const defaultOptions = new UsersManagementOptions();
 
@@ -53,30 +55,36 @@ const imports = [
     UtilsModule,
     DataTableModule,
     DataModule,
-    DynamicFormModule]
-const declarations = [UsersComponent,
-    EditUserRolesComponent, UsersListComponent,
-    AdminResetPasswordComponent, AdminUserPasswordRestComponent,
-    UserFormComponent, ChangePasswordComponent,
-    RolesListComponent, RoleFormComponent
+    DynamicFormModule,
+];
+const declarations = [
+    UsersComponent,
+    EditUserRolesComponent,
+    UsersListComponent,
+    AdminResetPasswordComponent,
+    AdminUserPasswordRestComponent,
+    UserFormComponent,
+    ChangePasswordComponent,
+    RolesListComponent,
+    RoleFormComponent,
 ];
 @NgModule({
     declarations: declarations,
     imports: imports,
     providers: [
         provideHttpClient(withInterceptorsFromDi()),
-        { provide: USERS_MANAGEMENT_OPTIONS, useValue: defaultOptions }
+        { provide: USERS_MANAGEMENT_OPTIONS, useValue: defaultOptions },
     ],
-    exports: [...declarations]
+    exports: [...declarations],
 })
 export class UsersManagementModule {
-    public static forRoot(options: Partial<UsersManagementOptions> = defaultOptions):
-        ModuleWithProviders<UsersManagementModule> {
-
-        const ops = { ...defaultOptions, ...options }
+    public static forRoot(
+        options: Partial<UsersManagementOptions> = defaultOptions
+    ): ModuleWithProviders<UsersManagementModule> {
+        const ops = { ...defaultOptions, ...options };
         return {
             ngModule: UsersManagementModule,
-            providers: [{ provide: USERS_MANAGEMENT_OPTIONS, useValue: ops }]
+            providers: [{ provide: USERS_MANAGEMENT_OPTIONS, useValue: ops }],
         };
     }
 }

@@ -16,6 +16,7 @@ import {
     HostListener,
     inject,
     input,
+    output,
 } from '@angular/core';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -75,7 +76,10 @@ export class DataTableComponent<T = any>
 
     stickyHeader = input(false);
 
-    name = input(`${Date.now()}`);
+    name = input<string, string>(`table_${Date.now()}`, {
+        alias: 'tableName',
+        transform: (v) => (v ? v : `table_${Date.now()}`),
+    });
     pageSizeOptions = input<number[]>([10, 25, 50, 100, 200]);
 
     rowClass = input<(item: NormalizedItem<T>) => string>((item) =>
@@ -87,8 +91,8 @@ export class DataTableComponent<T = any>
     columns = input<ColumnsDescriptor | 'auto'>('auto'); //eventually columns are the container of all and it's a dictionary
 
     expanded: { [key: string]: WritableSignal<boolean> } = {};
-    @Input() expandable: 'single' | 'multi' | 'none' = 'none';
-    @Input() expandableTemplate: any = null;
+    expandable = input<'single' | 'multi' | 'none'>('none');
+    expandableTemplate = input(null);
     toggleExpand(row, index) {
         if (!this.expanded[row.key]) this.expanded[row.key] = signal(false);
         const v = this.expanded[row.key]?.();
@@ -96,7 +100,7 @@ export class DataTableComponent<T = any>
     }
 
     handset: boolean;
-    @Output() selectionChange = new EventEmitter<NormalizedItem<T>[]>();
+    selectionChange = output<NormalizedItem<T>[]>();
     override ngOnInit() {
         super.ngOnInit();
 

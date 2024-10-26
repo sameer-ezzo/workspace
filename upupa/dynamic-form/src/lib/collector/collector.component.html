@@ -14,7 +14,7 @@
         [fields]="fields"
         [(value)]="value"
         [conditions]="conditions"
-        [name]="name()"
+        [formName]="name()"
         (submit)="onSubmit()"
         (valueChange)="_checkPageInvalid(activePage); _propagateChange()"
     >
@@ -22,16 +22,16 @@
 </div>
 <div class="form-actions">
     @if (nextBtn && canGoNext()) {
-    <mat-btn [descriptor]="nextBtn" (action)="next()"></mat-btn>
+    <mat-btn [descriptor]="nextBtn" (onClick)="next()"></mat-btn>
     } @if (prevBtn && canGoPrev()) {
-    <mat-btn [descriptor]="prevBtn" (action)="prev()"></mat-btn>
+    <mat-btn [descriptor]="prevBtn" (onClick)="prev()"></mat-btn>
     } @if (submitBtn) {
     <mat-btn
         [disabled]="_pageInvalid || loading"
         [descriptor]="submitBtn"
-        (action)="onSubmit()"
+        (onClick)="onSubmit()"
     ></mat-btn>
     } @for (act of actions; track act) {
-    <mat-btn [descriptor]="act" (action)="actionClicked(act)"></mat-btn>
+    <mat-btn [descriptor]="act" (onClick)="actionClicked(act)"></mat-btn>
     }
 </div>

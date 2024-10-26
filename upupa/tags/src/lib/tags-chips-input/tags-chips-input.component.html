@@ -1,11 +1,9 @@
-@if(control(); as ctrl){
 <mat-form-field
-    [class.ng-dirty]="ctrl.dirty"
     [appearance]="appearance()"
     [floatLabel]="floatLabel()"
     style="width: 100%"
 >
-    <input type="hidden" [formControl]="ctrl" />
+    <input type="hidden" [value]="value()" />
     @if (label()) {
     <mat-label>{{ label() }}</mat-label>
     }
@@ -36,7 +34,7 @@
         type="text"
         matInput
         [required]="required()"
-        (blur)="openedChange(false); onTouch()"
+        (blur)="openedChange(false); markAsTouched()"
         (input)="filterModel.set(filterInput.value); updateFilter()"
         [placeholder]="placeholder()"
         (matChipInputTokenEnd)="onAdding($event.value)"
@@ -60,8 +58,7 @@
         </mat-option>
         } }
     </mat-autocomplete>
-    @for (error of ctrl.errors|keyvalue; track error.key) {
+    @for (error of errorMessages()|keyvalue; track error.key) {
     <mat-error>{{ getErrorMessage(error) }} </mat-error>
     }
 </mat-form-field>
-}

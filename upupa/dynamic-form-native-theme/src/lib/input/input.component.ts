@@ -43,10 +43,4 @@ export class InputComponent extends InputBaseComponent {
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
-
-    override ngOnChanges(changes: SimpleChanges): void {
-        super.ngOnChanges(changes);
-        this.setDisabledState(this.readonly() === true);
-    }
 }

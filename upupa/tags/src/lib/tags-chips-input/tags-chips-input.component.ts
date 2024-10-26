@@ -1,10 +1,9 @@
-import { Component, effect, inject, input } from '@angular/core';
+import { Component, effect, inject, input, model } from '@angular/core';
 import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
 import { ChipsComponent } from '@upupa/dynamic-form-native-theme';
 import { Tag } from '../tag.model';
 import { TagsService } from '../tags.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { FormControl } from '@angular/forms';
 
 @Component({
     selector: 'tags-chips-input',
@@ -15,7 +14,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
     readonly = input<boolean>(false);
     private readonly tagsService = inject(TagsService);
     private readonly tagsDs = new ClientDataSource([]);
-    override readonly adapter = input(
+    override readonly adapter = model(
         new DataAdapter<Tag>(this.tagsDs, '_id', 'name', '_id', undefined, {
             terms: [
                 { field: '_id', type: 'like' },
@@ -52,9 +51,9 @@ export class TagsChipsInputComponent extends ChipsComponent {
     };
 
     override remove(item: NormalizedItem): void {
-        this.value = this.value.filter((v) => v !== item.key);
-        this.control().markAllAsTouched();
-        this.control().markAsDirty();
+        this.value.set(this.value().filter((v) => v !== item.key));
+        this.markAsTouched();
+        this._propagateChange();
     }
 
     optionSelected(event: MatAutocompleteSelectedEvent) {
@@ -76,9 +75,10 @@ export class TagsChipsInputComponent extends ChipsComponent {
             );
             nTag = this.adapter().normalize(tag);
         }
-        this.value = [...((this.value ?? []) as string[]), nTag.value];
+        this.value.set([...((this.value ?? []) as string[]), nTag.value]);
+        this.markAsTouched();
+        this._propagateChange();
         this._clearFilter();
-        this.control().markAsDirty();
         this._refresh();
     }
 }

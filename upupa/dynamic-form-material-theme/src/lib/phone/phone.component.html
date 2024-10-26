@@ -1,4 +1,4 @@
-<input type="hidden" [formControl]="control()" />
+<input type="hidden" [value]="value()" />
 <mat-form-field
     [appearance]="appearance()"
     [floatLabel]="floatLabel()"
@@ -21,7 +21,7 @@
         <button
             dir="ltr"
             matPrefix
-            [disabled]="control().disabled || readonly()"
+            [disabled]="disabled() || readonly()"
             id="codes-trigger"
             style="
                 border: none;
@@ -68,11 +68,12 @@
             #input
             type="tel"
             [placeholder]="placeholder()"
-            [value]="number"
-            (input)="onNumberInputChange($event.target?.['value'])"
-            (blur)="onTouch()"
+            [value]="number()"
+            [value]="value()"
+            (input)="onNumberInputChange($event, $event.target?.['value'])"
+            (blur)="markAsTouched()"
             [readonly]="readonly()"
-            [disabled]="control().disabled"
+            [disabled]="disabled()"
             [placeholder]="placeholder()"
             [required]="required()"
         />
@@ -144,9 +145,7 @@
         >
             @for (c of countriesService.filtered; track c) {
             <div
-                (click)="
-                    country = c; control().markAsDirty(); toggleCodes(false)
-                "
+                (click)="country = c; toggleCodes(false)"
                 class="phone-item"
                 [class.active]="
                     countriesService.filtered.length !=
@@ -173,10 +172,6 @@
         </div>
     </div>
 </div>
-@if (control().touched) { @for (error of control().errors | keyvalue; track
-error) {
-<mat-error
-    style="margin-top: -25px"
-    >{{errorMessages()?.[error.key+''] || error.key }}</mat-error
->
-} }
+@for (error of errorMessages() | keyvalue; track error.key) {
+<mat-error style="margin-top: -25px">{{ error.key }}</mat-error>
+}

@@ -46,7 +46,7 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
     label = input('');
     placeholder = input('');
     hint = input('');
-    errorMessages = input<{ [errorCode: string]: string }>({});
+   
 
     floor = input(0);
     ceiling = input(100);
@@ -106,13 +106,13 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
 
     // };
 
-    override _updateViewModel() {
-        if (this._value) {
-            this.from = this._value.from;
-            this.to = this._value.to;
-        } else {
-            this.from = undefined;
-            this.to = undefined;
-        }
-    }
+    // override _updateViewModel() {
+    //     if (this._value) {
+    //         this.from = this._value.from;
+    //         this.to = this._value.to;
+    //     } else {
+    //         this.from = undefined;
+    //         this.to = undefined;
+    //     }
+    // }
 }

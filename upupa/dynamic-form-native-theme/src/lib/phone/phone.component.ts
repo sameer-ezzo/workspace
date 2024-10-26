@@ -43,17 +43,9 @@ export type PhoneNumber = {
             useExisting: forwardRef(() => PhoneInputComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => PhoneInputComponent),
-            multi: true,
-        },
     ],
 })
-export class PhoneInputComponent
-    extends InputBaseComponent
-    implements Validator
-{
+export class PhoneInputComponent extends InputBaseComponent {
     inlineError = true;
 
     numberInput = viewChild<ElementRef>('input');
@@ -65,7 +57,6 @@ export class PhoneInputComponent
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     countriesService = new FilterService(countries, [
         'name',
@@ -77,7 +68,7 @@ export class PhoneInputComponent
 
     override _updateViewModel() {
         if (this.value) {
-            const res = this._getNumber(this.value);
+            const res = this._getNumber(this.value());
             if (!res) return;
             if (res.formatted) {
                 this.number.set(res.number);
@@ -93,10 +84,6 @@ export class PhoneInputComponent
     filterClick(e) {
         e.preventDefault();
         e.stopPropagation();
-    }
-
-    override validate(control: AbstractControl): ValidationErrors {
-        return control.value.startsWith('+') ? { 'invalid-no': true } : null;
     }
 
     onValidationChange: any = () => {};
@@ -115,14 +102,14 @@ export class PhoneInputComponent
                 this.country.phone_code.toUpperCase()
             );
         } catch (e) {
-            this.control().setErrors({ 'invalid-no': true });
+            // this.control().setErrors({ 'invalid-no': true });
             return null;
         }
 
         const isValidNo = this.phoneNumberUtil.isValidNumber(ph_no);
 
         if (!isValidNo) {
-            this.control().setErrors({ 'invalid-no': true });
+            // this.control().setErrors({ 'invalid-no': true });
 
             return {
                 raw: ph_no.getRawInput(),
@@ -136,7 +123,7 @@ export class PhoneInputComponent
                 number: ph_no.getNationalNumberOrDefault().toString(),
             };
         } else {
-            this.control().setErrors(null);
+            // this.control().setErrors(null);
 
             return {
                 raw: ph_no.getRawInput(),
@@ -152,7 +139,7 @@ export class PhoneInputComponent
         }
     }
 
-    onNumberInputChange(_value: string) {
+    onNumberInputChange(event, _value: string) {
         if (!this.numberInput()) return;
         this.number.set(this.numberInput().nativeElement.value.trim());
 
@@ -162,10 +149,10 @@ export class PhoneInputComponent
             ? `+${this.country.phone_code}${_value}`
             : _value;
 
-        if (this.number().length < 3) return;
+        if (this.number().length < 3) return this.onInput(event, _value);
         try {
             const r = this._getNumber(_value);
-            this.value = r.formatted;
+            this.onInput(event, r.formatted);
         } catch (error) {}
     }
 
@@ -175,7 +162,7 @@ export class PhoneInputComponent
     }
     public set country(v: any) {
         this._country = v;
-        this.onNumberInputChange(this.number());
+        // this.onNumberInputChange(this.number());
     }
 
     showCodes = false;

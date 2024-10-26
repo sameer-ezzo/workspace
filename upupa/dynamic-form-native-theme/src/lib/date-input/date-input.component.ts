@@ -30,10 +30,6 @@ export class DateInputComponent extends InputBaseComponent {
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
+   
 
-    change(date: Date) {
-        this.value = date;
-        this.control().markAsDirty();
-    }
 }

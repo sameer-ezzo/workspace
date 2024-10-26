@@ -1,13 +1,4 @@
-import {
-    Component,
-    Input,
-    Output,
-    EventEmitter,
-    SimpleChanges,
-    input,
-    model,
-    output,
-} from '@angular/core';
+import { Component, SimpleChanges, input, model, output } from '@angular/core';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { DataComponentBase } from './data-base.component';
 import { FormControl } from '@angular/forms';
@@ -19,7 +10,6 @@ import { OnChanges } from '@angular/core';
 import { ValidationErrors } from '@angular/forms';
 import { AbstractControl } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { logger, Logger } from '@upupa/common';
 
 @Component({
     selector: 'value-data-base',
@@ -37,27 +27,31 @@ export class ValueDataComponentBase<T = any>
     extends DataComponentBase<T>
     implements ControlValueAccessor, Validator, OnChanges
 {
-    name = input(`${Date.now()}`);
-
-    control = model(new FormControl<Partial<T> | Partial<T>[]>(undefined));
+    errorMessages = model<{ [errorCode: string]: string }>(null);
+    name = input<string, string>('', {
+        alias: 'fieldName',
+        transform: (v) => (v ? v : `field_${Date.now()}`),
+    });
+    // control = input(new FormControl<Partial<T> | Partial<T>[]>(undefined));
     valueChange = output<Partial<T> | Partial<T>[]>();
     value1$ = new BehaviorSubject<Partial<T> | Partial<T>[]>(undefined);
 
     required = input<boolean>(false);
-    disabled = input(false);
-    @Input()
-    public get value(): Partial<T> | Partial<T>[] {
-        return this.value1$.value;
-    }
-    public set value(v: Partial<T> | Partial<T>[]) {
-        this.writeValue(v, true);
-    }
+    disabled = model(false);
 
-    public get _value(): Partial<T> | Partial<T>[] {
-        return this.value1$.value;
-    }
-    public set _value(v: Partial<T> | Partial<T>[]) {
-        this.writeValue(v, false);
+    value = model<Partial<T> | Partial<T>[]>(undefined);
+
+    onInput(event: any, v: any) {
+        // if (
+        //     event &&
+        //     'stopPropagation' in event &&
+        //     typeof event.stopPropagation === 'function'
+        // )
+        //     event.stopPropagation();
+
+        this.value.set(v);
+        this._propagateChange();
+        this.markAsTouched();
     }
 
     //ControlValueAccessor
@@ -69,8 +63,14 @@ export class ValueDataComponentBase<T = any>
     }
 
     _propagateChange() {
-        if (this._onChange) this._onChange(this.value); //ngModel/ngControl notify (value accessor)
-        this.valueChange.emit(this.value); //value event binding notify
+        if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)
+        this.valueChange.emit(this.value()); //value event binding notify
+    }
+
+    writeValue(v: T, emitEvent = false): void {
+        this.value.set(v);
+        this._updateViewModel();
+        if (emitEvent) this._propagateChange();
     }
 
     override ngOnInit(): void {
@@ -83,14 +83,16 @@ export class ValueDataComponentBase<T = any>
                     s.source.selected
                 );
                 this.selectedNormalized = selectedNormalized;
-                const v = Array.isArray(this.value) ? this.value : [this.value];
+                const v = this.value();
+                const value = Array.isArray(v) ? v : [v];
                 if (this.maxAllowed() === 1) {
-                    const valueKey = this.adapter().getKeysFromValue(v)?.[0];
+                    const valueKey =
+                        this.adapter().getKeysFromValue(value)?.[0];
                     const selectedKey = selectedNormalized?.[0]?.key;
                     if (valueKey === selectedKey) return;
-                    this.value = selectedNormalized?.[0]?.value;
+                    this.value.set(selectedNormalized?.[0]?.value);
                 } else {
-                    const valueKeys = this.adapter().getKeysFromValue(v);
+                    const valueKeys = this.adapter().getKeysFromValue(value);
                     const selectedKeys = selectedNormalized?.map((x) => x.key);
                     const set = new Set([...valueKeys, ...selectedKeys]);
                     if (
@@ -98,42 +100,12 @@ export class ValueDataComponentBase<T = any>
                         valueKeys.length === set.size
                     )
                         return;
-                    this.value = selectedNormalized?.map((x) => x.value);
+                    this.value.set(selectedNormalized?.map((x) => x.value));
                 }
             });
     }
-    override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes);
-        if (changes['control']) {
-            this._value = this.control()?.value; //read value from control (but why not write value to control?)
-            this.control()?.registerOnChange(
-                (value: Partial<T> | Partial<T>[]) => (this._value = value)
-            );
-        }
-    }
 
-    writeValue(v: Partial<T> | Partial<T>[], emitEvent = false): void {
-        if (v === this.value) return;
-        this.value1$.next(v);
-        this.control()?.setValue(v, { emitEvent });
-
-        if (this.value === undefined) this.selected = [];
-        if (this.adapter) {
-            const _v = (
-                Array.isArray(this.value) ? this.value : [this.value]
-            ) as Partial<T>[];
-            if (_v.length === 0) this.selected = [];
-            this.selected = this.adapter().getKeysFromValue(_v);
-        }
-        this.singleSelected.set(this.selected?.[0]);
-
-        this._updateViewModel();
-
-        if (emitEvent) this._propagateChange();
-    }
-
-    onTouch() {
-        this.control()?.markAsTouched();
+    markAsTouched() {
         if (this._onTouch) this._onTouch();
     }
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
@@ -143,10 +115,7 @@ export class ValueDataComponentBase<T = any>
         this._onTouch = fn;
     }
     setDisabledState?(isDisabled: boolean): void {
-        const control = this.control();
-        if (!control) return;
-        if (isDisabled && control.enabled) control.disable();
-        else if (isDisabled === false && control.disabled) control.enable();
+        this.disabled.set(isDisabled);
     }
 
     async _updateViewModel() {

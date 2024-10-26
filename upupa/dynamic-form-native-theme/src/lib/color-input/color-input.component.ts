@@ -28,10 +28,10 @@ export class ColorInputComponent extends InputBaseComponent {
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
+   
 
     inputChange(target: EventTarget, closable: { close: () => void } & any) {
-        this.value = (target as HTMLInputElement).value;
+        this.value.set((target as HTMLInputElement).value);
         closable.close();
     }
 }

@@ -11,7 +11,7 @@
     <div #editor></div>
     @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control()?.errors | keyvalue; track $index) {
-    <mat-error>{{ errorMessages()[error.key + ''] || error.key }} </mat-error>
+    } @for (error of errorMessages() | keyvalue; track $index) {
+    <mat-error>{{ error.key }} </mat-error>
     }
 </ng-template>

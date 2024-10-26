@@ -47,7 +47,6 @@ export class FileInputComponent extends ValueDataComponentBase {
     @Input() label: string;
     @Input() hint: string;
     @Input() readonly = false;
-    @Input() errorMessages: { [errorCode: string]: string } = {};
 
     @Input() minAllowedFiles = 0;
     @Input() maxAllowedFiles = 1;
@@ -101,9 +100,7 @@ export class FileInputComponent extends ValueDataComponentBase {
     access_token = null;
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes);
-        if (changes['control'] && this.control) {
-            this.value = this.control().value;
-        }
+
         if (this.includeAccess === true) {
             this.auth.user$
                 .pipe(takeUntilDestroyed(this.destroyRef))
@@ -184,8 +181,7 @@ export class FileInputComponent extends ValueDataComponentBase {
                     maxSizeErrors,
                     minSizeErrors
                 );
-                this.control().setErrors(errors);
-                this.control().markAllAsTouched();
+                this.errorMessages.set(errors as any);
                 continue;
             }
 
@@ -218,13 +214,18 @@ export class FileInputComponent extends ValueDataComponentBase {
         //     result.close(e);
         // });
 
-        this.value = await firstValueFrom(result.afterClosed());
-        this.control().markAsDirty();
+        const value = await firstValueFrom(result.afterClosed());
+        this.value.set(value);
+        this._propagateChange();
+        this.markAsTouched();
     }
 
     removeFile(file: FileInfo) {
-        const i = this.value.indexOf(file);
-        this.value.splice(i, 1);
-        this.control().markAsDirty();
+        const v = this.value();
+        const i = v.indexOf(file);
+        v.splice(i, 1);
+        this.value.set(v);
+        this._propagateChange();
+        this.markAsTouched();
     }
 }

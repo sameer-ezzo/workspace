@@ -6,13 +6,12 @@
     #input
     type="number"
     [value]="value"
-    (input)="value = $event.target?.['value']; _propagateChange(); control().markAsDirty()"
-    (blur)="onTouch()"
+    (input)="onInput($event, $event.target?.['value'])"
+    (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
-    [formControl]="control()"
     [required]="required()"
 />
-@for (error of control()?.errors | keyvalue; track error) {
-<span class="error">{{errorMessages()?.[error.key+''] || error.key}}</span>
+@for (error of errorMessages() | keyvalue; track error.key) {
+<span class="error">{{ error.key }}</span>
 }

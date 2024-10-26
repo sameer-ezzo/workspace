@@ -10,11 +10,10 @@
         matInput
         #input
         [value]="value"
-        (input)="value = $event.target?.['value'];control().markAsDirty()"
-        (blur)="onTouch()"
+        (input)="onInput($event, $event.target?.['value'])"
+        (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        [formControl]="control()"
         #autosize="cdkTextareaAutosize"
         [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
         [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
@@ -23,7 +22,7 @@
     </textarea>
     @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control().errors | keyvalue; track error) {
-    <mat-error>{{errorMessages()?.[error.key+''] || error.key }}</mat-error>
+    } @for (error of errorMessages() | keyvalue; track error.key) {
+    <mat-error>{{ error.key }}</mat-error>
     }
 </mat-form-field>

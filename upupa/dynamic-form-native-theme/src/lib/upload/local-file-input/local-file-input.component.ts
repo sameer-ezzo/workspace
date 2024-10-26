@@ -50,7 +50,6 @@ export class LocalFileInputComponent
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     minAllowedFiles = input(0);
     maxAllowedFiles = input(1);
@@ -75,8 +74,7 @@ export class LocalFileInputComponent
         super();
     }
 
-    override ngOnChanges(changes: SimpleChanges): void {
-        super.ngOnChanges(changes);
+    ngOnChanges(changes: SimpleChanges): void {
         if (this.includeAccess() === true) {
             this.auth.token$
                 .pipe(takeUntilDestroyed(this.destroyRef))
@@ -151,23 +149,24 @@ export class LocalFileInputComponent
                     maxSizeErrors,
                     minSizeErrors
                 );
-                this.control().setErrors(errors);
-                this.control().markAllAsTouched();
+                this.errorMessages.set(errors as any);
+                this.markAsTouched();
                 continue;
             }
         }
 
-        if (Object.keys(this.control().errors ?? {}).length === 0) {
-            if (this.maxAllowedFiles() > 1) this.value = Array.from(files);
-            else this.value = files.item(0);
+        if (Object.keys(this.errorMessages() ?? {}).length === 0) {
+            if (this.maxAllowedFiles() > 1) this.value.set(Array.from(files));
+            else this.value.set(files.item(0));
         }
     }
 
     removeFile(file: File) {
-        if (Array.isArray(this.value)) {
-            const i = this.value.indexOf(file);
-            this.value.splice(i, 1);
-            this.value = this.value.filter((x) => x);
-        } else this.value = null;
+        const v = this.value();
+        if (Array.isArray(v)) {
+            const i = v.indexOf(file);
+            v.splice(i, 1);
+            this.value.set(v);
+        } else this.value.set(null);
     }
 }

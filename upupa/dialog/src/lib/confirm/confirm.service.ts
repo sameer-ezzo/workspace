@@ -19,7 +19,7 @@ export class ConfirmService {
                     width: "auto",
                     maxWidth: "450px",
                     ...o,
-                    hideCloseBtn: true,
+                    hideCloseButton: true,
                     disableClose: true,
                     closeOnNavigation: true,
                     actions: [

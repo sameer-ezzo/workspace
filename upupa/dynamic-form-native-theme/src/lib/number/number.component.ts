@@ -46,29 +46,17 @@ export class NumberComponent extends InputBaseComponent {
     label = input('');
     hint = input('');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     min = input<number>(Number.MIN_VALUE);
     max = input<number>(Number.MAX_VALUE);
 
     // add input to tell the component about the number type (integer, float, double, etc)
     numberType = input<'integer' | 'float' | 'double'>('float');
-    // override _updateViewModel() {
-    //   super._updateViewModel();
-    //   this.fixNumberType(this.value);
-    // }
-    private readonly destroyRef = inject(DestroyRef);
-    ngAfterViewInit() {
-        this.control()
-            .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((value) => {
-                this.fixNumberType(value);
-            });
-    }
 
     private readonly fixNumberType = (value: any) => {
         if (value === null || value === undefined) return;
-        if (this.numberType() === 'integer') this._value = parseInt(value, 10);
-        else this._value = parseFloat(value);
+        if (this.numberType() === 'integer')
+            this.value.set(parseInt(value, 10));
+        else this.value.set(parseFloat(value));
     };
 }

@@ -12,6 +12,7 @@ import {
     ElementRef,
     AfterViewInit,
     viewChild,
+    SimpleChanges,
 } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -59,7 +60,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 })
 export class HtmlEditorComponent
     extends InputBaseComponent<string>
-    implements OnChanges, AfterViewInit
+    implements AfterViewInit
 {
     readonly = input(false);
     language = input('');
@@ -68,12 +69,8 @@ export class HtmlEditorComponent
     placeholder = input('');
     label = input('');
     hint = input('');
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     config: EditorConfig;
-    markAsTouched() {
-        this.control()?.markAsTouched();
-    }
 
     uploadPath = input('/storage');
     editorConfig = input<EditorConfig>(DecoupledEditor.defaultConfig);
@@ -85,7 +82,13 @@ export class HtmlEditorComponent
     editorElement =
         viewChild.required<ElementRef<HTMLTextAreaElement>>('editor');
     async ngAfterViewInit() {
-        this._initEditor();
+        await this._initEditor();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['value']) {
+            this.editor?.setData(this.value() ?? '');
+        }
     }
     private async _initEditor() {
         const lang = this.language() ?? 'en';
@@ -105,14 +108,16 @@ export class HtmlEditorComponent
             });
 
             const toolbar = editor.ui.view.toolbar.element;
-            const parent = this.editorElement().nativeElement.parentElement as HTMLElement;
+            const parent = editorEl.parentElement as HTMLElement;
             const editableElement = editor.ui.getEditableElement()!;
             parent.appendChild(toolbar);
             parent.appendChild(editableElement);
             this.uploadAdapterPlugin(editor);
+            editor.setData(this.value() ?? '');
 
-            editor.setData(this.value ?? '');
-            editor.data.on('change', this.htmlChanged.bind(this));
+            editor.model.document.on('change:data', () => {
+                this.onInput(null, editor.getData());
+            });
             this.editor = editor;
         } catch (error) {
             console.error(error);
@@ -123,11 +128,10 @@ export class HtmlEditorComponent
         this.editor?.destroy();
     }
     htmlChanged({ editor }: any) {
-        const data = this.editor.data.get();
-        if (data === this.value) return;
-        this.value = data;
+        const data = editor.data.get();
+        this.value.set(data);
+        this._propagateChange();
         this.markAsTouched();
-        this.control().markAsDirty();
     }
 
     public uploadAdapterPlugin(editor: any): void {

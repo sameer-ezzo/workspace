@@ -13,7 +13,7 @@ export class DynamicFormDialogService {
       maxWidth: "450px",
       maxHeight: "80vh",
       ...dialogOptions,
-      actions: dialogOptions?.actions ?? [
+      actions: dialogOptions?.dialogActions ?? [
         { action: 'submit', text: 'Submit', color: 'primary', type: 'submit' },
         { action: 'discard', text: 'Discard', color: 'warn', type: 'button' }
       ],

@@ -3,6 +3,7 @@ import {
     Component,
     Input,
     SimpleChanges,
+    effect,
     forwardRef,
     input,
 } from '@angular/core';
@@ -48,22 +49,13 @@ export type AddressModel = {
             useExisting: forwardRef(() => AddressComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => AddressComponent),
-            multi: true,
-        },
     ],
 })
-export class AddressComponent
-    extends InputBaseComponent<AddressModel>
-    implements Validator
-{
+export class AddressComponent extends InputBaseComponent<AddressModel> {
     label = input('Address');
 
     display = input('native_name');
     readonly = input(false);
-    errorMessages = input<{ [errorCode: string]: string }>({});
 
     defaultAddressComponents = {
         country: new UntypedFormControl(''),
@@ -113,9 +105,10 @@ export class AddressComponent
             ],
         }
     );
-
-    ngOnInit(): void {
-        this.value1$.subscribe((v) => {
+    constructor() {
+        super();
+        effect(() => {
+            const v = this.value();
             if (v != this.addressFormGroup.value) {
                 for (const ctrlName in this.addressFormGroup.controls) {
                     if (
@@ -132,18 +125,19 @@ export class AddressComponent
                 }
             }
         });
+    }
 
+    ngOnInit(): void {
         this.addressFormGroup.valueChanges.subscribe((v) => {
-            if (v != this.value) {
-                this._value = v;
-                this.control().markAsDirty();
+            if (v !== this.value) {
+                this.value.set(v);
+                this.markAsTouched();
+                this._propagateChange();
             }
         });
     }
 
-    override ngOnChanges(changes: SimpleChanges): void {
-        super.ngOnChanges(changes);
-
+    ngOnChanges(changes: SimpleChanges): void {
         if (changes['required']) {
             if (this.required())
                 this.addressFormGroup.setValidators([Validators.required]);
@@ -156,19 +150,19 @@ export class AddressComponent
     onSubmit(x) {}
 
     //validate
-    override validate(control?: AbstractControl): ValidationErrors {
-        let error = null;
-        if (this.required && this.value) {
-            if (
-                this.value.addressLine1 &&
-                this.value.city &&
-                this.value.state &&
-                this.value.country &&
-                this.value.zipCode
-            )
-                error = null;
-            else error = { required: true };
-        }
-        return error;
-    }
+    // override validate(control?: AbstractControl): ValidationErrors {
+    //     let error = null;
+    //     if (this.required() && this.value()) {
+    //         if (
+    //             this.value().addressLine1 &&
+    //             this.value().city &&
+    //             this.value().state &&
+    //             this.value().country &&
+    //             this.value().zipCode
+    //         )
+    //             error = null;
+    //         else error = { required: true };
+    //     }
+    //     return error;
+    // }
 }

@@ -92,6 +92,7 @@
                     } @empty {
                     <cell-template
                         [value]="element.item | jpointer : descriptor.key"
+                        [element]="element"
                         [descriptor]="descriptor"
                     ></cell-template>
                     }
@@ -125,7 +126,7 @@
             style="background: #ccc"
         ></tr>
 
-        @if (expandable !== "none" && expandableTemplate) {
+        @if (expandable() !== "none" && expandableTemplate()) {
         <ng-container
             matColumnDef="expandedDetail"
             [sticky]="columns()['actions']?.sticky === 'start'"
@@ -138,7 +139,7 @@
                 [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'"
             >
                 <ng-container
-                    [ngTemplateOutlet]="expandableTemplate"
+                    [ngTemplateOutlet]="expandableTemplate()"
                     [ngTemplateOutletContext]="{ element }"
                 ></ng-container>
             </td>

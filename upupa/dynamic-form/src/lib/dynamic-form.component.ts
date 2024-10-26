@@ -18,6 +18,7 @@ import {
     viewChild,
     effect,
     model,
+    computed,
 } from '@angular/core';
 import {
     NG_VALUE_ACCESSOR,
@@ -26,11 +27,12 @@ import {
     NgForm,
     UntypedFormBuilder,
     NG_VALIDATORS,
+    UntypedFormGroup,
 } from '@angular/forms';
 import { Field, FieldItem, Fieldset, FormScheme } from './types';
 import { Condition } from '@noah-ark/expression-engine';
 import { Subscription } from 'rxjs';
-import { EventBus } from '@upupa/common';
+import { DynamicComponent, EventBus, PortalComponent } from '@upupa/common';
 import {
     ChangeFormSchemeHandler,
     ChangeInputsHandler,
@@ -41,10 +43,13 @@ import {
 import { JsonPointer, Patch } from '@noah-ark/json-patch';
 import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { DYNAMIC_FORM_OPTIONS } from './di.token';
-import { DynamicFormRenderer } from './dynamic-form-renderer';
+import { DynamicFormRenderer, schemeToFields } from './dynamic-form-renderer';
 import { DynamicFormService } from './dynamic-form.service';
 import { ConditionalLogicService } from './conditional-logic.service';
 import { DialogService } from '@upupa/dialog';
+import { DynamicFormInputsMapService } from './dynamic-form-inputsMap.service';
+import { IFieldInputResolver } from './ifield-input.resolver';
+import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
@@ -71,7 +76,7 @@ import { DialogService } from '@upupa/dialog';
     },
 })
 export class DynamicFormComponent<T = any>
-    implements ControlValueAccessor, OnDestroy, OnInit, OnChanges
+    implements ControlValueAccessor, OnDestroy, OnChanges
 {
     formRenderer!: DynamicFormRenderer;
 
@@ -87,58 +92,63 @@ export class DynamicFormComponent<T = any>
 
     // eslint-disable-next-line @angular-eslint/no-output-native
     submit = output<DynamicFormComponent>();
-    valueChange = output<T>();
+
     class = input('');
 
     preventDirtyUnload = input(false);
     recaptcha = input('');
-    fields = input<FormScheme>(undefined);
+    formGroup = this.fb.group({});
+    fields = input.required<FormScheme>();
+    vm = computed(() => {
+        const scheme = this.fields();
+        const { formGroup, fields } = schemeToFields(
+            scheme,
+            this.fb,
+            this.value(),
+            this.formService,
+            this.theme()
+        );
+        return { fields, formGroup };
+    });
     conditions = input<Condition[]>([]);
-    name = input(`${Math.round(1000 * Math.random())}`);
+    name = input<string>(`dynForm_${Date.now()}`, { alias: 'formName' });
 
     disabled = input(false);
     readonly = input(false);
 
-    formElement = viewChild.required<NgForm>('dynForm');
-    control = input<AbstractControl>(null);
+    ngFormEl = viewChild.required<NgForm>('dynForm');
+    // control = input<AbstractControl>(null);
 
     theme = input<string, string>(this.formService.defaultThemeName, {
         transform: (v: string) => v ?? this.formService.defaultThemeName,
     });
 
-    _value: T;
-    @Input()
-    get value() {
-        return this._value;
-    }
-    set value(val: T) {
-        this.writeValue(val);
-    }
+    value = model<T>(undefined);
 
     _onChange: (value: T) => void;
     _onTouched: () => void;
     get dirty() {
-        return this.formElement()?.dirty;
+        return this.ngFormEl()?.dirty;
     }
     set dirty(v: boolean) {
-        if (v) this.formElement().control.markAsDirty();
-        else this.formElement().control.markAsPristine();
+        if (v) this.ngFormEl().control.markAsDirty();
+        else this.ngFormEl().control.markAsPristine();
     }
     get pristine() {
-        return this.formElement()?.pristine;
+        return this.ngFormEl()?.pristine;
     }
     set pristine(v: boolean) {
         this.dirty = !v;
     }
     get touched() {
-        return this.formElement()?.touched;
+        return this.ngFormEl()?.touched;
     }
     set touched(v: boolean) {
-        if (v) this.formElement().control.markAsTouched();
-        else this.formElement().control.markAsUntouched();
+        if (v) this.ngFormEl().control.markAsTouched();
+        else this.ngFormEl().control.markAsUntouched();
     }
     get untouched() {
-        return this.formElement()?.untouched;
+        return this.ngFormEl()?.untouched;
     }
     set untouched(v: boolean) {
         this.touched = !v;
@@ -160,10 +170,10 @@ export class DynamicFormComponent<T = any>
     }
 
     get invalid() {
-        return this.formElement()?.invalid;
+        return this.ngFormEl()?.invalid;
     }
     get valid() {
-        return this.formElement()?.valid;
+        return this.ngFormEl()?.valid;
     }
 
     _keys(x) {
@@ -191,6 +201,11 @@ export class DynamicFormComponent<T = any>
             this.renderer,
             this.disabled()
         );
+        this.formRenderer.value$.subscribe((v) => {
+            if (v === this.value()) return;
+            this.value.set(v);
+            this._propagateChange();
+        });
         //handlers
         this.subs = [
             InputVisibilityHandler(this),
@@ -200,20 +215,9 @@ export class DynamicFormComponent<T = any>
             ChangeStateHandler(this),
         ];
     }
+
     constructor() {
         this.init();
-        // effect(() => {
-        //     const theme = this.theme() ?? this.formService.defaultThemeName;
-        //     const disabled = this.disabled();
-        //     this.init();
-        // });
-    }
-
-    ngOnInit() {
-        this.formRenderer.value$.subscribe((v) => {
-            this._value = v;
-            this._propagateChange();
-        });
     }
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
@@ -222,20 +226,21 @@ export class DynamicFormComponent<T = any>
         }
 
         if (changes['fields']) {
-            if (
-                typeof this.fields() !== 'object' ||
-                Array.isArray(this.fields())
-            )
+            const fields = this.fields();
+            if (typeof fields !== 'object' || Array.isArray(fields))
                 throw new Error('fields must be passed as dictionary format');
 
             this._fieldsChanged();
         }
 
+        if (changes['value']) {
+            const { currentValue, previousValue } = changes['value'];
+
+            if (currentValue !== previousValue)
+                this.writeValue(changes['value'].currentValue);
+        }
         if (changes['conditions']?.firstChange === true) {
-            const currentValue = changes['conditions']
-                .currentValue as Condition[];
-            const previousValue = changes['conditions']
-                .previousValue as Condition[];
+            const { currentValue, previousValue } = changes['conditions'];
             if (previousValue?.length)
                 previousValue.forEach((c) =>
                     this.conditionalService.removeCondition(c)
@@ -250,34 +255,24 @@ export class DynamicFormComponent<T = any>
     onSubmit(e: Event) {
         e.stopPropagation();
         e.preventDefault();
-        if (this.formElement().invalid) {
+        if (this.ngFormEl().invalid) {
             this.scrollToError();
         } else this.submit.emit(this);
     }
 
-    private readonly cdRef = inject(ChangeDetectorRef);
     writeValue(val: T): void {
-        if (val === this.value) return;
         if (this.options.enableLogs === true)
             console.log(
                 `%c dynamic writing! (name:${this.name()})`,
                 'background: #0065ff; color: #fff',
                 val
             );
-        this._value = val;
+        this.value.set(val);
         this.formRenderer.writeValue(val);
-        this.control()?.setValue(val, { emitEvent: false, onlySelf: true });
-
-        setTimeout(() => {
-            this.cdRef.detectChanges();
-        }, 100);
     }
 
     _propagateChange() {
-        const value = this._value;
-        if (this._onChange) this._onChange(value); //ngModel/ngControl notify (value accessor)
-        if (this.control()) this.control().setValue(value); //control notify
-        this.valueChange.emit(value); //value event binding notify
+        if (this._onChange) this._onChange(this.value());
     }
 
     registerOnChange(fn: (model: any) => void): void {
@@ -298,8 +293,8 @@ export class DynamicFormComponent<T = any>
                 'background: #ff6b00; color: #fff',
                 this.fields()
             );
-        this.formRenderer.fields = Object.values(this.fields());
-        this.writeValue(this._value);
+        // this.formRenderer.fields = Object.values(this.fields());
+        // this.writeValue(this.value());
         this._propagateChange();
     }
 
@@ -366,4 +361,89 @@ export class DynamicFormComponent<T = any>
         this.subs.forEach((s) => s.unsubscribe());
         this.formRenderer.destroy();
     }
+}
+
+@Component({
+    selector: 'dynamic-form-field',
+    imports: [PortalComponent, DynamicFormNativeThemeModule],
+    template: `
+        @if (field().text) {
+        <paragraph
+            [class.hidden]="field().ui?.hidden === true"
+            [text]="field().text"
+            [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"
+        ></paragraph>
+        }
+        <!-- <ng-container
+            #dd="dynamicField"
+            dynamicField
+            [inputs]="field().ui?.inputs"
+            [componentMap]="formService.getControl(field().input, theme())"
+            [field]="field"
+            [group]="form"
+        ></ng-container> -->
+
+        <!-- use ng-component to render component -->
+
+        <ng-container
+            *ngComponentOutlet="template().component; inputs: template().inputs"
+            [formControlName]="field().name"
+            [formGroup]="form()"
+        >
+        </ng-container>
+        <!-- <portal
+            [component]="template().component"
+            [class]="template().class"
+            [inputs]="template().inputs"
+            [outputs]="template().outputs"
+        >
+        </portal> -->
+    `,
+    standalone: true,
+    host: {
+        '[id]': 'id()',
+        '[class]': 'classList()',
+    },
+})
+export class DynamicFormInputWrapper {
+    field = input.required<Field>();
+
+    form = input.required<UntypedFormGroup>();
+    template = input.required<DynamicComponent, DynamicComponent>({
+        transform: (v) => {
+            let inputs = { ...(v.inputs ?? {}) };
+            const inputsMap = this.inputsMapService.inputsMap;
+            const inputNames = Object.keys(inputs);
+
+            inputNames.forEach(async (name) => {
+                const inputResolver = inputsMap[name] as IFieldInputResolver;
+                if (inputResolver) {
+                    inputs = await inputResolver.resolve(inputs);
+                }
+            });
+
+            v.inputs = inputs;
+            return v;
+        },
+    });
+
+    classList = computed(() => {
+        const field = this.field();
+        const template = this.template();
+        return [
+            `${field.name}-input`,
+            'ff-container',
+            template.class,
+            field.ui.class,
+            field.ui?.hidden === true ? 'hidden' : '',
+        ]
+            .filter((c) => c)
+            .join('&nbsp;')
+            .trim();
+    });
+    id = computed(
+        () => ((this.field().ui?.id || this.field().name) ?? '') + '-container'
+    );
+
+    private readonly inputsMapService = inject(DynamicFormInputsMapService);
 }

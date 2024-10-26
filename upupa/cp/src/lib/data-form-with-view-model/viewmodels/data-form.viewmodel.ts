@@ -16,9 +16,6 @@ export type DataFormViewModelActionContext = {
     dynamicForm?: DynamicFormComponent;
 };
 export interface DataFormViewModel {
-    injector: Injector;
-    component: any;
-    inputs: DynamicFormOptionsMetaData;
     onSubmit(
         value: any,
         e: ActionEvent<any, DataFormViewModelActionContext>

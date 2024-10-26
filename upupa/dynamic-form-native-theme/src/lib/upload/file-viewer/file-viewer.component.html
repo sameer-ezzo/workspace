@@ -75,7 +75,7 @@
     @for (a of fileVm.actions; track a) {
     <mat-btn
         class="action onhover"
-        (action)="onMenuAction(a, fileVm)"
+        (onClick)="onMenuAction(a, fileVm)"
         [descriptor]="a"
     ></mat-btn>
     } @if (fileVm.menuActions?.length > 0) {

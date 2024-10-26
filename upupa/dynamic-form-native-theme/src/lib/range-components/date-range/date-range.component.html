@@ -11,13 +11,13 @@
             matStartDate
             [(ngModel)]="from"
             [placeholder]="placeholder()"
-            (ngModelChange)="control().markAsDirty(); _propagateChange()"
+            (ngModelChange)="_propagateChange()"
         />
         <input
             matEndDate
             [(ngModel)]="to"
             [placeholder]="placeholder()"
-            (ngModelChange)="control().markAsDirty(); _propagateChange()"
+            (ngModelChange)="_propagateChange()"
         />
     </mat-date-range-input>
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>

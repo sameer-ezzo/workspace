@@ -42,7 +42,7 @@ export class DynamicFormService {
   }
 }
 
-const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } = {
+export const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } = {
   required: (v) => (control) => {
 
     const res = empty(control) ? { [v.message || "required"]: true } : null

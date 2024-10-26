@@ -23,12 +23,11 @@
             data-jscolor=""
             style="z-index: -1; position: absolute; visibility: collapse"
             (input)="inputChange($event.target, colorInput)"
-            [formControl]="control()"
             [value]="value"
-            (ngModelChange)="_propagateChange(); control().markAsDirty()"
+            (ngModelChange)="_propagateChange();"
         />
     </div>
 </div>
-@for (error of control().errors | keyvalue; track error) {
-<mat-error>{{errorMessages()?.[error.key+''] || error.key }} </mat-error>
+@for (error of errorMessages() | keyvalue; track error) {
+<mat-error>{{error.key }} </mat-error>
 }

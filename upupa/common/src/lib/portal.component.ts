@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+import { CommonModule } from '@angular/common';
 import {
     Component,
     inject,
@@ -7,20 +7,27 @@ import {
     Type,
     ComponentRef,
     SimpleChanges,
-    createComponent,
     reflectComponentType,
     ComponentMirror,
-    ElementRef,
     ViewContainerRef,
     EventEmitter,
-} from "@angular/core";
-import { ContentNode, createContentNodes } from "./routing/with-content-projection";
-import { Subscription } from "rxjs";
+} from '@angular/core';
+import {
+    ContentNode,
+    createContentNodes,
+} from './routing/with-content-projection';
+import { Subscription } from 'rxjs';
 
-export type DynamicComponent = { component: Type<any>; inputs?: Record<string, any>; content?: ContentNode[][]; outputs?: Record<string, (e: any) => void>; class?: string };
+export type DynamicComponent = {
+    component: Type<any>;
+    inputs?: Record<string, any>;
+    content?: ContentNode[][];
+    outputs?: Record<string, (e: any) => void | Promise<void>>;
+    class?: string;
+};
 
 @Component({
-    selector: "portal",
+    selector: 'portal',
     standalone: true,
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
@@ -32,10 +39,11 @@ export class PortalComponent {
 
     component = input.required<Type<any>>();
     inputs = input({});
-    class = input("");
+    class = input('');
     outputs = input({});
     content = input(undefined, {
-        transform: (content: ContentNode[][]) => createContentNodes(content, this.environmentInjector),
+        transform: (content: ContentNode[][]) =>
+            createContentNodes(content, this.environmentInjector),
     });
 
     componentRef: ComponentRef<any>;
@@ -43,16 +51,16 @@ export class PortalComponent {
     subscriptions: Subscription[] = [];
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes["component"] || changes["content"]) {
+        if (changes['component'] || changes['content']) {
             this.detach();
             this.attach();
         }
 
-        if (changes["outputs"] && !changes["outputs"].firstChange) {
+        if (changes['outputs'] && !changes['outputs'].firstChange) {
             this.subscribeToOutputs();
         }
 
-        if (changes["inputs"] && !changes["inputs"].firstChange) {
+        if (changes['inputs'] && !changes['inputs'].firstChange) {
             this.setInput();
         }
     }
@@ -67,7 +75,8 @@ export class PortalComponent {
         });
 
         const c = this.class();
-        if (c && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(c);
+        if (c && this.componentRef.location)
+            this.componentRef.location.nativeElement.classList.add(c);
 
         this.subscribeToOutputs();
         this.setInput();
@@ -88,7 +97,9 @@ export class PortalComponent {
     setInput() {
         const inputs = this.inputs() ?? {};
         for (const [key, value] of Object.entries(inputs)) {
-            if (this.componentMirror.inputs.some((i) => i.templateName === key)) {
+            if (
+                this.componentMirror.inputs.some((i) => i.templateName === key)
+            ) {
                 this.componentRef.setInput(key, value);
             }
         }
@@ -100,8 +111,12 @@ export class PortalComponent {
 
         const outputs = this.outputs() ?? {};
         for (const [key, value] of Object.entries(outputs)) {
-            if (this.componentMirror.outputs.some((o) => o.templateName === key)) {
-                const emitter = this.componentRef.instance[key] as EventEmitter<any>;
+            if (
+                this.componentMirror.outputs.some((o) => o.templateName === key)
+            ) {
+                const emitter = this.componentRef.instance[
+                    key
+                ] as EventEmitter<any>;
                 emitter.subscribe(value);
             }
         }

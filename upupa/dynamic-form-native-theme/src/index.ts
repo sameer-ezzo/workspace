@@ -1,5 +1,5 @@
 export * from './lib/dynamic-form-native-theme.module';
-export * from './lib/table/array-input.component';
+export * from './lib/array/array-input.component';
 export * from './lib/defaults';
 export * from './lib/input/input.component';
 export * from './lib/hidden/hidden.component';

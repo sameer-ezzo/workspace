@@ -51,7 +51,7 @@ export class ChipsComponent extends SelectComponent {
 
     protected _select(item: NormalizedItem<any>) {
         this.select(item.key);
-        this.value = [...(this.value ?? []).slice(), item.value];
+        this.value.set([...(this.value() ?? []).slice(), item.value]);
         this._clearFilter();
     }
 
@@ -66,9 +66,6 @@ export class ChipsComponent extends SelectComponent {
     }
 
     async selectionChange(v: string): Promise<void> {
-        this.control().markAllAsTouched();
-        this.control().markAsDirty();
-
         if (
             v === null &&
             this.filterInputRef().nativeElement.value.length > 0
@@ -80,12 +77,15 @@ export class ChipsComponent extends SelectComponent {
         const item = values?.[0];
         if (!item) return;
         this._select(item);
+
+        this.markAsTouched();
+        this._propagateChange();
     }
 
     remove(item: NormalizedItem): void {
-        this.value = this.value.filter((v) => v.key === item.key);
-        this.control().markAllAsTouched();
-        this.control().markAsDirty();
+        this.value.set(this.value().filter((v) => v.key === item.key));
+        this.markAsTouched();
+        this._propagateChange();
     }
 
     async onAdding(value: string) {

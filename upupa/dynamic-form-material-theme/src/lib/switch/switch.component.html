@@ -2,22 +2,20 @@
     @if (!template()) {
     <mat-slide-toggle
         style="max-width: 40px; margin-inline-end: 0.5rem"
-        (change)="value = control().value; control().markAsDirty()"
+        (change)="onInput($event, $event.source?.checked)"
         [checked]="value"
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [disabled]="readonly()"
-        [formControl]="control()"
         [required]="required()"
     >
     </mat-slide-toggle>
     } @if (template()) {
     <mat-checkbox
         style="max-width: 40px; margin-inline-end: 0.5rem"
-        (change)="value = control().value; control().markAsDirty()"
+        (change)="onInput($event, $event.checked)"
         [checked]="value"
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [disabled]="readonly()"
-        [formControl]="control()"
         [required]="required()"
     >
     </mat-checkbox>
@@ -27,7 +25,6 @@
 </div>
 @if (hint()) {
 <mat-hint>{{ hint() }}</mat-hint>
-} @if (control().touched && control().invalid) { @for (error of
-control()?.errors | keyvalue; track error) {
-<mat-error>{{errorMessages?.[error.key+''] || error.key }} </mat-error>
-} }
+} @for (error of errorMessages() | keyvalue; track error.key) {
+<mat-error>{{ error.key }} </mat-error>
+}

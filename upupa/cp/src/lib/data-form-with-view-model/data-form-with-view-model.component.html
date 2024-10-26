@@ -1,24 +1,26 @@
+
+
 <div id="form-wrapper">
+    hi:{{ value() | json }}
     <dynamic-form
         #dynForm
-        [fields]="inputs().fields"
-        [value]="formValue()"
-        [name]="inputs().name"
-        [preventDirtyUnload]="inputs().preventDirtyUnload"
-        [recaptcha]="inputs().recaptcha"
-        [theme]="inputs().theme"
-        [conditions]="inputs().conditions"
-        (submit)="submit()"
+        [fields]="fields()"
+        [(value)]="value"
+        (valueChange)="onValueChange($event)"
+        [formName]="name()"
+        [preventDirtyUnload]="preventDirtyUnload()"
+        [recaptcha]="recaptcha()"
+        [theme]="theme()"
+        [conditions]="conditions()"
+        (submit)="onSubmit()"
     ></dynamic-form>
-    <!-- (valueChange)="formValue.set($event)" -->
 </div>
 
-@if (!dialogRef) {
-    @if (dialogActions(); as _actions) {
-        <div class="toolbar footer">
-            @for (descriptor of _actions; track descriptor.action) {
-                <mat-btn (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
-            }
-        </div>
+@if (actions(); as _actions) {
+<div class="toolbar footer">
+    @for (descriptor of _actions; track descriptor.name) {
+        <!-- (onClick)="onAction($event)" -->
+    <mat-btn [descriptor]="descriptor"></mat-btn>
     }
+</div>
 }

@@ -1,27 +1,58 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from "@angular/core";
-import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
-import { ActivatedRoute } from "@angular/router";
-import { ActionEvent, DynamicComponent } from "@upupa/common";
-import { DataTableComponent, DataTableModule } from "@upupa/table";
-import { DataListViewModel } from "./viewmodels/api-data-table-viewmodel";
-import { DataListViewModelQueryParam, resolveDataListInputsFor } from "../decorators/scheme.router.decorator";
-import { CommonModule } from "@angular/common";
-import { PortalComponent } from "../../../../common/src/lib/portal.component";
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    Injector,
+    OnDestroy,
+    Type,
+    computed,
+    inject,
+    input,
+    runInInjectionContext,
+    viewChild,
+} from '@angular/core';
+import {
+    createDataAdapter,
+    DataAdapter,
+    DataAdapterDescriptor,
+    DataAdapterType,
+} from '@upupa/data';
+import { ActivatedRoute } from '@angular/router';
+import { ActionEvent, DynamicComponent } from '@upupa/common';
+import {
+    DataListViewModelQueryParam,
+    DataTableComponent,
+    DataTableModule,
+    resolveDataListInputsFor,
+} from '@upupa/table';
+import { DataListViewModel } from './viewmodels/api-data-table-viewmodel';
+
+import { CommonModule } from '@angular/common';
+import { PortalComponent } from '../../../../common/src/lib/portal.component';
 
 @Component({
-    selector: "cp-data-list-with-inputs",
+    selector: 'cp-data-list-with-inputs',
     standalone: true,
     imports: [CommonModule, DataTableModule, PortalComponent],
-    templateUrl: "./data-list-with-inputs.component.html",
-    styleUrls: ["./data-list-with-inputs.component.scss"],
+    templateUrl: './data-list-with-inputs.component.html',
+    styleUrls: ['./data-list-with-inputs.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [{ provide: DataAdapter, useFactory: (component) => component.dataAdapter(), deps: [DataListWithInputsComponent] }],
+    providers: [
+        {
+            provide: DataAdapter,
+            useFactory: (component) => component.dataAdapter(),
+            deps: [DataListWithInputsComponent],
+        },
+    ],
 })
 export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     readonly injector = inject(Injector);
     readonly route = inject(ActivatedRoute);
 
-    tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
+    tableHeaderComponent = input<
+        DynamicComponent,
+        Type<any> | DynamicComponent
+    >(undefined, {
         transform: (c) => {
             if (c instanceof Type) return { component: c };
             return c;
@@ -30,7 +61,10 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
     viewModel = input.required<Type<DataListViewModel>>();
 
-    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
+    dataAdapter = input.required<
+        DataAdapter,
+        DataAdapter | DataAdapterDescriptor<DataAdapterType>
+    >({
         transform: (adapterOrDescriptor) => {
             if (adapterOrDescriptor instanceof DataAdapter) {
                 return adapterOrDescriptor;
@@ -39,75 +73,72 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         },
     });
 
-
-
-
     dataTable = viewChild(DataTableComponent);
 
+    instance: DataListViewModel;
     vm = computed(() => {
         const viewModel = this.viewModel();
         const inputs = resolveDataListInputsFor(viewModel);
-        let vm: DataListViewModel;
 
         runInInjectionContext(this.injector, () => {
-            vm = new viewModel();
-            vm["onInit"]?.();
+            this.instance = new viewModel();
+            this.instance['onInit']?.();
         });
 
-        vm.dataAdapter = this.dataAdapter();
+        this.instance.dataAdapter = this.dataAdapter();
 
-        vm.injector = Injector.create({
-            providers: [{ provide: DataAdapter, useValue: vm.dataAdapter }],
+        this.instance.injector = Injector.create({
+            providers: [
+                { provide: DataAdapter, useValue: this.instance.dataAdapter },
+            ],
             parent: this.injector,
         });
-        vm.component = this;
-        vm.columns = inputs.columns ?? {};
-        vm.inputs = inputs;
+        this.instance.component = this;
+        this.instance.columns = inputs.columns ?? {};
+        this.instance.inputs = inputs;
 
-        return vm;
+        return this.instance;
     });
 
-    async ngOnInit() {
-        const vm = this.vm();
-        await vm?.["onInit"]?.();
-    }
-
     async ngAfterViewInit() {
-        const vm = this.vm();
-        await vm?.["afterViewInit"]?.();
-        if (vm.inputs.queryParams) {
-            const vmQps: DataListViewModelQueryParam[] = vm.inputs.queryParams;
+        await this.instance?.['afterViewInit']?.();
+        if (this.instance.inputs.queryParams) {
+            const vmQps: DataListViewModelQueryParam[] =
+                this.instance.inputs.queryParams;
             this.route.queryParams.subscribe((params) => {
                 const qps = vmQps
                     .filter((qp) => params[qp.param])
                     .map((qp) => ({ [qp.param]: params[qp.param] }))
                     .reduce((acc, qp) => ({ ...acc, ...qp }), {});
-                vm.dataAdapter.filter = { ...vm.dataAdapter.filter, ...qps };
+                this.instance.dataAdapter.filter = {
+                    ...this.instance.dataAdapter.filter,
+                    ...qps,
+                };
             });
         }
     }
 
     async ngOnDestroy() {
-        await this.vm()?.["onDestroy"]?.();
+        await this.instance?.['onDestroy']?.();
     }
 
-    async onAction(e: ActionEvent) {
-        // const { name } = e.action as DataTableActionDescriptor;
-        // const vm = this.vm();
-        // if (!vm) throw new Error('ViewModel not initialized');
-        // if (!vm[name])
-        //     throw new Error(`Handler ${name} not found in ViewModel`);
+    // async onAction(e: ActionEvent) {
+    //     // const { name } = e.action as DataTableActionDescriptor;
+    //     // const vm = this.vm();
+    //     // if (!vm) throw new Error('ViewModel not initialized');
+    //     // if (!vm[name])
+    //     //     throw new Error(`Handler ${name} not found in ViewModel`);
 
-        const a = e.action;
-        await a["handler"]?.({
-            ...e,
-            context: {
-                ...e.context,
-                component: this,
-                dataTable: this.dataTable,
-            },
-        });
-    }
+    //     const a = e.action;
+    //     await a['handler']?.({
+    //         ...e,
+    //         context: {
+    //             ...e.context,
+    //             component: this,
+    //             dataTable: this.dataTable,
+    //         },
+    //     });
+    // }
 
     onSelectionChange(event: any) {
         const vm = this.vm();

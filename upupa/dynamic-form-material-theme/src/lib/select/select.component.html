@@ -1,6 +1,6 @@
 <mat-form-field
     [appearance]="appearance()"
-    (keydown)="keyDown($event, selectInput)"
+    (keydown)="keyDown($event)"
     [floatLabel]="floatLabel()"
     style="width: 100%"
 >
@@ -11,7 +11,6 @@
         multiple
         [disabled]="disabled()"
         #selectInput
-        [class.ng-dirty]="control().dirty"
         (openedChange)="openedChange($event, selectInput)"
         (keydown)="keyDown($event, selectInput)"
         (click)="
@@ -21,7 +20,7 @@
         [panelClass]="panelClass()"
         [value]="selected"
         (valueChange)="valueChanged($event)"
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [placeholder]="placeholder()"
         [required]="required()"
     >
@@ -50,24 +49,12 @@
             @if(itemTemplate){
 
             <ng-container
-                [ngTemplateOutlet]="itemTemplate()"
+                [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate"
                 [ngTemplateOutletContext]="{ item: item }"
             >
             </ng-container>
-            } @else{ @if(item.image){
-            <img
-                #img
-                style="
-                    max-height: 3em;
-                    margin-bottom: -16px;
-                    margin-inline-end: 10px;
-                "
-                [src]="item.image"
-                (error)="img.onerror = null; img.src = ''"
-            />
-            }
-            <!-- <span>{{ item.display }}</span> -->
-            <div>{{ item | json }}</div>
+            } @else{
+            <!-- TEMP{LATE} -->
 
             }
         </mat-option>
@@ -88,7 +75,6 @@
     <mat-select
         #selectInput
         [disabled]="disabled()"
-        [class.ng-dirty]="control().dirty"
         (openedChange)="openedChange($event, selectInput)"
         (click)="
             $event.stopPropagation();
@@ -97,7 +83,7 @@
         [panelClass]="panelClass()"
         [value]="singleSelected()"
         (valueChange)="valueChanged($event)"
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [placeholder]="placeholder()"
         [required]="required()"
     >
@@ -108,27 +94,11 @@
         >} @for(item of items$ | async; track i; let i = $index){
 
         <mat-option [value]="item.key">
-            @if(itemTemplate){
-
             <ng-container
-                [ngTemplateOutlet]="itemTemplate()"
+                [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate"
                 [ngTemplateOutletContext]="{ item: item }"
             >
             </ng-container>
-            } @else{ @if(item.image){
-            <img
-                #img
-                style="
-                    max-height: 3em;
-                    margin-bottom: -16px;
-                    margin-inline-end: 10px;
-                "
-                [src]="item.image"
-                (error)="img.onerror = null; img.src = ''"
-            />
-            }
-            <span>{{ item.display }}</span>
-            }
         </mat-option>
 
         }
@@ -154,13 +124,13 @@
     </button>
     } @if(hint()){
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control().errors | keyvalue; track error) {
-    <mat-error>{{errorMessages()?.[error.key+''] || error.key}} </mat-error>
+    } @for (error of errorMessages() | keyvalue; track error) {
+    <mat-error>{{error.key}} </mat-error>
     }
 </mat-form-field>
 
 <ng-template #noDataTemplate>
-    @if(adapter().normalized?.length === 0){
+    @if((adapter().normalized$ | async)?.length === 0){
     <p style="padding: 1rem; margin: 0; margin-block-start: -1rem">
         No items found
     </p>
@@ -197,4 +167,16 @@
         </button>
         }
     </div>
+</ng-template>
+
+<ng-template #defaultItemTemplate let-item="item">
+    @if(item.image){
+    <img
+        #img
+        style="max-height: 3em; margin-bottom: -16px; margin-inline-end: 10px"
+        [src]="item.image"
+        (error)="img.onerror = null; img.src = ''"
+    />
+    }
+    <span>{{ item.display }}</span>
 </ng-template>

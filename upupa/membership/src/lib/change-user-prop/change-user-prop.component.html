@@ -26,7 +26,7 @@
             mat-icon-button
             color="primary"
             (click)="changeProp(); editing.set(false)"
-            [disabled]="control().invalid"
+            [disabled]="disabled()"
         >
             <mat-icon>check</mat-icon>
         </button>

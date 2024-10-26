@@ -19,6 +19,7 @@ import {
     EnvironmentInjector,
     inject,
     reflectComponentType,
+    ElementRef,
 } from '@angular/core';
 import {
     UntypedFormGroup,
@@ -32,6 +33,7 @@ import { DynamicFormInputsMapService } from './dynamic-form-inputsMap.service';
 import { IFieldInputResolver } from './ifield-input.resolver';
 import { DynamicComponentMapping } from './types/types';
 import { FieldItem } from './types';
+import { validatorsMap } from './dynamic-form.service';
 
 //TODO
 /*
@@ -113,24 +115,38 @@ export class DynamicFieldDirective implements OnChanges, OnInit, OnDestroy {
             if (inputResolver) {
                 _inputs = await inputResolver.resolve(_inputs);
             }
-        });        
+        });
 
-        for (const name in _inputs) {
-            if (name === 'input') continue; //skip input property
-            const currentValue = _inputs[name];
+        for (const inputName in _inputs) {
+            if (inputName === 'input') continue; //skip input property
+            const currentValue = _inputs[inputName];
             if (currentValue === undefined && firstChange) continue;
             const componentInputs = this.componentMirror.inputs;
-            if (componentInputs.some((i) => i.templateName === name)) {
-                this.componentRef.setInput(name, currentValue);
+            const inputInfo = componentInputs.find(
+                (i) => i.templateName === inputName
+            );
+            if (inputInfo) {
+                try {
+                    this.componentRef.setInput(inputName, currentValue);
+                } catch (e) {
+                    const { templateName, isSignal } = inputInfo;
+                    console.error(
+                        `Setting component ${
+                            this.componentMirror.selector
+                        }'s input ${templateName} ${
+                            isSignal ? '(Signal)' : ''
+                        }`,
+                        e.message
+                    );
+                }
             } else {
                 console.warn(
-                    `Input ${name} not found in component ${this.componentMirror.selector}`
+                    `Input ${inputName} not found in component ${this.componentMirror.selector}`
                 );
             }
         }
 
-        if (this.componentRef.instance.ngOnChanges)
-            this.componentRef.changeDetectorRef.detectChanges();
+        this.componentRef.changeDetectorRef.detectChanges();
     }
 
     setComponentOutputs(outputs: any) {
@@ -151,10 +167,10 @@ export class DynamicFieldDirective implements OnChanges, OnInit, OnDestroy {
             )
                 continue;
 
-            const currenthandler = outputs[outputInfo.propName];
+            const currentHandler = outputs[outputInfo.propName];
 
-            if (typeof currenthandler === 'function')
-                emitter.subscribe((v) => currenthandler(v));
+            if (typeof currentHandler === 'function')
+                emitter.subscribe((v) => currentHandler(v));
             else
                 console.error(
                     `HANDLER FOR OUTPUT ${outputInfo.propName} is not a Function`
@@ -172,34 +188,23 @@ export class DynamicFieldDirective implements OnChanges, OnInit, OnDestroy {
 
         this.control = this.group().controls[this.field().name];
         const { inputs, outputs } = this.field().ui ?? {};
+        inputs['name'] = this.field().name;
+        inputs['validators'] = (this.field().validations ?? [])
+            .filter((v, i, a) => a.findIndex((x) => x.name === v.name) === i)
+            .map((v) => ({
+                validate: (control) => validatorsMap[v.name](v)(control),
+            }));
 
-        if (
-            this.componentMirror.inputs.some(
-                (i) => i.templateName === 'control'
-            )
-        ) {
+        const controlInputInfo = this.componentMirror.inputs.find(
+            (i) => i.templateName === 'control'
+        );
+        if (controlInputInfo) {
             inputs['control'] = this.control;
-            //if component know how to handle control pass to it
-            // this.componentRef.setInput('control', this.control);
-            // this.componentRef.changeDetectorRef.detectChanges();
         } else
             this.initFormControlDirective(
                 this.componentRef.instance,
                 this.control as UntypedFormControl
             ); //else use the built-in control directive
-
-        if (
-            this.field().validations &&
-            this.componentMirror.inputs.some(
-                (i) => i.templateName === 'errorMessages'
-            )
-        ) {
-            const em = {};
-            this.field().validations.forEach((v) => (em[v.name] = v.message));
-            inputs['errorMessages'] = em;
-            // this.componentRef.setInput('errorMessages', em);
-            // this.componentRef.changeDetectorRef.detectChanges();
-        }
 
         if (inputs) this.setComponentInputs(inputs, true);
         if (outputs) this.setComponentOutputs(outputs);
@@ -230,8 +235,6 @@ export class DynamicFieldDirective implements OnChanges, OnInit, OnDestroy {
         this.componentRef = this.host.createComponent(this.componentType);
 
         this.inlineErrors = this.componentRef.instance.inlineError === true;
-
-        this.componentRef.instance.name = this.field().name;
 
         this.setupControl();
     }

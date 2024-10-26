@@ -5,11 +5,16 @@
     (ngSubmit)="onSubmit($event)"
     [formGroup]="formRenderer.form"
 >
-    @for(field of formRenderer.fields; track field.path){
+    @for(fieldInfo of vm().fields; track $index) {
+
     <ng-container
         *ngTemplateOutlet="
             fieldTemplate;
-            context: { field: field, form: formRenderer.form }
+            context: {
+                field: fieldInfo.field,
+                template: fieldInfo.template,
+                form: vm().formGroup
+            }
         "
     ></ng-container>
     } @if(recaptcha()){
@@ -21,7 +26,12 @@
     <input type="submit" style="display: none" />
 </form>
 
-<ng-template #fieldTemplate let-field="field" let-form="form">
+<ng-template
+    #fieldTemplate
+    let-field="field"
+    let-template="template"
+    let-form="form"
+>
     @if (field.type === 'fieldset') {
     <fieldset
         id="{{ field.ui?.id || field.name }}-container"
@@ -57,37 +67,12 @@
         [renderer]="field.ui?.inputs?.['renderer'] || 'markdown'"
     ></paragraph>
     } @default {
-    <div
-        id="{{ field.ui?.id || field.name }}-container"
-        class="{{ field.input }}-input ff-container"
-        [class.hidden]="field.ui?.hidden === true"
-        [class.dirty]="dd.control?.dirty ? true : false"
-        [class.touched]="dd.control?.touched ? true : false"
-    >
-        @if (field.text) {
-        <paragraph
-            [class.hidden]="field.ui?.hidden === true"
-            [text]="field.text"
-            [renderer]="field.ui?.inputs?.['renderer'] || 'markdown'"
-        ></paragraph>
-        }
-        <ng-container
-            #dd="dynamicField"
-            dynamicField
-            [inputs]="field.ui?.inputs"
-            [componentMap]="formService.getControl(field.input, theme())"
-            [field]="field"
-            [group]="form"
-        ></ng-container>
-    </div>
-    @if (dd.control && !dd.inlineErrors && dd.control.touched &&
-    dd.control.errors) {
-    <div>
-        @for (error of dd.control.errors | keyvalue; track error) {
-        <mat-error>{{ error.key }} {{ error.value }}</mat-error>
-        }
-    </div>
-    } } }
+    <dynamic-form-field
+        [field]="field"
+        [template]="template"
+        [form]="form"
+    ></dynamic-form-field>
+    } }
     <!-- <mat-list *ngIf="form[field.name]?.touched">
     <mat-list-item *ngFor="let error of helper.controls[field.name].errors | keyvalue">
       <button type="button" style="margin:5px;box-shadow: 0px 2px 5px -1px rgba(0, 0, 0, 0.2), 0px 1px 10px 0px rgba(0, 0, 0, 0.14);" mat-mini-fab color="accent" *ngIf="error.value?.validationTask && validationTasks[field.name].state != 'error'; else icon" [disabled]="validationTasks[field.name].disabled" matTooltip="{{validationTasks[field.name].error?.msg}}" (click)="runValidationTask(field)">

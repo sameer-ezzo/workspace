@@ -5,22 +5,30 @@ import {
     ValidatorFn,
     UntypedFormGroup,
     UntypedFormControl,
+    FormGroup,
 } from '@angular/forms';
-import { EventBus } from '@upupa/common';
+import { DynamicComponent, EventBus } from '@upupa/common';
 import {
     Subject,
     Subscription,
     debounceTime,
     filter,
     firstValueFrom,
-    skip,
 } from 'rxjs';
 import { _mergeFields } from './dynamic-form.helper';
 import { DynamicFormService } from './dynamic-form.service';
-import { Field, Fieldset, FieldItem, ValidationTask, Validator } from './types';
+import {
+    Field,
+    Fieldset,
+    FieldItem,
+    ValidationTask,
+    Validator,
+    FormScheme,
+} from './types';
 import { TaskValidationComponent } from './task.validation.component/task.validation.component';
 import { DynamicFormEvents as DF_Events } from './events/events';
 import { DialogService } from '@upupa/dialog';
+import { JsonPointer } from '@noah-ark/json-patch';
 
 export class DynamicFormRenderer<T = any> {
     _lockChange = 0;
@@ -237,7 +245,7 @@ export class DynamicFormRenderer<T = any> {
                 filter((value) => value != null),
                 debounceTime(5000)
             )
-            .subscribe(() => {
+            .subscribe((v) => {
                 if (!task.disabled && task.state === 'send') {
                     control.markAsTouched();
                     this.runValidationTask(field);
@@ -303,7 +311,7 @@ export class DynamicFormRenderer<T = any> {
         try {
             if (this.fields) {
                 for (const f of this.fields) {
-                    const v = val ? val[f.name] : undefined;
+                    const v = val ? JsonPointer.get(val, f.path) : undefined;
                     if (v === undefined) continue;
                     if (f.type === 'fieldset')
                         this._writeOnFieldset(f, this.form, v);
@@ -319,14 +327,15 @@ export class DynamicFormRenderer<T = any> {
         }
     }
 
-    _writeOnFieldset(fieldset: Fieldset, form: any, val: any) {
-        const group = form[fieldset.name];
+    _writeOnFieldset(fieldset: Fieldset, form: FormGroup, val: any) {
+        const group = form.get(fieldset.name);
         for (const name in fieldset.items) {
             const f = fieldset.items[name];
-            const v = val ? val[f.name] : undefined;
+            const v = val ? JsonPointer.get(val, f.path) : undefined;
             if (v === undefined) continue;
 
-            if (f.type === 'fieldset') this._writeOnFieldset(f, group, v);
+            if (f.type === 'fieldset')
+                this._writeOnFieldset(f, group as FormGroup, v);
             else this._writeOnControl(f, v);
         }
     }
@@ -334,7 +343,7 @@ export class DynamicFormRenderer<T = any> {
     _writeOnControl(f: Field, v: any) {
         const c = this.controls.get(f);
         if (c?.value !== v) {
-            c?.setValue(v);
+            c?.setValue(v, { emitEvent: false });
             this.bus.emit(
                 DF_Events.valueChanged,
                 { msg: DF_Events.valueChanged, fields: f.path, value: v },
@@ -344,4 +353,145 @@ export class DynamicFormRenderer<T = any> {
     }
 
     destroy() {}
+}
+
+export function schemeToFields(
+    scheme: FormScheme,
+    fb: UntypedFormBuilder,
+    value: any,
+    formService: DynamicFormService,
+    theme: string
+) {
+    const fields: { field: Field; template: DynamicComponent }[] = [];
+    const formGroup = fb.group({});
+    const fieldsArr = Object.values(scheme);
+    processFields(
+        fieldsArr,
+        formGroup,
+        '/',
+        value,
+        fb,
+        formService,
+        theme,
+        fields
+    );
+
+    return { formGroup, fields };
+}
+
+function processFields(
+    scheme: Field[],
+    form: UntypedFormGroup,
+    path: string,
+    value: any,
+    fb: UntypedFormBuilder,
+    formService: DynamicFormService,
+    theme: string,
+    fields: { field: Field; template: DynamicComponent }[]
+) {
+    for (const fieldName in scheme) {
+        const field = scheme[fieldName];
+        if (field.type === 'fieldset')
+            processFieldset(
+                <Fieldset>field,
+                form,
+                path,
+                value?.[field.name],
+                fb,
+                formService,
+                theme,
+                fields
+            );
+        else
+            processFieldItem(
+                <FieldItem>field,
+                form,
+                path,
+                value?.[field.name],
+                fb,
+                formService,
+                theme,
+                fields
+            );
+    }
+}
+
+function processFieldset(
+    fieldset: Fieldset,
+    form: UntypedFormGroup,
+    path: string,
+    value: any,
+    fb: UntypedFormBuilder,
+    formService: DynamicFormService,
+    theme: string,
+    fields: { field: Field; template: DynamicComponent }[]
+): void {
+    let nestedForm = form.controls[fieldset.name] as UntypedFormGroup;
+    if (!nestedForm) {
+        nestedForm = fb.group({});
+        form.addControl(fieldset.name, nestedForm);
+    }
+    processFields(
+        Object.values(fieldset.items),
+        nestedForm,
+        `${path}/${fieldset.name}`,
+        value,
+        fb,
+        formService,
+        theme,
+        fields
+    );
+}
+
+function processFieldItem(
+    field: FieldItem,
+    form: UntypedFormGroup,
+    path: string,
+    value: any,
+    fb: UntypedFormBuilder,
+    formService: DynamicFormService,
+    theme: string,
+    fields: { field: Field; template: DynamicComponent }[]
+): void {
+    const componentMap = formService.getControl(field.input, theme);
+    if (componentMap.field) _mergeFields(field, componentMap.field);
+    field['path'] = `${path}/${field.name}`;
+
+    const control = fb.control(value);
+
+    const template = {
+        component: componentMap.component,
+        inputs: field.ui.inputs,
+        outputs: field.ui.outputs,
+        class: field.ui.class,
+    };
+    fields.push({
+        field,
+        template,
+    });
+    // control.valueChanges.subscribe((v) =>
+    //     bus.emit(
+    //         DF_Events.valueChanged,
+    //         {
+    //             msg: DF_Events.valueChanged,
+    //             fields: field.path,
+    //             value: v,
+    //         },
+    //         parent
+    //     )
+    // );
+
+    // control.setValue(value, { emitEvent: false, onlySelf: true });
+    // const validators = getValidators(field);
+    // control.addValidators(validators);
+    // control.markAsPristine();
+    // control.markAsUntouched();
+
+    // controls.set(field, control);
+    // if (form.controls[field.name]) form.removeControl(field.name);
+    form.addControl(field.name, control);
+
+    // if (field.validationTask) {
+    //     setupValidationTask(field, control);
+    // }
 }

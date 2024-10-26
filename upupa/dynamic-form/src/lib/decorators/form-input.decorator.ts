@@ -6,12 +6,24 @@ import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
 import { DynamicFormInputs } from '../dynamic-form-inputs';
 import { JsonPointer } from '@noah-ark/json-patch';
-import { FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
+import {
+    FormFieldOptions,
+    SimpleDataAdapter,
+    VisibleFormFieldOptions,
+} from './decorators.types';
+import { getLanguageInfo } from '@upupa/language';
 
 const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
 export type DynamicFormOptionsMetaData = DynamicFormOptions & {
-    fields: FormScheme;
+    fields: Record<
+        string,
+        {
+            options: Partial<FormFieldOptions>;
+            localize: boolean | undefined;
+            target: any;
+        }
+    >;
     onSubmitAction?: Omit<ActionDescriptor, 'name'> & {
         name: 'onSubmit';
         handlerName: string;
@@ -29,6 +41,7 @@ const setDynamicFormOptionsMetadataFor = (
     const parent = target.prototype
         ? Object.getPrototypeOf(target.prototype)?.constructor
         : null;
+
     if (parent && parent.constructor)
         targetOptions = {
             ...resolveDynamicFormOptionsFor(parent),
@@ -40,66 +53,191 @@ const setDynamicFormOptionsMetadataFor = (
         { ...targetOptions, ...value },
         target
     );
-    Reflect.defineMetadata(
-        formSchemeMetadataKey,
-        { ...targetOptions, ...value },
-        target.constructor
-    );
 };
 
-export const resolveDynamicFormOptionsFor = (
+const resolveDynamicFormOptionsFor = (
     target: any
 ): DynamicFormOptionsMetaData =>
-    Object.assign(
-        {},
-        Reflect.getMetadata(formSchemeMetadataKey, target.constructor),
-        Reflect.getMetadata(formSchemeMetadataKey, target)
-    );
+    (Reflect.getMetadata(formSchemeMetadataKey, target) ??
+        {}) as DynamicFormOptionsMetaData;
 
 export const resolveFormSchemeOf = (target: any) =>
     resolveDynamicFormOptionsFor(target)?.fields;
+export type DynamicFormOptions<T = any> = Omit<
+    DynamicFormInputs<T>,
+    'fields'
+> & {
+    locales?: { defaultLocale: string; translations: string[] };
+};
+
+export function formScheme(options?: DynamicFormOptions) {
+    return function (target: any) {
+        const formOptions = resolveDynamicFormOptionsFor(target);
+
+        // const currentFields = formOptions?.['fields'] ?? {};
+
+        const opts = {
+            ...formOptions,
+            ...options,
+        };
+        // opts.fields = {
+        //     ...currentFields,
+        //     ...(options?.['fields'] ?? {}),
+        // } as FormScheme;
+        opts.name = (opts.name ?? target.name)
+            .trim()
+            .toLowerCase()
+            .replace(/\//g, '-');
+
+        // append translations fieldset to the end of the form fields
+        // const translations = opts.fields['translations'];
+        // if (translations) {
+        //     delete opts.fields['translations'];
+        //     opts.fields['translations'] = translations;
+        // }
+
+        setDynamicFormOptionsMetadataFor(target, opts);
+    };
+}
+export function submitAction(action: Partial<Omit<ActionDescriptor, 'name'>>) {
+    return function (target: any, propertyKey: string) {
+        const inputs =
+            resolveDynamicFormOptionsFor(target.constructor) ??
+            ({} as DynamicFormOptionsMetaData);
+
+        const submitAction = {
+            ...action,
+            name: 'onSubmit',
+            type: 'submit',
+            handlerName: propertyKey,
+        };
+        inputs.onSubmitAction = submitAction as any;
+        setDynamicFormOptionsMetadataFor(target.constructor, inputs);
+    };
+}
+
+export function formAction(
+    action: Partial<ActionDescriptor> & { order?: number }
+) {
+    return function (target: any, propertyKey: string) {
+        const inputs =
+            resolveDynamicFormOptionsFor(target) ??
+            ({} as DynamicFormOptionsMetaData);
+        inputs.actions ??= [];
+
+        const _action = {
+            ...action,
+            name: action.name || propertyKey,
+            handlerName: propertyKey,
+            order: action.order ?? inputs.actions.length,
+        };
+        inputs.actions.push(_action);
+        setDynamicFormOptionsMetadataFor(target, inputs);
+    };
+}
+
+export function localizedInput(options: FormFieldOptions) {
+    return function (target: any, propertyKey: string) {
+        const fieldOpts = { ...options };
+        fieldOpts['localize'] = true;
+        formInput(fieldOpts)(target, propertyKey);
+    };
+}
+function guessFieldInputType(target, propertyKey, options): string {
+    let input = options['input'];
+    if (input) return input;
+    // get the type of the property
+    const type = Reflect.getMetadata('design:type', target, propertyKey);
+    if (type === Number) return 'number';
+    else if (type === Boolean) return 'switch';
+    else if (type === Array) return 'select';
+    else if (type === Date) return 'date';
+    else if (type === Object) return 'fieldset';
+    else return 'text';
+}
+
+export function formInput(options: FormFieldOptions = { input: 'text' }) {
+    return function (target: any, propertyKey: string) {
+        const opts = resolveDynamicFormOptionsFor(target.constructor);
+        opts.fields ??= {};
+        const localize = options['localize'];
+        delete options['localize'];
+        opts.fields[propertyKey] = { options, localize, target };
+        setDynamicFormOptionsMetadataFor(target.constructor, opts);
+    };
+}
+
+export function resolveFormViewmodelInputs(
+    viewmodel: new <T = any>(...args: any[]) => T
+): DynamicFormInputs &
+    Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'> {
+    const formOptions = resolveDynamicFormOptionsFor(viewmodel);
+    const inputs = {
+        conditions: formOptions.conditions,
+        name: formOptions.name ?? viewmodel.name,
+        preventDirtyUnload: formOptions.preventDirtyUnload,
+        recaptcha: formOptions.recaptcha,
+        theme: formOptions.theme,
+        actions: formOptions.actions,
+        onSubmitAction: formOptions.onSubmitAction,
+    };
+    const fields: FormScheme = buildFormScheme(
+        formOptions as Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>
+    );
+    return { ...inputs, fields } as DynamicFormInputs &
+        Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'>;
+}
+
+function buildFormScheme(
+    info: Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>
+): FormScheme {
+    const result = {} as FormScheme;
+    const { fields, locales } = info;
+    for (const key in fields) {
+        const { options, localize, target } = fields[key];
+        result[key] = makeFieldItem(key, options, target, locales);
+        // if (localize) {
+        //     const fieldTranslations = _localizeField(
+        //         result[key] as FieldItem,
+        //         locales,
+        //         options
+        //     );
+        // }
+    }
+    return result;
+}
 
 function makeFieldItem(
-    target: any,
     propertyKey: string,
-    options: FormFieldOptions
+    options: Partial<FormFieldOptions>,
+    target: any,
+    locales?: DynamicFormOptionsMetaData['locales']
 ): Field {
-    if (!options['input']) {
-        // get the type of the property
-        const type = Reflect.getMetadata('design:type', target, propertyKey);
-        if (type === Number) options['input'] = 'number';
-        else if (type === Boolean) options['input'] = 'switch';
-        else if (type === Array) options['input'] = 'select';
-        else if (type === Date) options['input'] = 'date';
-        else if (type === Object) options['input'] = 'fieldset';
-        else options['input'] = 'text';
-    }
+    const opts = options ?? {};
+    const label = opts['label'] ?? toTitleCase(propertyKey);
 
-    const opts = options as VisibleFormFieldOptions & FormFieldOptions;
-    const label = opts.label ?? opts.text ?? toTitleCase(propertyKey);
+    const inputs = {
+        required: options.required,
+        text: opts['text'],
+        hidden: opts['hidden'] === true,
+        label,
+        placeholder: opts['placeholder'],
+        appearance: opts['appearance'],
+        fieldName: propertyKey,
+        // ...options,
+        ...(options['inputs'] || {}),
+    } as VisibleFormFieldOptions;
+
+    if ('readonly' in inputs) inputs['readonly'] = inputs['readonly'] === true;
+    if ('disabled' in inputs) inputs['disabled'] = inputs['disabled'] === true;
+
+    options['input'] = guessFieldInputType(target, propertyKey, options);
 
     const fieldBase = {
         name: propertyKey,
         validations: options.validations || [],
-        ui: {
-            inputs: {
-                required: options.required,
-                readonly: options['readonly'] === true,
-                disabled: options['disabled'] === true,
-                text: opts.text,
-                hidden: opts.hidden,
-                label,
-                placeholder: opts.placeholder,
-                appearance: opts.appearance,
-                ...options,
-            } as VisibleFormFieldOptions,
-        },
+        ui: { inputs },
     } as Field;
-    delete fieldBase.ui.inputs['inputs'];
-    fieldBase.ui.inputs = {
-        ...fieldBase.ui.inputs,
-        ...(options['inputs'] || {}),
-    };
 
     if (options['input'] === 'fieldset') {
         fieldBase.type = 'fieldset';
@@ -108,10 +246,15 @@ function makeFieldItem(
             target,
             propertyKey
         );
-        (fieldBase as Fieldset).items =
-            propType && typeof propType === 'function'
+        const items =
+            typeof propType === 'function'
                 ? resolveFormSchemeOf(propType) ?? {}
                 : {};
+
+        (fieldBase as Fieldset).items = buildFormScheme({
+            fields: items,
+            locales: locales,
+        });
         return fieldBase;
     }
 
@@ -124,6 +267,12 @@ function makeFieldItem(
 
     if (input.length === 0) field.input = 'hidden';
 
+    if (input === 'array') {
+        options['adapter'] = {
+            dataSource: 'client',
+            data: [],
+        } as SimpleDataAdapter;
+    }
     if (options['adapter']) {
         field.ui.inputs['_adapter'] = options['adapter'];
         delete field.ui.inputs['adapter'];
@@ -170,15 +319,13 @@ function makeFieldItem(
         field.ui.inputs['uploadPath'] = htmlOptions.path || '';
         return field;
     }
+
     return field;
 }
-function addInputToFormScheme(path: string, field: Field, target: any) {
-    const formOptions =
-        resolveDynamicFormOptionsFor(target) ??
-        ({} as DynamicFormOptionsMetaData);
-    const fields = formOptions.fields ?? {};
 
-    path ??= field.name;
+function addInputToFormScheme(path: string, field: Field, target: any) {
+    const formOptions = resolveDynamicFormOptionsFor(target);
+    const fields = formOptions.fields ?? {};
 
     const segments = path.split('/').filter((s) => s);
     if (segments.length === 1) {
@@ -200,95 +347,32 @@ function addInputToFormScheme(path: string, field: Field, target: any) {
             }
         }
     }
-    setDynamicFormOptionsMetadataFor(target.constructor, {
+    setDynamicFormOptionsMetadataFor(target, {
         ...formOptions,
         fields,
     });
 }
-export const toField = (
-    target: any,
-    propertyKey: string,
-    options: FormFieldOptions
-) => makeFieldItem(target, propertyKey, options);
 
-export type DynamicFormOptions<T = any> = Omit<
-    DynamicFormInputs<T>,
-    'fields'
-> & {
-    locales?: { defaultLocale: string; translations: string[] };
-    path?: string;
+const makeTranslationFieldset = (name, path, label): Fieldset => {
+    return {
+        type: 'fieldset',
+        input: 'fieldset',
+        name,
+        items: {},
+        path,
+        ui: {
+            inputs: {
+                label,
+            },
+        },
+    } as Fieldset;
 };
 
-export function formScheme(options?: DynamicFormOptions) {
-    return function (target: any) {
-        const formOptions =
-            resolveDynamicFormOptionsFor(target) ??
-            ({} as DynamicFormOptionsMetaData);
-
-        const currentFields = formOptions?.['fields'] ?? {};
-        const optionsFields = options?.['fields'] ?? {};
-        const fields = { ...currentFields, ...optionsFields } as FormScheme;
-        const opts = {
-            ...formOptions,
-            ...options,
-            fields,
-        };
-        if ((opts.name || '').trim().length === 0)
-            opts.name = target.name.replace(/\//g, '-').toLowerCase();
-
-        setDynamicFormOptionsMetadataFor(target.constructor, opts);
-        const translationFieldset = makeLocalesInputs(opts);
-        if (translationFieldset) {
-            addInputToFormScheme('translations', translationFieldset, target);
-        }
-    };
-}
-
-// type DataTableRowActionDescriptor = { order?: number } & (
-//   | ActionDescriptor
-//   | ((row: any) => ActionDescriptor)
-// );
-
-export function submitAction(action: Partial<Omit<ActionDescriptor, 'name'>>) {
-    return function (target: any, propertyKey: string) {
-        const inputs =
-            resolveDynamicFormOptionsFor(target) ??
-            ({} as DynamicFormOptionsMetaData);
-
-        const submitAction = {
-            ...action,
-            name: 'onSubmit',
-            type: 'submit',
-            handlerName: propertyKey,
-        };
-        inputs.onSubmitAction = submitAction as any;
-        setDynamicFormOptionsMetadataFor(target.constructor, inputs);
-    };
-}
-
-export function formAction(
-    action: Partial<ActionDescriptor> & { order?: number }
-) {
-    return function (target: any, propertyKey: string) {
-        const inputs =
-            resolveDynamicFormOptionsFor(target) ??
-            ({} as DynamicFormOptionsMetaData);
-        inputs.actions ??= [];
-
-        const _action = {
-            ...action,
-            name: action.name || propertyKey,
-            handlerName: propertyKey,
-            order: action.order ?? inputs.actions.length,
-        };
-        inputs.actions.push(_action);
-        setDynamicFormOptionsMetadataFor(target.constructor, inputs);
-    };
-}
-const makeLocalesInputs = (
+const _localizeField = (
+    field: FieldItem,
+    locales: DynamicFormOptionsMetaData['locales'],
     formOptions: DynamicFormOptionsMetaData
 ): Fieldset | undefined => {
-    const { locales } = formOptions;
     if (!locales) return undefined;
     const defaultLocale = (locales.defaultLocale ?? '').trim();
     const translations = (locales.translations ?? []).filter((x) =>
@@ -297,68 +381,36 @@ const makeLocalesInputs = (
 
     if (!locales || !defaultLocale.length || !translations.length)
         return undefined;
+    
+    return undefined;
+    // const translationFieldset = formOptions.fields['translations'] as Fieldset;
+    // if (!translationFieldset) return undefined;
 
-    const translationField = (name, path, label) => {
-        return {
-            type: 'fieldset',
-            input: 'fieldset',
-            name,
-            items: {},
-            path,
-            ui: {
-                inputs: {
-                    label,
-                },
-            },
-        } as Fieldset;
-    };
-    const translationsFields = translations.reduce((acc, locale) => {
-        return {
-            ...acc,
-            [locale]: translationField(
-                locale,
-                `/translations/${locale}`,
-                locale
-            ),
-        };
-    }, {});
+    // const fieldPath = field.path ?? `/${field.name}`;
 
-    const fields = formOptions['fields'];
-    const fieldEntries = Object.entries(fields);
-    const translationFieldset = translationField(
-        'translations',
-        '/translations',
-        'Translations'
-    );
-    for (const [name, field] of fieldEntries) {
-        if (field['ui']?.['inputs']?.['localize'] !== true) continue;
-        const entries = Object.entries(translationsFields);
-        for (const [locale, fieldset] of entries) {
-            const translationField = { ...(field as any) };
-            translationField.path = `${fieldset['path']}${translationField.path}`;
-            fieldset['items'][name] = translationField;
-            translationFieldset.items[locale] = fieldset as Field;
-        }
-    }
-    return translationFieldset;
+    // const segments = fieldPath.split('/').filter((s) => s);
+
+    // for (const locale of translations) {
+    //     const p = [locale, ...segments].slice(0, -1);
+    //     let b = '';
+    //     let fieldset = null;
+    //     for (const s of p) {
+    //         b += `/${s}`;
+    //         fieldset = JsonPointer.get(translationFieldset.items, `${b}`);
+    //         if (!fieldset) {
+    //             fieldset = makeTranslationFieldset(
+    //                 s,
+    //                 `translations${b}`,
+    //                 getLanguageInfo(locale).nativeName
+    //             );
+    //             JsonPointer.set(translationFieldset.items, b, fieldset);
+    //         }
+    //     }
+
+    //     const translationField = { ...(field as any) };
+    //     translationField.path = `${fieldset['path']}${fieldPath}`;
+    //     fieldset['items'][field.name] = translationField;
+    // }
+
+    // return translationFieldset;
 };
-
-export function localizedInput(options: FormFieldOptions) {
-    return function (target: any, propertyKey: string) {
-        options['localize'] = true;
-        formInput(options)(target, propertyKey);
-    };
-}
-
-export function formInput(options: FormFieldOptions = { input: 'text' }) {
-    return function (target: any, propertyKey: string) {
-        const field = toField(target, propertyKey, options);
-        addInputToFormScheme(propertyKey, field, target);
-    };
-}
-
-export function formField(
-    options: FormFieldOptions & { name: string; type: 'field' }
-) {
-    return toField(undefined, options.name, options);
-}

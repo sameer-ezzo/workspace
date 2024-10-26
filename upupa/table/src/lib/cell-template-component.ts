@@ -1,6 +1,7 @@
-import { KeyValue } from "@angular/common";
-import { Component, input, Input, InputSignal } from "@angular/core";
-import { ColumnDescriptor } from "./types";
+import { KeyValue } from '@angular/common';
+import { Component, input, Input, InputSignal } from '@angular/core';
+import { ColumnDescriptor } from './types';
+import { NormalizedItem } from '@upupa/data';
 
 export interface ITableCellTemplate<TValue = any, TElement = any> {
     value?: InputSignal<TValue>;
@@ -10,20 +11,26 @@ export interface ITableCellTemplate<TValue = any, TElement = any> {
 }
 
 @Component({
-    selector: "cell-template",
+    selector: 'cell-template',
     template: `
-        @if (descriptor().value.pipe) {
-            @if (descriptor().value.pipe["pipe"]) {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
-            } @else {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
-            }
+        @if (descriptor().value.pipe) { @if (descriptor().value.pipe["pipe"]) {
+        <div
+            [innerHTML]="
+                value()
+                    | dynamic
+                        : descriptor().value.pipe['pipe']
+                        : descriptor().value.pipe['args']
+            "
+        ></div>
         } @else {
-            {{ value() }}
+        <div [innerHTML]="value() | dynamic : descriptor().value.pipe"></div>
+        } } @else {
+        {{ value() }}
         }
     `,
 })
 export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
     value = input.required();
+    element = input.required<NormalizedItem<T>>();
     descriptor = input<KeyValue<string, ColumnDescriptor>>();
 }

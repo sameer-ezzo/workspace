@@ -29,21 +29,20 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
     panelClass = input('');
     placeholder = input('');
     hint = input('');
-    errorMessages = input({});
+   
 
     _onlySelected = false;
 
     override ngOnInit() {
-        this._value ??= '';
+        // this._value ??= '';
         super.ngOnInit();
     }
 
     _valueChanged(value: any) {
-        this._value = value;
+        // this._value = value;
         // this.q = value as string;
         this.adapter().refresh();
         this._propagateChange();
-        this.control().markAsDirty();
     }
 
     optionSelected(option: MatAutocompleteSelectedEvent) {

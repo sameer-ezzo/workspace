@@ -9,13 +9,12 @@
     <input
         matInput
         [matDatepicker]="picker"
-        (dateChange)="change($event.value)"
-        [value]="value"
+        (dateChange)="onInput($event, $event.value)"
+        [value]="value()"
         #input
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        [formControl]="control()"
     />
     <mat-datepicker-toggle
         matSuffix
@@ -24,8 +23,8 @@
     ></mat-datepicker-toggle>
     @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control()?.errors | keyvalue; track error) {
-    <mat-error>{{errorMessages()?.[error.key+''] || error.key }} </mat-error>
+    } @for (error of errorMessages() | keyvalue; track error.key) {
+    <mat-error>{{ error.key }} </mat-error>
     }
 </mat-form-field>
 <mat-datepicker

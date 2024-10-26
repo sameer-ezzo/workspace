@@ -2,7 +2,7 @@
 >} @if(template() === 'normal'){ @if(maxAllowed() !== 1){
 <div
     class="{{ direction() }} {{ template() }} choices"
-    (focusleave)="onTouch()"
+    (focusleave)="markAsTouched()"
 >
     @for(item of items$ | async; track item.key){
     <mat-checkbox
@@ -19,7 +19,7 @@
 </div>
 }@else{
 <mat-radio-group
-    (focusleave)="onTouch()"
+    (focusleave)="markAsTouched()"
     class="{{ direction() }} {{ template() }} choices"
     [(ngModel)]="selected"
     (ngModelChange)="valueChanged($event)"
@@ -36,7 +36,7 @@
 } } @else {
 <div
     class="{{ direction() }} {{ template() }} choices"
-    (focusleave)="onTouch()"
+    (focusleave)="markAsTouched()"
     tabindex="0"
 >
     @for(item of items$ | async; track item.key){

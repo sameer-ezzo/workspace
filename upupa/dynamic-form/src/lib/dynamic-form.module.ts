@@ -1,37 +1,53 @@
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
-import { DynamicFormComponent } from './dynamic-form.component';
+import {
+    DynamicFormComponent,
+    DynamicFormInputWrapper,
+} from './dynamic-form.component';
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 import { FocusLeaveDirective } from './focusleave.dir';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CollectorComponent } from './collector/collector.component';
 import { UtilsModule } from '@upupa/common';
 import { TaskValidationComponent } from './task.validation.component/task.validation.component';
-import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
+import {
+    DEFAULT_THEME_NAME,
+    DYNAMIC_COMPONENT_MAPPER,
+    DYNAMIC_FORM_OPTIONS,
+} from './di.token';
 import { DynamicFormThemes } from './dynamic-form-themes.type';
 import { DynamicFieldDirective } from './dynamic-field.directive';
-import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme'
+import {
+    DF_NATIVE_THEME_INPUTS,
+    DynamicFormNativeThemeModule,
+    NATIVE_THEME_NAME,
+} from '@upupa/dynamic-form-native-theme';
 import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { MatBtnComponent } from '@upupa/mat-btn';
+import { PortalComponent } from '../../../common/src/lib/portal.component';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 
 const nativeTheme = {
-    [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS
-} as unknown as DynamicFormThemes
+    [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
+} as unknown as DynamicFormThemes;
 
 const declarations = [
     DynamicFormComponent,
     CollectorComponent,
     FocusLeaveDirective,
     DynamicFieldDirective,
-    TaskValidationComponent
+    TaskValidationComponent,
 ];
 
 @NgModule({
     declarations: [...declarations],
-    exports: [...declarations, ScrollingModule],
+    exports: [...declarations, DynamicFormInputWrapper, ScrollingModule],
     bootstrap: [DynamicFormComponent],
     imports: [
         CommonModule,
@@ -40,30 +56,37 @@ const declarations = [
         ReactiveFormsModule,
         ScrollingModule,
         DynamicFormNativeThemeModule,
-        MatBtnComponent
+        MatBtnComponent,
+        PortalComponent,
+        DynamicFormInputWrapper,
     ],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
-        { provide: DYNAMIC_COMPONENT_MAPPER, useValue: { NATIVE_THEME_NAME: DF_NATIVE_THEME_INPUTS } },
+        {
+            provide: DYNAMIC_COMPONENT_MAPPER,
+            useValue: { NATIVE_THEME_NAME: DF_NATIVE_THEME_INPUTS },
+        },
         { provide: DYNAMIC_FORM_OPTIONS, useValue: { enableLogs: false } },
-        provideHttpClient(withInterceptorsFromDi())
-    ]
+        provideHttpClient(withInterceptorsFromDi()),
+    ],
 })
 export class DynamicFormModule {
-    static forRoot(providers?: Provider[],
+    static forRoot(
+        providers?: Provider[],
         themes?: DynamicFormThemes,
         defaultThemeName?: 'native' | string,
-        options: DynamicFormModuleOptions = { enableLogs: false }):
-        ModuleWithProviders<DynamicFormModule> {
-        defaultThemeName ??= NATIVE_THEME_NAME
-        themes = { ...nativeTheme, ...themes }
+        options: DynamicFormModuleOptions = { enableLogs: false }
+    ): ModuleWithProviders<DynamicFormModule> {
+        defaultThemeName ??= NATIVE_THEME_NAME;
+        themes = { ...nativeTheme, ...themes };
         return {
             ngModule: DynamicFormModule,
-            providers: [...providers,
-            { provide: DEFAULT_THEME_NAME, useValue: defaultThemeName },
-            { provide: DYNAMIC_COMPONENT_MAPPER, useValue: themes },
-            { provide: DYNAMIC_FORM_OPTIONS, useValue: options }
-            ]
-        }
+            providers: [
+                ...providers,
+                { provide: DEFAULT_THEME_NAME, useValue: defaultThemeName },
+                { provide: DYNAMIC_COMPONENT_MAPPER, useValue: themes },
+                { provide: DYNAMIC_FORM_OPTIONS, useValue: options },
+            ],
+        };
     }
 }

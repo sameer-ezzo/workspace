@@ -1,11 +1,9 @@
-@if(control()){
 <mat-form-field
-    [class.ng-dirty]="control().dirty"
     [appearance]="appearance()"
     [floatLabel]="floatLabel()"
     style="width: 100%"
 >
-    <input type="hidden" [formControl]="control()" />
+    <input type="hidden" [value]="value()" />
     @if(label()){
     <mat-label>{{ label() }}</mat-label>
     }
@@ -30,7 +28,7 @@
         matInput
         (input)="filterModel.set(filterInput.value); updateFilter()"
         [required]="required()"
-        (blur)="onTouch()"
+        (blur)="markAsTouched()"
         [placeholder]="placeholder()"
         (matChipInputTokenEnd)="onAdding($event.value)"
     />
@@ -51,8 +49,7 @@
         <mat-option [value]=""><span>Add</span></mat-option>
         } -->
     </mat-autocomplete>
-    @for (error of control()?.errors|keyvalue; track error) {
-    <mat-error>{{ getErrorMessage(error) }} </mat-error>
+    @for (error of errorMessages()|keyvalue; track error.key) {
+    <mat-error>{{ error.key }} </mat-error>
     }
 </mat-form-field>
-}

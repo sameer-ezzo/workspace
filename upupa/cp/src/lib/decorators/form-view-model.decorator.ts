@@ -1,7 +1,7 @@
 // decorators => viewModelDefinition => mapping > form scheme
 
 import { Type } from "@angular/core"
-import { formInput, formScheme, resolveDynamicFormOptionsFor, SimpleDataAdapter, Validator } from "@upupa/dynamic-form"
+import { formInput, formScheme, resolveFormViewmodelInputs, Validator } from "@upupa/dynamic-form"
 
 
 export function FormViewModel(
@@ -24,7 +24,7 @@ export function FormViewModel(
 export function extractFormScheme(viewModel: Type<any>) {
     //read reflect metadata
     // map to viewModelDefinition
-    const dynamicFormInputs = resolveDynamicFormOptionsFor(viewModel as any)
+    const dynamicFormInputs = resolveFormViewmodelInputs(viewModel as any)
     return {
         formAttributes: {
             name: dynamicFormInputs.name,

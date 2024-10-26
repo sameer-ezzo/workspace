@@ -10,6 +10,7 @@ import {
     input,
     viewChild,
     model,
+    SimpleChanges,
 } from '@angular/core';
 import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
@@ -46,7 +47,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     panelClass = input('');
     placeholder = input('');
     hint = input('');
-    errorMessages = input<Record<string, string>>({});
+
     valueTemplate = input<TemplateRef<any>>();
     itemTemplate = input<TemplateRef<any>>();
     _onlySelected = false;
@@ -55,7 +56,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     filterInputRef = viewChild.required<ElementRef>('filterInput');
     filterModel = model<string>();
     updateFilter() {
-        // this.adapter.filter = { terms: [this.filterModel()] };
+        this.adapter().filter = { terms: [this.filterModel()] };
     }
 
     clearValue(e) {
@@ -76,7 +77,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
 
     isPanelOpened = false;
     paginatorSubscription: Subscription;
-    @ViewChild('selectInput') selectInput: MatSelect;
+    matSelectInput = viewChild<MatSelect>('selectInput');
 
     removeScrollPaginator(selectInput: MatSelect) {
         this.paginatorSubscription?.unsubscribe();
@@ -103,11 +104,16 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     async valueChanged(key: keyof T | (keyof T)[]) {
-        this.control().markAsDirty();
         this.selectionModel.clear();
-        if (key === undefined) return;
-        if (Array.isArray(key)) key.forEach((k) => this.select(k));
-        else this.select(key);
+        if (key !== undefined) {
+            if (Array.isArray(key)) key.forEach((k) => this.select(k));
+            else this.select(key);
+        }
+
+        const v = this.selectedNormalized.map((x) => x.value);
+        this.writeValue(v as any, true);
+        // this._propagateChange();
+        // this.control().markAsTouched();
     }
 
     // openedChange(event) {
@@ -122,7 +128,10 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     //   }
 
     // }
-
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        super.ngOnChanges(changes);
+        console.log('SelectComponent.ngOnChanges', changes);
+    }
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Input() actions: ActionDescriptor[] = [];
     onAction(event: any, action: ActionDescriptor) {

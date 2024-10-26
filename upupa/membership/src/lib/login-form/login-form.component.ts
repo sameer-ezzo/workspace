@@ -6,6 +6,7 @@ import {
     inject,
     signal,
     ViewChild,
+    output,
 } from '@angular/core';
 import { AuthService, Credentials } from '@upupa/auth';
 import { CollectorComponent, FormScheme } from '@upupa/dynamic-form';
@@ -14,6 +15,7 @@ import { defaultLoginFormFields } from '../default-values';
 import { Condition } from '@noah-ark/expression-engine';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
+import { Principle } from '@noah-ark/common';
 
 @Component({
     selector: 'login-form',
@@ -28,9 +30,9 @@ export class LoginFormComponent {
 
     control = new FormControl();
 
-    @Output() success = new EventEmitter();
-    @Output() resetPassword = new EventEmitter<{ reset_token: string }>();
-    @Output() fail = new EventEmitter();
+    success = output<Principle | { type: 'reset-pwd'; reset_token: string }>();
+    resetPassword = output<{ reset_token: string }>();
+    fail = output<any>();
 
     @Input() model: { email: string; password: string; rememberMe?: boolean } =
         { email: '', password: '' };
@@ -52,7 +54,7 @@ export class LoginFormComponent {
 
         try {
             const res = await this.auth.signin(
-                this.loginForm.value as Credentials
+                this.loginForm.value() as Credentials
             );
             if (res?.type === 'reset-pwd') {
                 //todo: add handeler for reset password in login options
