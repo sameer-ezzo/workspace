@@ -48,7 +48,7 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     required = input<boolean>(false);
     disabled = model(false);
 
-    value = model<T>(undefined);
+    value = model<T>();
 
     onInput(event: any, v: any) {
         // if (event && 'stopPropagation' in event && typeof event.stopPropagation === 'function')

@@ -19,43 +19,31 @@ import {
     effect,
     model,
     computed,
-} from '@angular/core';
-import {
-    NG_VALUE_ACCESSOR,
-    ControlValueAccessor,
-    AbstractControl,
-    NgForm,
-    UntypedFormBuilder,
-    NG_VALIDATORS,
-    UntypedFormGroup,
-} from '@angular/forms';
-import { Field, FieldItem, Fieldset, FormScheme } from './types';
-import { Condition } from '@noah-ark/expression-engine';
-import { Subscription } from 'rxjs';
-import { DynamicComponent, EventBus, PortalComponent } from '@upupa/common';
-import {
-    ChangeFormSchemeHandler,
-    ChangeInputsHandler,
-    ChangeStateHandler,
-    ChangeValueHandler,
-    InputVisibilityHandler,
-} from './events/handlers';
-import { JsonPointer, Patch } from '@noah-ark/json-patch';
-import { DynamicFormModuleOptions } from './dynamic-form.options';
-import { DYNAMIC_FORM_OPTIONS } from './di.token';
-import { DynamicFormRenderer, schemeToFields } from './dynamic-form-renderer';
-import { DynamicFormService } from './dynamic-form.service';
-import { ConditionalLogicService } from './conditional-logic.service';
-import { DialogService } from '@upupa/dialog';
-import { DynamicFormInputsMapService } from './dynamic-form-inputsMap.service';
-import { IFieldInputResolver } from './ifield-input.resolver';
-import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
+    ComponentRef,
+} from "@angular/core";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, NG_VALIDATORS, UntypedFormGroup } from "@angular/forms";
+import { Field, FieldItem, Fieldset, FormScheme } from "./types";
+import { Condition } from "@noah-ark/expression-engine";
+import { Subscription } from "rxjs";
+import { DynamicComponent, EventBus, PortalComponent } from "@upupa/common";
+import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
+import { JsonPointer, Patch } from "@noah-ark/json-patch";
+import { DynamicFormModuleOptions } from "./dynamic-form.options";
+import { DYNAMIC_FORM_OPTIONS } from "./di.token";
+import { DynamicFormRenderer, schemeToFields } from "./dynamic-form-renderer";
+import { DynamicFormService } from "./dynamic-form.service";
+import { ConditionalLogicService } from "./conditional-logic.service";
+import { DialogService } from "@upupa/dialog";
+import { DynamicFormInputsMapService } from "./dynamic-form-inputsMap.service";
+import { IFieldInputResolver } from "./ifield-input.resolver";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+import { delay } from "@noah-ark/common";
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
-    selector: 'dynamic-form',
-    templateUrl: './dynamic-form.component.html',
-    styleUrls: ['./dynamic-form.component.scss'],
+    selector: "dynamic-form",
+    templateUrl: "./dynamic-form.component.html",
+    styleUrls: ["./dynamic-form.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [
@@ -71,13 +59,11 @@ import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
         },
     ],
     host: {
-        '[class]': 'class()',
-        '[attr.name]': 'name()',
+        "[class]": "class()",
+        "[attr.name]": "name()",
     },
 })
-export class DynamicFormComponent<T = any>
-    implements ControlValueAccessor, OnDestroy, OnChanges
-{
+export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
     formRenderer!: DynamicFormRenderer;
 
     public readonly el = inject(ElementRef);
@@ -87,43 +73,36 @@ export class DynamicFormComponent<T = any>
     public readonly bus = inject(EventBus);
     public readonly dialog = inject(DialogService);
     protected readonly formService = inject(DynamicFormService);
-    public readonly options: DynamicFormModuleOptions =
-        inject(DYNAMIC_FORM_OPTIONS);
+    public readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
 
     // eslint-disable-next-line @angular-eslint/no-output-native
     submit = output<DynamicFormComponent>();
 
-    class = input('');
+    class = input("");
 
     preventDirtyUnload = input(false);
-    recaptcha = input('');
+
     formGroup = this.fb.group({});
     fields = input.required<FormScheme>();
     vm = computed(() => {
         const scheme = this.fields();
-        const { formGroup, fields } = schemeToFields(
-            scheme,
-            this.fb,
-            this.value(),
-            this.formService,
-            this.theme()
-        );
+        const { formGroup, fields } = schemeToFields(scheme, this.fb, this.value(), this.formService, this.theme());
         return { fields, formGroup };
     });
     conditions = input<Condition[]>([]);
-    name = input<string>(`dynForm_${Date.now()}`, { alias: 'formName' });
+    name = input<string>(`dynForm_${Date.now()}`, { alias: "formName" });
 
     disabled = input(false);
     readonly = input(false);
 
-    ngFormEl = viewChild.required<NgForm>('dynForm');
+    ngFormEl = viewChild.required<NgForm>("dynForm");
     // control = input<AbstractControl>(null);
 
     theme = input<string, string>(this.formService.defaultThemeName, {
         transform: (v: string) => v ?? this.formService.defaultThemeName,
     });
 
-    value = model<T>(undefined);
+    value = model<T>();
 
     _onChange: (value: T) => void;
     _onTouched: () => void;
@@ -191,29 +170,14 @@ export class DynamicFormComponent<T = any>
         const theme = this.theme() ?? this.formService.defaultThemeName;
         this.subs?.forEach((s) => s.unsubscribe());
         this.formRenderer?.destroy();
-        this.formRenderer = new DynamicFormRenderer(
-            this.formService,
-            theme,
-            this.bus,
-            this.fb,
-            this.dialog,
-            this,
-            this.renderer,
-            this.disabled()
-        );
+        this.formRenderer = new DynamicFormRenderer(this.formService, theme, this.bus, this.fb, this.dialog, this, this.renderer, this.disabled());
         this.formRenderer.value$.subscribe((v) => {
             if (v === this.value()) return;
             this.value.set(v);
             this._propagateChange();
         });
         //handlers
-        this.subs = [
-            InputVisibilityHandler(this),
-            ChangeFormSchemeHandler(this),
-            ChangeInputsHandler(this),
-            ChangeValueHandler(this),
-            ChangeStateHandler(this),
-        ];
+        this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
     }
 
     constructor() {
@@ -221,34 +185,26 @@ export class DynamicFormComponent<T = any>
     }
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        if (changes['name'] && !changes['name'].firstChange) {
+        if (changes["name"] && !changes["name"].firstChange) {
             throw `Name cannot be changed after initialized ${this.name()}`;
         }
 
-        if (changes['fields']) {
+        if (changes["fields"]) {
             const fields = this.fields();
-            if (typeof fields !== 'object' || Array.isArray(fields))
-                throw new Error('fields must be passed as dictionary format');
+            if (typeof fields !== "object" || Array.isArray(fields)) throw new Error("fields must be passed as dictionary format");
 
             this._fieldsChanged();
         }
 
-        if (changes['value']) {
-            const { currentValue, previousValue } = changes['value'];
+        if (changes["value"]) {
+            const { currentValue, previousValue } = changes["value"];
 
-            if (currentValue !== previousValue)
-                this.writeValue(changes['value'].currentValue);
+            if (currentValue !== previousValue) this.writeValue(changes["value"].currentValue);
         }
-        if (changes['conditions']?.firstChange === true) {
-            const { currentValue, previousValue } = changes['conditions'];
-            if (previousValue?.length)
-                previousValue.forEach((c) =>
-                    this.conditionalService.removeCondition(c)
-                );
-            if (currentValue?.length)
-                currentValue.forEach((c) =>
-                    this.subs.push(this.conditionalService.addCondition(c))
-                );
+        if (changes["conditions"]?.firstChange === true) {
+            const { currentValue, previousValue } = changes["conditions"];
+            if (previousValue?.length) previousValue.forEach((c) => this.conditionalService.removeCondition(c));
+            if (currentValue?.length) currentValue.forEach((c) => this.subs.push(this.conditionalService.addCondition(c)));
         }
     }
 
@@ -261,15 +217,12 @@ export class DynamicFormComponent<T = any>
     }
 
     writeValue(val: T): void {
-        if (this.options.enableLogs === true)
-            console.log(
-                `%c dynamic writing! (name:${this.name()})`,
-                'background: #0065ff; color: #fff',
-                val
-            );
+        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
         this.value.set(val);
         this.formRenderer.writeValue(val);
     }
+
+    coco = model();
 
     _propagateChange() {
         if (this._onChange) this._onChange(this.value());
@@ -287,12 +240,7 @@ export class DynamicFormComponent<T = any>
     }
 
     _fieldsChanged() {
-        if (this.options.enableLogs === true)
-            console.log(
-                `%c scheme changed! (name:${this.name()})`,
-                'background: #ff6b00; color: #fff',
-                this.fields()
-            );
+        if (this.options.enableLogs === true) console.log(`%c scheme changed! (name:${this.name()})`, "background: #ff6b00; color: #fff", this.fields());
         // this.formRenderer.fields = Object.values(this.fields());
         // this.writeValue(this.value());
         this._propagateChange();
@@ -300,25 +248,17 @@ export class DynamicFormComponent<T = any>
 
     scrollToElement(element: HTMLElement, focus = true) {
         if (!element) return;
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
         if (focus)
             setTimeout(() => {
                 element.focus();
             }, 400); //wait scroll animation
     }
     scrollToError() {
-        const c = Array.from(this.formRenderer.controls).filter(
-            (c) => c[1].invalid && c[0].ui?.hidden !== true
-        )?.[0];
+        const c = Array.from(this.formRenderer.controls).filter((c) => c[1].invalid && c[0].ui?.hidden !== true)?.[0];
         if (!c) return;
         c[1].markAsTouched();
-        const el =
-            document.getElementById(c[0].name) ??
-            <HTMLElement>(
-                document.querySelector(
-                    'form :not(fieldset).ng-touched.ng-invalid'
-                )
-            );
+        const el = document.getElementById(c[0].name) ?? <HTMLElement>document.querySelector("form :not(fieldset).ng-touched.ng-invalid");
         if (el) this.scrollToElement(el);
     }
 
@@ -329,27 +269,21 @@ export class DynamicFormComponent<T = any>
                 const path = (e[0] as Field)?.path;
                 return {
                     path,
-                    op: 'replace',
+                    op: "replace",
                     value: JsonPointer.get(this.value, path),
                 } as Patch;
             });
     }
     getDirtyValue(): Record<string, any> {
         const dirty = {};
-        const dirtyControles = Array.from(this.formRenderer.controls).filter(
-            (e) => (e[1] as AbstractControl).dirty
-        );
+        const dirtyControles = Array.from(this.formRenderer.controls).filter((e) => (e[1] as AbstractControl).dirty);
         if (dirtyControles.length === 0) return null;
 
-        dirtyControles
-            .map((e) => (e[0] as Field)?.path)
-            .forEach((p) =>
-                JsonPointer.set(dirty, p, JsonPointer.get(this.value, p))
-            );
+        dirtyControles.map((e) => (e[0] as Field)?.path).forEach((p) => JsonPointer.set(dirty, p, JsonPointer.get(this.value, p)));
         return dirty;
     }
 
-    @HostListener('window:beforeunload', ['$event'])
+    @HostListener("window:beforeunload", ["$event"])
     beforeunloadHandler(event) {
         if (this.preventDirtyUnload() === true && this.dirty) {
             event.preventDefault();
@@ -364,45 +298,27 @@ export class DynamicFormComponent<T = any>
 }
 
 @Component({
-    selector: 'dynamic-form-field',
+    standalone: true,
+    selector: "dynamic-form-field",
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DynamicFormInputWrapper),
+            multi: true,
+        },
+    ],
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (field().text) {
-        <paragraph
-            [class.hidden]="field().ui?.hidden === true"
-            [text]="field().text"
-            [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"
-        ></paragraph>
+            <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
         }
-        <!-- <ng-container
-            #dd="dynamicField"
-            dynamicField
-            [inputs]="field().ui?.inputs"
-            [componentMap]="formService.getControl(field().input, theme())"
-            [field]="field"
-            [group]="form"
-        ></ng-container> -->
-
-        <!-- use ng-component to render component -->
-
-        <ng-container
-            *ngComponentOutlet="template().component; inputs: template().inputs"
-            [formControlName]="field().name"
-            [formGroup]="form()"
-        >
-        </ng-container>
-        <!-- <portal
-            [component]="template().component"
-            [class]="template().class"
-            [inputs]="template().inputs"
-            [outputs]="template().outputs"
-        >
-        </portal> -->
+        <!-- <ng-container *ngComponentOutlet="template().component; inputs: template().inputs" [formControlName]="field().name" [formGroup]="form()"> </ng-container> -->
+        <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)"> </portal>
     `,
-    standalone: true,
+
     host: {
-        '[id]': 'id()',
-        '[class]': 'classList()',
+        "[id]": "id()",
+        "[class]": "classList()",
     },
 })
 export class DynamicFormInputWrapper {
@@ -430,20 +346,47 @@ export class DynamicFormInputWrapper {
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [
-            `${field.name}-input`,
-            'ff-container',
-            template.class,
-            field.ui.class,
-            field.ui?.hidden === true ? 'hidden' : '',
-        ]
+        return [`${field.name}-input`, "ff-container", template.class, field.ui.class, field.ui?.hidden === true ? "hidden" : ""]
             .filter((c) => c)
-            .join('&nbsp;')
+            .join("&nbsp;")
             .trim();
     });
-    id = computed(
-        () => ((this.field().ui?.id || this.field().name) ?? '') + '-container'
-    );
+    id = computed(() => ((this.field().ui?.id || this.field().name) ?? "") + "-container");
 
     private readonly inputsMapService = inject(DynamicFormInputsMapService);
+
+    value = model();
+    writeValue(obj: any): void {
+        this.value.set(obj);
+        this.childValueAccessor?.writeValue(obj);
+    }
+
+    private _onChange: (value: any) => void;
+    registerOnChange(fn: (value: any) => void): void {
+        this._onChange = fn;
+        this.childValueAccessor?.registerOnChange(fn);
+    }
+    private _onTouched: () => void;
+    registerOnTouched(fn: () => void): void {
+        this._onTouched = fn;
+        this.childValueAccessor?.registerOnTouched(fn);
+    }
+
+    isDisabled = model(false);
+    setDisabledState?(isDisabled: boolean): void {
+        this.isDisabled.set(isDisabled);
+        this.childValueAccessor?.setDisabledState?.(isDisabled);
+    }
+
+    childValueAccessor?: ControlValueAccessor;
+    onAttached({ componentRef }: { componentRef: ComponentRef<any> }) {
+        this.childValueAccessor = componentRef.instance as ControlValueAccessor;
+
+        //replay calls to value accessor
+        this.childValueAccessor.registerOnChange(this._onChange);
+        this.childValueAccessor.registerOnTouched(this._onTouched);
+
+        this.childValueAccessor.writeValue(this.value());
+        this.childValueAccessor.setDisabledState?.(this.isDisabled());
+    }
 }

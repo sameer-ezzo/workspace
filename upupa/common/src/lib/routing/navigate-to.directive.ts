@@ -8,7 +8,7 @@ export function navigate<K extends string = string>(route: K, ...args: any[]) {
     args = args.slice()
     return route.split('/').map(segment => {
         if (segment.startsWith(':')) {
-            if (args.length === 0) throw new Error(`Cannot naviagate to ${route}. Missing value for param ${segment}`)
+            if (args.length === 0) throw new Error(`Cannot navigate to ${route}. Missing value for param ${segment}`)
             return args.shift()
         } else return segment
     }).join('/')

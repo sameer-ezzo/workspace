@@ -49,10 +49,11 @@ export function provideRoute(
     ..._features: RouteFeature[]
 ): Route {
     let route = typeof nameOrRoute === "string" ? { ...featureOrRoute, name: nameOrRoute } : nameOrRoute;
-    const features = typeof nameOrRoute === "string" ? _features : ([featureOrRoute, ..._features] as RouteFeature[]);
+    let features = typeof nameOrRoute === "string" ? _features : ([featureOrRoute, ..._features] as RouteFeature[]);
+    features = features.filter((f) => f); // remove undefined features
 
     for (const modifier of features) {
-        route = applyRouteFeature(route, modifier);
+        route = applyRouteFeature(route as any, modifier);
     }
-    return route;
+    return route as any;
 }

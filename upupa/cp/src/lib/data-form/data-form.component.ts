@@ -92,7 +92,6 @@ export class DataFormComponent<T = any>
     @Input() path: string;
     @Input() name?: string;
     @Input() preventDirtyUnload?: boolean;
-    @Input() recaptcha?: string;
     @Input() theme?: string;
     @Input() fields: FormScheme;
     @Input() value$: Observable<T>;
@@ -134,8 +133,6 @@ export class DataFormComponent<T = any>
         if (changes['name']) this.name = changes['name'] as string;
         if (changes['preventDirtyUnload'])
             this.preventDirtyUnload = changes['preventDirtyUnload'] as boolean;
-        if (changes['recaptcha'])
-            this.recaptcha = changes['recaptcha'] as string;
         if (changes['theme']) this.theme = changes['theme'] as string;
         if (changes['fields']) this.fields = changes['fields'] as FormScheme;
         if (changes['value']) this.value$ = changes['value$'] as Observable<T>;
