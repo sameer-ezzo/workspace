@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, SimpleChanges } from '@angular/core';
+import { Component, Input, forwardRef, SimpleChanges, computed } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ThemePalette } from '@angular/material/core';
@@ -8,12 +8,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { FileSelectComponent } from '../file-select/file-select.component';
 
 import { AuthService } from '@upupa/auth';
-import {
-    ClipboardService,
-    FileInfo,
-    openFileDialog,
-    UploadClient,
-} from '@upupa/upload';
+import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
 import { ValueDataComponentBase } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
 import { DialogService } from '@upupa/dialog';
@@ -57,13 +52,7 @@ export class FileInputComponent extends ValueDataComponentBase {
     @Input() view: 'list' | 'grid' = 'list';
     @Input() fileSelector: 'browser' | 'system' = 'system';
 
-    constructor(
-        public uploadClient: UploadClient,
-        public data: DataService,
-        public auth: AuthService,
-        public clipboard: ClipboardService,
-        public dialog: DialogService
-    ) {
+    constructor(public uploadClient: UploadClient, public data: DataService, public auth: AuthService, public clipboard: ClipboardService, public dialog: DialogService) {
         super();
         this.base = uploadClient.baseUrl;
     }
@@ -83,31 +72,18 @@ export class FileInputComponent extends ValueDataComponentBase {
         }
     }
 
-    dataAdapter = this.value1$.pipe(
-        filter((v) => v != null || v != undefined),
-        map((v) => {
-            const x = Array.isArray(v) ? v : [v];
-            return new DataAdapter(
-                new ClientDataSource(x),
-                '_id',
-                undefined,
-                undefined,
-                undefined
-            );
-        })
-    );
+    dataAdapter = computed(() => {
+        const v = this.value();
+        const x = Array.isArray(v) ? v : [v];
+        return new DataAdapter(new ClientDataSource(x), '_id', undefined, undefined, undefined);
+    });
 
     access_token = null;
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes);
 
         if (this.includeAccess === true) {
-            this.auth.user$
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe(
-                    (t) =>
-                        (this.access_token = `?access_token=${this.auth.get_token()}`)
-                );
+            this.auth.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => (this.access_token = `?access_token=${this.auth.get_token()}`));
         }
     }
 
@@ -119,16 +95,8 @@ export class FileInputComponent extends ValueDataComponentBase {
             const extensions = accepts
                 .split(',')
                 .filter((x) => x != '*.*')
-                .map((x) =>
-                    x.startsWith('.')
-                        ? x.substring(1).toLowerCase()
-                        : x.toLowerCase()
-                );
-            return extensions.some(
-                (x) => x === fileExtension || x === file.type
-            )
-                ? null
-                : { extension: fileExtension };
+                .map((x) => (x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase()));
+            return extensions.some((x) => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
         }
         return null;
     }
@@ -152,47 +120,26 @@ export class FileInputComponent extends ValueDataComponentBase {
             return await this.showFileExplorer();
         }
 
-        const files = await openFileDialog(
-            this.accept,
-            this.maxAllowedFiles !== 1
-        );
+        const files = await openFileDialog(this.accept, this.maxAllowedFiles !== 1);
 
         this.uploading = files.length > 0;
         let uploadedFiles = 0;
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
 
-            const extensionErrors = this.validateFileExtensions(
-                file,
-                this.accept
-            );
+            const extensionErrors = this.validateFileExtensions(file, this.accept);
 
             const maxSizeErrors = this.validateFileMaxSize(file, this.maxSize);
             const minSizeErrors = this.validateFileMinSize(file, this.minSize);
 
-            if (
-                extensionErrors?.extension?.length > 0 ||
-                maxSizeErrors ||
-                minSizeErrors
-            ) {
-                const errors = Object.assign(
-                    {},
-                    extensionErrors,
-                    maxSizeErrors,
-                    minSizeErrors
-                );
+            if (extensionErrors?.extension?.length > 0 || maxSizeErrors || minSizeErrors) {
+                const errors = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
                 this.errorMessages.set(errors as any);
                 continue;
             }
 
-            const uploadStream = this.uploadClient.upload(
-                this.path,
-                files[i],
-                files[i].name
-            );
-            uploadStream.progress$.subscribe(
-                (p) => (this.uploadingProgress = p)
-            );
+            const uploadStream = this.uploadClient.upload(this.path, files[i], files[i].name);
+            uploadStream.progress$.subscribe((p) => (this.uploadingProgress = p));
             uploadStream.response$.subscribe((res) => {
                 //this.value = res;
                 uploadedFiles++;

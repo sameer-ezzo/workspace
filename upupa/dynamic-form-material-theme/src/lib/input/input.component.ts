@@ -1,9 +1,4 @@
-import {
-    ChangeDetectionStrategy,
-    Component,
-    forwardRef,
-    ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, ViewEncapsulation } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputComponent } from '@upupa/dynamic-form-native-theme';
 
@@ -30,14 +25,7 @@ export class MatInputComponent extends InputComponent {}
 
 @Component({
     selector: 'mat-form-hidden-input',
-    template: `
-        <input
-            #input
-            type="hidden"
-            [value]="value() || ''"
-            [required]="required()"
-        />
-    `,
+    template: ` <input #input type="hidden" [value]="value() || ''" [required]="required()" /> `,
     styleUrls: [],
     encapsulation: ViewEncapsulation.None,
     providers: [

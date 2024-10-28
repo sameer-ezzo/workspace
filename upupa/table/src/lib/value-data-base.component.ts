@@ -23,92 +23,66 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         },
     ],
 })
-export class ValueDataComponentBase<T = any>
-    extends DataComponentBase<T>
-    implements ControlValueAccessor, Validator, OnChanges
-{
+export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
     errorMessages = model<{ [errorCode: string]: string }>(null);
     name = input<string, string>('', {
         alias: 'fieldName',
         transform: (v) => (v ? v : `field_${Date.now()}`),
     });
-    // control = input(new FormControl<Partial<T> | Partial<T>[]>(undefined));
-    valueChange = output<Partial<T> | Partial<T>[]>();
-    value1$ = new BehaviorSubject<Partial<T> | Partial<T>[]>(undefined);
 
+    valueChange = output<Partial<T> | Partial<T>[]>();
     required = input<boolean>(false);
     disabled = model(false);
-
     value = model<Partial<T> | Partial<T>[]>(undefined);
 
-    onInput(event: any, v: any) {
-        // if (
-        //     event &&
-        //     'stopPropagation' in event &&
-        //     typeof event.stopPropagation === 'function'
-        // )
-        //     event.stopPropagation();
-
+    onInput(v: any) {
         this.value.set(v);
         this._propagateChange();
         this.markAsTouched();
     }
 
-    //ControlValueAccessor
+    override ngOnInit(): void {
+        super.ngOnInit();
+
+        this.selectionModel.changed.pipe(debounceTime(50), takeUntilDestroyed(this.destroyRef)).subscribe(async (s) => {
+            const selectedNormalized = await this.adapter().getItems(s.source.selected);
+            this.selectedNormalized = selectedNormalized;
+            const v = this.value();
+            const value = Array.isArray(v) ? v : [v];
+            if (this.maxAllowed() === 1) {
+                const valueKey = this.adapter().getKeysFromValue(value)?.[0];
+                const selectedKey = selectedNormalized?.[0]?.key;
+                if (valueKey === selectedKey) return;
+                this.onInput(selectedNormalized?.[0]?.value);
+            } else {
+                const valueKeys = this.adapter().getKeysFromValue(value);
+                const selectedKeys = selectedNormalized?.map((x) => x.key);
+                const set = new Set([...valueKeys, ...selectedKeys]);
+                if (selectedKeys.length === valueKeys.length && valueKeys.length === set.size) return;
+                this.onInput(selectedNormalized?.map((x) => x.value));
+            }
+        });
+    }
+
     _onChange: (value: Partial<T> | Partial<T>[]) => void;
     _onTouch: () => void;
 
-    validate(control: AbstractControl): ValidationErrors | null {
-        return control.validator ? control.validator(control) : null;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    _updateViewModel() {}
 
     _propagateChange() {
         if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)
         this.valueChange.emit(this.value()); //value event binding notify
     }
 
-    writeValue(v: T, emitEvent = false): void {
+    writeValue(v: T): void {
         this.value.set(v);
-        this._updateViewModel();
-        if (emitEvent) this._propagateChange();
-    }
-
-    override ngOnInit(): void {
-        super.ngOnInit();
-
-        this.selectionModel.changed
-            .pipe(debounceTime(50), takeUntilDestroyed(this.destroyRef))
-            .subscribe(async (s) => {
-                const selectedNormalized = await this.adapter().getItems(
-                    s.source.selected
-                );
-                this.selectedNormalized = selectedNormalized;
-                const v = this.value();
-                const value = Array.isArray(v) ? v : [v];
-                if (this.maxAllowed() === 1) {
-                    const valueKey =
-                        this.adapter().getKeysFromValue(value)?.[0];
-                    const selectedKey = selectedNormalized?.[0]?.key;
-                    if (valueKey === selectedKey) return;
-                    this.value.set(selectedNormalized?.[0]?.value);
-                } else {
-                    const valueKeys = this.adapter().getKeysFromValue(value);
-                    const selectedKeys = selectedNormalized?.map((x) => x.key);
-                    const set = new Set([...valueKeys, ...selectedKeys]);
-                    if (
-                        selectedKeys.length === valueKeys.length &&
-                        valueKeys.length === set.size
-                    )
-                        return;
-                    this.value.set(selectedNormalized?.map((x) => x.value));
-                }
-            });
     }
 
     markAsTouched() {
         if (this._onTouch) this._onTouch();
     }
-    registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
+    registerOnChange(fn: (value: T) => void): void {
         this._onChange = fn;
     }
     registerOnTouched(fn: () => void): void {
@@ -118,9 +92,8 @@ export class ValueDataComponentBase<T = any>
         this.disabled.set(isDisabled);
     }
 
-    async _updateViewModel() {
-        if (this.value !== undefined && this.firstLoad()) {
-            this.viewDataSource$.next('selected');
-        }
+    private onValidatorChange = () => {};
+    registerOnValidatorChange(fn: () => void): void {
+        this.onValidatorChange = fn;
     }
 }

@@ -1,17 +1,4 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    Output,
-    EventEmitter,
-    TemplateRef,
-    ViewChild,
-    ElementRef,
-    input,
-    viewChild,
-    model,
-    SimpleChanges,
-} from '@angular/core';
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef, input, viewChild, model, SimpleChanges } from '@angular/core';
 import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { ActionDescriptor, EventBus } from '@upupa/common';
@@ -64,14 +51,9 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
         this.valueChanged(undefined);
     }
 
-    keyDown(
-        e: KeyboardEvent,
-        input?: { open: () => void; panelOpen: boolean }
-    ) {
+    keyDown(e: KeyboardEvent, input?: { open: () => void; panelOpen: boolean }) {
         if (!input || input.panelOpen === true) return;
-        const shouldOpen =
-            e.key === 'ArrowDown' ||
-            (e.key.length === 1 && /[a-z0-9 ]/i.test(e.key));
+        const shouldOpen = e.key === 'ArrowDown' || (e.key.length === 1 && /[a-z0-9 ]/i.test(e.key));
         if (shouldOpen) this.openedChange(true);
     }
 
@@ -106,14 +88,14 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     async valueChanged(key: keyof T | (keyof T)[]) {
         this.selectionModel.clear();
         if (key !== undefined) {
-            if (Array.isArray(key)) key.forEach((k) => this.select(k));
-            else this.select(key);
-        }
-
-        const v = this.selectedNormalized.map((x) => x.value);
-        this.writeValue(v as any, true);
-        // this._propagateChange();
-        // this.control().markAsTouched();
+            if (Array.isArray(key)) {
+                key.forEach((k) => this.select(k));
+                this.onInput(this.selectedNormalized.map((x) => x.value));
+            } else {
+                this.select(key);
+                this.onInput(this.selectedNormalized[0].value);
+            }
+        } else this.onInput(undefined);
     }
 
     // openedChange(event) {

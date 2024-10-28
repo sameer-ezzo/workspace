@@ -1,15 +1,11 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
     <mat-label>{{ label() }}</mat-label>
     }
     <textarea
         matInput
         #input
-        [value]="value"
+        [value]="value()"
         (input)="onInput($event, $event.target?.['value'])"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
