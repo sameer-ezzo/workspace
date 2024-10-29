@@ -20,10 +20,12 @@ export class DynamicFormBuilder {
                         asyncValidators: this.getAsyncValidators(field),
                     },
                 );
+                group["name"] = field.name;
                 form.addControl(fieldName, group);
                 this.build(group, field.items, fieldValue);
             } else if (field.type == "array") {
                 // const array = new FormArray([], { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+                // array["name"] = field.name;
                 // form.addControl(fieldName, array);
                 // this.buildArray(array, field.items, fieldValue);
             } else {
@@ -32,36 +34,36 @@ export class DynamicFormBuilder {
         }
     }
 
-    buildArray(array: FormArray, items: FormScheme, value: any) {
-        if (!Array.isArray(value)) value = [];
-        const fields = Object.values(items);
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            field.name = `${i}`;
-            const fieldValue = value[i];
-            if (field.type === "fieldset") {
-                const group = new FormGroup(
-                    {},
-                    {
-                        validators: this.getValidators(field),
-                        asyncValidators: this.getAsyncValidators(field),
-                    },
-                );
-                array.push(group);
-                this.build(group, field.items, fieldValue);
-            } else if (field.type == "array") {
-                const nestedArray = new FormArray([], {
-                    validators: this.getValidators(field),
-                    asyncValidators: this.getAsyncValidators(field),
-                });
-                array.push(nestedArray);
-                this.buildArray(nestedArray, field.items, fieldValue);
-            } else {
-                const control = this.getControl(field, fieldValue);
-                array.push(control);
-            }
-        }
-    }
+    // buildArray(array: FormArray, items: FormScheme, value: any) {
+    //     if (!Array.isArray(value)) value = [];
+    //     const fields = Object.values(items);
+    //     for (let i = 0; i < fields.length; i++) {
+    //         const field = fields[i];
+    //         field.name = `${i}`;
+    //         const fieldValue = value[i];
+    //         if (field.type === "fieldset") {
+    //             const group = new FormGroup(
+    //                 {},
+    //                 {
+    //                     validators: this.getValidators(field),
+    //                     asyncValidators: this.getAsyncValidators(field),
+    //                 },
+    //             );
+    //             array.push(group);
+    //             this.build(group, field.items, fieldValue);
+    //         } else if (field.type == "array") {
+    //             const nestedArray = new FormArray([], {
+    //                 validators: this.getValidators(field),
+    //                 asyncValidators: this.getAsyncValidators(field),
+    //             });
+    //             array.push(nestedArray);
+    //             this.buildArray(nestedArray, field.items, fieldValue);
+    //         } else {
+    //             const control = this.getControl(field, fieldValue);
+    //             array.push(control);
+    //         }
+    //     }
+    // }
 
     addControl(form: FormGroup, field: FieldItem, value: any): void {
         const control = this.getControl(field, value);
@@ -69,7 +71,9 @@ export class DynamicFormBuilder {
     }
 
     getControl(field: FieldItem, value: any) {
-        return new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+        const control = new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+        control["name"] = field.name;
+        return control;
     }
 
     getValidator(validator: Validator, field: Field): ValidatorFn {

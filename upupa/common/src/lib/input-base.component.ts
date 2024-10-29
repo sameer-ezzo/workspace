@@ -1,33 +1,5 @@
-import {
-    ChangeDetectionStrategy,
-    Component,
-    EventEmitter,
-    Input,
-    OnChanges,
-    Output,
-    SimpleChanges,
-    computed,
-    effect,
-    forwardRef,
-    inject,
-    input,
-    model,
-    output,
-    signal,
-} from "@angular/core";
-import {
-    AbstractControl,
-    ControlValueAccessor,
-    FormControl,
-    NG_VALIDATORS,
-    NG_VALUE_ACCESSOR,
-    NgControl,
-    UntypedFormControl,
-    ValidationErrors,
-    Validator,
-    ValidatorFn,
-} from "@angular/forms";
-import { BehaviorSubject, merge } from "rxjs";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from "@angular/core";
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
 
 @Component({
     selector: "input-base",

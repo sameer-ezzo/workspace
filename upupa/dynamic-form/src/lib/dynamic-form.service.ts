@@ -45,24 +45,24 @@ export const validatorsMap: { [name: string]: (validator: Validator) => Validato
         console.log(control.value);
         return control.value === undefined ? { [v.message || "required"]: true } : null;
     },
-    pattern: (v) => (control) => (empty(control) || new RegExp(<string>v.arguments).test(control.value) ? null : { [v.message || "pattern-error"]: true }),
-    max: (v) => (control) => (control?.value > v.arguments ? { [v.message || "max-error"]: v.arguments } : null),
-    min: (v) => (control) => (control?.value < v.arguments ? { [v.message || "min-error"]: v.arguments } : null),
-    greaterThan: (v) => (control) => (control?.value <= v.arguments ? { [v.message || "greaterThan-error"]: v.arguments } : null),
-    lessThan: (v) => (control) => (control?.value >= v.arguments ? { [v.message || "lessThan-error"]: v.arguments } : null),
-    maxLength: (v) => (control) => (control?.value?.length > v.arguments ? { [v.message || "max-length-error"]: v.arguments } : null),
-    minLength: (v) => (control) => (control?.value?.length < v.arguments ? { [v.message || "min-length-error"]: v.arguments } : null),
+    pattern: (v) => (control) => (empty(control) || new RegExp(<string>v.arguments).test(control.value) ? null : { [v.message || "pattern"]: true }),
+    max: (v) => (control) => (control?.value > v.arguments ? { [v.message || "max"]: v.arguments } : null),
+    min: (v) => (control) => (control?.value < v.arguments ? { [v.message || "min"]: v.arguments } : null),
+    greaterThan: (v) => (control) => (control?.value <= v.arguments ? { [v.message || "greaterThan"]: v.arguments } : null),
+    lessThan: (v) => (control) => (control?.value >= v.arguments ? { [v.message || "lessThan"]: v.arguments } : null),
+    maxLength: (v) => (control) => (control?.value?.length > v.arguments ? { [v.message || "maxLength"]: v.arguments } : null),
+    minLength: (v) => (control) => (control?.value?.length < v.arguments ? { [v.message || "minLength"]: v.arguments } : null),
     latin: (v) => (control) => {
         const p = (v.arguments as RegExp) || /^[a-zA-Z0-9^ ]+$/;
-        return empty(control) || p.test(control.value) ? null : { [v.message || "latin-error"]: true };
+        return empty(control) || p.test(control.value) ? null : { [v.message || "latin"]: true };
     },
     email: (v) => (control) => {
-        const res = empty(control) || /^[^@]+@[^.]+\.[a-zA-Z.-]{2,20}$/.test(control.value) ? null : { [v.message || "email-error"]: true };
+        const res = empty(control) || /^[^@]+@[^.]+\.[a-zA-Z.-]{2,20}$/.test(control.value) ? null : { [v.message || "email"]: true };
 
         return res;
     },
-    timeSpanMax: (v) => (control) => (Date.now() - (control.value as number) > (v.arguments as number) ? { [v.message || "timespan-max-error"]: true } : null),
-    timeSpanMin: (v) => (control) => (Date.now() - (control.value as number) < (v.arguments as number) ? { [v.message || "timespan-min-error"]: true } : null),
+    timeSpanMax: (v) => (control) => (Date.now() - (control.value as number) > (v.arguments as number) ? { [v.message || "timeSpanMax"]: true } : null),
+    timeSpanMin: (v) => (control) => (Date.now() - (control.value as number) < (v.arguments as number) ? { [v.message || "timeSpanMin"]: true } : null),
 };
 
 function empty(control) {
