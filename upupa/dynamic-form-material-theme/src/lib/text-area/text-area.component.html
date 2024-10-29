@@ -6,7 +6,7 @@
         matInput
         #input
         [value]="value()"
-        (input)="onInput($event, input.value)"
+        (input)="handleUserInput(input.value)"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"

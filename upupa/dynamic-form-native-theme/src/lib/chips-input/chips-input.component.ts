@@ -79,13 +79,13 @@ export class ChipsComponent extends SelectComponent {
         this._select(item);
 
         this.markAsTouched();
-        this._propagateChange();
+        this.propagateChange();
     }
 
     remove(item: NormalizedItem): void {
         this.value.set(this.value().filter((v) => v.key === item.key));
         this.markAsTouched();
-        this._propagateChange();
+        this.propagateChange();
     }
 
     async onAdding(value: string) {

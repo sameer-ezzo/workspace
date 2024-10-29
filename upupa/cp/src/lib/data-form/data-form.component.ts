@@ -54,11 +54,11 @@ export class DataFormComponent<T = any>
         this._formChangesSub?.unsubscribe();
         if (!this.form) return;
         this._formChangesSub = dForm
-            .ngFormEl()
+            .form()
             .valueChanges.pipe(
                 debounceTime(100),
                 takeUntilDestroyed(this.destroyRef),
-                map((v) => (dForm.ngFormEl().valid ? 'VALID' : 'INVALID'))
+                map((v) => (dForm.form().valid ? 'VALID' : 'INVALID'))
             )
             .subscribe((status) => {
                 this.dialogActions.set(
@@ -198,7 +198,7 @@ export class DataFormComponent<T = any>
     }
 
     async submit(value) {
-        const formEl = this.form?.ngFormEl();
+        const formEl = this.form?.form();
         if (!formEl) return;
         if (formEl.invalid) {
             if (formEl.touched) return this.form.scrollToError();

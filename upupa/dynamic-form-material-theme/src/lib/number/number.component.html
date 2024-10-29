@@ -1,26 +1,21 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
     <input
         matInput
         #input
         type="number"
         [value]="value()"
-        (input)="onInput($event, $event.target?.['value'])"
+        (input)="handleUserInput( $event.target?.['value'])"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-
-        [required]="required()"
     />
     @if (hint()) {
-    <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control().errors | keyvalue; track error) {
-    <mat-error>{{ error.key }}</mat-error>
+        <mat-hint>{{ hint() }}</mat-hint>
+    }
+    @for (error of control().errors | keyvalue; track error) {
+        <mat-error>{{ error.key }}</mat-error>
     }
 </mat-form-field>

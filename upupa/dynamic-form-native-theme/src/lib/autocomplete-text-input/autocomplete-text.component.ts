@@ -29,7 +29,7 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
     panelClass = input('');
     placeholder = input('');
     hint = input('');
-   
+
 
     _onlySelected = false;
 
@@ -42,7 +42,7 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
         // this._value = value;
         // this.q = value as string;
         this.adapter().refresh();
-        this._propagateChange();
+        this.propagateChange();
     }
 
     optionSelected(option: MatAutocompleteSelectedEvent) {

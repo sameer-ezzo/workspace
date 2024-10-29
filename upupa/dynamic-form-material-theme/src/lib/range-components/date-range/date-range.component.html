@@ -10,12 +10,12 @@
         <input
             matStartDate
             [(ngModel)]="from"
-            (ngModelChange)="markAsTouched(); _propagateChange()"
+            (ngModelChange)="markAsTouched(); propagateChange()"
         />
         <input
             matEndDate
             [(ngModel)]="to"
-            (ngModelChange)="markAsTouched(); _propagateChange()"
+            (ngModelChange)="markAsTouched(); propagateChange()"
         />
     </mat-date-range-input>
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>

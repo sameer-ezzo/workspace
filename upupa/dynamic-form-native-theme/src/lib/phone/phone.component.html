@@ -73,7 +73,6 @@
             [readonly]="readonly()"
             [disabled]="disabled()"
             [placeholder]="placeholder()"
-            [required]="required()"
         />
     </div>
 
@@ -146,7 +145,7 @@
                 (click)="
                     country = c;
                     toggleCodes(false);
-                    _propagateChange();
+                    propagateChange();
                     markAsTouched()
                 "
                 class="phone-item"

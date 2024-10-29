@@ -1,17 +1,16 @@
 @if (label()) {
-<label>{{ label() }}</label>
+    <label>{{ label() }}</label>
 }
 <input
     matInput
     #input
     type="number"
     [value]="value"
-    (input)="onInput($event, $event.target?.['value'])"
+    (input)="handleUserInput($event.target?.['value'])"
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
-    [required]="required()"
 />
 @for (error of control().errors | keyvalue; track error.key) {
-<span class="error">{{ error.key }}</span>
+    <span class="error">{{ error.key }}</span>
 }

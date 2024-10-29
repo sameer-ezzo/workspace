@@ -31,16 +31,16 @@ export class RecaptchaComponent implements ControlValueAccessor, AfterViewInit {
                 callback: token => {
                     this.value = token;
                     this.control?.setErrors(null);
-                    this._propagateChange();
+                    this.propagateChange();
                 },
                 'expired-callback': () => {
                     this.value = null;
-                    this._propagateChange();
+                    this.propagateChange();
                     this.control?.setErrors({ 'recapatcha-expired': 'expired' });
                 },
                 'error-callback': (err) => {
                     this.value = null;
-                    this._propagateChange();
+                    this.propagateChange();
                     this.control?.setErrors({ 'recapatcha-error': err });
                 }
 
@@ -55,7 +55,7 @@ export class RecaptchaComponent implements ControlValueAccessor, AfterViewInit {
 
     @Input() key: string;
 
-    _propagateChange() {
+    propagateChange() {
         const value = this._value;
         if (this._onChange) this._onChange(value); //ngModel/ngControl notify (value accessor)
         if (this.control) this.control.setValue(value); //control notify

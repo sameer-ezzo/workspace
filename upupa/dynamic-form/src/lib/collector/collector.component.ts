@@ -101,7 +101,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     loading = false;
 
     get formElement() {
-        return this.dynamicForm.ngFormEl;
+        return this.dynamicForm.form;
     }
 
     _totalPages: number;
@@ -200,7 +200,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     next() {
-        this.dynamicForm?.ngFormEl().control.markAsTouched();
+        this.dynamicForm?.form().markAsTouched();
         if (this.canGoNext()) this.activePage++;
     }
 

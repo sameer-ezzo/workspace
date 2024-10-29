@@ -1,45 +1,69 @@
 <form #dynForm="ngForm" [attr.id]="name()" class="dynamic-form" (ngSubmit)="onSubmit($event)">
-    @for (k of _keys(fields()); track $index) { @let _field =fields()[k]; @let fieldInfo = getFieldIfo(_field);
-    <ng-container
-        *ngTemplateOutlet="
-            fieldTemplate;
-            context: {
-                field: _field,
-                template: fieldInfo.template,
-                control: fieldInfo.control,
-                form: fieldInfo.form
-            }
-        "
-    ></ng-container>
+    @for (record of fields() | keyvalue; track $index) {
+        @let field = record.value;
+
+        <ng-container
+            *ngTemplateOutlet="
+                fieldTemplate;
+                context: {
+                    field: field,
+                    group: form(),
+                }
+            "
+        ></ng-container>
     }
     <input type="submit" style="display: none" />
 </form>
 
-<ng-template #fieldTemplate let-field="field" let-template="template" let-formGroup="form" let-control="control">
-    @let fieldName = field.name; @let ui = field.ui; @let id = ui?.id || field.name; @let input = field.input; @if (field.type === "fieldset") {
-    <fieldset [attr.id]="id" class="{{ input }}-input {{ id }}-container ff-container" [formGroup]="formGroup" [class.hidden]="ui?.hidden === true">
-        @if (input === "paragraph" || field.text) {
-        <paragraph [text]="field.text" [renderer]="ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
-        } @if (ui?.inputs?.label) {
-        <legend>{{ ui.inputs.label }}</legend>
-        } @for (k of _keys(field.items); track $index) { @let _field =field.items[k]; @let fieldInfo = getFieldIfo(_field);
+<!-- <ng-template #fieldTemplate let-field="field" let-template="template" let-formGroup="form" > -->
+<ng-template #fieldTemplate let-field="field" let-group="group">
+    @let ui = field.ui;
+    @let id = ui?.id || field.name;
+    @let input = field.input;
+    @let control = group.get(field.name);
 
-        <ng-container *ngTemplateOutlet="fieldTemplate; context: { field: _field, template: fieldInfo.template, control: fieldInfo.control, form: fieldInfo.form }"> </ng-container>
+    @if (field.type === "fieldset" || field.type === "array") {
+        <fieldset [attr.id]="id" class="{{ input }}-input {{ id }}-container ff-container" [formGroup]="group" [class.hidden]="ui?.hidden === true">
+            @if (input === "paragraph" || field.text) {
+                <paragraph [text]="field.text" [renderer]="ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
+            }
+            @if (ui?.inputs?.label) {
+                <legend>{{ ui.inputs.label }}</legend>
+            }
+            @for (record of field.items | keyvalue; track $index) {
+                @let k = record.key;
+                @let field = record.value;
+
+                <ng-container
+                    *ngTemplateOutlet="
+                        fieldTemplate;
+                        context: {
+                            field: field,
+                            group: control,
+                        }
+                    "
+                ></ng-container>
+            }
+        </fieldset>
+    } @else {
+        @switch (input) {
+            @case ("page-breaker") {
+                <p style="display: none"></p>
+            }
+            @case ("paragraph") {
+                <paragraph
+                    [attr.id]="id"
+                    class="{{ input }}-input {{ id }}-container ff-container"
+                    [class.hidden]="ui?.hidden === true"
+                    [text]="field.text"
+                    [renderer]="ui?.inputs?.['renderer'] || 'markdown'"
+                ></paragraph>
+            }
+            @default {
+                <dynamic-form-field [field]="field" [formControl]="control" [control]="control"></dynamic-form-field>
+            }
         }
-    </fieldset>
-    } @else { @switch (input) { @case ("page-breaker") {
-    <p style="display: none"></p>
-    } @case ("paragraph") {
-    <paragraph
-        [attr.id]="id"
-        class="{{ input }}-input {{ id }}-container ff-container"
-        [class.hidden]="ui?.hidden === true"
-        [text]="field.text"
-        [renderer]="ui?.inputs?.['renderer'] || 'markdown'"
-    ></paragraph>
-    } @default {
-    <dynamic-form-field [field]="field" [template]="template" [formControl]="control" [control]="control"></dynamic-form-field>
-    } } }
+    }
 </ng-template>
 
 <ng-template #icon>

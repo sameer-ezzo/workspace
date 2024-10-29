@@ -40,7 +40,7 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
     onInput(v: any) {
         this.value.set(v);
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 
@@ -70,7 +70,7 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     _onChange: (value: Partial<T> | Partial<T>[]) => void;
     _onTouch: () => void;
 
-    _propagateChange() {
+    propagateChange() {
         if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)
         this.valueChange.emit(this.value()); //value event binding notify
     }
