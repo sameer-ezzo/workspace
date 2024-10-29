@@ -84,10 +84,11 @@ export class ArrayInputComponent<T = any>
         await super.ngOnChanges(changes);
     }
 
-    override async _updateViewModel(): Promise<void> {
-        this.dataSource.all = this.value() as Partial<T>[];
-        this.adapter().refresh();
-    }
+    //TODO
+    // override async _updateViewModel(): Promise<void> {
+    //     this.dataSource.all = this.value() as Partial<T>[];
+    //     this.adapter().refresh();
+    // }
 
     // @Input() columns: ColumnsDescriptor = {};
 

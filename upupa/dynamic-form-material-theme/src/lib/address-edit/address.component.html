@@ -39,7 +39,7 @@
                 @for (error of getControl('state').errors | keyvalue; track
                 error) {
                 <mat-error>
-                    {{errorMessages()?.[error.key+''] || error.key}}</mat-error
+                    {{control().errors?.[error.key+''] || error.key}}</mat-error
                 >
                 }
             </mat-form-field>
@@ -63,7 +63,7 @@
                 @for (error of getControl('city').errors | keyvalue; track
                 error) {
                 <mat-error>
-                    {{errorMessages()?.[error.key+''] || error.key}}</mat-error
+                    {{control().errors?.[error.key+''] || error.key}}</mat-error
                 >
                 }
             </mat-form-field>
@@ -84,7 +84,7 @@
                 @for (error of getControl('zipCode').errors | keyvalue; track
                 error) {
                 <mat-error>
-                    {{errorMessages()?.[error.key+''] || error.key}}</mat-error
+                    {{control().errors?.[error.key+''] || error.key}}</mat-error
                 >
                 }
             </mat-form-field>
@@ -107,7 +107,7 @@
             @for (error of getControl('addressLine1').errors | keyvalue; track
             error) {
             <mat-error>
-                {{errorMessages()?.[error.key+''] || error.key}}</mat-error
+                {{control().errors?.[error.key+''] || error.key}}</mat-error
             >
             }
         </mat-form-field>
@@ -128,7 +128,7 @@
             @for (error of getControl('addressLine2').errors | keyvalue; track
             error) {
             <mat-error>
-                {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                {{control().errors?.[error.key+''] || error.key }}</mat-error
             >
             }
         </mat-form-field>
@@ -165,7 +165,7 @@
                     @for (error of getControl('state').errors | keyvalue; track
                     error) {
                     <mat-error>
-                        {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                        {{control().errors?.[error.key+''] || error.key }}</mat-error
                     >
                     }
                 </mat-form-field>
@@ -190,7 +190,7 @@
                     @for (error of getControl('city').errors | keyvalue; track
                     error) {
                     <mat-error>
-                        {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                        {{control().errors?.[error.key+''] || error.key }}</mat-error
                     >
                     }
                 </mat-form-field>
@@ -211,7 +211,7 @@
                     @for (error of getControl('zipCode').errors | keyvalue;
                     track error) {
                     <mat-error>
-                        {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                        {{control().errors?.[error.key+''] || error.key }}</mat-error
                     >
                     }
                 </mat-form-field>
@@ -234,7 +234,7 @@
                 @for (error of getControl('addressLine1').errors | keyvalue;
                 track error) {
                 <mat-error>
-                    {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                    {{control().errors?.[error.key+''] || error.key }}</mat-error
                 >
                 }
             </mat-form-field>
@@ -255,7 +255,7 @@
                 @for (error of getControl('addressLine2').errors | keyvalue;
                 track error) {
                 <mat-error>
-                    {{errorMessages()?.[error.key+''] || error.key }}</mat-error
+                    {{control().errors?.[error.key+''] || error.key }}</mat-error
                 >
                 }
             </mat-form-field>

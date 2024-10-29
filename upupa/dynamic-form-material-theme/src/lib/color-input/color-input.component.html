@@ -28,6 +28,6 @@
         />
     </div>
 </div>
-@for (error of errorMessages() | keyvalue; track error) {
+@for (error of control().errors | keyvalue; track error) {
 <mat-error>{{error.key }} </mat-error>
 }

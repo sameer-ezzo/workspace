@@ -11,6 +11,6 @@
     [placeholder]="placeholder()"
     [required]="required()"
 />
-@for (error of errorMessages() | keyvalue; track error.key) {
+@for (error of control().errors | keyvalue; track error.key) {
 <span class="error">{{ error.key }}</span>
 }

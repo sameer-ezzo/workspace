@@ -135,7 +135,6 @@ const imports = [
     FormsModule,
     ReactiveFormsModule,
     UploadModule,
-    UtilsModule,
     TranslationModule,
     DataTableModule,
     ScrollingModule,

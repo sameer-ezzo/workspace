@@ -49,7 +49,7 @@
         <mat-option [value]=""><span>Add</span></mat-option>
         } -->
     </mat-autocomplete>
-    @for (error of errorMessages()|keyvalue; track error.key) {
+    @for (error of control().errors|keyvalue; track error.key) {
     <mat-error>{{ error.key }} </mat-error>
     }
 </mat-form-field>

@@ -1,4 +1,4 @@
-import { Component, SimpleChanges, input, model, output } from '@angular/core';
+import { Component, SimpleChanges, inject, input, model, output } from '@angular/core';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { DataComponentBase } from './data-base.component';
 import { FormControl } from '@angular/forms';
@@ -35,6 +35,9 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     disabled = model(false);
     value = model<Partial<T> | Partial<T>[]>(undefined);
 
+    _control = inject(FormControl, { optional: true });
+    control = input<FormControl>(this._control ?? new FormControl());
+
     onInput(v: any) {
         this.value.set(v);
         this._propagateChange();
@@ -66,9 +69,6 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
     _onChange: (value: Partial<T> | Partial<T>[]) => void;
     _onTouch: () => void;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    _updateViewModel() {}
 
     _propagateChange() {
         if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)

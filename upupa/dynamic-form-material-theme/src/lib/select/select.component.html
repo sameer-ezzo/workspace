@@ -124,7 +124,7 @@
     </button>
     } @if(hint()){
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of errorMessages() | keyvalue; track error) {
+    } @for (error of control().errors | keyvalue; track error) {
     <mat-error>{{error.key}} </mat-error>
     }
 </mat-form-field>

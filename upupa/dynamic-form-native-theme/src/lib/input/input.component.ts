@@ -1,23 +1,13 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    ViewEncapsulation,
-    SimpleChanges,
-    input,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { InputBaseComponent } from '@upupa/common';
-import { InputDefaults } from '../defaults';
-import {
-    FloatLabelType,
-    MatFormFieldAppearance,
-} from '@angular/material/form-field';
+import { Component, forwardRef, ViewEncapsulation, input, inject } from "@angular/core";
+import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, NgControl } from "@angular/forms";
+import { InputBaseComponent } from "@upupa/common";
+import { InputDefaults } from "../defaults";
+import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
 
 @Component({
-    selector: 'form-input-field',
-    templateUrl: './input.component.html',
-    styleUrls: ['./input.component.css'],
+    selector: "form-input-field",
+    templateUrl: "./input.component.html",
+    styleUrls: ["./input.component.css"],
     encapsulation: ViewEncapsulation.None,
     providers: [
         {
@@ -37,10 +27,10 @@ export class InputComponent extends InputBaseComponent {
 
     appearance = input<MatFormFieldAppearance>(InputDefaults.appearance);
     floatLabel = input<FloatLabelType>(InputDefaults.floatLabel);
-    placeholder = input('');
+    placeholder = input("");
 
-    type = input('text');
-    label = input('');
-    hint = input('');
+    type = input("text");
+    label = input("");
+    hint = input("");
     readonly = input(false);
 }

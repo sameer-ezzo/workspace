@@ -49,18 +49,19 @@ export class PhoneInputComponent extends InputBaseComponent {
 
     private phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance();
 
-    override _updateViewModel() {
-        if (this.value) {
-            const res = this._getNumber(this.value());
-            if (!res) return;
-            if (res.formatted) {
-                this.number.set(res.number);
-                this.country = this.countriesService.all.find((x) => x.phone_code === `${res.code}`);
-            }
+    //TODO
+    // override _updateViewModel() {
+    //     if (this.value) {
+    //         const res = this._getNumber(this.value());
+    //         if (!res) return;
+    //         if (res.formatted) {
+    //             this.number.set(res.number);
+    //             this.country = this.countriesService.all.find((x) => x.phone_code === `${res.code}`);
+    //         }
 
-            this.country = this.countriesService.all?.[0];
-        }
-    }
+    //         this.country = this.countriesService.all?.[0];
+    //     }
+    // }
 
     filterClick(e) {
         e.preventDefault();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn } from '@angular/forms';
 import { BehaviorSubject, merge } from 'rxjs';
 
@@ -10,12 +10,7 @@ import { BehaviorSubject, merge } from 'rxjs';
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => InputBaseComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => InputBaseComponent),
-            multi: true,
-        },
+        }
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,12 +24,12 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
         },
     });
 
-    validators = input<{ validate: ValidatorFn }[]>([]);
+    _control = inject(FormControl, { optional: true });
+    control = input<FormControl>(this._control ?? new FormControl());
 
-    // control = input<FormControl>();
-    errorMessages = model<{ [errorCode: string]: string }>(null);
 
-    valueChange = output<T | T[]>();
+
+
 
     required = input<boolean>(false);
     disabled = model(false);
@@ -53,12 +48,9 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     _onChange: (value: T | T[]) => void;
     _onTouch: () => void;
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    _updateViewModel() {}
 
     _propagateChange() {
         if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)
-        this.valueChange.emit(this.value()); //value event binding notify
     }
 
     writeValue(v: T): void {
@@ -78,10 +70,6 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
         this.disabled.set(isDisabled);
     }
 
-    private onValidatorChange = () => {};
-    registerOnValidatorChange(fn: () => void): void {
-        this.onValidatorChange = fn;
-    }
 }
 
 @Component({
@@ -99,8 +87,9 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
             [readonly]="readonly()"
             [placeholder]="placeholder()"
             [required]="required()"
+            [formControl]="control()"
         />
-        @for (error of errorMessages() | keyvalue; track error) {
+        @for (error of control().errors | keyvalue; track error) {
         <span class="error">{{ error.key }}</span>
         }
     `,

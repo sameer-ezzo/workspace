@@ -1,5 +1,5 @@
 <form #dynForm="ngForm" [attr.id]="name()" class="dynamic-form" (ngSubmit)="onSubmit($event)">
-    @for (k of _keys(formScheme()); track $index) { @let _field =formScheme()[k]; @let fieldInfo = getFieldIfo(_field);
+    @for (k of _keys(fields()); track $index) { @let _field =fields()[k]; @let fieldInfo = getFieldIfo(_field);
     <ng-container
         *ngTemplateOutlet="
             fieldTemplate;
