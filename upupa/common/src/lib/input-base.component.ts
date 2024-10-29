@@ -1,32 +1,23 @@
-import {
-    Component,
-    EventEmitter,
-    Input,
-    OnChanges,
-    Output,
-    SimpleChanges,
-    computed,
-    effect,
-    forwardRef,
-    input,
-    model,
-    output,
-} from '@angular/core';
-import {
-    AbstractControl,
-    ControlValueAccessor,
-    FormControl,
-    NG_VALIDATORS,
-    UntypedFormControl,
-    ValidationErrors,
-    Validator,
-    ValidatorFn,
-} from '@angular/forms';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, input, model, output } from '@angular/core';
+import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn } from '@angular/forms';
 import { BehaviorSubject, merge } from 'rxjs';
 
 @Component({
     selector: 'input-base',
     template: '',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => InputBaseComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => InputBaseComponent),
+            multi: true,
+        },
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
     // value1$ = new BehaviorSubject<T>(undefined);
@@ -54,8 +45,8 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
         // if (event && 'stopPropagation' in event && typeof event.stopPropagation === 'function')
         //     event.stopPropagation();
         this.value.set(v);
-        this._propagateChange();
         this.markAsTouched();
+        this._propagateChange();
     }
 
     //ControlValueAccessor
@@ -85,6 +76,11 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     }
     setDisabledState?(isDisabled: boolean): void {
         this.disabled.set(isDisabled);
+    }
+
+    private onValidatorChange = () => {};
+    registerOnValidatorChange(fn: () => void): void {
+        this.onValidatorChange = fn;
     }
 }
 

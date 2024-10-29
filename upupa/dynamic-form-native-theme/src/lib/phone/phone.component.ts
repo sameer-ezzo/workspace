@@ -1,30 +1,12 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    ViewChild,
-    ElementRef,
-    input,
-    viewChild,
-    model,
-} from '@angular/core';
-import {
-    NG_VALUE_ACCESSOR,
-    Validator,
-    AbstractControl,
-    ValidationErrors,
-    NG_VALIDATORS,
-} from '@angular/forms';
+import { Component, forwardRef, ElementRef, input, viewChild, model } from '@angular/core';
+import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { InputDefaults } from '../defaults';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { countries, FilterService, InputBaseComponent } from '@upupa/common';
 import { takeWhile, tap } from 'rxjs/operators';
 import * as libphonenumber from 'google-libphonenumber';
-import {
-    FloatLabelType,
-    MatFormFieldAppearance,
-} from '@angular/material/form-field';
+import { FloatLabelType, MatFormFieldAppearance } from '@angular/material/form-field';
 export type PhoneNumber = {
     raw: string;
     number: string;
@@ -43,6 +25,11 @@ export type PhoneNumber = {
             useExisting: forwardRef(() => PhoneInputComponent),
             multi: true,
         },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => PhoneInputComponent),
+            multi: true,
+        },
     ],
 })
 export class PhoneInputComponent extends InputBaseComponent {
@@ -58,11 +45,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     hint = input('');
     readonly = input(false);
 
-    countriesService = new FilterService(countries, [
-        'name',
-        'name',
-        'phone_code',
-    ]);
+    countriesService = new FilterService(countries, ['name', 'name', 'phone_code']);
 
     private phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance();
 
@@ -72,9 +55,7 @@ export class PhoneInputComponent extends InputBaseComponent {
             if (!res) return;
             if (res.formatted) {
                 this.number.set(res.number);
-                this.country = this.countriesService.all.find(
-                    (x) => x.phone_code === `${res.code}`
-                );
+                this.country = this.countriesService.all.find((x) => x.phone_code === `${res.code}`);
             }
 
             this.country = this.countriesService.all?.[0];
@@ -86,21 +67,13 @@ export class PhoneInputComponent extends InputBaseComponent {
         e.stopPropagation();
     }
 
-    onValidationChange: any = () => {};
-    registerOnValidatorChange?(fn: () => void): void {
-        this.onValidationChange = fn;
-    }
-
     number = model<string>('');
 
     private _getNumber(value: string): PhoneNumber & { formatted: string } {
         if (value?.length === 0) return null;
         let ph_no: libphonenumber.PhoneNumber;
         try {
-            ph_no = this.phoneNumberUtil.parseAndKeepRawInput(
-                value,
-                this.country.phone_code.toUpperCase()
-            );
+            ph_no = this.phoneNumberUtil.parseAndKeepRawInput(value, this.country.phone_code.toUpperCase());
         } catch (e) {
             // this.control().setErrors({ 'invalid-no': true });
             return null;
@@ -115,10 +88,7 @@ export class PhoneInputComponent extends InputBaseComponent {
                 raw: ph_no.getRawInput(),
                 countryCode: ph_no.getCountryCode(),
                 isValid: this.phoneNumberUtil.isValidNumber(ph_no),
-                formatted: this.phoneNumberUtil.format(
-                    ph_no,
-                    PhoneNumberFormat.E164
-                ),
+                formatted: this.phoneNumberUtil.format(ph_no, PhoneNumberFormat.E164),
                 code: `${ph_no.getCountryCode()}`,
                 number: ph_no.getNationalNumberOrDefault().toString(),
             };
@@ -129,10 +99,7 @@ export class PhoneInputComponent extends InputBaseComponent {
                 raw: ph_no.getRawInput(),
                 countryCode: ph_no.getCountryCode(),
                 isValid: this.phoneNumberUtil.isValidNumber(ph_no),
-                formatted: this.phoneNumberUtil.format(
-                    ph_no,
-                    PhoneNumberFormat.E164
-                ),
+                formatted: this.phoneNumberUtil.format(ph_no, PhoneNumberFormat.E164),
                 code: `${ph_no.getCountryCode()}`,
                 number: ph_no.getNationalNumberOrDefault().toString(),
             };
@@ -143,11 +110,7 @@ export class PhoneInputComponent extends InputBaseComponent {
         if (!this.numberInput()) return;
         this.number.set(this.numberInput().nativeElement.value.trim());
 
-        _value = _value.startsWith('+')
-            ? _value
-            : this.country?.phone_code
-            ? `+${this.country.phone_code}${_value}`
-            : _value;
+        _value = _value.startsWith('+') ? _value : this.country?.phone_code ? `+${this.country.phone_code}${_value}` : _value;
 
         if (this.number().length < 3) return this.onInput(event, _value);
         try {
@@ -204,10 +167,7 @@ export class PhoneInputComponent extends InputBaseComponent {
             this.setPosition();
             this.sub = this.reposition$.subscribe(() => {});
 
-            setTimeout(
-                () => document.getElementById(`${this.id}-input`)?.focus(),
-                250
-            );
+            setTimeout(() => document.getElementById(`${this.id}-input`)?.focus(), 250);
         } else {
             if (this.sub) this.sub.unsubscribe();
             document.getElementById(this.id).style.display = 'none';
@@ -215,8 +175,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     }
 
     enterOnFilter(event) {
-        if (this.countriesService.filtered?.length > 0)
-            this.country = this.countriesService.filtered[0];
+        if (this.countriesService.filtered?.length > 0) this.country = this.countriesService.filtered[0];
         this.toggleCodes(false);
     }
 

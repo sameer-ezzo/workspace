@@ -1,18 +1,18 @@
-import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, resolveFormViewmodelInputs } from "@upupa/dynamic-form";
-import { MatDialogRef } from "@angular/material/dialog";
-import { Subscription } from "rxjs";
-import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
-import { MatBtnComponent } from "@upupa/mat-btn";
-import { Class } from "../helpers";
-import { CommonModule } from "@angular/common";
+import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges } from '@angular/core';
+import { DynamicFormComponent, DynamicFormModule, resolveFormViewmodelInputs } from '@upupa/dynamic-form';
+import { MatDialogRef } from '@angular/material/dialog';
+import { Subscription } from 'rxjs';
+import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
+import { MatBtnComponent } from '@upupa/mat-btn';
+import { Class } from '../helpers';
+import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: "cp-data-form-with-view-model",
+    selector: 'cp-data-form-with-view-model',
     standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormModule],
-    templateUrl: "./data-form-with-view-model.component.html",
-    styleUrls: ["./data-form-with-view-model.component.scss"],
+    templateUrl: './data-form-with-view-model.component.html',
+    styleUrls: ['./data-form-with-view-model.component.scss'],
     providers: [
         {
             provide: DynamicFormComponent,
@@ -22,7 +22,6 @@ import { CommonModule } from "@angular/common";
     ],
 })
 export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
-    private readonly destroyRef = inject(DestroyRef);
     private readonly injector = inject(Injector);
 
     form = viewChild(DynamicFormComponent);
@@ -35,10 +34,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     value = model<T>();
 
     // dynamic form inputs
-    dynamicFormInputs = computed(() => {
-        const inputs = resolveFormViewmodelInputs(this.viewmodel());
-        return inputs;
-    });
+    dynamicFormInputs = computed(() => resolveFormViewmodelInputs(this.viewmodel()));
     fields = computed(() => this.dynamicFormInputs().fields);
     name = computed(() => this.dynamicFormInputs().name ?? Date.now().toString());
     preventDirtyUnload = computed(() => this.dynamicFormInputs().preventDirtyUnload === true);
@@ -56,7 +52,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     // private instance = signal<any>(null);
     ngOnChanges(changes: SimpleChanges) {
         const type = this.viewmodel();
-        if (changes["viewmodel"]) {
+        if (changes['viewmodel']) {
             runInInjectionContext(this.injector, () => {
                 if (this.value() instanceof type) return;
                 const instance = new type();
@@ -66,12 +62,12 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     }
 
     onValueChange(v: any) {
-        console.log("onValueChange", v);
+        // console.log("onValueChange", v);
     }
 
     async onSubmit() {
         const vm = this.value();
-        vm["onSubmit"]?.();
+        vm['onSubmit']?.();
     }
 
     // async onAction(e: ActionEvent): Promise<void> {

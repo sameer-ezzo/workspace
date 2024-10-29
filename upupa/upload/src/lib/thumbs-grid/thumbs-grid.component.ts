@@ -62,7 +62,7 @@ export class ThumbsGridComponent
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         super.ngOnChanges(changes);
         if (changes['thumbs']) {
-            this.writeValue(this.thumbs as any, false);
+            // this.writeValue(this.thumbs as any, false);
         }
     }
 

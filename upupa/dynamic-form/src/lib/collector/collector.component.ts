@@ -1,24 +1,11 @@
-import {
-    Component,
-    EventEmitter,
-    forwardRef,
-    Input,
-    Output,
-    SimpleChanges,
-    ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Condition } from '@noah-ark/expression-engine';
 import { ActionDescriptor, InputBaseComponent } from '@upupa/common';
 import { ActionsDescriptor } from '@upupa/common';
 import { Field, FormScheme } from '../types';
 import { CollectStyle, FormDesign } from './types';
-import {
-    fieldsArrayToPages,
-    FormPage,
-    getGoogleFontUri,
-    loadFontFromUri,
-} from './utils';
+import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from './utils';
 import { DynamicFormComponent } from '../dynamic-form.component';
 import { delay } from '@noah-ark/common';
 
@@ -105,8 +92,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
         this.activePage = v ? this.formFieldsInfo[v.name].page : null;
         setTimeout(() => {
             const element = document.getElementById(v.name);
-            if (this.dynamicForm)
-                this.dynamicForm.scrollToElement(element, true);
+            if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
         }, 300);
     }
 
@@ -134,55 +120,25 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     private _applyFormDesign(design: FormDesign) {
-        if (design.bgImage?.url)
-            document.documentElement.style.setProperty(
-                '--bg-img-url',
-                design.bgImage.url
-            );
-        if (design.bgColor)
-            document.documentElement.style.setProperty(
-                '--bg-color',
-                design.bgColor
-            );
-        if (design.textColor)
-            document.documentElement.style.setProperty(
-                '--field-text-color',
-                design.textColor
-            );
-        if (design.valueColor)
-            document.documentElement.style.setProperty(
-                '--field-value-color',
-                design.valueColor
-            );
-        if (design.buttonsColor)
-            document.documentElement.style.setProperty(
-                '--button-color',
-                design.buttonsColor
-            );
+        if (design.bgImage?.url) document.documentElement.style.setProperty('--bg-img-url', design.bgImage.url);
+        if (design.bgColor) document.documentElement.style.setProperty('--bg-color', design.bgColor);
+        if (design.textColor) document.documentElement.style.setProperty('--field-text-color', design.textColor);
+        if (design.valueColor) document.documentElement.style.setProperty('--field-value-color', design.valueColor);
+        if (design.buttonsColor) document.documentElement.style.setProperty('--button-color', design.buttonsColor);
 
         if (design.headerFont) {
             loadFontFace(this.design.headerFont.font.family);
-            document.documentElement.style.setProperty(
-                '--header-font-family',
-                this.design.headerFont.font.family
-            );
+            document.documentElement.style.setProperty('--header-font-family', this.design.headerFont.font.family);
         }
         if (design.paragraphFont) {
             loadFontFace(this.design.paragraphFont.font.family);
-            document.documentElement.style.setProperty(
-                '--paragraph-font-family',
-                this.design.paragraphFont.font.family
-            );
-            document.documentElement.style.setProperty(
-                '--paragraph-font-size',
-                this.design.paragraphFont.size || '22pt'
-            );
+            document.documentElement.style.setProperty('--paragraph-font-family', this.design.paragraphFont.font.family);
+            document.documentElement.style.setProperty('--paragraph-font-size', this.design.paragraphFont.size || '22pt');
         }
     }
 
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes['fields'] && !changes['fields'].firstChange)
-            this.populatePagesInFields();
+        if (changes['fields'] && !changes['fields'].firstChange) this.populatePagesInFields();
     }
 
     ngOnInit() {
@@ -196,8 +152,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
         this.formFieldsInfo = {};
         for (let i = 0; i < this.pages.length; i++) {
             const pfs = this.pages[i].fields;
-            for (let j = 0; j < pfs.length; j++)
-                this.formFieldsInfo[pfs[j].name] = { index: j, page: i };
+            for (let j = 0; j < pfs.length; j++) this.formFieldsInfo[pfs[j].name] = { index: j, page: i };
         }
 
         this.showFieldsOfPage();
@@ -210,13 +165,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
         }
 
         const page = this.pages[pageIndex];
-        this._pageInvalid =
-            this.dynamicForm &&
-            page.fields.some(
-                (f) =>
-                    this.dynamicForm.formRenderer.controls.get(f)?.invalid ===
-                    true
-            );
+        this._pageInvalid = this.dynamicForm && page.fields.some((f) => this.dynamicForm.controls.get(f)?.invalid === true);
     }
 
     showFieldsOfPage() {
@@ -276,10 +225,6 @@ function loadFontFace(family: string) {
     head.appendChild(stylesheet);
 
     const newStyle = document.createElement('style');
-    newStyle.appendChild(
-        document.createTextNode(
-            `@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`
-        )
-    );
+    newStyle.appendChild(document.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
     document.head.appendChild(newStyle);
 }

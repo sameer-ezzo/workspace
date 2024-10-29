@@ -1,8 +1,8 @@
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
 import {
     DynamicFormComponent,
-    DynamicFormInputWrapper,
 } from './dynamic-form.component';
+import { DynamicFormFieldComponent } from './dynamic-form-field.component';
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -47,7 +47,7 @@ const declarations = [
 
 @NgModule({
     declarations: [...declarations],
-    exports: [...declarations, DynamicFormInputWrapper, ScrollingModule],
+    exports: [...declarations, DynamicFormFieldComponent, ScrollingModule],
     bootstrap: [DynamicFormComponent],
     imports: [
         CommonModule,
@@ -58,7 +58,7 @@ const declarations = [
         DynamicFormNativeThemeModule,
         MatBtnComponent,
         PortalComponent,
-        DynamicFormInputWrapper,
+        DynamicFormFieldComponent,
     ],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
