@@ -42,10 +42,9 @@ export function layoutListRoute(options: { component?: Route["component"] } = { 
     };
 }
 
-
-export function withTableComponent(config: {
-    viewModel: new () => unknown;
-    dataAdapter: DataAdapter | DataAdapterDescriptor;
+export function withTableComponent<T = unknown>(config: {
+    viewModel: new (...args: any[]) => T;
+    dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
 }): RouteFeature {
     return {

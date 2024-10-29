@@ -38,6 +38,7 @@ export class PortalComponent {
     componentRef?: ComponentRef<any>;
     componentMirror?: ComponentMirror<any>;
 
+    injector = input(this.host.injector);
     component = input.required<Type<any>>();
     inputs = input({});
     class = input("");
@@ -73,6 +74,7 @@ export class PortalComponent {
         this.componentRef = this.host.createComponent(component, {
             environmentInjector: this.environmentInjector,
             projectableNodes: this.content(),
+            injector: this.injector(),
         });
 
         const c = this.class();

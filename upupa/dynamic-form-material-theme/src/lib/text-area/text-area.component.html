@@ -1,28 +1,25 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
     <textarea
         matInput
         #input
-        [value]="value"
-        (input)="onInput($event, $event.target?.['value'])"
+        [value]="value()"
+        (input)="onInput($event, input.value)"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        #autosize="cdkTextareaAutosize"
+        cdkTextareaAutosize
         [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
         [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
         [cdkTextareaAutosize]="cdkTextareaAutosize()"
     >
     </textarea>
     @if (hint()) {
-    <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of errorMessages() | keyvalue; track error.key) {
-    <mat-error>{{ error.key }}</mat-error>
+        <mat-hint>{{ hint() }}</mat-hint>
+    }
+    @for (error of errorMessages() | keyvalue; track error.key) {
+        <mat-error>{{ error.key }}</mat-error>
     }
 </mat-form-field>

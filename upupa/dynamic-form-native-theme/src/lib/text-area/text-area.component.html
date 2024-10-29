@@ -1,12 +1,12 @@
 @if (label()) {
-<label>{{ label() }}</label>
+    <label>{{ label() }}</label>
 }
 
 <textarea
     matInput
     #input
     [value]="value()"
-    (input)="onInput($event, $event.target?.['value']);"
+    (input)="onInput($event, input.value)"
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [required]="required()"
@@ -17,5 +17,5 @@
     [cdkTextareaAutosize]="cdkTextareaAutosize()"
 ></textarea>
 @for (error of errorMessages() | keyvalue; track error.key) {
-<span class="error">{{ error.key }}</span>
+    <span class="error">{{ error.key }}</span>
 }

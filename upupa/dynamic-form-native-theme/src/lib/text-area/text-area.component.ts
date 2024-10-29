@@ -1,17 +1,12 @@
-import { Component, Input, forwardRef, input } from '@angular/core';
-import {
-    ControlValueAccessor,
-    NG_VALIDATORS,
-    NG_VALUE_ACCESSOR,
-    UntypedFormControl,
-} from '@angular/forms';
-import { InputDefaults } from '../defaults';
-import { InputBaseComponent } from '@upupa/common';
+import { Component, Input, forwardRef, input } from "@angular/core";
+import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl } from "@angular/forms";
+import { InputDefaults } from "../defaults";
+import { InputBaseComponent } from "@upupa/common";
 
 @Component({
-    selector: 'form-text-area',
-    templateUrl: './text-area.component.html',
-    styleUrls: ['./text-area.component.css'],
+    selector: "form-text-area",
+    templateUrl: "./text-area.component.html",
+    styleUrls: ["./text-area.component.css"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -30,12 +25,11 @@ export class TextAreaComponent extends InputBaseComponent<string> {
 
     appearance = input(InputDefaults.appearance);
     floatLabel = input(InputDefaults.floatLabel);
-    placeholder = input('');
+    placeholder = input("");
 
-    label = input('');
-    hint = input('');
+    label = input("");
+    hint = input("");
     readonly = input(false);
-   
 
     cdkAutosizeMinRows = input(3, {
         transform: (v: number) => Math.max(1, v),
