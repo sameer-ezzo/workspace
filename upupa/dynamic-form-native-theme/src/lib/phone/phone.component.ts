@@ -1,12 +1,12 @@
-import { Component, forwardRef, ElementRef, input, viewChild, model } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { fromEvent, merge, Subscription } from 'rxjs';
-import { InputDefaults } from '../defaults';
-import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import { countries, FilterService, InputBaseComponent } from '@upupa/common';
-import { takeWhile, tap } from 'rxjs/operators';
-import * as libphonenumber from 'google-libphonenumber';
-import { FloatLabelType, MatFormFieldAppearance } from '@angular/material/form-field';
+import { Component, forwardRef, ElementRef, input, viewChild, model } from "@angular/core";
+import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { fromEvent, merge, Subscription } from "rxjs";
+import { InputDefaults } from "../defaults";
+import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
+import { countries, FilterService, InputBaseComponent } from "@upupa/common";
+import { takeWhile, tap } from "rxjs/operators";
+import * as libphonenumber from "google-libphonenumber";
+import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
 export type PhoneNumber = {
     raw: string;
     number: string;
@@ -16,9 +16,9 @@ export type PhoneNumber = {
 };
 
 @Component({
-    selector: 'form-phone-field',
-    templateUrl: './phone.component.html',
-    styleUrls: ['./phone.component.scss'],
+    selector: "form-phone-field",
+    templateUrl: "./phone.component.html",
+    styleUrls: ["./phone.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -35,17 +35,17 @@ export type PhoneNumber = {
 export class PhoneInputComponent extends InputBaseComponent {
     inlineError = true;
 
-    numberInput = viewChild<ElementRef>('input');
+    numberInput = viewChild<ElementRef>("input");
     appearance = input<MatFormFieldAppearance>(InputDefaults.appearance);
     floatLabel = input<FloatLabelType>(InputDefaults.floatLabel);
-    placeholder = input('(xxx) xxx xx xx');
+    placeholder = input("(xxx) xxx xx xx");
 
-    type = input('phone');
-    label = input('');
-    hint = input('');
+    type = input("phone");
+    label = input("");
+    hint = input("");
     readonly = input(false);
 
-    countriesService = new FilterService(countries, ['name', 'name', 'phone_code']);
+    countriesService = new FilterService(countries, ["name", "name", "phone_code"]);
 
     private phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance();
 
@@ -68,7 +68,7 @@ export class PhoneInputComponent extends InputBaseComponent {
         e.stopPropagation();
     }
 
-    number = model<string>('');
+    number = model<string>("");
 
     private _getNumber(value: string): PhoneNumber & { formatted: string } {
         if (value?.length === 0) return null;
@@ -111,12 +111,12 @@ export class PhoneInputComponent extends InputBaseComponent {
         if (!this.numberInput()) return;
         this.number.set(this.numberInput().nativeElement.value.trim());
 
-        _value = _value.startsWith('+') ? _value : this.country?.phone_code ? `+${this.country.phone_code}${_value}` : _value;
+        _value = _value.startsWith("+") ? _value : this.country?.phone_code ? `+${this.country.phone_code}${_value}` : _value;
 
-        if (this.number().length < 3) return this.onInput(event, _value);
+        if (this.number().length < 3) return this.handleUserInput(_value);
         try {
             const r = this._getNumber(_value);
-            this.onInput(event, r.formatted);
+            this.handleUserInput(r.formatted);
         } catch (error) {}
     }
 
@@ -144,22 +144,22 @@ export class PhoneInputComponent extends InputBaseComponent {
     }
 
     setPosition() {
-        const triger = document.getElementById('codes-trigger');
+        const triger = document.getElementById("codes-trigger");
         const rec = triger.getBoundingClientRect();
         const panel = document.getElementById(this.id);
         const box = panel.querySelector(`#box`) as HTMLDivElement;
         box.style.top = `${rec.top + rec.height + 10}px`;
         box.style.left = `${rec.left}px`;
 
-        panel.style.display = 'inline-block';
+        panel.style.display = "inline-block";
     }
 
     sub: Subscription;
-    private readonly scroll$ = fromEvent(window, 'scroll');
-    private readonly resize$ = fromEvent(window, 'resize');
+    private readonly scroll$ = fromEvent(window, "scroll");
+    private readonly resize$ = fromEvent(window, "resize");
     reposition$ = merge(this.scroll$, this.resize$).pipe(
         takeWhile(() => this.showCodes === true),
-        tap(() => this.setPosition())
+        tap(() => this.setPosition()),
     );
 
     toggleCodes(f: boolean = undefined) {
@@ -171,7 +171,7 @@ export class PhoneInputComponent extends InputBaseComponent {
             setTimeout(() => document.getElementById(`${this.id}-input`)?.focus(), 250);
         } else {
             if (this.sub) this.sub.unsubscribe();
-            document.getElementById(this.id).style.display = 'none';
+            document.getElementById(this.id).style.display = "none";
         }
     }
 

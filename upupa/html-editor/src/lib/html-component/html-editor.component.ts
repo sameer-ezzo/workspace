@@ -116,7 +116,7 @@ export class HtmlEditorComponent
             editor.setData(this.value() ?? '');
 
             editor.model.document.on('change:data', () => {
-                this.onInput(null, editor.getData());
+                this.handleUserInput(null, editor.getData());
             });
             this.editor = editor;
         } catch (error) {
@@ -130,7 +130,7 @@ export class HtmlEditorComponent
     htmlChanged({ editor }: any) {
         const data = editor.data.get();
         this.value.set(data);
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 

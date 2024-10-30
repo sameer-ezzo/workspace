@@ -1,30 +1,31 @@
 <div style="margin: 0; display: flex; align-items: flex-start">
     @if (!template()) {
-    <mat-slide-toggle
-        style="max-width: 40px; margin-inline-end: 0.5rem"
-        (change)="onInput($event, $event.source?.checked)"
-        [checked]="value"
-        (blur)="markAsTouched()"
-        [disabled]="readonly()"
-        [required]="required()"
-    >
-    </mat-slide-toggle>
-    } @if (template()) {
-    <mat-checkbox
-        style="max-width: 40px; margin-inline-end: 0.5rem"
-        (change)="onInput($event, $event.checked)"
-        [checked]="value"
-        (blur)="markAsTouched()"
-        [disabled]="readonly()"
-        [required]="required()"
-    >
-    </mat-checkbox>
-    } @if (label()) {
-    <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+        <mat-slide-toggle
+            style="max-width: 40px; margin-inline-end: 0.5rem"
+            (change)="handleUserInput($event.source?.checked)"
+            [checked]="value"
+            (blur)="markAsTouched()"
+            [disabled]="readonly()"
+        >
+        </mat-slide-toggle>
+    }
+    @if (template()) {
+        <mat-checkbox
+            style="max-width: 40px; margin-inline-end: 0.5rem"
+            (change)="handleUserInput($event.checked)"
+            [checked]="value"
+            (blur)="markAsTouched()"
+            [disabled]="readonly()"
+        >
+        </mat-checkbox>
+    }
+    @if (label()) {
+        <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
     }
 </div>
 @if (hint()) {
-<mat-hint>{{ hint() }}</mat-hint>
-} @for (error of control().errors | keyvalue; track error.key) {
-<mat-error>{{ error.key }} </mat-error>
+    <mat-hint>{{ hint() }}</mat-hint>
+}
+@for (error of control().errors | keyvalue; track error.key) {
+    <mat-error>{{ error.key }} </mat-error>
 }

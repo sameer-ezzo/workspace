@@ -24,7 +24,7 @@
             style="z-index: -1; position: absolute; visibility: collapse"
             (input)="inputChange($event.target, colorInput)"
             [value]="value"
-            (ngModelChange)="_propagateChange();"
+            (ngModelChange)="propagateChange();"
         />
     </div>
 </div>

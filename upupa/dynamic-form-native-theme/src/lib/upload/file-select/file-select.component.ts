@@ -307,7 +307,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
     selectionChanged(e) {
         this.value = e;
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 
@@ -339,7 +339,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         const i = v.indexOf(file);
         v.splice(i, 1);
         this.value.set(v);
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 

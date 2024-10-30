@@ -163,7 +163,7 @@ export class FileInputComponent extends ValueDataComponentBase {
 
         const value = await firstValueFrom(result.afterClosed());
         this.value.set(value);
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 
@@ -172,7 +172,7 @@ export class FileInputComponent extends ValueDataComponentBase {
         const i = v.indexOf(file);
         v.splice(i, 1);
         this.value.set(v);
-        this._propagateChange();
+        this.propagateChange();
         this.markAsTouched();
     }
 }

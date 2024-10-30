@@ -11,8 +11,6 @@ export * from './lib/collector/types';
 export * from './lib/collector/utils';
 
 export * from './lib/focusleave.dir';
-export * from './lib/dynamic-field.directive';
-
 export * from './lib/collector/collector.component';
 export * from './lib/dynamic-form.component';
 

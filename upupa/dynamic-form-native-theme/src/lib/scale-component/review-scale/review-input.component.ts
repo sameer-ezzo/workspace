@@ -47,9 +47,9 @@ export class ReviewScaleComponent extends SliderComponent {
 			const rect = target.getClientRects()[0];
 			this.percentage = this._normalizePercentage((eventArgs.clientX - rect.x) / rect.width, _dir);
 			this._valueOffset = this._normalizeOffset(rect.width, this.percentage, _dir);
-			this._propagateChange();
+			this.propagateChange();
 		}
-		
+
 		this._offset = off;
 	}
 

@@ -1,63 +1,26 @@
 <input type="hidden" [value]="value()" />
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%; text-align: left"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%; text-align: left">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
-    <div
-        dir="ltr"
-        style="
-            direction: ltr;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            justify-content: flex-start;
-            align-items: center;
-        "
-    >
+    <div dir="ltr" style="direction: ltr; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; align-items: center">
         <button
             dir="ltr"
             matPrefix
             [disabled]="disabled() || readonly()"
             id="codes-trigger"
-            style="
-                border: none;
-                background-color: transparent;
-                display: inline-flex;
-                flex-direction: row;
-                flex-wrap: nowrap;
-                align-items: center;
-                justify-content: center;
-            "
+            style="border: none; background-color: transparent; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center"
             matPrefix
             (click)="toggleCodes()"
         >
             @if (country) {
-            <div
-                style="
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    padding: 0 0.25rem;
-                    line-height: 1;
-                "
-            >
-                <img
-                    style="width: 25px"
-                    src="https://hatscripts.github.io/circle-flags/flags/{{
-                        country?.alpha_2 | lowercase
-                    }}.svg"
-                    alt="{{ country?.name }}"
-                />
-                <div style="margin-inline-start: 0.5rem">
-                    +{{ country?.phone_code }}
+                <div style="cursor: pointer; display: flex; align-items: center; padding: 0 0.25rem; line-height: 1">
+                    <img style="width: 25px" src="https://hatscripts.github.io/circle-flags/flags/{{ country?.alpha_2 | lowercase }}.svg" alt="{{ country?.name }}" />
+                    <div style="margin-inline-start: 0.5rem">+{{ country?.phone_code }}</div>
                 </div>
-            </div>
-            } @if (!country) {
-            <span>select-country </span>
+            }
+            @if (!country) {
+                <span>select-country </span>
             }
         </button>
 
@@ -75,29 +38,18 @@
             [readonly]="readonly()"
             [disabled]="disabled()"
             [placeholder]="placeholder()"
-            [required]="required()"
         />
     </div>
 
     @if (hint()) {
-    <mat-hint>{{ hint() }}</mat-hint>
+        <mat-hint>{{ hint() }}</mat-hint>
     }
 </mat-form-field>
 
 <div
     id="{{ id }}"
     (click)="onOverlayClick($event)"
-    style="
-        display: none;
-        z-index: 99999;
-        background-color: transparent;
-        overflow: hidden;
-        left: 0px;
-        top: 0px;
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-    "
+    style="display: none; z-index: 99999; background-color: transparent; overflow: hidden; left: 0px; top: 0px; position: fixed; width: 100vw; height: 100vh"
 >
     <div
         id="box"
@@ -124,54 +76,22 @@
             (keydown.arrowdown)="filter_arrowdown($event)"
             (keydown.arrowup)="filter_arrowup($event)"
             (input)="filterCountries($event.target?.['value'])"
-            style="
-                outline: none;
-                background-color: #f6f6f6;
-                border: none;
-                padding: 0 0.5rem;
-                width: calc(100% - 0.25rem);
-                margin-block-end: 0.25rem;
-                box-sizing: border-box;
-            "
+            style="outline: none; background-color: #f6f6f6; border: none; padding: 0 0.5rem; width: calc(100% - 0.25rem); margin-block-end: 0.25rem; box-sizing: border-box"
         />
-        <div
-            style="
-                overflow-y: auto;
-                display: flex;
-                flex-flow: column nowrap;
-                height: 100%;
-                width: 100%;
-            "
-        >
+        <div style="overflow-y: auto; display: flex; flex-flow: column nowrap; height: 100%; width: 100%">
             @for (c of countriesService.filtered; track c) {
-            <div
-                (click)="country = c; toggleCodes(false)"
-                class="phone-item"
-                [class.active]="
-                    countriesService.filtered.length !=
-                    countriesService.all.length
-                "
-            >
-                <img
-                    style="width: 35px"
-                    lazyload
-                    [srcSet]="
-                        'https://hatscripts.github.io/circle-flags/flags/' +
-                        (c.alpha_2 | lowercase) +
-                        '.svg'
-                    "
-                    alt="{{ c.name }}"
-                />
-                <div style="margin-inline-start: 0.5rem">
-                    <b>{{ c.native_name }}</b
-                    ><br />
-                    <small>{{ c.name }}</small>
+                <div (click)="country = c; toggleCodes(false)" class="phone-item" [class.active]="countriesService.filtered.length != countriesService.all.length">
+                    <img style="width: 35px" lazyload [srcSet]="'https://hatscripts.github.io/circle-flags/flags/' + (c.alpha_2 | lowercase) + '.svg'" alt="{{ c.name }}" />
+                    <div style="margin-inline-start: 0.5rem">
+                        <b>{{ c.native_name }}</b
+                        ><br />
+                        <small>{{ c.name }}</small>
+                    </div>
                 </div>
-            </div>
             }
         </div>
     </div>
 </div>
 @for (error of control().errors | keyvalue; track error.key) {
-<mat-error style="margin-top: -25px">{{ error.key }}</mat-error>
+    <mat-error style="margin-top: -25px">{{ error.key }}</mat-error>
 }

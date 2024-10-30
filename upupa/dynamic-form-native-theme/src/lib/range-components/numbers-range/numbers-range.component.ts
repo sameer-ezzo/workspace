@@ -46,7 +46,7 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
     label = input('');
     placeholder = input('');
     hint = input('');
-   
+
 
     floor = input(0);
     ceiling = input(100);
@@ -91,7 +91,7 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
             .map((_, i) => i);
     });
 
-    // override _propagateChange() {
+    // override propagateChange() {
 
     //   // if (this.from > this.to || nullEmptyCheck(this.from) || nullEmptyCheck(this.to)) this._value = undefined;
     //   // else this._value = { from: this.from, to: this.to }

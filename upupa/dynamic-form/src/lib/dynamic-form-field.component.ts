@@ -1,10 +1,9 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef } from '@angular/core';
+import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, FormControl, NgControl } from '@angular/forms';
 import { PortalComponent, DynamicComponent } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
-import { DynamicFormInputsMapService } from './dynamic-form-inputsMap.service';
-import { IFieldInputResolver } from './ifield-input.resolver';
-import { Field } from './types';
+import { Field, FieldItem } from './types';
+import { DynamicFormService } from './dynamic-form.service';
 
 @Component({
     standalone: true,
@@ -15,23 +14,12 @@ import { Field } from './types';
             useExisting: forwardRef(() => DynamicFormFieldComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => DynamicFormFieldComponent),
-            multi: true,
-        },
-        {
-            provide: FormControl,
-            useFactory: (self: DynamicFormFieldComponent) => self.control(),
-            deps: [DynamicFormFieldComponent],
-        },
     ],
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (field().text) {
         <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
         }
-        <!-- <ng-container *ngComponentOutlet="template().component; inputs: template().inputs" [formControlName]="field().name" [formGroup]="form()"> </ng-container> -->
         <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)"> </portal>
     `,
 
@@ -40,52 +28,38 @@ import { Field } from './types';
         '[class]': 'classList()',
     },
 })
-export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
-    private readonly inputsMapService = inject(DynamicFormInputsMapService);
-    field = input.required<Field>();
+export class DynamicFormFieldComponent implements ControlValueAccessor {
+    formService = inject(DynamicFormService);
+
+    field = input.required<FieldItem>();
     control = input.required<UntypedFormGroup>();
-
-    template = input.required<DynamicComponent | null, DynamicComponent>({
-        transform: (v) => {
-            if (!v) {
-                console.log('no template provided', this.field());
-                return null;
-            }
-            let inputs = { ...(v.inputs ?? {}) };
-            const inputsMap = this.inputsMapService.inputsMap;
-            const inputNames = Object.keys(inputs);
-
-            inputNames.forEach(async (name) => {
-                const inputResolver = inputsMap[name] as IFieldInputResolver;
-                if (inputResolver) {
-                    inputs = await inputResolver.resolve(inputs);
-                }
-            });
-
-            v.inputs = inputs;
-            return v;
-        },
-    });
 
     id = computed(() => this.field().ui?.id || this.field().name);
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [this.id() + '-container', `${field.name}-input`, 'ff-container', template?.class, field.ui.class, field.ui?.hidden === true ? 'hidden' : '']
+        return [this.id() + '-container', `${field.name}-input`, 'ff-container', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
             .filter((c) => c)
             .join(' ')
             .trim();
     });
 
+    template = signal<DynamicComponent>(undefined);
+    theme = input('material');
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['field']) {
+            const field = this.field();
+            this.template.set({
+                component: this.formService.getControl(field.input, this.theme()).component,
+                inputs: field.ui?.inputs,
+                outputs: field.ui?.outputs,
+                class: field.ui?.class,
+            });
+        }
+    }
     writeValue(obj: any): void {
         this.childValueAccessor?.writeValue(obj);
-    }
-
-    validate(control: AbstractControl): ValidationErrors | null {
-        // const validator = control.validator;
-        // return validator(control);
-
-        return null;
     }
     private _onValidatorChange: () => void;
     registerOnValidatorChange?(fn: () => void): void {

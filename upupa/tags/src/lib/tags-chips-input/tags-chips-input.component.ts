@@ -53,7 +53,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
     override remove(item: NormalizedItem): void {
         this.value.set(this.value().filter((v) => v !== item.key));
         this.markAsTouched();
-        this._propagateChange();
+        this.propagateChange();
     }
 
     optionSelected(event: MatAutocompleteSelectedEvent) {
@@ -77,7 +77,7 @@ export class TagsChipsInputComponent extends ChipsComponent {
         }
         this.value.set([...((this.value ?? []) as string[]), nTag.value]);
         this.markAsTouched();
-        this._propagateChange();
+        this.propagateChange();
         this._clearFilter();
         this._refresh();
     }

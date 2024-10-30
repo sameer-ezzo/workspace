@@ -7,17 +7,15 @@
         #input
         [type]="type()"
         [value]="value() ?? ''"
-        (input)="onInput($event, $event.target?.['value'])"
+        (input)="handleUserInput(input.value)"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        [required]="required()"
         [formControl]="control()"
     />
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
-    @for (error of control().errors | keyvalue; track error) {
-        <mat-error>{{ error.key }}</mat-error>
-    }
+
+    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 </mat-form-field>

@@ -53,6 +53,7 @@ export type AddressModel = {
 })
 export class AddressComponent extends InputBaseComponent<AddressModel> {
     label = input('Address');
+    required = input(false);
 
     display = input('native_name');
     readonly = input(false);
@@ -132,7 +133,7 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
             if (v !== this.value) {
                 this.value.set(v);
                 this.markAsTouched();
-                this._propagateChange();
+                this.propagateChange();
             }
         });
     }

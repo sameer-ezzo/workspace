@@ -87,7 +87,7 @@ export function formSchemeToDynamicFormFilter(scheme: FormScheme): ToFilterDescr
             if (field.type === "page-breaker") continue;
 
             const v = getNestedValue(value, [name]);
-            if (field.type === "fieldset") {
+            if (field.type === "fieldset" || field.type === "array") {
                 fd = { ...fd, ...fromFieldSet(field.items, v, toPath(path, name)) };
             } else fd = { ...fd, ...fromFieldItem(field, v, toPath(path, name)) };
         }

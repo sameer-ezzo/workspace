@@ -16,7 +16,7 @@
         [conditions]="conditions"
         [formName]="name()"
         (submit)="onSubmit()"
-        (valueChange)="_checkPageInvalid(activePage); _propagateChange()"
+        (valueChange)="_checkPageInvalid(activePage); propagateChange()"
     >
     </dynamic-form>
 </div>
