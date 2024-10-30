@@ -20,19 +20,12 @@ import {
 } from '@angular/core';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { NormalizedItem } from '@upupa/data';
 
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { DataComponentBase } from './data-base.component';
-import {
-    animate,
-    state,
-    style,
-    transition,
-    trigger,
-} from '@angular/animations';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types';
 import { MatTable } from '@angular/material/table';
@@ -41,36 +34,22 @@ import { MatTable } from '@angular/material/table';
     selector: 'data-table',
     templateUrl: './data-table.component.html',
     styleUrls: ['./data-table.component.scss'],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DataTableComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => DataTableComponent),
-            multi: true,
-        },
-    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: [
         trigger('detailExpand', [
             state('collapsed,void', style({ height: '0px', minHeight: '0' })),
             state('expanded', style({ height: '*' })),
-            transition(
-                'expanded <=> collapsed',
-                animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-            ),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
+    host: {
+        'attr.role': 'table',
+        '[attr.tabindex]': 'tabindex',
+        '[attr.id]': 'name()',
+    },
 })
-export class DataTableComponent<T = any>
-    extends DataComponentBase<T>
-    implements OnChanges
-{
-    @HostBinding('attr.tabindex') tabindex = 0;
-
+export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
+    tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
 
@@ -82,9 +61,7 @@ export class DataTableComponent<T = any>
     });
     pageSizeOptions = input<number[]>([10, 25, 50, 100, 200]);
 
-    rowClass = input<(item: NormalizedItem<T>) => string>((item) =>
-        item.key.toString()
-    );
+    rowClass = input<(item: NormalizedItem<T>) => string>((item) => item.key.toString());
 
     _properties: ColumnsDescriptorStrict = {}; //only data columns
     _columns: string[] = [];
@@ -115,11 +92,9 @@ export class DataTableComponent<T = any>
                 this.handset = result.matches;
             });
 
-        this.selectedNormalized$
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((selected) => {
-                this.selectionChange.emit(selected);
-            });
+        this.selectedNormalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((selected) => {
+            this.selectionChange.emit(selected);
+        });
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
@@ -136,9 +111,7 @@ export class DataTableComponent<T = any>
             this._properties = {};
             if (adapter.normalized && adapter.normalized.length) {
                 const cols: any = {};
-                adapter.normalized.forEach((x) =>
-                    Object.keys(x.item).forEach((k) => (cols[k] = 1))
-                );
+                adapter.normalized.forEach((x) => Object.keys(x.item).forEach((k) => (cols[k] = 1)));
                 Object.keys(cols).forEach((k) => {
                     if (!k.startsWith('_')) this._properties[k] = {};
                 });
@@ -148,31 +121,22 @@ export class DataTableComponent<T = any>
             columns.forEach(([k, v]) => {
                 this._properties[k] = { displayPath: k, ...v };
                 if (v?.template) {
-                    const template = Array.isArray(v.template)
-                        ? v.template
-                        : [v.template];
-                    this._properties[k].template = template.map((t) =>
-                        'component' in t ? t : { component: t }
-                    );
+                    const template = Array.isArray(v.template) ? v.template : [v.template];
+                    this._properties[k].template = template.map((t) => ('component' in t ? t : { component: t }));
                 }
             });
         } else {
             this._properties = {};
             Object.keys(columns).forEach((k) => {
                 if (columns[k] === 1) this._properties[k] = {};
-                else if (columns[k] === 0)
-                    this._properties[k] = { visible: false };
+                else if (columns[k] === 0) this._properties[k] = { visible: false };
                 else {
                     this._properties[k] = {
                         ...columns[k],
                     };
                     if (columns[k]?.template) {
-                        const template = Array.isArray(columns[k]?.template)
-                            ? columns[k]?.template
-                            : [columns[k]?.template];
-                        this._properties[k].template = template.map((t) =>
-                            'component' in t ? t : { component: t }
-                        );
+                        const template = Array.isArray(columns[k]?.template) ? columns[k]?.template : [columns[k]?.template];
+                        this._properties[k].template = template.map((t) => ('component' in t ? t : { component: t }));
                     }
                 }
             });
@@ -188,15 +152,11 @@ export class DataTableComponent<T = any>
                 }
             };
 
-            const storageColumnsInfoStr = localStorage.getItem(
-                `table#${this.name()}`
-            );
+            const storageColumnsInfoStr = localStorage.getItem(`table#${this.name()}`);
             const storageColumnsInfo = parseJson(storageColumnsInfoStr, []);
             if (storageColumnsInfo.length > 0) {
                 for (const prop in this._properties) {
-                    const colInfo = storageColumnsInfo.find(
-                        (x) => x.name === prop
-                    ) ?? {
+                    const colInfo = storageColumnsInfo.find((x) => x.name === prop) ?? {
                         visible: true,
                         sticky: false,
                     };
@@ -216,8 +176,7 @@ export class DataTableComponent<T = any>
         delete this._properties['i'];
 
         if (iCol && iCol.visible !== false) this._columns.push('i');
-        if (selectCol === undefined || selectCol.visible !== false)
-            this._columns.push('select');
+        if (selectCol === undefined || selectCol.visible !== false) this._columns.push('select');
 
         this._columns.push(...Object.keys(this._properties));
     }
@@ -225,8 +184,7 @@ export class DataTableComponent<T = any>
     shiftKeyPressed = false;
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === 'Shift')
-            this.shiftKeyPressed = this.maxAllowed() !== 1;
+        if (event.key === 'Shift') this.shiftKeyPressed = this.maxAllowed() !== 1;
     }
 
     @HostListener('document:keyup', ['$event'])
@@ -242,8 +200,7 @@ export class DataTableComponent<T = any>
             const i1 = all.indexOf(row);
             const i2 = all.indexOf(this.focusedItem());
 
-            if (i1 > -1 && i2 > -1)
-                rows = all.slice(Math.min(i1, i2), Math.max(i1, i2) + 1);
+            if (i1 > -1 && i2 > -1) rows = all.slice(Math.min(i1, i2), Math.max(i1, i2) + 1);
         }
 
         for (const r of rows) {

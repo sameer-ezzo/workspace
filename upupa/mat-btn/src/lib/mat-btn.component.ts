@@ -5,11 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthorizeModule } from '@upupa/authz';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
+import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'mat-btn',
     templateUrl: './mat-btn.component.html',
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule],
+    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, JsonPipe],
     standalone: true,
 })
 export class MatBtnComponent {

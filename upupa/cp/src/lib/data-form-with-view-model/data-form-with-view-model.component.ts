@@ -51,11 +51,12 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
 
     // private instance = signal<any>(null);
     ngOnChanges(changes: SimpleChanges) {
-        const type = this.viewmodel();
+        const vmType = this.viewmodel();
         if (changes['viewmodel']) {
             runInInjectionContext(this.injector, () => {
-                if (this.value() instanceof type) return;
-                const instance = new type();
+                const v = this.value();
+                if (v instanceof vmType) return;
+                const instance = new vmType();
                 this.value.set(instance);
             });
         }

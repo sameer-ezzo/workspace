@@ -1,15 +1,15 @@
-@switch (variant()) { @case ('raised') {
+@let d = descriptor(); @switch (variant()) { @case ('raised') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     (keydown.enter)="onAction($event)"
     mat-raised-button
@@ -17,67 +17,67 @@
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
     }
-    {{ descriptor().text }}
+    {{ d.text }}
 </button>
 } @case ('flat') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-flat-button
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
     }
-    {{ descriptor().text }}
+    {{ d.text }}
 </button>
 } @case ('stroked') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-stroked-button
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
     }
-    {{ descriptor().text }}
+    {{ d.text }}
 </button>
 } @case ('icon') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? d.text ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-icon-button
-    [attr.aria-labelledby]="descriptor().text"
-    [attr.aria-label]="descriptor().text"
+    [attr.aria-labelledby]="d.text"
+    [attr.aria-label]="d.text"
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
@@ -86,20 +86,20 @@
 } @case ('fab') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? d.text ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-fab
-    [attr.aria-labelledby]="descriptor().text"
-    [attr.aria-label]="descriptor().text"
+    [attr.aria-labelledby]="d.text"
+    [attr.aria-label]="d.text"
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
@@ -108,20 +108,20 @@
 } @case ('mini-fab') {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-mini-fab
-    [attr.aria-labelledby]="descriptor().text"
-    [attr.aria-label]="descriptor().text"
+    [attr.aria-labelledby]="d.text"
+    [attr.aria-label]="d.text"
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
@@ -130,22 +130,22 @@
 } @default {
 <button
     authAction
-    [path]="descriptor()['path']"
-    [action]="descriptor()['action']"
-    [title]="descriptor().tooltip"
-    [attr.type]="descriptor().type || 'button'"
-    [attr.id]="descriptor().name"
+    [path]="d['path']"
+    [action]="d['action']"
+    [title]="d.tooltip ?? ''"
+    [attr.type]="d.type || 'button'"
+    [attr.id]="d.name"
     [disabled]="isDisabled()"
     [color]="color()"
     (keydown.enter)="onAction($event)"
-    [matBadge]="descriptor().matBadge"
-    [matBadgeColor]="descriptor().matBadgeColor"
+    [matBadge]="d.matBadge"
+    [matBadgeColor]="d.matBadgeColor"
     (click)="onAction($event)"
     mat-button
 >
     @if (icon()) {
     <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
     }
-    {{ descriptor().text }}
+    {{ d.text }}
 </button>
 } }

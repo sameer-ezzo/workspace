@@ -1,14 +1,14 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef } from "@angular/core";
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, FormControl, NgControl } from "@angular/forms";
-import { PortalComponent, DynamicComponent } from "@upupa/common";
-import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
-import { DynamicFormInputsMapService } from "./dynamic-form-inputsMap.service";
-import { IFieldInputResolver } from "./ifield-input.resolver";
-import { Field } from "./types";
+import { Component, forwardRef, inject, input, computed, model, ComponentRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, FormControl, NgControl } from '@angular/forms';
+import { PortalComponent, DynamicComponent } from '@upupa/common';
+import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
+import { DynamicFormInputsMapService } from './dynamic-form-inputsMap.service';
+import { IFieldInputResolver } from './ifield-input.resolver';
+import { Field } from './types';
 
 @Component({
     standalone: true,
-    selector: "dynamic-form-field",
+    selector: 'dynamic-form-field',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -28,17 +28,16 @@ import { Field } from "./types";
     ],
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
-        {{ control().status | json }}
         @if (field().text) {
-            <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
+        <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
         }
         <!-- <ng-container *ngComponentOutlet="template().component; inputs: template().inputs" [formControlName]="field().name" [formGroup]="form()"> </ng-container> -->
         <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)"> </portal>
     `,
 
     host: {
-        "[id]": "id()",
-        "[class]": "classList()",
+        '[id]': 'id()',
+        '[class]': 'classList()',
     },
 })
 export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
@@ -49,7 +48,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     template = input.required<DynamicComponent | null, DynamicComponent>({
         transform: (v) => {
             if (!v) {
-                console.log("no template provided", this.field());
+                console.log('no template provided', this.field());
                 return null;
             }
             let inputs = { ...(v.inputs ?? {}) };
@@ -72,9 +71,9 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [this.id() + "-container", `${field.name}-input`, "ff-container", template?.class, field.ui.class, field.ui?.hidden === true ? "hidden" : ""]
+        return [this.id() + '-container', `${field.name}-input`, 'ff-container', template?.class, field.ui.class, field.ui?.hidden === true ? 'hidden' : '']
             .filter((c) => c)
-            .join(" ")
+            .join(' ')
             .trim();
     });
 
