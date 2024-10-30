@@ -1,9 +1,10 @@
 import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors, FormControl, NgControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl } from '@angular/forms';
 import { PortalComponent, DynamicComponent } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
-import { Field, FieldItem } from './types';
+import { FieldItem } from './types';
 import { DynamicFormService } from './dynamic-form.service';
+import { AdapterInputResolverService } from './adapter-input-resolver.service';
 
 @Component({
     standalone: true,
@@ -19,8 +20,11 @@ import { DynamicFormService } from './dynamic-form.service';
     template: `
         @if (field().text) {
         <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
-        }
+        } @if(template()) {
         <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)"> </portal>
+        }@else{
+        <div class="error">Template not found for {{ field().name }}</div>
+        }
     `,
 
     host: {
@@ -47,12 +51,15 @@ export class DynamicFormFieldComponent implements ControlValueAccessor {
     template = signal<DynamicComponent>(undefined);
     theme = input('material');
 
-    ngOnChanges(changes: SimpleChanges) {
+    private readonly adapterResolver = inject(AdapterInputResolverService);
+    async ngOnChanges(changes: SimpleChanges) {
         if (changes['field']) {
             const field = this.field();
+            let inputs = { ...(field.ui?.inputs ?? {}) };
+            await this.adapterResolver.resolve(inputs);
             this.template.set({
                 component: this.formService.getControl(field.input, this.theme()).component,
-                inputs: field.ui?.inputs,
+                inputs: inputs,
                 outputs: field.ui?.outputs,
                 class: field.ui?.class,
             });

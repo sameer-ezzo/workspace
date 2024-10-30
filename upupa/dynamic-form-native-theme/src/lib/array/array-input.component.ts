@@ -1,24 +1,8 @@
-import {
-    Component,
-    forwardRef,
-    OnDestroy,
-    OnChanges,
-    OnInit,
-    input,
-    model,
-    SimpleChanges,
-    computed,
-    Type,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import {
-    ColumnsDescriptor,
-    DataTableModule,
-    resolveDataListInputsFor,
-    ValueDataComponentBase,
-} from '@upupa/table';
+import { Component, forwardRef, OnDestroy, OnChanges, OnInit, input, model, SimpleChanges, computed, Type } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { DataTableModule, resolveDataListInputsFor, ValueDataComponentBase } from '@upupa/table';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
-import { DynamicComponent, PortalComponent, UtilsModule } from '@upupa/common';
+import { DynamicComponent, PortalComponent } from '@upupa/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 // import { Class, resolveDataListInputsFor } from '@upupa/cp';
@@ -27,35 +11,18 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
     selector: 'array-input',
     templateUrl: './array-input.component.html',
     standalone: true,
-    imports: [
-        DataTableModule,
-        PortalComponent,
-        MatFormFieldModule,
-        AsyncPipe,
-        JsonPipe,
-    ],
+    imports: [DataTableModule, PortalComponent, MatFormFieldModule, AsyncPipe, JsonPipe],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => ArrayInputComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => ArrayInputComponent),
-            multi: true,
-        },
     ],
 })
-export class ArrayInputComponent<T = any>
-    extends ValueDataComponentBase<T>
-    implements OnDestroy, OnChanges, OnInit
-{
+export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> implements OnDestroy, OnChanges, OnInit {
     label = input('');
-    tableHeaderComponent = input<
-        DynamicComponent,
-        Type<any> | DynamicComponent
-    >(undefined, {
+    tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             if (c instanceof Type) return { component: c };
             return c;
@@ -75,22 +42,9 @@ export class ArrayInputComponent<T = any>
         if (changes['adapter']) {
             this.dataSource.all = this.value() as Partial<T>[];
             this.adapter().refresh();
-            console.log(
-                'ArrayInputComponent.ngOnChanges Adapter',
-                this.adapter().normalized
-            );
+            console.log('ArrayInputComponent.ngOnChanges Adapter', this.adapter().normalized);
             this.adapter.set(this._adapter);
         }
         await super.ngOnChanges(changes);
     }
-
-    //TODO
-    // override async _updateViewModel(): Promise<void> {
-    //     this.dataSource.all = this.value() as Partial<T>[];
-    //     this.adapter().refresh();
-    // }
-
-    // @Input() columns: ColumnsDescriptor = {};
-
-    // @Output() action = new EventEmitter<ActionEvent>();
 }

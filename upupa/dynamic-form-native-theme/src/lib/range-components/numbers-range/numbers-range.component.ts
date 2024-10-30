@@ -1,21 +1,7 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    Output,
-    EventEmitter,
-    SimpleChanges,
-    input,
-    computed,
-} from '@angular/core';
-import {
-    ControlValueAccessor,
-    UntypedFormControl,
-    NG_VALUE_ACCESSOR,
-    NG_VALIDATORS,
-} from '@angular/forms';
+import { Component, forwardRef, input, computed } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
-import { ReplaySubject } from 'rxjs';
+
 import { InputDefaults } from '../../defaults';
 
 export type Range<T> = { from: T; to: T };
@@ -33,11 +19,6 @@ function nullEmptyCheck(v) {
             useExisting: forwardRef(() => NumbersRangeComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => NumbersRangeComponent),
-            multi: true,
-        },
     ],
 })
 export class NumbersRangeComponent<T = number> extends InputBaseComponent {
@@ -46,7 +27,6 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
     label = input('');
     placeholder = input('');
     hint = input('');
-
 
     floor = input(0);
     ceiling = input(100);
@@ -86,9 +66,7 @@ export class NumbersRangeComponent<T = number> extends InputBaseComponent {
     });
 
     items = computed(() => {
-        return new Array(this.ceiling() - this.floor())
-            .fill(0)
-            .map((_, i) => i);
+        return new Array(this.ceiling() - this.floor()).fill(0).map((_, i) => i);
     });
 
     // override propagateChange() {

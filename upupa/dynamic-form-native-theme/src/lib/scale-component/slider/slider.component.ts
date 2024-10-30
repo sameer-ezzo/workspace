@@ -2,18 +2,11 @@ import {
     Component,
     Input,
     forwardRef,
-    ViewEncapsulation,
-    Output,
-    EventEmitter,
     SimpleChanges,
 } from '@angular/core';
 import {
-    ControlValueAccessor,
-    UntypedFormControl,
     NG_VALUE_ACCESSOR,
-    NG_VALIDATORS,
 } from '@angular/forms';
-import { ReplaySubject } from 'rxjs';
 // import { Options } from "@angular-slider/ngx-slider";
 import { DataAdapter } from '@upupa/data';
 import { InputComponent } from '../../input/input.component';
@@ -29,12 +22,7 @@ import { InputComponent } from '../../input/input.component';
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => SliderComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => SliderComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class SliderComponent extends InputComponent {

@@ -10,7 +10,5 @@
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
-/>
-@for (error of control().errors | keyvalue; track error.key) {
-    <span class="error">{{ error.key }}</span>
-}
+/>    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+

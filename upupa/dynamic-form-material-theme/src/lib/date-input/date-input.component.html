@@ -23,9 +23,8 @@
     ></mat-datepicker-toggle>
     @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
-    } @for (error of control().errors | keyvalue; track error) {
-    <mat-error>{{ error.key }} </mat-error>
-    }
+    }     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+
 </mat-form-field>
 <mat-datepicker
     #picker

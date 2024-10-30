@@ -1,14 +1,10 @@
-import { Component, SimpleChanges, inject, input, model, output } from '@angular/core';
-import { BehaviorSubject, debounceTime } from 'rxjs';
+import { Component, inject, input, model, output } from '@angular/core';
+import { debounceTime } from 'rxjs';
 import { DataComponentBase } from './data-base.component';
-import { FormControl } from '@angular/forms';
+import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 import { ControlValueAccessor } from '@angular/forms';
-import { NG_VALIDATORS } from '@angular/forms';
 import { forwardRef } from '@angular/core';
-import { Validator } from '@angular/forms';
 import { OnChanges } from '@angular/core';
-import { ValidationErrors } from '@angular/forms';
-import { AbstractControl } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -17,14 +13,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     styles: [],
     providers: [
         {
-            provide: NG_VALIDATORS,
+            provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => ValueDataComponentBase),
             multi: true,
         },
     ],
 })
 export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
-    errorMessages = model<{ [errorCode: string]: string }>(null);
     name = input<string, string>('', {
         alias: 'fieldName',
         transform: (v) => (v ? v : `field_${Date.now()}`),
@@ -35,13 +30,13 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     disabled = model(false);
     value = model<Partial<T> | Partial<T>[]>(undefined);
 
-    _control = inject(FormControl, { optional: true });
+    _control = inject(NgControl, { optional: true }).control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
     control = input<FormControl>(this._control ?? new FormControl());
 
-    onInput(v: any) {
+    handleUserInput(v: Partial<T> | Partial<T>[]) {
         this.value.set(v);
-        this.propagateChange();
         this.markAsTouched();
+        this.propagateChange();
     }
 
     override ngOnInit(): void {
@@ -53,36 +48,37 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
             const v = this.value();
             const value = Array.isArray(v) ? v : [v];
             if (this.maxAllowed() === 1) {
-                const valueKey = this.adapter().getKeysFromValue(value)?.[0];
+                const valueKey = this.adapter().getKeysFromValue(value.slice(0, 1))?.[0];
                 const selectedKey = selectedNormalized?.[0]?.key;
                 if (valueKey === selectedKey) return;
-                this.onInput(selectedNormalized?.[0]?.value);
+                this.handleUserInput(selectedNormalized?.[0]?.value);
             } else {
                 const valueKeys = this.adapter().getKeysFromValue(value);
                 const selectedKeys = selectedNormalized?.map((x) => x.key);
                 const set = new Set([...valueKeys, ...selectedKeys]);
                 if (selectedKeys.length === valueKeys.length && valueKeys.length === set.size) return;
-                this.onInput(selectedNormalized?.map((x) => x.value));
+                this.handleUserInput(selectedNormalized?.map((x) => x.value));
             }
         });
     }
 
+    // >>>>> ControlValueAccessor ----------------------------------------
     _onChange: (value: Partial<T> | Partial<T>[]) => void;
     _onTouch: () => void;
 
     propagateChange() {
-        if (this._onChange) this._onChange(this.value()); //ngModel/ngControl notify (value accessor)
-        this.valueChange.emit(this.value()); //value event binding notify
-    }
-
-    writeValue(v: T): void {
-        this.value.set(v);
+        this._onChange?.(this.value()); //ngModel/ngControl notify (value accessor)
     }
 
     markAsTouched() {
         if (this._onTouch) this._onTouch();
     }
-    registerOnChange(fn: (value: T) => void): void {
+
+    writeValue(v: Partial<T> | Partial<T>[]): void {
+        this.value.set(v);
+    }
+
+    registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
         this._onChange = fn;
     }
     registerOnTouched(fn: () => void): void {
@@ -90,10 +86,5 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     }
     setDisabledState?(isDisabled: boolean): void {
         this.disabled.set(isDisabled);
-    }
-
-    private onValidatorChange = () => {};
-    registerOnValidatorChange(fn: () => void): void {
-        this.onValidatorChange = fn;
     }
 }

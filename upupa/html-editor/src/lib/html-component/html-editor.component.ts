@@ -1,39 +1,13 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    OnChanges,
-    ViewEncapsulation,
-    inject,
-    signal,
-    input,
-    afterNextRender,
-    model,
-    ElementRef,
-    AfterViewInit,
-    viewChild,
-    SimpleChanges,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, AfterViewInit, viewChild, SimpleChanges } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { HtmlUploadAdapter } from '../html-upload-adapter';
-import { HTML_EDITOR_CONFIG, HTML_EDITOR_UPLOAD_BASE } from '../di.token';
 import { InputBaseComponent, UtilsModule } from '@upupa/common';
-import { LanguageService } from '@upupa/language';
 import { UploadModule, UploadService } from '@upupa/upload';
 import { AuthService } from '@upupa/auth';
 
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
-import { ContextConfig, Editor, EditorConfig } from '@ckeditor/ckeditor5-core';
-import {
-    ClassicEditor,
-    Bold,
-    Essentials,
-    Italic,
-    Mention,
-    Paragraph,
-    Undo,
-} from 'ckeditor5';
+import { Editor, EditorConfig } from '@ckeditor/ckeditor5-core';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
@@ -51,17 +25,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
             useExisting: forwardRef(() => HtmlEditorComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => HtmlEditorComponent),
-            multi: true,
-        },
     ],
 })
-export class HtmlEditorComponent
-    extends InputBaseComponent<string>
-    implements AfterViewInit
-{
+export class HtmlEditorComponent extends InputBaseComponent<string> implements AfterViewInit {
     readonly = input(false);
     language = input('');
     dir = input('');
@@ -79,8 +45,7 @@ export class HtmlEditorComponent
 
     editor: Editor;
     el = inject(ElementRef<HTMLElement>);
-    editorElement =
-        viewChild.required<ElementRef<HTMLTextAreaElement>>('editor');
+    editorElement = viewChild.required<ElementRef<HTMLTextAreaElement>>('editor');
     async ngAfterViewInit() {
         await this._initEditor();
     }
@@ -98,8 +63,7 @@ export class HtmlEditorComponent
             ...this.editorConfig(),
         };
 
-        if (this.config?.mediaEmbed)
-            this.config.mediaEmbed.previewsInData = true;
+        if (this.config?.mediaEmbed) this.config.mediaEmbed.previewsInData = true;
 
         try {
             const editorEl = this.editorElement().nativeElement;
@@ -116,7 +80,7 @@ export class HtmlEditorComponent
             editor.setData(this.value() ?? '');
 
             editor.model.document.on('change:data', () => {
-                this.handleUserInput(null, editor.getData());
+                this.handleUserInput(editor.getData());
             });
             this.editor = editor;
         } catch (error) {

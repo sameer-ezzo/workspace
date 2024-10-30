@@ -6,8 +6,9 @@ import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
 import { DynamicFormInputs } from '../dynamic-form-inputs';
 import { JsonPointer } from '@noah-ark/json-patch';
-import { FormFieldOptions, SimpleDataAdapter, VisibleFormFieldOptions } from './decorators.types';
+import { FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
 import { getLanguageInfo } from '@upupa/language';
+import { DataAdapterDescriptor } from '@upupa/data';
 
 const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
@@ -152,13 +153,32 @@ export function resolveFormViewmodelInputs(viewmodel: new <T = any>(...args: any
     const fields = {} as FormScheme;
 
     buildFormScheme('', formOptions as Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, fields);
+
     return { ...inputs, fields } as DynamicFormInputs & Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'>;
 }
 
+function sortFields(fields: [string, { options: Partial<FormFieldOptions>; localize: boolean; target: any }][]) {
+    return fields.sort((a, b) => a[1].options['order'] - b[1].options['order']);
+}
+
+function sortFieldsByOrder(fields: DynamicFormOptionsMetaData['fields']) {
+    const entries = Object.entries(fields);
+    const orderedEntries = sortFields(entries.filter(([k, v]) => v.options['order'] !== undefined));
+    const minOrder = orderedEntries[0]?.[1]['options']['order'] ?? 0;
+    for (let idx = 0; idx < entries.length; idx++) {
+        const [key, fieldInfo] = entries[idx];
+        if (fieldInfo.options['order'] === undefined) {
+            fieldInfo.options['order'] = minOrder + idx;
+        }
+    }
+    return sortFields(entries);
+}
 function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, parentFormScheme: FormScheme): void {
     const { fields, locales } = info;
-    for (const key in fields) {
-        const { options, localize, target } = fields[key];
+    const fieldNamesSorted = sortFieldsByOrder(fields);
+
+    for (const [key, fieldInfo] of fieldNamesSorted) {
+        const { options, localize, target } = fieldInfo;
         const input = guessFieldInputType(target, key, options);
         //todo: introduce array field type instead of using fieldset
 
@@ -168,7 +188,9 @@ function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaDa
 
     const translationsFieldset = parentFormScheme['translations'];
     delete parentFormScheme['translations'];
-    if (Object.keys(translationsFieldset)) parentFormScheme['translations'] = translationsFieldset;
+    if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme['translations'] = translationsFieldset;
+
+    console.log(parentPath, 'parentFormScheme', parentFormScheme);
 }
 
 function makeFormFieldOptions(propertyKey: string, options: Partial<FormFieldOptions>) {
@@ -207,9 +229,8 @@ function makeFieldItem(
     locales: DynamicFormOptionsMetaData['locales'],
     parentFormScheme: FormScheme
 ) {
-    const make = (field: FieldItem) => {
-        if (localize) _localizeField(field, locales, parentFormScheme);
-
+    const make = (field: FieldItem, options: Partial<FormFieldOptions>) => {
+        if (localize) _localizeField(field, locales, parentFormScheme, options);
         JsonPointer.set(parentFormScheme, field.path, field);
     };
 
@@ -226,18 +247,15 @@ function makeFieldItem(
 
     if (input.length === 0) field.input = 'hidden';
 
-    if (input === 'array') {
-        options['adapter'] = {
-            dataSource: 'client',
-            data: [],
-        } as SimpleDataAdapter;
-    }
-    if (options['adapter']) {
-        field.ui.inputs['_adapter'] = options['adapter'];
+    if (input === 'array' || options['adapter']) {
+        const descriptor: DataAdapterDescriptor = options['adapter'] ?? { type: 'client', data: [] };
+        field.ui.inputs['_adapter'] = descriptor;
         delete field.ui.inputs['adapter'];
+        field.ui.inputs['minAllowed'] = options['minAllowed'] ?? 1;
+        field.ui.inputs['maxAllowed'] = options['maxAllowed'] ?? 1;
     }
 
-    if (input === 'hidden') return make(field);
+    if (input === 'hidden') return make(field, options);
 
     if (input === 'switch') {
         const switchOptions = options as any;
@@ -251,7 +269,7 @@ function makeFieldItem(
         field.ui.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
         field.ui.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
         field.ui.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
-        return make(field);
+        return make(field, options);
     }
 
     if (input === 'file') {
@@ -267,15 +285,15 @@ function makeFieldItem(
         field.ui.inputs['includeAccess'] = fileOptions.includeAccess || false;
         field.ui.inputs['minSize'] = fileOptions.minSize || 0;
         field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
-        return make(field);
+        return make(field, options);
     }
     if (input === 'html') {
         const htmlOptions = options as any;
         field.ui.inputs['uploadPath'] = htmlOptions.path || field.path || field.name;
-        return make(field);
+        return make(field, options);
     }
 
-    return make(field);
+    return make(field, options);
 }
 
 function makeFieldset(
@@ -303,9 +321,9 @@ function makeFieldset(
 
     const translationsFieldset = fieldset.items['translations'];
     delete fieldset.items['translations'];
-    if (Object.keys(translationsFieldset)) fieldset.items['translations'] = translationsFieldset;
+    if (translationsFieldset && Object.keys(translationsFieldset)) fieldset.items['translations'] = translationsFieldset;
 
-    JsonPointer.set(parentFormScheme, path, fieldset);
+    parentFormScheme[fieldset.name] = fieldset;
 }
 
 const makeTranslationFieldset = (name, path, label): Fieldset => {
@@ -323,7 +341,7 @@ const makeTranslationFieldset = (name, path, label): Fieldset => {
     } as Fieldset;
 };
 
-const _localizeField = (field: FieldItem, locales: DynamicFormOptionsMetaData['locales'], parentFormScheme: FormScheme): void => {
+const _localizeField = (field: FieldItem, locales: DynamicFormOptionsMetaData['locales'], parentFormScheme: FormScheme, options: Partial<FormFieldOptions>): void => {
     if (!locales) return;
     const defaultLocale = (locales.defaultLocale ?? '').trim();
     const translations = (locales.translations ?? []).filter((x) => (x ?? '').trim());
@@ -351,7 +369,6 @@ const _localizeField = (field: FieldItem, locales: DynamicFormOptionsMetaData['l
         const translationField = { ...(field as any) };
         translationField.path = `${fieldset['path']}${fieldPath}`;
         JsonPointer.set(fieldset.items, field.name, translationField);
-
         JsonPointer.set(parentFormScheme, 'translations', translationFieldset);
     }
 };

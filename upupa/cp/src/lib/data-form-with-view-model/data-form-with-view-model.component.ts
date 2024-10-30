@@ -6,6 +6,7 @@ import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { Class } from '../helpers';
 import { CommonModule } from '@angular/common';
+import { ActionEvent } from '@upupa/common';
 
 @Component({
     selector: 'cp-data-form-with-view-model',
@@ -34,7 +35,10 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     value = model<T>();
 
     // dynamic form inputs
-    dynamicFormInputs = computed(() => resolveFormViewmodelInputs(this.viewmodel()));
+    dynamicFormInputs = computed(() => {
+        const fields = resolveFormViewmodelInputs(this.viewmodel());
+        return fields;
+    });
     fields = computed(() => this.dynamicFormInputs().fields);
     name = computed(() => this.dynamicFormInputs().name ?? Date.now().toString());
     preventDirtyUnload = computed(() => this.dynamicFormInputs().preventDirtyUnload === true);
@@ -66,27 +70,25 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         // console.log("onValueChange", v);
     }
 
-    async onSubmit() {
+    onSubmit() {
         const vm = this.value();
-        vm['onSubmit']?.();
+        const prototype = Object.getPrototypeOf(vm);
+        runInInjectionContext(this.injector, async () => {
+            await prototype['onSubmit']();
+            if (prototype['afterSubmit']) prototype['afterSubmit']?.();
+        });
     }
 
-    // async onAction(e: ActionEvent): Promise<void> {
-    //     if (e.action.name === 'onSubmit')
-    //         return runInInjectionContext(this.injector, () => {
-    //             this.onSubmit();
-    //         });
+    async onAction(e: ActionEvent): Promise<void> {
+        const vm = this.value();
+        const prototype = Object.getPrototypeOf(vm);
+        let { handlerName } = e.action as any;
+        if (!handlerName && e.action.type === 'submit') handlerName = 'onSubmit';
+        if (!prototype[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-    //     const { handlerName } = e.action as any; //DataFormActionDescriptor;
-    //     const vm = this.instance();
-
-    //     if (!vm) throw new Error('ViewModel not initialized');
-    //     if (!vm[handlerName])
-    //         throw new Error(`Handler ${handlerName} not found in ViewModel`);
-
-    //     await vm[handlerName]({
-    //         ...e,
-    //         context: { ...e.context, component: this, dynamicForm: this.form },
-    //     });
-    // }
+        if (handlerName === 'onSubmit') return this.form().ngForm().ngSubmit.emit();
+        return runInInjectionContext(this.injector, async () => {
+            await prototype[handlerName]();
+        });
+    }
 }

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, forwardRef, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Condition } from '@noah-ark/expression-engine';
 import { ActionDescriptor, InputBaseComponent } from '@upupa/common';
 import { ActionsDescriptor } from '@upupa/common';
@@ -7,7 +7,6 @@ import { Field, FormScheme } from '../types';
 import { CollectStyle, FormDesign } from './types';
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from './utils';
 import { DynamicFormComponent } from '../dynamic-form.component';
-import { delay } from '@noah-ark/common';
 
 @Component({
     selector: 'collector',
@@ -17,11 +16,6 @@ import { delay } from '@noah-ark/common';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => CollectorComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => CollectorComponent),
             multi: true,
         },

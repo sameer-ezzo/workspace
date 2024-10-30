@@ -1,5 +1,5 @@
-import { Component, Input, forwardRef, input } from "@angular/core";
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl } from "@angular/forms";
+import { Component, forwardRef, input } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { InputDefaults } from "../defaults";
 import { InputBaseComponent } from "@upupa/common";
 
@@ -12,12 +12,7 @@ import { InputBaseComponent } from "@upupa/common";
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => TextAreaComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => TextAreaComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class TextAreaComponent extends InputBaseComponent<string> {

@@ -1,5 +1,5 @@
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { PasswordInputComponent } from '@upupa/dynamic-form-native-theme'
 

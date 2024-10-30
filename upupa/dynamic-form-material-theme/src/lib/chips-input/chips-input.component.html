@@ -1,13 +1,9 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     <input type="hidden" [value]="value()" />
     @if (label()) {
     <mat-label>{{ label() }}</mat-label>
     }
-    <mat-chip-grid #chipGrid aria-label="Fruit selection">
+    <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()">
         @for (item of selectedNormalized$ | async; track item.key) {
         <mat-chip-row (removed)="remove(item)">
             {{ item.display }}
@@ -32,12 +28,8 @@
         (matChipInputTokenEnd)="onAdding($event.value)"
     />
 
-    <mat-autocomplete
-        #auto="matAutocomplete"
-        (optionSelected)="selectionChange($event.option.value)"
-    >
-        @if(options().length > 0 || filterInput.value.length > 0){ @for (opt of
-        options(); track opt.key) {
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event.option.value)">
+        @if(options().length > 0 || filterInput.value.length > 0){ @for (opt of options(); track opt.key) {
         <mat-option [value]="opt.key">
             @if(opt.image){
             <img [src]="opt.image" [attr.alt]="opt.display" />
@@ -50,7 +42,5 @@
         </mat-option>
         } }
     </mat-autocomplete>
-    @for (error of control().errors|keyvalue; track error.key) {
-    <mat-error>{{ error.key }} </mat-error>
-    }
+    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 </mat-form-field>

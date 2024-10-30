@@ -17,7 +17,6 @@ import {
     ControlValueAccessor,
     UntypedFormControl,
     NG_VALUE_ACCESSOR,
-    NG_VALIDATORS,
 } from '@angular/forms';
 import {
     MatDialog,

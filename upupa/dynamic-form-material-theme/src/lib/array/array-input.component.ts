@@ -1,5 +1,5 @@
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { PortalComponent } from '@upupa/common';
 import { ArrayInputComponent } from '@upupa/dynamic-form-native-theme';
@@ -13,11 +13,6 @@ import { DataTableModule } from '@upupa/table';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => MatArrayInputComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => MatArrayInputComponent),
             multi: true,
         },

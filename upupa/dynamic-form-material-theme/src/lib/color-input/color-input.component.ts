@@ -1,5 +1,5 @@
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ColorInputComponent } from '@upupa/dynamic-form-native-theme';
 // import { jscolor } from '@eastdesire/jscolor'
 
@@ -13,7 +13,6 @@ import { ColorInputComponent } from '@upupa/dynamic-form-native-theme';
             useExisting: forwardRef(() => MatColorInputComponent),
             multi: true,
         },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatColorInputComponent), multi: true }
     ]
 })
 export class MatColorInputComponent extends ColorInputComponent {

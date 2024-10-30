@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from "@angular/core";
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 
 @Component({
-    selector: "input-base",
-    template: "",
+    selector: 'input-base',
+    template: '',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -14,18 +14,18 @@ import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, Untype
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
-    name = input<string, string>("", {
-        alias: "fieldName",
+    name = input<string, string>('', {
+        alias: 'fieldName',
         transform: (v) => {
             return v ? v : `field_${Date.now()}`;
         },
     });
+    disabled = model(false);
+    required = input(false);
 
     _control = inject(NgControl, { optional: true }).control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
     control = input<FormControl>(this._control ?? new FormControl());
-
     value = model<T>();
-    disabled = model(false);
 
     handleUserInput(v: T) {
         this.value.set(v);

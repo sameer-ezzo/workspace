@@ -1,5 +1,5 @@
 import { Component, forwardRef, ElementRef, input, viewChild, model } from "@angular/core";
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { fromEvent, merge, Subscription } from "rxjs";
 import { InputDefaults } from "../defaults";
 import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
@@ -24,12 +24,7 @@ export type PhoneNumber = {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => PhoneInputComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => PhoneInputComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class PhoneInputComponent extends InputBaseComponent {

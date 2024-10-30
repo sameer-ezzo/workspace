@@ -1,5 +1,5 @@
-import { Component, Input, forwardRef, input } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ValueDataComponentBase } from '@upupa/table';
 import { InputDefaults } from '../defaults';
@@ -8,11 +8,6 @@ import { InputDefaults } from '../defaults';
     selector: 'form-autocomplete-text',
     templateUrl: './autocomplete-text.component.html',
     providers: [
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => AutoCompleteTextComponent),
-            multi: true,
-        },
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => AutoCompleteTextComponent),

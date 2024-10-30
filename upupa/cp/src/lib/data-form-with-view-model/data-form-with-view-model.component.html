@@ -15,8 +15,8 @@
 @if (actions(); as _actions) {
 <div class="toolbar footer">
     @for (descriptor of _actions; track descriptor.name) {
-    <!-- (onClick)="onAction($event)" -->
-    <mat-btn [descriptor]="descriptor"></mat-btn>
+
+    <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
     }
 </div>
 }

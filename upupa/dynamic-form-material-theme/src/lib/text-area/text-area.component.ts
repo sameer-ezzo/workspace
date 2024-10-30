@@ -1,5 +1,5 @@
 import { Component, forwardRef } from "@angular/core";
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
@@ -11,8 +11,6 @@ import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => MatTextAreaComponent),
             multi: true,
-        },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatTextAreaComponent), multi: true },
-    ],
+    }    ],
 })
 export class MatTextAreaComponent extends TextAreaComponent {}

@@ -1,24 +1,7 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    SimpleChanges,
-    signal,
-    model,
-    input,
-} from '@angular/core';
-import {
-    NG_VALUE_ACCESSOR,
-    AbstractControl,
-    NG_VALIDATORS,
-    FormControl,
-} from '@angular/forms';
+import { Component, Input, forwardRef, SimpleChanges, signal, model, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator } from '@angular/forms';
 
-import {
-    PasswordStrength,
-    generatePassword,
-    verifyPassword,
-} from '@upupa/auth';
+import { PasswordStrength, generatePassword, verifyPassword } from '@upupa/auth';
 import { InputComponent } from '../input/input.component';
 
 @Component({
@@ -38,7 +21,7 @@ import { InputComponent } from '../input/input.component';
         },
     ],
 })
-export class PasswordInputComponent extends InputComponent {
+export class PasswordInputComponent extends InputComponent implements Validator {
     override type = input('password');
 
     confirmPwd = null;
@@ -66,48 +49,43 @@ export class PasswordInputComponent extends InputComponent {
             emitModelToViewChange: true,
         });
     }
-    // override validate(control: AbstractControl) {
-    //     if (!this.control() || this.control().untouched) return null;
 
-    //     if (
-    //         this.showConfirmPasswordInput() === true &&
-    //         this.confirmControl.touched
-    //     )
-    //         if (control.value !== this.confirmControl.value)
-    //             return { 'not-matched': true };
+    validate(control: AbstractControl) {
+        if (!this.control() || this.control().untouched) return null;
 
-    //     if (!this.passwordStrength) return null;
-    //     const passwordStrength = this.passwordStrength;
-    //     const validations = [];
-    //     const result = verifyPassword(control.value);
-    //     for (const k in passwordStrength) {
-    //         const message = 'passwrd-' + k;
-    //         const current = result[k];
-    //         const required = passwordStrength[k];
-    //         if (Array.isArray(required)) {
-    //             if (required[0] > current)
-    //                 validations.push({
-    //                     message: message + '-min',
-    //                     current,
-    //                     required: required[0],
-    //                 });
-    //             if (required[1] < current)
-    //                 validations.push({
-    //                     message: message + '-max',
-    //                     current,
-    //                     required: required[1],
-    //                 });
-    //         } else if (required > current)
-    //             validations.push({ message, current, required });
-    //     }
+        if (this.showConfirmPasswordInput() === true && this.confirmControl.touched) if (control.value !== this.confirmControl.value) return { 'not-matched': true };
 
-    //     if (validations.length === 0) return null;
-    //     const errors = validations
-    //         .map((v) => ({
-    //             [v.message]: { required: v.required, current: v.current },
-    //         }))
-    //         .reduce((v1, v2) => ({ ...v1, ...v2 }), {});
+        if (!this.passwordStrength) return null;
+        const passwordStrength = this.passwordStrength;
+        const validations = [];
+        const result = verifyPassword(control.value);
+        for (const k in passwordStrength) {
+            const message = 'passwrd-' + k;
+            const current = result[k];
+            const required = passwordStrength[k];
+            if (Array.isArray(required)) {
+                if (required[0] > current)
+                    validations.push({
+                        message: message + '-min',
+                        current,
+                        required: required[0],
+                    });
+                if (required[1] < current)
+                    validations.push({
+                        message: message + '-max',
+                        current,
+                        required: required[1],
+                    });
+            } else if (required > current) validations.push({ message, current, required });
+        }
 
-    //     return errors;
-    // }
+        if (validations.length === 0) return null;
+        const errors = validations
+            .map((v) => ({
+                [v.message]: { required: v.required, current: v.current },
+            }))
+            .reduce((v1, v2) => ({ ...v1, ...v2 }), {});
+
+        return errors;
+    }
 }

@@ -1,5 +1,5 @@
-import { Component, Input, forwardRef, input } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputComponent } from '../input/input.component';
 
 @Component({
@@ -9,11 +9,6 @@ import { InputComponent } from '../input/input.component';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => SwitchComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => SwitchComponent),
             multi: true,
         },

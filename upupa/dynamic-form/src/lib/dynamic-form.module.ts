@@ -1,28 +1,28 @@
-import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
-import { DynamicFormComponent } from "./dynamic-form.component";
-import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
+import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
+import { DynamicFormComponent, OrderedKeyValuePipe } from './dynamic-form.component';
+import { DynamicFormFieldComponent } from './dynamic-form-field.component';
 
-import { CommonModule } from "@angular/common";
-import { ReactiveFormsModule, FormsModule } from "@angular/forms";
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
-import { FocusLeaveDirective } from "./focusleave.dir";
-import { ScrollingModule } from "@angular/cdk/scrolling";
-import { CollectorComponent } from "./collector/collector.component";
-import { UtilsModule } from "@upupa/common";
-import { TaskValidationComponent } from "./task.validation.component/task.validation.component";
-import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from "./di.token";
-import { DynamicFormThemes } from "./dynamic-form-themes.type";
-import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from "@upupa/dynamic-form-native-theme";
-import { DynamicFormModuleOptions } from "./dynamic-form.options";
-import { MatBtnComponent } from "@upupa/mat-btn";
-import { PortalComponent } from "../../../common/src/lib/portal.component";
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { FocusLeaveDirective } from './focusleave.dir';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { CollectorComponent } from './collector/collector.component';
+import { UtilsModule } from '@upupa/common';
+import { TaskValidationComponent } from './task.validation.component/task.validation.component';
+import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
+import { DynamicFormThemes } from './dynamic-form-themes.type';
+import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme';
+import { DynamicFormModuleOptions } from './dynamic-form.options';
+import { MatBtnComponent } from '@upupa/mat-btn';
+import { PortalComponent } from '../../../common/src/lib/portal.component';
 
 const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
 } as unknown as DynamicFormThemes;
 
-const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirective, TaskValidationComponent];
+const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirective, TaskValidationComponent, OrderedKeyValuePipe];
 
 @NgModule({
     declarations: [...declarations],
@@ -53,8 +53,8 @@ export class DynamicFormModule {
     static forRoot(
         providers?: Provider[],
         themes?: DynamicFormThemes,
-        defaultThemeName?: "native" | string,
-        options: DynamicFormModuleOptions = { enableLogs: false },
+        defaultThemeName?: 'native' | string,
+        options: DynamicFormModuleOptions = { enableLogs: false }
     ): ModuleWithProviders<DynamicFormModule> {
         defaultThemeName ??= NATIVE_THEME_NAME;
         themes = { ...nativeTheme, ...themes };

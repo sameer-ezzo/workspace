@@ -1,32 +1,25 @@
-
-import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, Injectable, ContentChild, TemplateRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, TemplateRef } from '@angular/core';
 import { currencies } from '../currencies';
 import { PaymentService } from '../payment.service';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgForm, NG_VALIDATORS, FormControl, ValidationErrors, Validator, AbstractControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgForm, ValidationErrors } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { MatStepper } from '@angular/material/stepper';
 import { TranslateService } from '@upupa/language';
-import { SnackBarService } from '@upupa/common';
+import { SnackBarService } from '@upupa/dialog';
 import { DynamicFormCommands, DynamicFormEvents, FormScheme } from '@upupa/dynamic-form';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
-import { DataSource } from '@angular/cdk/collections';
 import { Condition } from '@noah-ark/expression-engine';
 
 const strgKey = 'pref_paymentM';
-
 
 @Component({
     selector: 'payment-method',
     templateUrl: './payment-method.component.html',
     styleUrls: ['./payment-method.component.scss'],
-    providers: [
-        { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => PaymentMethodComponent), multi: true },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => PaymentMethodComponent), multi: true }
-    ],
-    encapsulation: ViewEncapsulation.None
+    providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => PaymentMethodComponent), multi: true }],
+    encapsulation: ViewEncapsulation.None,
 })
 export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, AfterViewInit {
-
     @ViewChild('skrillIcon') skrill: TemplateRef<any>;
     @ViewChild('netellerIcon') neteller: TemplateRef<any>;
     @ViewChild('paypalIcon') paypal: TemplateRef<any>;
@@ -37,14 +30,12 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     @ViewChild('paymentCardIcon') card: TemplateRef<any>;
     @ViewChild('localTransferIcon') localTransfer: TemplateRef<any>;
 
-
     subs: Subscription[] = [];
-    model: any = {}
+    model: any = {};
     @ViewChild('stepper') stepper: MatStepper;
 
     amountCurrencyNotDefined = true;
     addressEditor = false;
-
 
     //form
     @Input() disabled: boolean;
@@ -57,13 +48,13 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     @Output('pay') payEvent = new EventEmitter<any>();
 
     //additional steps
-    @Input() steps: any[] = []
-
-
+    @Input() steps: any[] = [];
 
     //amount
     @Input()
-    get amount(): number { return this.model?.amount }
+    get amount(): number {
+        return this.model?.amount;
+    }
     set amount(value: number) {
         if (!this.model) this.model = {};
         this.model.amount = value;
@@ -79,7 +70,9 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
 
     @Input() currencies = currencies; //supported currencies
     @Input()
-    get currency(): string { return this.model?.currency; }
+    get currency(): string {
+        return this.model?.currency;
+    }
     set currency(value: string) {
         if (!this.model) this.model = {};
         this.model.currency = value;
@@ -89,12 +82,12 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     @Output() currencyChange = new EventEmitter<string>();
     @Input() customCurrency = false;
 
-
-
     //method
     @Input() methods = []; //avilable payment options
     @Input()
-    get method(): string { return this.model?.method; }
+    get method(): string {
+        return this.model?.method;
+    }
     set method(value: string) {
         if (!this.model) this.model = {};
         this.model.method = value;
@@ -104,43 +97,42 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     }
     @Output() methodChange = new EventEmitter<string>();
 
-
     //custom per method
     @Input() banks;
     @Input() addresses = [];
 
-
     @Input() transfers = [];
 
-    constructor(public paymentService: PaymentService,
-        public translator: TranslateService,
-        public snack: SnackBarService) { }
-
-
+    constructor(public paymentService: PaymentService, public translator: TranslateService, public snack: SnackBarService) {}
 
     ngOnChanges(changes) {
         if (changes['amount']) this.amount = parseFloat(this.amount + '');
-        if (changes['customAmount']) this.customAmount = (<any>this.customAmount === 'true') || (<any>this.customAmount === '') || this.customAmount === true;
-        if (changes['customCurrency']) this.customCurrency = (<any>this.customCurrency === 'true') || (<any>this.customCurrency === '') || this.customCurrency === true;
+        if (changes['customAmount']) this.customAmount = <any>this.customAmount === 'true' || <any>this.customAmount === '' || this.customAmount === true;
+        if (changes['customCurrency']) this.customCurrency = <any>this.customCurrency === 'true' || <any>this.customCurrency === '' || this.customCurrency === true;
 
         if (changes['banks'] && this.model.method === 'bank') this.model.paymentInfo = {};
         if (changes['method']) this.model.paymentInfo = {};
 
         //reset currency if no in currencies list
         if (changes['currencies'] || changes['currency']) {
-            if (!this.currencies || this.currencies.find(c => c.code === this.currency) === undefined)
-                this.currency = null;
+            if (!this.currencies || this.currencies.find((c) => c.code === this.currency) === undefined) this.currency = null;
         }
 
         //make sure amount & currency are set
         this.amountCurrencyNotDefined = (this.amount === null && !this.customAmount) || (this.currency === null && !this.customCurrency);
     }
 
-    ngOnDestroy() { this.subs.forEach(s => s.unsubscribe()); }
+    ngOnDestroy() {
+        this.subs.forEach((s) => s.unsubscribe());
+    }
 
     ngAfterViewInit(): void {
-        const sub1 = this.detailsForm.valueChanges.subscribe(() => { this.triggerChange(); });
-        const sub2 = this.mainForm.valueChanges.subscribe(() => { this.triggerChange(); });
+        const sub1 = this.detailsForm.valueChanges.subscribe(() => {
+            this.triggerChange();
+        });
+        const sub2 = this.mainForm.valueChanges.subscribe(() => {
+            this.triggerChange();
+        });
 
         this.subs.push(sub1);
         this.subs.push(sub2);
@@ -148,8 +140,6 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         setTimeout(() => {
             if (this.methods?.length === 1) this.selectMethod(this.methods[0], 0);
         }, 200);
-
-
     }
 
     async pay() {
@@ -159,15 +149,15 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
 
     addAddress() {
         this.addressEditor = true;
-        this.model.address = { ... this.model.address };
+        this.model.address = { ...this.model.address };
     }
 
     copyToClipboard(copyText: HTMLSpanElement) {
-        var textArea = document.createElement("textarea");
+        var textArea = document.createElement('textarea');
         textArea.value = copyText.textContent;
         document.body.appendChild(textArea);
         textArea.select();
-        document.execCommand("Copy");
+        document.execCommand('Copy');
         textArea.remove();
     }
 
@@ -182,28 +172,42 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         this.triggerChange();
     }
     onChange: (x: any) => void;
-    registerOnChange(onChange: (x: any) => void): void { this.onChange = onChange; }
+    registerOnChange(onChange: (x: any) => void): void {
+        this.onChange = onChange;
+    }
     onTouch: () => void;
-    registerOnTouched(onTouch: () => void): void { this.onTouch = onTouch; }
-    setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
+    registerOnTouched(onTouch: () => void): void {
+        this.onTouch = onTouch;
+    }
+    setDisabledState(isDisabled: boolean): void {
+        this.disabled = isDisabled;
+    }
 
     get valid() {
         return this.amount > 0 && this.currency != null && this.method != null && this.stepper.selectedIndex > 0;
     }
 
     validate(): ValidationErrors {
-
         let valid = true;
         let errors: any = {};
-        if (this.amount === null) { valid = false; errors.amount = 'MISSING_AMOUNT' }
-        if (this.currency === null) { valid = false; errors.currency = 'MISSINGN_CURRENCY' }
-        if (this.method === null) { valid = false; errors.method = 'MISSINGN_METHOD' }
+        if (this.amount === null) {
+            valid = false;
+            errors.amount = 'MISSING_AMOUNT';
+        }
+        if (this.currency === null) {
+            valid = false;
+            errors.currency = 'MISSINGN_CURRENCY';
+        }
+        if (this.method === null) {
+            valid = false;
+            errors.method = 'MISSINGN_METHOD';
+        }
 
         if (this.detailsForm.invalid) {
             valid = false;
             errors.method = 'INVALID_DETAILS';
-            const controls = this.detailsForm.controls
-            Object.keys(controls).forEach(k => {
+            const controls = this.detailsForm.controls;
+            Object.keys(controls).forEach((k) => {
                 const c = controls[k];
                 if (c.invalid) errors[k] = c.errors;
             });
@@ -212,17 +216,15 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         if (this.mainForm.invalid) {
             valid = false;
             errors.method = 'INVALID_MAIN';
-            const controls = this.mainForm.controls
-            Object.keys(controls).forEach(k => {
+            const controls = this.mainForm.controls;
+            Object.keys(controls).forEach((k) => {
                 const c = controls[k];
                 if (c.invalid) errors[k] = c.errors;
             });
         }
 
         return valid ? null : errors;
-
     }
-
 
     focusedMethod: string;
     methodIndex: number;
@@ -237,26 +239,31 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         localStorage.setItem(strgKey, method);
     }
 
-    localTransferRequest() {
+    localTransferRequest() {}
 
-    }
+    crypto_networks = [
+        { key: 'BSC', value: 'Binance BSC' },
+        { key: 'ETH', value: 'Etherium' },
+    ];
+    crypto_networks_source = new ClientDataSource(this.crypto_networks);
+    crypto_networks_adapter = new DataAdapter(this.crypto_networks_source, 'key', 'value', 'key', null);
 
-
-    crypto_networks = [{ key: 'BSC', value: 'Binance BSC' }, { key: 'ETH', value: 'Etherium' }]
-    crypto_networks_source = new ClientDataSource(this.crypto_networks)
-    crypto_networks_adapter = new DataAdapter(this.crypto_networks_source, "key", "value", "key", null)
-
-    crypto_currencies_bsc = [{ key: 'BUSD', value: 'Binance USD' }, { key: 'USDC', value: 'USDC' }, { key: 'USDT', value: 'USD Tether' }]
-    crypto_currencies_eth = [{ key: 'USDC', value: 'USDC' }, { key: 'USDT', value: 'USD Tether' }]
-
-
+    crypto_currencies_bsc = [
+        { key: 'BUSD', value: 'Binance USD' },
+        { key: 'USDC', value: 'USDC' },
+        { key: 'USDT', value: 'USD Tether' },
+    ];
+    crypto_currencies_eth = [
+        { key: 'USDC', value: 'USDC' },
+        { key: 'USDT', value: 'USD Tether' },
+    ];
 
     cryptoForm: FormScheme = {
         network: { type: 'field', name: 'network', input: 'select', ui: { inputs: { label: 'Network', adapter: this.crypto_networks_adapter } } },
         currency: { type: 'field', name: 'currency', input: 'select', ui: { inputs: { label: 'Currency' } } },
         sender: { type: 'field', name: 'sender', input: 'text', ui: { inputs: { label: 'Sender' } } },
         wallet: { type: 'field', name: 'wallet', input: 'text', ui: { inputs: { label: 'Wallet', readonly: true } } },
-    }
+    };
 
     wallets = {
         BSC_BUSD: 'bsc_BUSD_0xe1200731Ba14bb72Ed',
@@ -264,33 +271,37 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         BSC_USDT: 'bsc_USDT_0xe1200731Ba14bb72Ed',
         ETH_USDC: 'eth_USDC_0xe1200731Ba14bb72Ed',
         ETH_USDT: 'eth_USDT_0xe1200731Ba14bb72Ed',
-    }
+    };
 
     cryptoConditions: Condition[] = [
         {
-            on: DynamicFormEvents.valueChanged, when: e => e.payload.fields === "/network", do: [
-                e => {
+            on: DynamicFormEvents.valueChanged,
+            when: (e) => e.payload.fields === '/network',
+            do: [
+                (e) => {
                     let currencies = [];
                     const value = e.payload.value;
                     switch (value) {
-                        case 'ETH': currencies = this.crypto_currencies_eth; break;
-                        case 'BSC': currencies = this.crypto_currencies_bsc; break;
+                        case 'ETH':
+                            currencies = this.crypto_currencies_eth;
+                            break;
+                        case 'BSC':
+                            currencies = this.crypto_currencies_bsc;
+                            break;
                     }
-                    return new DynamicFormCommands.ChangeInputs("currency", { adapter: new DataAdapter(new ClientDataSource(currencies), "key", "value") })
-                }
-            ]
+                    return new DynamicFormCommands.ChangeInputs('currency', { adapter: new DataAdapter(new ClientDataSource(currencies), 'key', 'value') });
+                },
+            ],
         },
         {
             on: DynamicFormEvents.valueChanged,
-            when: e => e.payload.fields === "/network" || e.payload.fields === "/currency",
+            when: (e) => e.payload.fields === '/network' || e.payload.fields === '/currency',
             do: [
-                e => {
+                (e) => {
                     const formValue = e.source.value;
-                    if (formValue?.network && formValue?.currency)
-                        return new DynamicFormCommands.ChangeValue("wallet", this.wallets[`${formValue.network}_${formValue.currency}`])
-                }
-            ]
-        }
-    ]
+                    if (formValue?.network && formValue?.currency) return new DynamicFormCommands.ChangeValue('wallet', this.wallets[`${formValue.network}_${formValue.currency}`]);
+                },
+            ],
+        },
+    ];
 }
-

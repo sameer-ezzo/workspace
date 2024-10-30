@@ -1,10 +1,9 @@
 import { Component, Input, forwardRef, SimpleChanges, computed } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ThemePalette } from '@angular/material/core';
 import { DataService, ClientDataSource, DataAdapter } from '@upupa/data';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
-import { filter, map, takeUntil } from 'rxjs/operators';
 import { FileSelectComponent } from '../file-select/file-select.component';
 
 import { AuthService } from '@upupa/auth';
@@ -23,12 +22,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => FileInputComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => FileInputComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class FileInputComponent extends ValueDataComponentBase {
@@ -134,7 +128,7 @@ export class FileInputComponent extends ValueDataComponentBase {
 
             if (extensionErrors?.extension?.length > 0 || maxSizeErrors || minSizeErrors) {
                 const errors = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
-                this.errorMessages.set(errors as any);
+                // this.control().errors.set(errors as any);
                 continue;
             }
 

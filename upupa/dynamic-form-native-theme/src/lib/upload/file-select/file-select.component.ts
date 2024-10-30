@@ -1,28 +1,8 @@
-import {
-    Component,
-    DestroyRef,
-    HostListener,
-    Input,
-    effect,
-    forwardRef,
-    inject,
-    input,
-    signal,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import {
-    ActionDescriptor,
-    ActionEvent,
-    EventBus,
-    InputBaseComponent,
-} from '@upupa/common';
-import { lastValueFrom, tap } from 'rxjs';
-import {
-    ClipboardService,
-    FileInfo,
-    openFileDialog,
-    UploadClient,
-} from '@upupa/upload';
+import { Component, DestroyRef, ElementRef, HostListener, effect, forwardRef, inject, input, signal } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ActionDescriptor, ActionEvent, EventBus, InputBaseComponent } from '@upupa/common';
+import { filter, tap } from 'rxjs';
+import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
 import { ThemePalette } from '@angular/material/core';
 import { AuthService } from '@upupa/auth';
 import { FileUploadService } from '../file-upload.service';
@@ -38,11 +18,6 @@ type ViewType = 'list' | 'grid';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => FileSelectComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => FileSelectComponent),
             multi: true,
         },
@@ -114,6 +89,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.markAsTouched();
     }
 
+    private readonly host = inject(ElementRef);
     constructor(
         public readonly uploadClient: UploadClient,
         private readonly auth: AuthService,
@@ -126,23 +102,19 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         // this.base ??= uploadClient.baseUrl
         effect(
             () => {
-                const val = (this.value() ?? []).map(
-                    (f, id) =>
-                        ({ id, file: f, error: null } as SelectInputFileVm)
-                );
+                const val = (this.value() ?? []).map((f, id) => ({ id, file: f, error: null } as SelectInputFileVm));
                 this.viewModel.set(val);
             },
             { allowSignalWrites: true }
         );
         this.clipboard.paste$
-            .pipe(takeUntilDestroyed(this.destroyRef))
+            .pipe(
+                filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
+                takeUntilDestroyed(this.destroyRef)
+            )
             .subscribe(async (event) => {
                 // make sure this component is focused or active
-                if (
-                    event.clipboardData.files &&
-                    event.clipboardData.files.length
-                )
-                    await this.uploadFileList(event.clipboardData.files);
+                if (event.clipboardData.files && event.clipboardData.files.length) await this.uploadFileList(event.clipboardData.files);
                 else {
                     console.warn('paste', event);
                     //else uploadByContent text or html or ...
@@ -160,10 +132,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     files: File[];
     private async showFileDialog() {
         const accept = this.accept() ?? '';
-        const files = await openFileDialog(
-            accept as string,
-            this.maxAllowedFiles() !== 1
-        );
+        const files = await openFileDialog(accept as string, this.maxAllowedFiles() !== 1);
         this.files = Array.from(files);
         try {
             this.uploading.set(true);
@@ -208,33 +177,16 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         return Array.from(f)
             .slice()
             .map(async (file, id) => {
-                const extensionErrors = this.validateFileExtensions(
-                    file,
-                    this.accept()
-                );
-                const maxSizeErrors = this.validateFileMaxSize(
-                    file,
-                    this.maxFileSize()
-                );
-                const minSizeErrors = this.validateFileMinSize(
-                    file,
-                    this.minSize()
-                );
+                const extensionErrors = this.validateFileExtensions(file, this.accept());
+                const maxSizeErrors = this.validateFileMaxSize(file, this.maxFileSize());
+                const minSizeErrors = this.validateFileMinSize(file, this.minSize());
 
-                const error = Object.assign(
-                    {},
-                    extensionErrors,
-                    maxSizeErrors,
-                    minSizeErrors
-                );
+                const error = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
 
                 const res = {
                     id,
                     file,
-                    error:
-                        Object.getOwnPropertyNames(error).length > 0
-                            ? error
-                            : null,
+                    error: Object.getOwnPropertyNames(error).length > 0 ? error : null,
                 } as SelectInputFileVm;
                 return res;
             });
@@ -242,11 +194,8 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     async uploadFileList(f: FileList) {
         const validationResults = this._validateFileList(f);
 
-        const validatedFilesReport = (
-            await Promise.allSettled(validationResults)
-        ).map((f) => {
-            if (f.status === 'fulfilled')
-                return f['value'] as SelectInputFileVm;
+        const validatedFilesReport = (await Promise.allSettled(validationResults)).map((f) => {
+            if (f.status === 'fulfilled') return f['value'] as SelectInputFileVm;
             return { ...f['value'], error: f['reason'] } as SelectInputFileVm;
         });
         const errors = validatedFilesReport.filter((f) => f.error);
@@ -264,10 +213,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     private setUploadTask(fvm: SelectInputFileVm) {
-        fvm.uploadTask = this.fileUploader.upload(
-            this.path as any,
-            fvm.file as File
-        );
+        fvm.uploadTask = this.fileUploader.upload(this.path as any, fvm.file as File);
 
         fvm.uploadTask?.response$
             .pipe(
@@ -291,14 +237,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                 complete: () => {
                     fvm.uploadTask = null;
                     this.viewModel.set(this.viewModel().slice());
-                    if (
-                        this.viewModel().filter((v) => v.uploadTask).length ===
-                        0
-                    )
-                        this.value.set([
-                            ...(this.value() ?? []),
-                            fvm.file as FileInfo,
-                        ]);
+                    if (this.viewModel().filter((v) => v.uploadTask).length === 0) this.value.set([...(this.value() ?? []), fvm.file as FileInfo]);
                 },
             });
 
@@ -344,10 +283,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     downloadFile(file: FileInfo) {
-        const r = window.open(
-            `${file.path}?access_token=${this.auth.get_token()}`,
-            '_blank'
-        );
+        const r = window.open(`${file.path}?access_token=${this.auth.get_token()}`, '_blank');
         r.onloadeddata = () => {
             r.close();
         };
@@ -364,20 +300,12 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                 .map((a) => a.toLowerCase())
                 .map((a) => a.split('/'));
             const fileMime = file.type.split('/');
-            return terms.some(
-                (t) =>
-                    (t[0] === '*' || t[0] === fileMime[0]) &&
-                    (t[1] === '*' || t[1] === fileMime[1])
-            )
-                ? null
-                : { extension: file.type, accepts };
+            return terms.some((t) => (t[0] === '*' || t[0] === fileMime[0]) && (t[1] === '*' || t[1] === fileMime[1])) ? null : { extension: file.type, accepts };
         } else if (file && accepts && accepts.indexOf('*.*') === -1) {
             const segments = file.name.split('.');
 
             const ext = segments[segments.length - 1].toLowerCase();
-            return accepts.indexOf(ext) > -1
-                ? null
-                : { extension: `.${ext}`, accepts };
+            return accepts.indexOf(ext) > -1 ? null : { extension: `.${ext}`, accepts };
         }
         return null;
     }

@@ -1,12 +1,9 @@
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
-import {
-    provideHttpClient,
-    withInterceptorsFromDi,
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UtilsModule } from '@upupa/common';
+import { ErrorsDirective, UtilsModule } from '@upupa/common';
 import { TranslationModule } from '@upupa/language';
 import { DataTableModule } from '@upupa/table';
 import { UploadModule } from '@upupa/upload';
@@ -25,10 +22,7 @@ import { PasswordInputComponent } from './password/password.component';
 import { PhoneInputComponent } from './phone/phone.component';
 import { DateRangeComponent } from './range-components/date-range/date-range.component';
 import { NumbersRangeComponent } from './range-components/numbers-range/numbers-range.component';
-import {
-    RecaptchaComponent,
-    RecaptchaDirective,
-} from './recaptcha/recaptcha.component';
+import { RecaptchaComponent, RecaptchaDirective } from './recaptcha/recaptcha.component';
 import { ReviewScaleComponent } from './scale-component/review-scale/review-input.component';
 import { SliderComponent } from './scale-component/slider/slider.component';
 import { SelectComponent } from './select/select.component';
@@ -144,11 +138,7 @@ const imports = [
 @NgModule({
     imports: [...imports],
     declarations: [...declarations],
-    providers: [
-        provideHttpClient(withInterceptorsFromDi()),
-        FileUploadService,
-        FileIconPerTypePipe,
-    ],
+    providers: [provideHttpClient(withInterceptorsFromDi()), FileUploadService, FileIconPerTypePipe],
     exports: [...declarations, ...imports],
 })
 export class DynamicFormNativeThemeModule {}

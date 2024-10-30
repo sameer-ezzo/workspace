@@ -1,16 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import {
-    Component,
-    Input,
-    forwardRef,
-    OnInit,
-    Injector,
-    signal,
-    inject,
-    input,
-    model,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, OnInit, Injector, signal, inject, model } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@upupa/auth';
 import { EventBus } from '@upupa/common';
@@ -32,17 +22,9 @@ import { SnackBarService } from '@upupa/dialog';
             useExisting: forwardRef(() => FileBrowserComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => FileBrowserComponent),
-            multi: true,
-        },
     ],
 })
-export class FileBrowserComponent
-    extends ValueDataComponentBase<FileInfo>
-    implements OnInit
-{
+export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> implements OnInit {
     private readonly data = inject(DataService);
     public injector = inject(Injector);
     public auth = inject(AuthService);
@@ -61,37 +43,16 @@ export class FileBrowserComponent
     focused = undefined as FileInfo | undefined;
 
     keyProperty = '_id' as keyof FileInfo;
-    valueProperty = [
-        '_id',
-        'fieldname',
-        'originalname',
-        'filename',
-        'size',
-        'encoding',
-        'mimetype',
-        'destination',
-        'path',
-        'date',
-        'status',
-        'user',
-        'meta',
-    ] as (keyof FileInfo)[];
+    valueProperty = ['_id', 'fieldname', 'originalname', 'filename', 'size', 'encoding', 'mimetype', 'destination', 'path', 'date', 'status', 'user', 'meta'] as (keyof FileInfo)[];
 
     override adapter = model(
-        new DataAdapter<FileInfo>(
-            new ServerDataSource(this.data, '/storage', this.valueProperty),
-            this.keyProperty,
-            undefined,
-            this.valueProperty,
-            undefined,
-            {
-                terms: [
-                    { field: 'originalname' as keyof FileInfo, type: 'like' },
-                    { field: 'fillename' as keyof FileInfo, type: 'like' },
-                ],
-                page: { pageSize: 50 },
-            }
-        )
+        new DataAdapter<FileInfo>(new ServerDataSource(this.data, '/storage', this.valueProperty), this.keyProperty, undefined, this.valueProperty, undefined, {
+            terms: [
+                { field: 'originalname' as keyof FileInfo, type: 'like' },
+                { field: 'fillename' as keyof FileInfo, type: 'like' },
+            ],
+            page: { pageSize: 50 },
+        })
     );
     files$ = new BehaviorSubject<FileInfo[]>([]);
     private _path = undefined as string | undefined;
@@ -106,9 +67,7 @@ export class FileBrowserComponent
         const filter =
             value && value !== '/'
                 ? {
-                      destination: ['storage', this.path.split('/')]
-                          .filter((v) => v)
-                          .join('/'),
+                      destination: ['storage', this.path.split('/')].filter((v) => v).join('/'),
                   }
                 : undefined;
 
@@ -119,9 +78,7 @@ export class FileBrowserComponent
     override ngOnInit(): void {
         super.ngOnInit();
         if (!this.path) throw new Error('Base path is not provided');
-        this.adapter().normalized$.subscribe((f) =>
-            this.files$.next(f.map((c) => c.item))
-        );
+        this.adapter().normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
     }
 
     selectFile(fileSelect: FileSelectComponent) {

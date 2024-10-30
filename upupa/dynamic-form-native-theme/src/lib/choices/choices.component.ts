@@ -1,12 +1,5 @@
-import {
-    Component,
-    Input,
-    forwardRef,
-    SimpleChanges,
-    input,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { EventBus } from '@upupa/common';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectComponent } from '../select/select.component';
 @Component({
     selector: 'form-choices',
@@ -15,11 +8,6 @@ import { SelectComponent } from '../select/select.component';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => ChoicesComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => ChoicesComponent),
             multi: true,
         },

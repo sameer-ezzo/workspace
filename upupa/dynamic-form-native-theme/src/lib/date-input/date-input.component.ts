@@ -1,5 +1,5 @@
-import { Component, Input, forwardRef, input } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
 import { InputDefaults } from '../defaults';
 
@@ -9,11 +9,6 @@ import { InputDefaults } from '../defaults';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DateInputComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => DateInputComponent),
             multi: true,
         },
@@ -30,6 +25,4 @@ export class DateInputComponent extends InputBaseComponent {
     label = input('');
     hint = input('');
     readonly = input(false);
-   
-
 }

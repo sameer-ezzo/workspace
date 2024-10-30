@@ -1,23 +1,8 @@
-import {
-    Component,
-    DestroyRef,
-    Input,
-    forwardRef,
-    inject,
-    input,
-} from '@angular/core';
-import {
-    UntypedFormControl,
-    NG_VALUE_ACCESSOR,
-    NG_VALIDATORS,
-} from '@angular/forms';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
 import { InputDefaults } from '../defaults';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-    MatFormFieldAppearance,
-    FloatLabelType,
-} from '@angular/material/form-field';
+import { MatFormFieldAppearance, FloatLabelType } from '@angular/material/form-field';
 
 @Component({
     selector: 'form-number',
@@ -26,11 +11,6 @@ import {
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => NumberComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => NumberComponent),
             multi: true,
         },
@@ -55,8 +35,7 @@ export class NumberComponent extends InputBaseComponent {
 
     private readonly fixNumberType = (value: any) => {
         if (value === null || value === undefined) return;
-        if (this.numberType() === 'integer')
-            this.value.set(parseInt(value, 10));
+        if (this.numberType() === 'integer') this.value.set(parseInt(value, 10));
         else this.value.set(parseFloat(value));
     };
 }

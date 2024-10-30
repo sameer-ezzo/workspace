@@ -1,34 +1,11 @@
 /* eslint-disable @angular-eslint/component-selector */
-import {
-    Component,
-    Input,
-    SimpleChanges,
-    effect,
-    forwardRef,
-    input,
-} from '@angular/core';
+import { Component, SimpleChanges, effect, forwardRef, input } from '@angular/core';
 
-import {
-    NG_VALUE_ACCESSOR,
-    NG_VALIDATORS,
-    Validator,
-    AbstractControl,
-    ValidationErrors,
-    UntypedFormGroup,
-    UntypedFormControl,
-    Validators,
-    FormControl,
-} from '@angular/forms';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl } from '@angular/forms';
 import { countries, InputBaseComponent } from '@upupa/common';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
 
-export type AccuracyLevel =
-    | 'country'
-    | 'state'
-    | 'city'
-    | 'addressLine1'
-    | 'addressLine2'
-    | 'zipCode';
+export type AccuracyLevel = 'country' | 'state' | 'city' | 'addressLine1' | 'addressLine2' | 'zipCode';
 
 export type AddressModel = {
     country: string;
@@ -53,7 +30,6 @@ export type AddressModel = {
 })
 export class AddressComponent extends InputBaseComponent<AddressModel> {
     label = input('Address');
-    required = input(false);
 
     display = input('native_name');
     readonly = input(false);
@@ -92,32 +68,20 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
         return this.addressFormGroup.get(name) as FormControl;
     }
 
-    countryAdapter = new DataAdapter(
-        new ClientDataSource(Object.values(countries)),
-        'alpha_2',
-        'native_name',
-        undefined,
-        undefined,
-        {
-            terms: [
-                { field: 'native_name', type: 'like' },
-                { field: 'alpha_2', type: 'like' },
-                { field: 'name', type: 'like' },
-            ],
-        }
-    );
+    countryAdapter = new DataAdapter(new ClientDataSource(Object.values(countries)), 'alpha_2', 'native_name', undefined, undefined, {
+        terms: [
+            { field: 'native_name', type: 'like' },
+            { field: 'alpha_2', type: 'like' },
+            { field: 'name', type: 'like' },
+        ],
+    });
     constructor() {
         super();
         effect(() => {
             const v = this.value();
             if (v != this.addressFormGroup.value) {
                 for (const ctrlName in this.addressFormGroup.controls) {
-                    if (
-                        Object.prototype.hasOwnProperty.call(
-                            this.addressFormGroup.controls,
-                            ctrlName
-                        )
-                    ) {
+                    if (Object.prototype.hasOwnProperty.call(this.addressFormGroup.controls, ctrlName)) {
                         const ctrl = this.addressFormGroup.controls[ctrlName];
                         ctrl.setValue(v?.[ctrlName] ?? '', {
                             emitEvent: false,
@@ -140,8 +104,7 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['required']) {
-            if (this.required())
-                this.addressFormGroup.setValidators([Validators.required]);
+            if (this.required()) this.addressFormGroup.setValidators([Validators.required]);
         }
         if (this.readonly() === true) {
             this.addressFormGroup.disable();

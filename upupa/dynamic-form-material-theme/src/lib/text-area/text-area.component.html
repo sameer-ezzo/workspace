@@ -19,7 +19,6 @@
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
-    @for (error of control().errors | keyvalue; track error.key) {
-        <mat-error>{{ error.key }}</mat-error>
-    }
+    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+
 </mat-form-field>

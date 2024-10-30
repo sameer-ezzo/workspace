@@ -13,46 +13,40 @@ import {
     input,
     output,
     viewChild,
-    signal,
-    Input,
-    Output,
-    EventEmitter,
     computed,
-    effect,
     Injector,
     DestroyRef,
     model,
-} from "@angular/core";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, NG_VALIDATORS } from "@angular/forms";
-import { Field, FormScheme } from "./types";
-import { Condition } from "@noah-ark/expression-engine";
-import { Subscription } from "rxjs";
-import { EventBus } from "@upupa/common";
-import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
-import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { DynamicFormModuleOptions } from "./dynamic-form.options";
-import { DYNAMIC_FORM_OPTIONS } from "./di.token";
-import { DynamicFormBuilder } from "./dynamic-form-renderer";
-import { DynamicFormService } from "./dynamic-form.service";
-import { ConditionalLogicService } from "./conditional-logic.service";
-import { DialogService } from "@upupa/dialog";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+    Pipe,
+    PipeTransform,
+} from '@angular/core';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder } from '@angular/forms';
+import { Field, FormScheme } from './types';
+import { Condition } from '@noah-ark/expression-engine';
+import { Subscription } from 'rxjs';
+import { EventBus } from '@upupa/common';
+import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from './events/handlers';
+import { JsonPointer, Patch } from '@noah-ark/json-patch';
+import { DynamicFormModuleOptions } from './dynamic-form.options';
+import { DYNAMIC_FORM_OPTIONS } from './di.token';
+import { DynamicFormBuilder } from './dynamic-form-renderer';
+import { DynamicFormService } from './dynamic-form.service';
+import { ConditionalLogicService } from './conditional-logic.service';
+import { DialogService } from '@upupa/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { cloneDeep, merge } from 'lodash';
+import { KeyValuePipe } from '@angular/common';
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
-    selector: "dynamic-form",
-    templateUrl: "./dynamic-form.component.html",
-    styleUrls: ["./dynamic-form.component.scss"],
+    selector: 'dynamic-form',
+    templateUrl: './dynamic-form.component.html',
+    styleUrls: ['./dynamic-form.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DynamicFormComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => DynamicFormComponent),
             multi: true,
         },
@@ -63,8 +57,8 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
         },
     ],
     host: {
-        "[class]": "class()",
-        "[attr.name]": "name()",
+        '[class]': 'class()',
+        '[attr.name]': 'name()',
     },
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
@@ -78,14 +72,14 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
-    name = input<string>(`dynForm_${Date.now()}`, { alias: "formName" });
+    name = input<string>(`dynForm_${Date.now()}`, { alias: 'formName' });
 
     disabled = input(false);
     readonly = input(false);
-    class = input("");
-    theme = input<string>("material");
+    class = input('');
+    theme = input<string>('material');
 
-    ngForm = viewChild.required<NgForm>("dynForm");
+    ngForm = viewChild.required<NgForm>('dynForm');
     form = computed(() => this.ngForm().form);
 
     value = model(undefined);
@@ -150,29 +144,32 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     //     return this.builder.getBuilderField(f);
     // }
 
-    controls = new Map<Field, AbstractControl>();
+    get controls() {
+        return this._builder.controls;
+    }
 
     formService = inject(DynamicFormService);
     _builder = new DynamicFormBuilder(this.formService);
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        if (changes["name"] && !changes["name"].firstChange) {
+        if (changes['name'] && !changes['name'].firstChange) {
             throw `Name cannot be changed after initialized ${this.name()}`;
         }
 
-        if (changes["fields"]) {
+        if (changes['fields']) {
             const scheme = this.fields();
-            if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
+            if (typeof scheme !== 'object' || Array.isArray(scheme)) throw new Error('fields must be passed as dictionary format');
 
             const value = this.value();
             this._builder.build(this.form(), this.fields(), value);
+            this.form().patchValue(value, { emitEvent: false, onlySelf: true });
 
             //handlers
             this.subs?.forEach((s) => s.unsubscribe());
             this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
 
-        if (changes["conditions"]?.firstChange === true) {
-            const { currentValue, previousValue } = changes["conditions"];
+        if (changes['conditions']?.firstChange === true) {
+            const { currentValue, previousValue } = changes['conditions'];
             if (previousValue?.length) previousValue.forEach((c) => this.conditionalService.removeCondition(c));
             if (currentValue?.length) currentValue.forEach((c) => this.subs.push(this.conditionalService.addCondition(c)));
         }
@@ -181,19 +178,20 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     injector = inject(Injector);
     ngOnInit() {
         const ref = this.injector.get(DestroyRef);
+
         this.form()
             .valueChanges.pipe(takeUntilDestroyed(ref))
             .subscribe((v) => {
-                // const value = { ...this.value(), ...v };
-                // this.value.set(value);
-                this.value.set(v);
+                const value = Object.assign(Object.create(Object.getPrototypeOf(this.value())), this.value(), cloneDeep(v));
+
+                this.value.set(value);
                 this.propagateChange();
             });
     }
 
     onSubmit(e: Event) {
-        e.stopPropagation();
-        e.preventDefault();
+        e?.stopPropagation();
+        e?.preventDefault();
         if (this.form().invalid) {
             this.scrollToError();
         } else this.submit.emit(this);
@@ -203,7 +201,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     _onTouched: () => void;
 
     writeValue(val: T): void {
-        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
+        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, 'background: #0065ff; color: #fff', val);
         this.form().patchValue(val);
     }
 
@@ -219,7 +217,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     _fieldsChanged() {
-        if (this.options.enableLogs === true) console.log(`%c scheme changed! (name:${this.name()})`, "background: #ff6b00; color: #fff", this.fields());
+        if (this.options.enableLogs === true) console.log(`%c scheme changed! (name:${this.name()})`, 'background: #ff6b00; color: #fff', this.fields());
         // this.formRenderer.fields = Object.values(this.fields());
         // this.writeValue(this.value());
         this.propagateChange();
@@ -227,7 +225,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     scrollToElement(element: HTMLElement, focus = true) {
         if (!element) return;
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (focus)
             setTimeout(() => {
                 element.focus();
@@ -237,7 +235,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         const c = Array.from(this.controls).filter((c) => c[1].invalid && c[0].ui?.hidden !== true)?.[0];
         if (!c) return;
         c[1].markAsTouched();
-        const el = document.getElementById(c[0].name) ?? <HTMLElement>document.querySelector("form :not(fieldset).ng-touched.ng-invalid");
+        const el = document.getElementById(c[0].name) ?? <HTMLElement>document.querySelector('form :not(fieldset).ng-touched.ng-invalid');
         if (el) this.scrollToElement(el);
     }
 
@@ -248,7 +246,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 const path = (e[0] as Field)?.path;
                 return {
                     path,
-                    op: "replace",
+                    op: 'replace',
                     value: JsonPointer.get(this.value(), path),
                 } as Patch;
             });
@@ -263,7 +261,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         return dirty;
     }
 
-    @HostListener("window:beforeunload", ["$event"])
+    @HostListener('window:beforeunload', ['$event'])
     beforeunloadHandler(event) {
         if (this.preventDirtyUnload() === true && this.dirty) {
             event.preventDefault();
@@ -274,5 +272,15 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     ngOnDestroy(): void {
         this.subs.forEach((s) => s.unsubscribe());
         this.form().reset();
+    }
+}
+
+@Pipe({
+    name: 'orderedKeyValue',
+    pure: true,
+})
+export class OrderedKeyValuePipe extends KeyValuePipe {
+    override transform(value: any, ...args: any[]): any {
+        return Object.keys(value).map((key) => ({ key, value: value[key] }));
     }
 }

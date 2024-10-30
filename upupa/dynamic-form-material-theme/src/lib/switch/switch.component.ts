@@ -1,12 +1,5 @@
-import {
-    ChangeDetectionStrategy,
-    Component,
-    HostBinding,
-    Input,
-    forwardRef,
-    input,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
@@ -16,11 +9,6 @@ import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => MatSwitchComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => MatSwitchComponent),
             multi: true,
         },

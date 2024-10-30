@@ -1,5 +1,5 @@
-import { Component, forwardRef, ViewEncapsulation, input, inject } from "@angular/core";
-import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, NgControl } from "@angular/forms";
+import { Component, forwardRef, ViewEncapsulation, input } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
 import { InputDefaults } from "../defaults";
 import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
@@ -14,12 +14,7 @@ import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-f
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => InputComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => InputComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class InputComponent extends InputBaseComponent {

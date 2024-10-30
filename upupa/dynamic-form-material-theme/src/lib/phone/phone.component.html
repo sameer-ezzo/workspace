@@ -92,6 +92,5 @@
         </div>
     </div>
 </div>
-@for (error of control().errors | keyvalue; track error.key) {
-    <mat-error style="margin-top: -25px">{{ error.key }}</mat-error>
-}
+<mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+

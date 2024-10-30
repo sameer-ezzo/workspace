@@ -1,22 +1,9 @@
-import {
-    Component,
-    DestroyRef,
-    Directive,
-    EventEmitter,
-    Input,
-    Output,
-    SimpleChanges,
-    inject,
-    input,
-    model,
-    output,
-    signal,
-} from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, inject, input, model, output, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { Subscription, BehaviorSubject, Observable } from 'rxjs';
+import { Subscription, BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
-import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
+import { DataAdapter, NormalizedItem } from '@upupa/data';
 import { SelectionModel } from '@angular/cdk/collections';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -46,24 +33,14 @@ export class DataComponentBase<T = any> {
 
     viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>('adapter');
 
-    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(
-        switchMap((view) =>
-            view === 'adapter'
-                ? this.adapter().normalized$
-                : this.selectedNormalized$
-        )
-    );
+    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(switchMap((view) => (view === 'adapter' ? this.adapter().normalized$ : this.selectedNormalized$)));
 
     ngOnInit() {
-        this.selectionModel.changed
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(async (s) => {
-                const selectedNormalized = await this.adapter().getItems(
-                    s.source.selected
-                );
-                this.selectedNormalized = selectedNormalized;
-                this.singleSelected.set(this.selectedNormalized?.[0]?.key);
-            });
+        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (s) => {
+            const selectedNormalized = await this.adapter().getItems(s.source.selected);
+            this.selectedNormalized = selectedNormalized;
+            this.singleSelected.set(this.selectedNormalized?.[0]?.key);
+        });
     }
 
     refreshData() {
@@ -89,9 +66,7 @@ export class DataComponentBase<T = any> {
     onDataChange(data: NormalizedItem<T>[]) {
         this.firstLoad.set(false);
         this.dataChangeListeners.forEach((x) => x(data));
-        this.selectedNormalized = this.selected
-            .map((k) => data.find((d) => d.key === k))
-            .filter((x) => x);
+        this.selectedNormalized = this.selected.map((k) => data.find((d) => d.key === k)).filter((x) => x);
         this.loading.set(false);
     }
 
@@ -128,19 +103,21 @@ export class DataComponentBase<T = any> {
         if (this.maxAllowed() === 1) {
             if (this.selected.length > 0) this.selectionModel.clear(false);
         } else {
-            if (this.adapter().normalized.length === selected.length)
-                this.selectionModel.deselect(...selected);
+            if (this.adapter().normalized.length === selected.length) this.selectionModel.deselect(...selected);
             else {
-                this.selectionModel.select(
-                    ...this.adapter().normalized.map((n) => n.key)
-                );
+                this.selectionModel.select(...this.adapter().normalized.map((n) => n.key));
             }
         }
     }
 
-    select(key: keyof T) {
-        if (this.maxAllowed() === 1) this.selectionModel.clear(false);
+    async select(key: keyof T) {
+        if (this.selectionModel.isSelected(key)) return;
+        if (this.maxAllowed() === 1) {
+            this.selectionModel.clear(false);
+            this._selectedNormalized$.next([]);
+        }
         this.selectionModel.select(key);
+        await firstValueFrom(this.selectedNormalized$)
     }
 
     deselect(key: keyof T) {
@@ -156,16 +133,12 @@ export class DataComponentBase<T = any> {
         this.focusedItemChange.emit(this.focusedItem());
     }
     nextFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : -1;
+        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : -1;
         this.focusedItem.set(this.adapter().normalized[i + 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
     prevFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : this.adapter().normalized.length;
+        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : this.adapter().normalized.length;
         this.focusedItem.set(this.adapter().normalized[i - 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
@@ -182,8 +155,7 @@ export class DataComponentBase<T = any> {
 
         if (this.longPressed) this.select(row.key);
         else {
-            if (this.selectionModel.selected.length > 0)
-                this.selectionModel.toggle(row.key);
+            if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
             else this.itemClick.emit(this.focusedItem());
         }
 
@@ -196,14 +168,13 @@ export class DataComponentBase<T = any> {
     @Input()
     set selected(n: keyof T | (keyof T)[]) {
         this.selectionModel.clear(false);
+        this._selectedNormalized$.next([]);
         if (n === undefined) return;
         const v = (Array.isArray(n) ? n : [n]) as (keyof T)[];
         this.selectionModel.select(...(v as any[]));
     }
 
-    private readonly _selectedNormalized$ = new BehaviorSubject<
-        NormalizedItem<T>[]
-    >([]);
+    private readonly _selectedNormalized$ = new BehaviorSubject<NormalizedItem<T>[]>([]);
     selectedNormalized$ = this._selectedNormalized$.pipe(shareReplay(1));
 
     public get selectedNormalized(): NormalizedItem<T>[] {

@@ -1,7 +1,7 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ViewChild, ElementRef, input, viewChild, model, SimpleChanges } from '@angular/core';
-import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model } from '@angular/core';
+import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
-import { ActionDescriptor, EventBus } from '@upupa/common';
+import { ActionDescriptor } from '@upupa/common';
 import { ValueDataComponentBase } from '@upupa/table';
 
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -14,11 +14,6 @@ import { InputDefaults } from '../defaults';
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => SelectComponent),
-            multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => SelectComponent),
             multi: true,
         },
@@ -86,16 +81,17 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     async valueChanged(key: keyof T | (keyof T)[]) {
-        this.selectionModel.clear();
+        let v = undefined;
         if (key !== undefined) {
             if (Array.isArray(key)) {
-                key.forEach((k) => this.select(k));
-                this.onInput(this.selectedNormalized.map((x) => x.value));
+                key.forEach(async (k) => await this.select(k));
+                v = this.selectedNormalized.map((x) => x.value);
             } else {
-                this.select(key);
-                this.onInput(this.selectedNormalized[0].value);
+                await this.select(key);
+                v = this.selectedNormalized[0].value;
             }
-        } else this.onInput(undefined);
+        }
+        this.handleUserInput(v);
     }
 
     // openedChange(event) {

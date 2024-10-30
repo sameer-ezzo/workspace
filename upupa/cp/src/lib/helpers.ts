@@ -70,8 +70,6 @@ export class EditButtonComponent<T = any> {
             value = await firstValueFrom(ds.get(resolvedPath)).then((r) => r.data?.[0]);
         }
 
-        console.log('EditButtonComponent', value, element, path);
-
         const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
             ...this.dialogOptions(),
             inputs: {
@@ -125,6 +123,5 @@ export function editButton(options: { descriptor?: Partial<ActionDescriptor>; fo
         component: EditButtonComponent,
     } as DynamicComponent;
 
-    console.log('editButton', options, template);
     return template;
 }

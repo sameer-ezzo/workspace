@@ -1,23 +1,10 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import {
-    Component,
-    EventEmitter,
-    forwardRef,
-    inject,
-    input,
-    Input,
-    output,
-    Output,
-    signal,
-    viewChild,
-    ViewChild,
-} from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, inject, input, output, signal, viewChild } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatAutocomplete } from '@angular/material/autocomplete';
 import { EventBus } from '@upupa/common';
 import { NormalizedItem } from '@upupa/data';
 import { SelectComponent } from '../select/select.component';
-import { KeyValue } from '@angular/common';
 
 @Component({
     selector: 'form-chips-input',
@@ -27,12 +14,7 @@ import { KeyValue } from '@angular/common';
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => ChipsComponent),
             multi: true,
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => ChipsComponent),
-            multi: true,
-        },
+        }
     ],
 })
 export class ChipsComponent extends SelectComponent {
@@ -60,16 +42,8 @@ export class ChipsComponent extends SelectComponent {
         this.filterInputRef().nativeElement.value = '';
     }
 
-    getErrorMessage(error: KeyValue<unknown, unknown>) {
-        const [key, value] = Object.entries(error)[0];
-        return this.errorMessages[key] ?? key;
-    }
-
     async selectionChange(v: string): Promise<void> {
-        if (
-            v === null &&
-            this.filterInputRef().nativeElement.value.length > 0
-        ) {
+        if (v === null && this.filterInputRef().nativeElement.value.length > 0) {
             return this.onAdding(this.filterInputRef().nativeElement.value);
         }
 
