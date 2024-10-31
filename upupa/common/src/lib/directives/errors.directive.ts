@@ -5,17 +5,22 @@ import { ValidationErrors, FormControl } from '@angular/forms';
     selector: '[errors]',
 })
 export class ErrorsDirective {
-    constructor(private templateRef: TemplateRef<any>, private viewContainer: ViewContainerRef) {}
+    constructor(
+        private templateRef: TemplateRef<any>,
+        private viewContainer: ViewContainerRef,
+    ) {}
 
     errors = input.required<ValidationErrors>();
     control = input<FormControl>(undefined, { alias: 'errorsControl' }); // alias is required to prefix the directive
 
     getErrors(errors: ValidationErrors) {
         if (!errors) return [];
-        return Object.keys(errors).map((key) => this.getError(key, errors[key]));
+        return Object.keys(errors).map((errorCodeName) => this.getError(errorCodeName, errors[errorCodeName]));
     }
 
-    getError(key: string, validatorArgument: any) {
+    getError(errorCodeName: string, validatorArgument: any) {
+        if (typeof validatorArgument === 'object' && 'message' in validatorArgument) return validatorArgument.message;
+
         let fieldName = 'Field';
         let value = undefined;
         const control = this.control();
@@ -23,7 +28,7 @@ export class ErrorsDirective {
             value = control.value;
             fieldName = control['name'] ?? Object.entries(control?.parent.controls).find(([key, value]) => value === control)?.[0];
         }
-        switch (key) {
+        switch (errorCodeName) {
             case 'required':
                 return `${fieldName} is required.`;
             case 'requiredTrue':

@@ -30,13 +30,16 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     disabled = model(false);
     value = model<Partial<T> | Partial<T>[]>(undefined);
 
-    _control = inject(NgControl, { optional: true }).control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
-    control = input<FormControl>(this._control ?? new FormControl());
-
+    _control = inject(NgControl, { optional: true })?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl();
+    control = input<FormControl>(this._control ?? this._defaultControl);
     handleUserInput(v: Partial<T> | Partial<T>[]) {
         this.value.set(v);
-        this.markAsTouched();
-        this.propagateChange();
+        if (this._defaultControl === this.control()) {
+            // only notify changes if control was provided externally
+            this.markAsTouched();
+            this.propagateChange();
+        }
     }
 
     override ngOnInit(): void {

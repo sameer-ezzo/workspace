@@ -55,7 +55,7 @@ export type ChoicesFieldOptions = VisibleFormFieldOptions &
 
 export type TableInputOptions = {
     options: {
-        listViewmodel: any;
+        listViewModel: any;
         rowActions: [];
         headerActions: [];
     };

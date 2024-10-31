@@ -1,18 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 
-@Component({
-    selector: 'input-base',
-    template: '',
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => InputBaseComponent),
-            multi: true,
-        },
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-})
+@Component({ template: '' })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
     name = input<string, string>('', {
         alias: 'fieldName',
@@ -22,15 +11,17 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     });
     disabled = model(false);
     required = input(false);
-
-    _control = inject(NgControl, { optional: true }).control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
-    control = input<FormControl>(this._control ?? new FormControl());
     value = model<T>();
 
+    _control = inject(NgControl, { optional: true })?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl();
+    control = input<FormControl>(this._control ?? this._defaultControl);
     handleUserInput(v: T) {
         this.value.set(v);
-        this.markAsTouched();
-        this.propagateChange();
+        if (this._defaultControl === this.control()) { // only notify changes if control was provided externally
+            this.markAsTouched();
+            this.propagateChange();
+        }
     }
 
     // >>>>> ControlValueAccessor ----------------------------------------
@@ -38,7 +29,7 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     _onTouch: () => void;
 
     propagateChange() {
-        this._onChange?.(this.value()); //ngModel/ngControl notify (value accessor)
+        this._onChange?.(this.value());
     }
 
     markAsTouched() {

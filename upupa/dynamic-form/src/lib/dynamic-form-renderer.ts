@@ -1,4 +1,4 @@
-import { UntypedFormBuilder, ValidatorFn, FormGroup, FormControl, FormArray, UntypedFormGroup, AbstractControl } from '@angular/forms';
+import { ValidatorFn, FormGroup, FormControl, UntypedFormGroup, AbstractControl } from '@angular/forms';
 import { _mergeFields } from './dynamic-form.helper';
 import { DynamicFormService } from './dynamic-form.service';
 import { Field, FieldItem, Validator, FormScheme } from './types';
@@ -8,31 +8,32 @@ export class DynamicFormBuilder {
     controls: Map<Field, AbstractControl | UntypedFormGroup> = new Map();
     constructor(private readonly formService: DynamicFormService) {}
 
-    build(form: FormGroup, scheme: FormScheme, value: any): void {
+    build(form: FormGroup, scheme: FormScheme, value: any, path = '/'): void {
         this.removeControls(form);
         for (const fieldName in scheme) {
             const field = scheme[fieldName];
-            const fieldValue = JsonPointer.get(value ?? {}, field.path ?? field.name ?? fieldName);
-
+            const fieldValue = JsonPointer.get(value ?? {}, fieldName);
+            const _path = `${path}${fieldName}/`;
             if (field.type === 'fieldset') {
                 const group = new FormGroup(
                     {},
                     {
                         validators: this.getValidators(field),
                         asyncValidators: this.getAsyncValidators(field),
-                    }
+                    },
                 );
                 group['name'] = field.name;
-                form.addControl(fieldName, group);
+                group['path'] = _path;
+                form.addControl(fieldName, group, { emitEvent: false });
                 this.controls.set(field, group);
-                this.build(group, field.items, fieldValue);
+                this.build(group, field.items, fieldValue, `${path}${fieldName}/`);
             } else if (field.type == 'array') {
                 // const array = new FormArray([], { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
                 // array["name"] = field.name;
                 // form.addControl(fieldName, array);
                 // this.buildArray(array, field.items, fieldValue);
             } else {
-                this.addControl(form, field, fieldValue);
+                this.addControl(form, field, fieldValue, _path);
             }
         }
     }
@@ -68,15 +69,16 @@ export class DynamicFormBuilder {
     //     }
     // }
 
-    addControl(form: FormGroup, field: FieldItem, value: any): void {
-        const control = this.getControl(field, value);
-        form.addControl(field.name, control);
+    addControl(form: FormGroup, field: FieldItem, value: any, path: string): void {
+        const control = this.getControl(field, value, path);
+        form.addControl(field.name, control, { emitEvent: false });
         this.controls.set(field, control);
     }
 
-    getControl(field: FieldItem, value: any) {
+    getControl(field: FieldItem, value: any, path: string) {
         const control = new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
         control['name'] = field.name;
+        control['path'] = path;
         return control;
     }
 

@@ -1,6 +1,6 @@
 <mat-form-field #formField [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
     <input
         matInput
@@ -8,14 +8,14 @@
         [type]="type()"
         [value]="value() ?? ''"
         (input)="handleUserInput(input.value)"
+        [formControl]="control()"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        [formControl]="control()"
         [required]="required()"
     />
     @if (hint()) {
-    <mat-hint>{{ hint() }}</mat-hint>
+        <mat-hint>{{ hint() }}</mat-hint>
     }
 
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>

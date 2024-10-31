@@ -143,16 +143,11 @@ export type MaxLengthValidator = { name: "maxLength"; arguments: number; message
 export type MinLengthValidator = { name: "minLength"; arguments: number; message?: string };
 
 export type PatternValidator = { name: "pattern"; arguments: RegExp; message?: string };
-export type RegexValidator = { name: "regex"; arguments: RegExp; message?: string };
 
 export type MaxValidator = { name: "max"; arguments: number; message?: string };
 export type MinValidator = { name: "min"; arguments: number; message?: string };
 export type GreaterThanValidator = { name: "greaterThan"; arguments: number; message?: string };
 export type LessThanValidator = { name: "lessThan"; arguments: number; message?: string };
-export type BeforeValidator = { name: "before"; arguments: Date | number; message?: string };
-export type AfterValidator = { name: "after"; arguments: Date | number; message?: string };
-export type TimeSpanMaxValidator = { name: "timeSpanMax"; arguments: Date | number; message?: string };
-export type TimeSpanMinValidator = { name: "timeSpanMin"; arguments: Date | number; message?: string };
 
 export type Validator =
     | RequiredValidator
@@ -165,18 +160,14 @@ export type Validator =
     | MaxLengthValidator
     | MinLengthValidator
     | PatternValidator
-    | RegexValidator
     | MaxValidator
     | MinValidator
     | GreaterThanValidator
     | LessThanValidator
-    | BeforeValidator
-    | AfterValidator
-    | TimeSpanMaxValidator
-    | TimeSpanMinValidator;
-type StringValidator = RequiredValidator | EmailValidator | LatinValidator | IncludesValidator | StartsWithValidator | EndsWithValidator;
-type NumberValidator = RequiredValidator | MaxValidator | MinValidator | GreaterThanValidator | LessThanValidator;
-type DateTimeValidator = BeforeValidator | AfterValidator | TimeSpanMaxValidator | TimeSpanMinValidator;
+
+// type StringValidator = RequiredValidator | EmailValidator | LatinValidator | IncludesValidator | StartsWithValidator | EndsWithValidator;
+// type NumberValidator = RequiredValidator | MaxValidator | MinValidator | GreaterThanValidator | LessThanValidator;
+// type DateTimeValidator = BeforeValidator | AfterValidator | TimeSpanMaxValidator | TimeSpanMinValidator;
 
 export type ValidationTaskResult = null | boolean | { code: ValidationTask } | { [code: string]: any };
 export class ValidationTask {

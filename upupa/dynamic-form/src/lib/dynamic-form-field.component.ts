@@ -1,5 +1,5 @@
 import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors, NG_ASYNC_VALIDATORS } from '@angular/forms';
 import { PortalComponent, DynamicComponent } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
 import { FieldItem } from './types';
@@ -8,10 +8,15 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
 
 @Component({
     standalone: true,
-    selector: 'dynamic-form-field',
+    selector: 'field',
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DynamicFormFieldComponent),
+            multi: true,
+        },
+        {
+            provide: NG_VALIDATORS,
             useExisting: forwardRef(() => DynamicFormFieldComponent),
             multi: true,
         },
@@ -19,11 +24,13 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (field().text) {
-        <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
-        } @if(template()) {
-        <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)"> </portal>
-        }@else{
-        <div class="error">Template not found for {{ field().name }}</div>
+            <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
+        }
+        @if (template()) {
+            <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)">
+            </portal>
+        } @else {
+            <div class="error">Template not found for {{ field().name }}</div>
         }
     `,
 
@@ -32,7 +39,7 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
         '[class]': 'classList()',
     },
 })
-export class DynamicFormFieldComponent implements ControlValueAccessor {
+export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
     formService = inject(DynamicFormService);
 
     field = input.required<FieldItem>();
@@ -42,7 +49,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor {
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [this.id() + '-container', `${field.name}-input`, 'ff-container', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
+        return [`${this.id()}-field`, `${field.input}-input`, 'field', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
             .filter((c) => c)
             .join(' ')
             .trim();
@@ -66,44 +73,75 @@ export class DynamicFormFieldComponent implements ControlValueAccessor {
         }
     }
     writeValue(obj: any): void {
-        this.childValueAccessor?.writeValue(obj);
-    }
-    private _onValidatorChange: () => void;
-    registerOnValidatorChange?(fn: () => void): void {
-        this._onValidatorChange = fn;
+        for (const childAccessor of this.childAccessors) {
+            childAccessor.writeValue(obj);
+        }
     }
 
     private _onChange: (value: any) => void;
     registerOnChange(fn: (value: any) => void): void {
         this._onChange = fn;
-        this.childValueAccessor?.registerOnChange(this._onChange);
+        for (const childAccessor of this.childAccessors) {
+            childAccessor.registerOnChange(this._onChange);
+        }
     }
     private _onTouched: () => void;
     registerOnTouched(fn: () => void): void {
         this._onTouched = fn;
-        this.childValueAccessor?.registerOnTouched(this._onTouched);
+        for (const childAccessor of this.childAccessors) {
+            childAccessor.registerOnTouched(this._onTouched);
+        }
     }
 
     isDisabled = model(false);
     setDisabledState?(isDisabled: boolean): void {
         this.isDisabled.set(isDisabled);
-        this.childValueAccessor?.setDisabledState?.(isDisabled);
+        for (const childAccessor of this.childAccessors) {
+            childAccessor.setDisabledState?.(isDisabled);
+        }
     }
 
-    childValueAccessor?: ControlValueAccessor;
+    childAccessors: ControlValueAccessor[] = [];
+    childValidators: Validator[] = [];
+
     onAttached({ componentRef }: { componentRef: ComponentRef<any> }) {
-        this.childValueAccessor = componentRef.instance as ControlValueAccessor;
-        const validatorInstance = componentRef.instance as Validator;
+        this.childAccessors = componentRef.injector.get(NG_VALUE_ACCESSOR, [], { optional: true, self: true }) as ControlValueAccessor[];
+        this.childValidators = componentRef.injector.get(NG_VALIDATORS, [], { optional: true, self: true }) as Validator[];
 
-        validatorInstance.validate = (control: AbstractControl) => {
-            return control.errors;
-        };
-        validatorInstance.registerOnValidatorChange?.(this._onValidatorChange);
+        for (const childValidator of this.childValidators) {
+            childValidator.registerOnValidatorChange?.(this._onValidatorChange);
+        }
+        if (this.childValidators.length) this._onValidatorChange?.();
+
         //replay calls to value accessor
-        this.childValueAccessor.registerOnChange(this._onChange);
-        this.childValueAccessor.registerOnTouched(this._onTouched);
+        for (const childAccessor of this.childAccessors) {
+            childAccessor.registerOnChange(this._onChange);
+            childAccessor.registerOnTouched(this._onTouched);
 
-        this.childValueAccessor.writeValue(this.control().value);
-        this.childValueAccessor.setDisabledState?.(this.isDisabled());
+            childAccessor.writeValue(this.control().value);
+            childAccessor.setDisabledState?.(this.isDisabled());
+        }
+    }
+
+    validate(control: AbstractControl): ValidationErrors | null {
+        let valid = true;
+        let error: ValidationErrors = {};
+        for (const childValidator of this.childValidators) {
+            const result = childValidator.validate(control);
+            if (result) {
+                valid = false;
+                error = { ...error, ...result };
+            }
+        }
+
+        return valid ? null : error;
+    }
+
+    private _onValidatorChange: () => void;
+    registerOnValidatorChange?(fn: () => void): void {
+        this._onValidatorChange = fn;
+        for (const childValidator of this.childValidators) {
+            childValidator.registerOnValidatorChange?.(this._onValidatorChange);
+        }
     }
 }

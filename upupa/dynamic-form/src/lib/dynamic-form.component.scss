@@ -1,35 +1,29 @@
-form.dynamic-form {
+dynamic-form > form {
     display: flex;
     width: 100%;
     //  height: 100%;
     flex-direction: column;
     position: relative;
 
-    .ff-container.hidden-input {
+    .field.hidden-input {
         display: none;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
     }
 
     input[type='submit'] {
         margin-block-start: -1rem;
     }
 
-    .ff-container:not(.hidden-input):not(:last-child) {
+    .field:not(.hidden-input):not(:last-child) {
         margin-block-end: 1rem;
     }
 
-    .ff-container.hidden-input ~ .ff-container:not(.hidden-input) {
+    .field.hidden-input ~ .field:not(.hidden-input) {
         margin-block-start: 0rem;
     }
 
-    .hidden-input.ff-container {
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
-    }
-
-    .mat-form-field-appearance-outline .mat-form-field-wrapper {
-        margin: 0 !important;
-    }
 
     .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
         display: none !important;
@@ -45,16 +39,13 @@ form.dynamic-form {
             }
         }
         &:not(:disabled) {
-            border: var(--mdc-outlined-text-field-outline-width) solid
-                var(--mdc-outlined-text-field-outline-color);
+            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-outline-color);
         }
         &:disabled {
-            border: 1px solid
-                var(--mdc-outlined-text-field-disabled-outline-color);
+            border: 1px solid var(--mdc-outlined-text-field-disabled-outline-color);
         }
         &:not(:disabled):hover {
-            border: var(--mdc-outlined-text-field-outline-width) solid
-                var(--mdc-outlined-text-field-hover-outline-color);
+            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-hover-outline-color);
         }
 
         border-radius: var(--mdc-outlined-text-field-container-shape);

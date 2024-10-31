@@ -25,7 +25,7 @@ import {
     DataTableModule,
     resolveDataListInputsFor,
 } from '@upupa/table';
-import { DataListViewModel } from './viewmodels/api-data-table-viewmodel';
+import { DataListViewModel } from './viewModels/api-data-table-viewModel';
 
 import { CommonModule } from '@angular/common';
 import { PortalComponent } from '../../../../common/src/lib/portal.component';

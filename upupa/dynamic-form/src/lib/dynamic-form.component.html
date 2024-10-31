@@ -1,4 +1,4 @@
-<form #dynForm="ngForm" [attr.id]="name()" class="dynamic-form" (ngSubmit)="onSubmit($event)">
+<form #dynForm="ngForm" [name]="name()" [attr.id]="name() + '_form'" (ngSubmit)="onSubmit($event)">
     @for (record of fields() | orderedKeyValue; track $index) { @let field = record.value;
 
     <ng-container
@@ -17,7 +17,7 @@
 <!-- <ng-template #fieldTemplate let-field="field" let-template="template" let-formGroup="form" > -->
 <ng-template #fieldTemplate let-field="field" let-group="group">
     @let ui = field.ui; @let id = ui?.id || field.name; @let input = field.input; @let control = group.get(field.name); @if (field.type === "fieldset" || field.type === "array") {
-    <fieldset [attr.id]="id" class="{{ input }}-input {{ id }}-container ff-container" [formGroup]="group" [class.hidden]="ui?.hidden === true">
+    <fieldset [attr.id]="id" class="{{ input }}-input {{ id }}-container field" [formGroup]="group" [class.hidden]="ui?.hidden === true">
         @if (input === "paragraph" || field.text) {
         <paragraph [text]="field.text" [renderer]="ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
         } @if (ui?.inputs?.label) {
@@ -40,13 +40,13 @@
     } @case ("paragraph") {
     <paragraph
         [attr.id]="id"
-        class="{{ input }}-input {{ id }}-container ff-container"
+        class="{{ input }}-input {{ id }}-container field"
         [class.hidden]="ui?.hidden === true"
         [text]="field.text"
         [renderer]="ui?.inputs?.['renderer'] || 'markdown'"
     ></paragraph>
     } @default {
-    <dynamic-form-field [field]="field" [formControl]="control" [control]="control"></dynamic-form-field>
+    <field [field]="field" [formControl]="control" [control]="control"></field>
     } } }
 </ng-template>
 

@@ -6,8 +6,9 @@ import { DataTableComponent } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
 import { DataFormWithViewModelComponent } from './data-form-with-view-model/data-form-with-view-model.component';
 import { DataService, NormalizedItem } from '@upupa/data';
+import { Class } from '@noah-ark/common';
 
-export type Class<T = any> = new (...args: any[]) => T;
+
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
 }
@@ -20,17 +21,17 @@ function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     styles: [],
 })
 export class CreateButtonComponent {
-    viewmodel = input.required<Class>();
+    viewModel = input.required<Class>();
     buttonDescriptor = input.required<ActionDescriptor>();
     options = input.required<any>();
     dialog = inject(DialogService);
     private readonly table = inject(DataTableComponent);
     async onClick(e: ActionEvent) {
-        const vm = this.viewmodel();
+        const vm = this.viewModel();
 
         const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
             title: 'Create',
-            inputs: { viewmodel: vm },
+            inputs: { viewModel: vm },
         });
         const result = await firstValueFrom(ref.afterClosed());
         this.table.adapter().refresh();
@@ -50,7 +51,7 @@ export class EditButtonComponent<T = any> {
         canEscape: false,
     });
 
-    viewmodel = input.required<Class>();
+    viewModel = input.required<Class>();
     buttonDescriptor = input.required<ActionDescriptor>();
     options = input.required<any>();
     dialog = inject(DialogService);
@@ -60,7 +61,7 @@ export class EditButtonComponent<T = any> {
     private readonly table = inject(DataTableComponent);
     private readonly injector = inject(Injector);
     async onClick(e: ActionEvent) {
-        const viewmodel = this.viewmodel();
+        const viewModel = this.viewModel();
         const element = this.element();
         let value = element.item;
         const path = this.path();
@@ -74,8 +75,8 @@ export class EditButtonComponent<T = any> {
             ...this.dialogOptions(),
             inputs: {
                 ...this.dialogOptions().inputs,
-                viewmodel: viewmodel,
-                value: new viewmodel(value),
+                viewModel: viewModel,
+                value: value,
             },
         });
         const result = await firstValueFrom(ref.afterClosed());
@@ -83,8 +84,8 @@ export class EditButtonComponent<T = any> {
     }
 }
 
-export function createButton(options: { descriptor?: Partial<ActionDescriptor>; formViewmodel: Class }): Type<any> | DynamicComponent {
-    if (!options || !options.formViewmodel) throw new Error('formViewmodel is required');
+export function createButton(options: { descriptor?: Partial<ActionDescriptor>; formViewModel: Class }): Type<any> | DynamicComponent {
+    if (!options || !options.formViewModel) throw new Error('formViewModel is required');
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
         text: 'Create',
         icon: 'add',
@@ -97,15 +98,15 @@ export function createButton(options: { descriptor?: Partial<ActionDescriptor>; 
         ...options,
         component: CreateButtonComponent,
         inputs: {
-            viewmodel: options.formViewmodel,
+            viewModel: options.formViewModel,
             buttonDescriptor: options.descriptor,
         },
     } as DynamicComponent;
     return template;
 }
 
-export function editButton(options: { descriptor?: Partial<ActionDescriptor>; formViewmodel: Class; path?: (item) => string }): DynamicComponent {
-    if (!options || !options.formViewmodel) throw new Error('formViewmodel is required');
+export function editButton(options: { descriptor?: Partial<ActionDescriptor>; formViewModel: Class; path?: (item) => string }): DynamicComponent {
+    if (!options || !options.formViewModel) throw new Error('formViewModel is required');
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
         text: 'Edit',
         icon: 'edit',
@@ -116,7 +117,7 @@ export function editButton(options: { descriptor?: Partial<ActionDescriptor>; fo
 
     const template = {
         inputs: {
-            viewmodel: options.formViewmodel,
+            viewModel: options.formViewModel,
             buttonDescriptor: options.descriptor,
             path: options.path,
         },

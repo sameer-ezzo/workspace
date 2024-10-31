@@ -1,12 +1,12 @@
 import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges } from '@angular/core';
-import { DynamicFormComponent, DynamicFormModule, resolveFormViewmodelInputs } from '@upupa/dynamic-form';
+import { DynamicFormComponent, DynamicFormModule, FormViewModelMirror, reflectFormViewModelType } from '@upupa/dynamic-form';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 import { MatBtnComponent } from '@upupa/mat-btn';
-import { Class } from '../helpers';
 import { CommonModule } from '@angular/common';
-import { ActionEvent } from '@upupa/common';
+import { ActionEvent, deepAssign } from '@upupa/common';
+import { Class } from '@noah-ark/common';
 
 @Component({
     selector: 'cp-data-form-with-view-model',
@@ -17,7 +17,7 @@ import { ActionEvent } from '@upupa/common';
     providers: [
         {
             provide: DynamicFormComponent,
-            useFactory: (self: DataFormWithViewModelComponent) => self.form(),
+            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
             deps: [DataFormWithViewModelComponent],
         },
     ],
@@ -25,44 +25,40 @@ import { ActionEvent } from '@upupa/common';
 export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
     private readonly injector = inject(Injector);
 
-    form = viewChild(DynamicFormComponent);
-
+    dynamicFormEl = viewChild(DynamicFormComponent);
+    ngForm = computed(() => this.dynamicFormEl().ngForm());
     dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>>;
 
     loading = signal(false);
 
-    viewmodel = input.required<Class>();
-    value = model<T>();
-
-    // dynamic form inputs
-    dynamicFormInputs = computed(() => {
-        const fields = resolveFormViewmodelInputs(this.viewmodel());
-        return fields;
+    viewModel = input.required<FormViewModelMirror, Class | FormViewModelMirror>({
+        transform: (v) => {
+            if (typeof v === 'function') return reflectFormViewModelType(v);
+            return v;
+        },
     });
-    fields = computed(() => this.dynamicFormInputs().fields);
-    name = computed(() => this.dynamicFormInputs().name ?? Date.now().toString());
-    preventDirtyUnload = computed(() => this.dynamicFormInputs().preventDirtyUnload === true);
 
-    theme = computed(() => this.dynamicFormInputs().theme);
-    conditions = computed(() => this.dynamicFormInputs().conditions);
+    value = model<T>();
 
     // form actions
     actions = computed(() => {
-        const { onSubmitAction, actions } = this.dynamicFormInputs();
+        const { onSubmitAction, actions } = this.viewModel();
         const formActions = actions ?? [];
         return [onSubmitAction, ...formActions].filter((x) => x);
     });
 
     // private instance = signal<any>(null);
     ngOnChanges(changes: SimpleChanges) {
-        const vmType = this.viewmodel();
-        if (changes['viewmodel']) {
+        const v = this.value();
+        const type = this.viewModel().viewModelType;
+
+        if (!(v instanceof type)) {
+            let instance: any;
             runInInjectionContext(this.injector, () => {
-                const v = this.value();
-                if (v instanceof vmType) return;
-                const instance = new vmType();
-                this.value.set(instance);
+                instance = new type();
             });
+            deepAssign(instance, v);
+            this.value.set(instance);
         }
     }
 
@@ -72,7 +68,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
 
     onSubmit() {
         const vm = this.value();
-        const prototype = Object.getPrototypeOf(vm);
+        const prototype = vm; // Object.getPrototypeOf(vm);
         runInInjectionContext(this.injector, async () => {
             await prototype['onSubmit']();
             if (prototype['afterSubmit']) prototype['afterSubmit']?.();
@@ -81,12 +77,12 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
 
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
-        const prototype = Object.getPrototypeOf(vm);
+        const prototype = vm; // Object.getPrototypeOf(vm);
         let { handlerName } = e.action as any;
         if (!handlerName && e.action.type === 'submit') handlerName = 'onSubmit';
         if (!prototype[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-        if (handlerName === 'onSubmit') return this.form().ngForm().ngSubmit.emit();
+        if (handlerName === 'onSubmit') return this.dynamicFormEl().ngForm().ngSubmit.emit();
         return runInInjectionContext(this.injector, async () => {
             await prototype[handlerName]();
         });

@@ -9,6 +9,7 @@ import { JsonPointer } from '@noah-ark/json-patch';
 import { FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
 import { getLanguageInfo } from '@upupa/language';
 import { DataAdapterDescriptor } from '@upupa/data';
+import { Class } from '@noah-ark/common';
 
 const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
@@ -139,11 +140,16 @@ export function formInput(options: FormFieldOptions = { input: 'text' }) {
     };
 }
 
-export function resolveFormViewmodelInputs(viewmodel: new <T = any>(...args: any[]) => T): DynamicFormInputs & Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'> {
-    const formOptions = resolveDynamicFormOptionsFor(viewmodel);
+export type FormViewModelMirror = {
+    viewModelType: Class;
+} & DynamicFormInputs &
+    Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'>;
+
+export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror {
+    const formOptions = resolveDynamicFormOptionsFor(viewModel);
     const inputs = {
         conditions: formOptions.conditions,
-        name: formOptions.name ?? viewmodel.name,
+        name: formOptions.name ?? viewModel.name,
         preventDirtyUnload: formOptions.preventDirtyUnload,
         recaptcha: formOptions.recaptcha,
         theme: formOptions.theme,
@@ -154,7 +160,7 @@ export function resolveFormViewmodelInputs(viewmodel: new <T = any>(...args: any
 
     buildFormScheme('', formOptions as Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, fields);
 
-    return { ...inputs, fields } as DynamicFormInputs & Pick<DynamicFormOptionsMetaData, 'actions' | 'onSubmitAction'>;
+    return { viewModelType: viewModel, ...inputs, fields };
 }
 
 function sortFields(fields: [string, { options: Partial<FormFieldOptions>; localize: boolean; target: any }][]) {
@@ -189,8 +195,6 @@ function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaDa
     const translationsFieldset = parentFormScheme['translations'];
     delete parentFormScheme['translations'];
     if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme['translations'] = translationsFieldset;
-
-    console.log(parentPath, 'parentFormScheme', parentFormScheme);
 }
 
 function makeFormFieldOptions(propertyKey: string, options: Partial<FormFieldOptions>) {
@@ -227,7 +231,7 @@ function makeFieldItem(
     target: any,
     localize: boolean,
     locales: DynamicFormOptionsMetaData['locales'],
-    parentFormScheme: FormScheme
+    parentFormScheme: FormScheme,
 ) {
     const make = (field: FieldItem, options: Partial<FormFieldOptions>) => {
         if (localize) _localizeField(field, locales, parentFormScheme, options);
@@ -303,12 +307,12 @@ function makeFieldset(
     target: any,
     localize: boolean,
     locales: DynamicFormOptionsMetaData['locales'],
-    parentFormScheme: FormScheme
+    parentFormScheme: FormScheme,
 ) {
     const path = [parentPath, name].join('/');
     const fieldset = { ...makeFormFieldOptions(name, options), type: 'fieldset', path, items: {} } as Fieldset;
 
-    const propType = options.input?.['viewmodel'] ?? Reflect.getMetadata('design:type', target, name);
+    const propType = options.input?.['viewModel'] ?? Reflect.getMetadata('design:type', target, name);
     const fieldsetFormOptions: DynamicFormOptionsMetaData = typeof propType === 'function' ? resolveDynamicFormOptionsFor(propType) : ({} as DynamicFormOptionsMetaData);
     buildFormScheme(
         parentPath,
@@ -316,7 +320,7 @@ function makeFieldset(
             fields: fieldsetFormOptions.fields,
             locales: locales,
         },
-        fieldset.items
+        fieldset.items,
     );
 
     const translationsFieldset = fieldset.items['translations'];

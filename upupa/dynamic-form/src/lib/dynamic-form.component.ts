@@ -19,12 +19,13 @@ import {
     model,
     Pipe,
     PipeTransform,
+    effect,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, ValueChangeEvent } from '@angular/forms';
 import { Field, FormScheme } from './types';
 import { Condition } from '@noah-ark/expression-engine';
-import { Subscription } from 'rxjs';
-import { EventBus } from '@upupa/common';
+import { skip, Subscription } from 'rxjs';
+import { deepAssign, EventBus } from '@upupa/common';
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from './events/handlers';
 import { JsonPointer, Patch } from '@noah-ark/json-patch';
 import { DynamicFormModuleOptions } from './dynamic-form.options';
@@ -57,8 +58,8 @@ import { KeyValuePipe } from '@angular/common';
         },
     ],
     host: {
-        '[class]': 'class()',
-        '[attr.name]': 'name()',
+        '[class]': "'dynamic-form' + class()",
+        '[attr.name]': 'hostName()',
     },
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
@@ -72,8 +73,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
-    name = input<string>(`dynForm_${Date.now()}`, { alias: 'formName' });
-
+    name = input<string>(Date.now().toString(), { alias: 'formName' });
+    hostName = computed(() => `dynForm_${this.name()}`);
     disabled = input(false);
     readonly = input(false);
     class = input('');
@@ -140,9 +141,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this._onChange?.(this.value());
     }
 
-    // getFieldIfo(f: any) {
-    //     return this.builder.getBuilderField(f);
-    // }
 
     get controls() {
         return this._builder.controls;
@@ -150,6 +148,21 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     formService = inject(DynamicFormService);
     _builder = new DynamicFormBuilder(this.formService);
+
+    constructor() {
+        effect(() => {
+            this.form().events.subscribe((e) => {
+                if (e instanceof ValueChangeEvent) {
+                    const value = this.value();
+                    JsonPointer.set(value, e.source['path'], e.source.value);
+                    this.value.set(value);
+                    this.propagateChange();
+                    console.log('valueChanges', { ...value });
+                }
+            });
+        });
+    }
+
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
         if (changes['name'] && !changes['name'].firstChange) {
             throw `Name cannot be changed after initialized ${this.name()}`;
@@ -159,9 +172,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             const scheme = this.fields();
             if (typeof scheme !== 'object' || Array.isArray(scheme)) throw new Error('fields must be passed as dictionary format');
 
-            const value = this.value();
-            this._builder.build(this.form(), this.fields(), value);
-            this.form().patchValue(value, { emitEvent: false, onlySelf: true });
+            this._builder.build(this.form(), this.fields(), this.value());
 
             //handlers
             this.subs?.forEach((s) => s.unsubscribe());
@@ -176,18 +187,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     injector = inject(Injector);
-    ngOnInit() {
-        const ref = this.injector.get(DestroyRef);
-
-        this.form()
-            .valueChanges.pipe(takeUntilDestroyed(ref))
-            .subscribe((v) => {
-                const value = Object.assign(Object.create(Object.getPrototypeOf(this.value())), this.value(), cloneDeep(v));
-
-                this.value.set(value);
-                this.propagateChange();
-            });
-    }
+    ngOnInit() {}
 
     onSubmit(e: Event) {
         e?.stopPropagation();

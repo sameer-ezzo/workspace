@@ -4,7 +4,7 @@ import { map, shareReplay, tap } from 'rxjs/operators';
 import { DataResult, DataService } from '@upupa/data';
 import { ScaffoldingService } from '../scaffolding.service';
 import { IScaffolder, FormScaffoldingModel } from '../../types';
-import { FormScheme, resolveFormViewmodelInputs } from '@upupa/dynamic-form';
+import { FormScheme, reflectFormViewModelType } from '@upupa/dynamic-form';
 import { resolvePath } from './resolve-scaffolder-path.func';
 import { defaultFormActions } from '../../defaults';
 import { inject } from '@angular/core';
@@ -49,7 +49,7 @@ export class FormViewScaffolder<T>
                       .filter((s) => s)
                       .at(-2);
 
-        const dfInputs = {}; // resolveFormViewmodelInputs(collection);
+        const dfInputs = {}; // resolveFormViewModelInputs(collection);
 
         const v = this.value$(path);
 

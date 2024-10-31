@@ -8,7 +8,7 @@ import {
   FormScaffoldingModel,
 } from '../../types';
 import { SideBarGroup, SideBarItem } from '../side-bar-group-item';
-import { DataListViewModel } from '../data-list-with-inputs/viewmodels/api-data-table-viewmodel';
+import { DataListViewModel } from '../data-list-with-inputs/viewModels/api-data-table-viewModel';
 
 export type LookUpDescriptor = {
   from: string;

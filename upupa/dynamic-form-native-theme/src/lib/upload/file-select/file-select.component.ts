@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, effect, forwardRef, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, effect, forwardRef, inject, input, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActionDescriptor, ActionEvent, EventBus, InputBaseComponent } from '@upupa/common';
 import { filter, tap } from 'rxjs';
@@ -27,7 +27,7 @@ type ViewType = 'list' | 'grid';
         class: 'view()',
     },
 })
-export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
+export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implements OnChanges {
     color = input<ThemePalette>('accent');
     dateFormat = input('dd MMM yyyy');
     placeholder = input('');
@@ -82,6 +82,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     dragging = false;
     viewModel = signal<SelectInputFileVm[]>([]);
     private readonly destroyRef = inject(DestroyRef);
+    base: string;
 
     @HostListener('blur', ['$event'])
     onBlur(event) {
@@ -96,21 +97,15 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         private readonly bus: EventBus,
         private readonly fileUploader: FileUploadService,
         private readonly clipboard: ClipboardService,
-        public readonly dialog: DialogService
+        public readonly dialog: DialogService,
     ) {
         super();
-        // this.base ??= uploadClient.baseUrl
-        effect(
-            () => {
-                const val = (this.value() ?? []).map((f, id) => ({ id, file: f, error: null } as SelectInputFileVm));
-                this.viewModel.set(val);
-            },
-            { allowSignalWrites: true }
-        );
+        this.base ??= uploadClient.baseUrl;
+
         this.clipboard.paste$
             .pipe(
                 filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
-                takeUntilDestroyed(this.destroyRef)
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(async (event) => {
                 // make sure this component is focused or active
@@ -122,6 +117,11 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             });
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['value']) {
+            this.viewModel.set((this.value() ?? []).map((f, id) => ({ id, file: f, error: null })));
+        }
+    }
     selectFile() {
         const viewer = this.fileSelector();
         if (viewer === 'browser') this.showFileExplorer();
@@ -222,7 +222,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                         fvm.error = { error: 'canceled' };
                         fvm.uploadTask = null;
                     }
-                })
+                }),
             )
             .subscribe({
                 next: (f) => {
@@ -255,8 +255,8 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             e.files.forEach((f) =>
                 this.viewModel().splice(
                     this.viewModel().findIndex((c) => c.id === f.id),
-                    1
-                )
+                    1,
+                ),
             );
             this.viewModel.set(this.viewModel().slice());
         }

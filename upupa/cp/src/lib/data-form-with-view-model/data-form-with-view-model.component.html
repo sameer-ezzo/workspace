@@ -1,22 +1,22 @@
 <div id="form-wrapper">
+    @let _vm = viewModel();
     <dynamic-form
         #dynForm
-        [fields]="fields()"
+        [fields]="_vm.fields"
         [(value)]="value"
         (valueChange)="onValueChange($event)"
-        [formName]="name()"
-        [preventDirtyUnload]="preventDirtyUnload()"
-        [theme]="theme()"
-        [conditions]="conditions()"
+        [formName]="_vm.name"
+        [preventDirtyUnload]="_vm.preventDirtyUnload"
+        [theme]="_vm.theme"
+        [conditions]="_vm.conditions"
         (submit)="onSubmit()"
     ></dynamic-form>
 </div>
 
 @if (actions(); as _actions) {
-<div class="toolbar footer">
-    @for (descriptor of _actions; track descriptor.name) {
-
-    <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
-    }
-</div>
+    <div class="toolbar footer">
+        @for (descriptor of _actions; track descriptor.name) {
+            <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
+        }
+    </div>
 }

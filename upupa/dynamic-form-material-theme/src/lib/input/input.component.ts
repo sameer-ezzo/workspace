@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Directive, forwardRef, input, Pipe, TemplateRef, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { FormControl, NG_VALUE_ACCESSOR, ValidationErrors } from '@angular/forms';
+import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
 import { InputComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
@@ -16,7 +16,9 @@ import { InputComponent } from '@upupa/dynamic-form-native-theme';
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MatInputComponent extends InputComponent {}
+export class MatInputComponent extends InputComponent {
+    
+}
 
 @Component({
     selector: 'hidden-input',

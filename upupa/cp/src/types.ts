@@ -4,8 +4,8 @@ import { FormScheme } from '@upupa/dynamic-form';
 import { FlatHierarchy } from '@noah-ark/path-matcher';
 import { ActionDescriptor } from '@upupa/common';
 import { DataAdapter, FilterDescriptor } from '@upupa/data';
-import { DataFormViewModel } from './lib/data-form-with-view-model/viewmodels/data-form.viewmodel';
-import { DataListViewModel } from './lib/data-list-with-inputs/viewmodels/api-data-table-viewmodel';
+import { DataFormViewModel } from './lib/data-form-with-view-model/viewModels/data-form.viewModel';
+import { DataListViewModel } from './lib/data-list-with-inputs/viewModels/api-data-table-viewModel';
 
 export type FormSubmitResult = {
   closeDialog?: boolean;

@@ -28,9 +28,9 @@ export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> impl
             return c;
         },
     });
-    viewmodel = input<any>();
+    viewModel = input<any>();
     columns = computed(() => {
-        const cols = resolveDataListInputsFor(this.viewmodel())?.columns || {};
+        const cols = resolveDataListInputsFor(this.viewModel())?.columns || {};
         return cols;
     });
 
