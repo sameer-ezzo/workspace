@@ -7,6 +7,7 @@
         #input
         [value]="value()"
         (input)="handleUserInput(input.value)"
+        [formControl]="control()"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"

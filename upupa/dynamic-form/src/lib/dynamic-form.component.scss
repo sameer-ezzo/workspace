@@ -5,7 +5,8 @@ dynamic-form > form {
     flex-direction: column;
     position: relative;
 
-    .field.hidden-input {
+    .field.hidden-input,
+    .field.hidden {
         display: none;
         margin: 0 !important;
         padding: 0 !important;
@@ -23,7 +24,6 @@ dynamic-form > form {
     .field.hidden-input ~ .field:not(.hidden-input) {
         margin-block-start: 0rem;
     }
-
 
     .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
         display: none !important;

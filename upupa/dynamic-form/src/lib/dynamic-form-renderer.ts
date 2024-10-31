@@ -1,8 +1,10 @@
 import { ValidatorFn, FormGroup, FormControl, UntypedFormGroup, AbstractControl } from '@angular/forms';
 import { _mergeFields } from './dynamic-form.helper';
 import { DynamicFormService } from './dynamic-form.service';
-import { Field, FieldItem, Validator, FormScheme } from './types';
+import { Field, FieldItem, Validator, FormScheme, Fieldset } from './types';
 import { JsonPointer } from '@noah-ark/json-patch';
+import { cloneDeep } from 'lodash';
+import { signal } from '@angular/core';
 
 export class DynamicFormBuilder {
     controls: Map<Field, AbstractControl | UntypedFormGroup> = new Map();
@@ -15,15 +17,8 @@ export class DynamicFormBuilder {
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}/`;
             if (field.type === 'fieldset') {
-                const group = new FormGroup(
-                    {},
-                    {
-                        validators: this.getValidators(field),
-                        asyncValidators: this.getAsyncValidators(field),
-                    },
-                );
-                group['name'] = field.name;
-                group['path'] = _path;
+                const group = this.getFieldset(field, _path);
+
                 form.addControl(fieldName, group, { emitEvent: false });
                 this.controls.set(field, group);
                 this.build(group, field.items, fieldValue, `${path}${fieldName}/`);
@@ -36,6 +31,20 @@ export class DynamicFormBuilder {
                 this.addControl(form, field, fieldValue, _path);
             }
         }
+    }
+
+    private getFieldset(field: Fieldset, _path: string) {
+        const group = new FormGroup(
+            {},
+            {
+                validators: this.getValidators(field),
+                asyncValidators: this.getAsyncValidators(field),
+            },
+        );
+        group['name'] = field.name;
+        group['path'] = _path;
+        group['field'] = signal(cloneDeep(field));
+        return group;
     }
 
     // buildArray(array: FormArray, items: FormScheme, value: any) {
@@ -79,6 +88,7 @@ export class DynamicFormBuilder {
         const control = new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
         control['name'] = field.name;
         control['path'] = path;
+        control['field'] = signal(cloneDeep(field));
         return control;
     }
 
