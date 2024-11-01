@@ -1,6 +1,5 @@
 <form #dynForm="ngForm" [name]="name()" [attr.id]="name() + '_form'" (ngSubmit)="onSubmit($event)">
     @for (record of fields() | orderedKeyValue; track $index) {
-        @let field = record.value;
         @let fieldName = record.key;
 
         <ng-container

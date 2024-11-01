@@ -67,7 +67,7 @@
     <div
         #dr
         class="drop-zone"
-        [class.dragging]="dragging"
+        [class.dragging]="dragging()"
         data-role="drag-drop-container"
         tabindex="0"
         (click)="selectFile()"
