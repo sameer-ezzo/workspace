@@ -24,16 +24,8 @@ export * from './lib/decorators/decorator.types';
 export * from './lib/tool-bar-user-menu/tool-bar-user-menu.component';
 export * from './lib/dbI18n.pipe';
 export * from './lib/cp-layout-routes';
-
-
-// export * from '/lib/decorators/column.decorator';
 export * from './lib/decorators/scheme.router.decorator';
-
 export * from './lib/data-list-with-inputs/data-list-with-inputs.component';
-export * from './lib/data-list-with-inputs/viewModels/api-data-table-viewModel';
-
 export * from './lib/data-form-with-view-model/data-form-with-view-model.component';
-export * from './lib/data-form-with-view-model/viewModels/api-data-form.viewModel';
-export * from './lib/data-form-with-view-model/viewModels/data-form.viewModel';
 export * from './lib/helpers';
 export * from './lib/form-view-model/form-view-model.component';

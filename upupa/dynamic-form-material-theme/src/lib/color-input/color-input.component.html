@@ -15,7 +15,7 @@
         <span
             class="cph"
             (click)="colorInput.click()"
-            [style.backgroundColor]="value"
+            [style.backgroundColor]="value()"
         ></span>
         <input
             type="color"
@@ -23,7 +23,7 @@
             data-jscolor=""
             style="z-index: -1; position: absolute; visibility: collapse"
             (input)="inputChange($event.target, colorInput)"
-            [value]="value"
+            [value]="value()"
             (ngModelChange)="propagateChange();"
         />
     </div>

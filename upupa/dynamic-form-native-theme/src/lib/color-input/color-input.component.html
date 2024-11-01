@@ -22,8 +22,7 @@
             (input)="inputChange($event.target, colorInput)"
             type="color"
             #colorInput
-
-            [value]="value"
+            [value]="value()"
             (ngModelChange)="propagateChange();"
         />
     </div>
