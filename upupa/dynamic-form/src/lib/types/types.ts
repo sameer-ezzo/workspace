@@ -1,7 +1,6 @@
-import { Type } from "@angular/core";
+import { Type } from '@angular/core';
 
 export type ElementUi = {
-    id?: string;
     class?: string;
     style?: string;
     inputs?: Record<string, any>;
@@ -17,12 +16,6 @@ export type FieldBase = {
      **/
     // type: 'fieldset' | 'field' | 'page-breaker'
 
-    /** @description The name of the field */
-    name: string;
-
-    /** @description Optional. The path of the value model bond to */
-    path?: string;
-
     /** @description Optional. The text associated with the field */
     text?: string;
 
@@ -37,38 +30,38 @@ export type FieldBase = {
 };
 
 const INPUTS = [
-    "hidden",
-    "recaptcha",
-    "text",
-    "textarea",
-    "paragraph",
-    "color",
-    "autocomplete",
-    "number",
-    "number",
-    "date",
-    "phone",
-    "password",
-    "slider",
-    "reviews",
-    "email",
-    "date",
-    "date",
-    "select",
-    "array",
-    "radios",
-    "checks",
-    "chips",
-    "file",
-    "local",
-    "tree",
-    "switch",
-    "address",
+    'hidden',
+    'recaptcha',
+    'text',
+    'textarea',
+    'paragraph',
+    'color',
+    'autocomplete',
+    'number',
+    'number',
+    'date',
+    'phone',
+    'password',
+    'slider',
+    'reviews',
+    'email',
+    'date',
+    'date',
+    'select',
+    'array',
+    'radios',
+    'checks',
+    'chips',
+    'file',
+    'local',
+    'tree',
+    'switch',
+    'address',
 ] as const;
 export type INPUTS_TYPES = (typeof INPUTS)[number];
 
 export type FieldItem = {
-    type?: "field" | "page-breaker";
+    type?: 'field' | 'page-breaker';
     /**
      * @description input type inspired by html, it can be a string for any custom component or an INPUT_TYPE.
      * @example text, select, number, textarea
@@ -78,7 +71,7 @@ export type FieldItem = {
 } & FieldBase;
 
 export type Fieldset = {
-    type: "fieldset";
+    type: 'fieldset';
     /**
      * @description the form scheme inside the fieldset in case type fieldset was chosen
      */
@@ -86,7 +79,7 @@ export type Fieldset = {
 } & FieldBase;
 
 export type FieldArray = {
-    type: "array";
+    type: 'array';
     /**
      * @description the form scheme inside the fieldset in case type fieldset was chosen
      */
@@ -99,7 +92,7 @@ export type FieldArray = {
 
 export type Field = Fieldset | FieldItem | FieldArray; // | PageBreaker;
 
-export type FormScheme = { [name: string]: Field };
+export type FormScheme = Map<string, Field> | { [name: string]: Field };
 
 export type ComponentInputs = { [name: string]: any };
 export type DynamicComponentMapping = {
@@ -111,43 +104,43 @@ export class DynamicComponentMapper {
 }
 
 export type ValidatorName =
-    | "required"
-    | "requiredTrue"
-    | "latin"
-    | "email"
-    | "includes"
-    | "startsWith"
-    | "endsWith"
-    | "maxLength"
-    | "minLength"
-    | "length"
-    | "pattern"
-    | "regex"
-    | "max"
-    | "min"
-    | "greaterThan"
-    | "lessThan"
-    | "before"
-    | "after"
-    | "timeSpanMax"
-    | "timeSpanMin";
-export type RequiredValidator = { name: "required" | "requiredTrue"; arguments?: boolean; message?: string };
-export type EmailValidator = { name: "email"; arguments?: RegExp; message?: string };
-export type LatinValidator = { name: "latin"; arguments?: RegExp; message?: string };
-export type IncludesValidator = { name: "includes"; arguments: string; message?: string };
-export type StartsWithValidator = { name: "startsWith"; arguments: string; message?: string };
-export type EndsWithValidator = { name: "endsWith"; arguments: string; message?: string };
+    | 'required'
+    | 'requiredTrue'
+    | 'latin'
+    | 'email'
+    | 'includes'
+    | 'startsWith'
+    | 'endsWith'
+    | 'maxLength'
+    | 'minLength'
+    | 'length'
+    | 'pattern'
+    | 'regex'
+    | 'max'
+    | 'min'
+    | 'greaterThan'
+    | 'lessThan'
+    | 'before'
+    | 'after'
+    | 'timeSpanMax'
+    | 'timeSpanMin';
+export type RequiredValidator = { name: 'required' | 'requiredTrue'; arguments?: boolean; message?: string };
+export type EmailValidator = { name: 'email'; arguments?: RegExp; message?: string };
+export type LatinValidator = { name: 'latin'; arguments?: RegExp; message?: string };
+export type IncludesValidator = { name: 'includes'; arguments: string; message?: string };
+export type StartsWithValidator = { name: 'startsWith'; arguments: string; message?: string };
+export type EndsWithValidator = { name: 'endsWith'; arguments: string; message?: string };
 
-export type LengthValidator = { name: "length"; arguments: number; message?: string };
-export type MaxLengthValidator = { name: "maxLength"; arguments: number; message?: string };
-export type MinLengthValidator = { name: "minLength"; arguments: number; message?: string };
+export type LengthValidator = { name: 'length'; arguments: number; message?: string };
+export type MaxLengthValidator = { name: 'maxLength'; arguments: number; message?: string };
+export type MinLengthValidator = { name: 'minLength'; arguments: number; message?: string };
 
-export type PatternValidator = { name: "pattern"; arguments: RegExp; message?: string };
+export type PatternValidator = { name: 'pattern'; arguments: RegExp; message?: string };
 
-export type MaxValidator = { name: "max"; arguments: number; message?: string };
-export type MinValidator = { name: "min"; arguments: number; message?: string };
-export type GreaterThanValidator = { name: "greaterThan"; arguments: number; message?: string };
-export type LessThanValidator = { name: "lessThan"; arguments: number; message?: string };
+export type MaxValidator = { name: 'max'; arguments: number; message?: string };
+export type MinValidator = { name: 'min'; arguments: number; message?: string };
+export type GreaterThanValidator = { name: 'greaterThan'; arguments: number; message?: string };
+export type LessThanValidator = { name: 'lessThan'; arguments: number; message?: string };
 
 export type Validator =
     | RequiredValidator
@@ -163,7 +156,7 @@ export type Validator =
     | MaxValidator
     | MinValidator
     | GreaterThanValidator
-    | LessThanValidator
+    | LessThanValidator;
 
 // type StringValidator = RequiredValidator | EmailValidator | LatinValidator | IncludesValidator | StartsWithValidator | EndsWithValidator;
 // type NumberValidator = RequiredValidator | MaxValidator | MinValidator | GreaterThanValidator | LessThanValidator;
@@ -173,7 +166,7 @@ export type ValidationTaskResult = null | boolean | { code: ValidationTask } | {
 export class ValidationTask {
     task: (name: string, value: any) => Promise<ValidationTaskResult>;
     name: string;
-    state?: "check" | "error" | "vpn_key" | "send" = "send";
+    state?: 'check' | 'error' | 'vpn_key' | 'send' = 'send';
     error?: any;
     disabled? = true;
     confirm?: ValidationTask;

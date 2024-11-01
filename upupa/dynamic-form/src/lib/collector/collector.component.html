@@ -1,17 +1,17 @@
 @if (design?.bgImage?.url) {
-<div
-    class="cbgi"
-    [ngStyle]="{ 'background-image': 'url(' + design.bgImage.url + ')' }"
-    [style.background-position]="design.bgImage.position"
-    [style.background-repeat]="design.bgImage.repeat"
-    [style.background-size]="design.bgImage.size"
-></div>
+    <div
+        class="cbgi"
+        [ngStyle]="{ 'background-image': 'url(' + design.bgImage.url + ')' }"
+        [style.background-position]="design.bgImage.position"
+        [style.background-repeat]="design.bgImage.repeat"
+        [style.background-size]="design.bgImage.size"
+    ></div>
 }
 <div class="qs-wrapper">
     <dynamic-form
         class="collector-dform"
         #dynForm
-        [fields]="fields"
+        [fields]="fields()"
         [(value)]="value"
         [conditions]="conditions"
         [formName]="name()"
@@ -22,16 +22,15 @@
 </div>
 <div class="form-actions">
     @if (nextBtn && canGoNext()) {
-    <mat-btn [descriptor]="nextBtn" (onClick)="next()"></mat-btn>
-    } @if (prevBtn && canGoPrev()) {
-    <mat-btn [descriptor]="prevBtn" (onClick)="prev()"></mat-btn>
-    } @if (submitBtn) {
-    <mat-btn
-        [disabled]="_pageInvalid || loading"
-        [descriptor]="submitBtn"
-        (onClick)="onSubmit()"
-    ></mat-btn>
-    } @for (act of actions; track act) {
-    <mat-btn [descriptor]="act" (onClick)="actionClicked(act)"></mat-btn>
+        <mat-btn [descriptor]="nextBtn" (onClick)="next()"></mat-btn>
+    }
+    @if (prevBtn && canGoPrev()) {
+        <mat-btn [descriptor]="prevBtn" (onClick)="prev()"></mat-btn>
+    }
+    @if (submitBtn) {
+        <mat-btn [disabled]="_pageInvalid || loading || (ngForm().invalid && ngForm().touched)" [descriptor]="submitBtn" (onClick)="onSubmit()"></mat-btn>
+    }
+    @for (act of actions; track act) {
+        <mat-btn [descriptor]="act" (onClick)="actionClicked(act)"></mat-btn>
     }
 </div>

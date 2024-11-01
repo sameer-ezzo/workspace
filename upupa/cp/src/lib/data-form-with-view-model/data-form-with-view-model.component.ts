@@ -1,5 +1,5 @@
 import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges } from '@angular/core';
-import { DynamicFormComponent, DynamicFormModule, FormViewModelMirror, reflectFormViewModelType } from '@upupa/dynamic-form';
+import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from '@upupa/dynamic-form';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
@@ -18,6 +18,11 @@ import { Class } from '@noah-ark/common';
         {
             provide: DynamicFormComponent,
             useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
+            deps: [DataFormWithViewModelComponent],
+        },
+        {
+            provide: FORM_GRAPH,
+            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl().graph(),
             deps: [DataFormWithViewModelComponent],
         },
     ],
@@ -62,29 +67,33 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         }
     }
 
-    onValueChange(v: any) {
-        // console.log("onValueChange", v);
+    
+
+    onValueChange(e: any) {
+        const vm = this.value();
+        runInInjectionContext(this.injector, async () => {
+            await vm['onValueChange']?.(e);
+        });
     }
 
     onSubmit() {
         const vm = this.value();
-        const prototype = vm; // Object.getPrototypeOf(vm);
+
         runInInjectionContext(this.injector, async () => {
-            await prototype['onSubmit']();
-            if (prototype['afterSubmit']) prototype['afterSubmit']?.();
+            await vm['onSubmit']();
+            if (vm['afterSubmit']) vm['afterSubmit']?.();
         });
     }
 
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
-        const prototype = vm; // Object.getPrototypeOf(vm);
         let { handlerName } = e.action as any;
         if (!handlerName && e.action.type === 'submit') handlerName = 'onSubmit';
-        if (!prototype[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
+        if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
         if (handlerName === 'onSubmit') return this.dynamicFormEl().ngForm().ngSubmit.emit();
         return runInInjectionContext(this.injector, async () => {
-            await prototype[handlerName]();
+            await vm[handlerName]();
         });
     }
 }

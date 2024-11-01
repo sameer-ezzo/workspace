@@ -58,7 +58,7 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
     }
 
     errors = (form: DynamicFormComponent) =>
-        Array.from(form.controls)
+        Array.from(form.graph())
             .map((c) => c[1].errors)
             .reduce((a, b) => ({ ...a, ...b }), {});
 

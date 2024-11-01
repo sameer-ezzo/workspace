@@ -101,7 +101,7 @@ function FormInput<T extends FormInputAttributes>(inputAttributes: T): (target: 
         inputs: inputAttributes.customComponentInputs
     }
 
-    return formInput(options);
+    return formInput(options as any);
 }
 
 export function FormTextInput(inputAttributes: FormInputAttributes) {

@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, AfterViewInit, viewChild, SimpleChanges } from '@angular/core';
+import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, AfterViewInit, viewChild, SimpleChanges, effect, HostListener } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { HtmlUploadAdapter } from '../html-upload-adapter';
@@ -27,7 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
         },
     ],
 })
-export class HtmlEditorComponent extends InputBaseComponent<string> implements AfterViewInit {
+export class HtmlEditorComponent extends InputBaseComponent<string> {
     readonly = input(false);
     language = input('');
     dir = input('');
@@ -46,14 +46,24 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements A
     editor: Editor;
     el = inject(ElementRef<HTMLElement>);
     editorElement = viewChild.required<ElementRef<HTMLTextAreaElement>>('editor');
-    async ngAfterViewInit() {
-        await this._initEditor();
+    constructor() {
+        super();
+        effect(async () => {
+            const el = this.editorElement();
+            if (!el) return;
+            await this._initEditor();
+        });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['value']) {
             this.editor?.setData(this.value() ?? '');
         }
+    }
+
+    @HostListener('blur')
+    onBlur(): void {
+        this.markAsTouched();
     }
     private async _initEditor() {
         const lang = this.language() ?? 'en';
@@ -80,6 +90,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements A
             editor.setData(this.value() ?? '');
 
             editor.model.document.on('change:data', () => {
+                this.control().setValue(editor.getData());
                 this.handleUserInput(editor.getData());
             });
             this.editor = editor;
@@ -90,12 +101,6 @@ export class HtmlEditorComponent extends InputBaseComponent<string> implements A
 
     ngOnDestroy() {
         this.editor?.destroy();
-    }
-    htmlChanged({ editor }: any) {
-        const data = editor.data.get();
-        this.value.set(data);
-        this.propagateChange();
-        this.markAsTouched();
     }
 
     public uploadAdapterPlugin(editor: any): void {

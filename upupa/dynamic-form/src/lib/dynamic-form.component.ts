@@ -15,29 +15,44 @@ import {
     viewChild,
     computed,
     Injector,
-    DestroyRef,
     model,
     Pipe,
-    PipeTransform,
     effect,
+    InjectionToken,
+    signal,
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, ValueChangeEvent } from '@angular/forms';
-import { Field, FormScheme } from './types';
+import { FormScheme } from './types';
 import { Condition } from '@noah-ark/expression-engine';
-import { skip, Subscription } from 'rxjs';
-import { deepAssign, EventBus } from '@upupa/common';
+import { Subscription } from 'rxjs';
+import { EventBus } from '@upupa/common';
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from './events/handlers';
 import { JsonPointer, Patch } from '@noah-ark/json-patch';
 import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { DYNAMIC_FORM_OPTIONS } from './di.token';
 import { DynamicFormBuilder } from './dynamic-form-renderer';
+import { FieldFormControl, FieldFormGroup } from './field-form.control';
 import { DynamicFormService } from './dynamic-form.service';
 import { ConditionalLogicService } from './conditional-logic.service';
 import { DialogService } from '@upupa/dialog';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { cloneDeep, merge } from 'lodash';
 import { KeyValuePipe } from '@angular/common';
 
+export type FormGraph = Map<string, FieldFormControl | FieldFormGroup>;
+export const FORM_GRAPH = new InjectionToken<FormGraph>('FormControls');
+export class ExtendedValueChangeEvent<T = any> {
+    get path() {
+        return this.source?.path ?? '/';
+    }
+    constructor(
+        public value: T,
+        public graph: FormGraph,
+        public source?: FieldFormControl | FieldFormGroup,
+    ) {}
+}
+
+export function injectField(path: string): FieldFormControl | FieldFormGroup {
+    return inject(FORM_GRAPH, { optional: true })?.get(path);
+}
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
     selector: 'dynamic-form',
@@ -55,6 +70,11 @@ import { KeyValuePipe } from '@angular/common';
             provide: DynamicFormBuilder,
             useFactory: (formService: DynamicFormService) => new DynamicFormBuilder(formService),
             deps: [UntypedFormBuilder, DynamicFormService, EventBus],
+        },
+        {
+            provide: FORM_GRAPH,
+            useFactory: (form: DynamicFormComponent) => form.graph(),
+            deps: [DynamicFormComponent],
         },
     ],
     host: {
@@ -84,6 +104,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     form = computed(() => this.ngForm().form);
 
     value = model(undefined);
+
+    fieldValueChange = output<ExtendedValueChangeEvent<T>>();
 
     submit = output<DynamicFormComponent>();
     preventDirtyUnload = input(false);
@@ -141,10 +163,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this._onChange?.(this.value());
     }
 
-
-    get controls() {
-        return this._builder.controls;
-    }
+    graph = signal<FormGraph>(null);
 
     formService = inject(DynamicFormService);
     _builder = new DynamicFormBuilder(this.formService);
@@ -153,11 +172,16 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         effect(() => {
             this.form().events.subscribe((e) => {
                 if (e instanceof ValueChangeEvent) {
-                    const value = this.value();
-                    JsonPointer.set(value, e.source['path'], e.source.value);
+                    const value = this.value() ?? {};
+                    const source = e.source as FieldFormControl | FieldFormGroup;
+                    const path = source.path ?? '/';
+                    JsonPointer.set(value, path, source.value);
                     this.value.set(value);
                     this.propagateChange();
-                    console.log('valueChanges', { ...value });
+
+                    const ee = new ExtendedValueChangeEvent(value, this.graph(), source.path ? source : undefined);
+                    this.fieldValueChange.emit(ee);
+                    console.log('valueChanges', ee);
                 }
             });
         });
@@ -172,11 +196,17 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             const scheme = this.fields();
             if (typeof scheme !== 'object' || Array.isArray(scheme)) throw new Error('fields must be passed as dictionary format');
 
-            this._builder.build(this.form(), this.fields(), this.value());
+            this.graph.set(this._builder.build(this.form(), this.fields(), this.value()));
+
+            // emit initial value change event
+            this.fieldValueChange.emit(new ExtendedValueChangeEvent(this.value(), this.graph()));
 
             //handlers
             this.subs?.forEach((s) => s.unsubscribe());
             this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
+        }
+        if (changes['value']) {
+            this.form().patchValue(this.value());
         }
 
         if (changes['conditions']?.firstChange === true) {
@@ -231,19 +261,21 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 element.focus();
             }, 400); //wait scroll animation
     }
+    host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.controls).filter((c) => c[1].invalid && c[0].ui?.hidden !== true)?.[0];
+        const c = Array.from(this.graph()).find((c) => c[1].invalid && c[1].field().ui?.hidden !== true);
         if (!c) return;
-        c[1].markAsTouched();
-        const el = document.getElementById(c[0].name) ?? <HTMLElement>document.querySelector('form :not(fieldset).ng-touched.ng-invalid');
+        const control = c[1] as FieldFormControl;
+        control.markAsTouched();
+        const el = this.host.nativeElement.querySelector(`[name=${control.name}]`) as HTMLElement;
         if (el) this.scrollToElement(el);
     }
 
     getDirtyPatches(): Patch[] {
-        return Array.from(this.controls)
+        return Array.from(this.graph())
             .filter((e) => (e[1] as AbstractControl).dirty)
             .map((e) => {
-                const path = (e[0] as Field)?.path;
+                const path = e[1]?.['path'];
                 return {
                     path,
                     op: 'replace',
@@ -254,10 +286,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     getDirtyValue(): Record<string, any> {
         const dirty = {};
-        const dirtyControls = Array.from(this.controls).filter((e) => (e[1] as AbstractControl).dirty);
+        const dirtyControls = Array.from(this.graph()).filter((e) => (e[1] as AbstractControl).dirty);
         if (dirtyControls.length === 0) return null;
 
-        dirtyControls.map((e) => (e[0] as Field)?.path).forEach((p) => JsonPointer.set(dirty, p, JsonPointer.get(this.value(), p)));
+        dirtyControls.map((e) => e[1]?.['path']).forEach((p) => JsonPointer.set(dirty, p, JsonPointer.get(this.value(), p)));
         return dirty;
     }
 

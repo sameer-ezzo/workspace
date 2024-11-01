@@ -1,4 +1,4 @@
-import { Component, EventEmitter, forwardRef, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, computed, EventEmitter, forwardRef, input, Input, Output, SimpleChanges, viewChild, ViewChild } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Condition } from '@noah-ark/expression-engine';
 import { ActionDescriptor, InputBaseComponent } from '@upupa/common';
@@ -22,23 +22,15 @@ import { DynamicFormComponent } from '../dynamic-form.component';
     ],
 })
 export class CollectorComponent extends InputBaseComponent<any> {
-    @ViewChild('dynForm') dynamicForm: DynamicFormComponent;
-
+    dynamicForm = viewChild<DynamicFormComponent>('dynForm');
+    ngForm = computed(()=> this.dynamicForm().ngForm())
     @Output() submit = new EventEmitter();
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Output() activePageChange = new EventEmitter<number>();
 
-    private _collectStyle: CollectStyle;
-    @Input()
-    public get collectStyle(): CollectStyle {
-        return this._collectStyle;
-    }
-    public set collectStyle(v: CollectStyle) {
-        this._collectStyle = v;
-        if (this.fields) this.populatePagesInFields();
-    }
+    collectStyle = input<CollectStyle>('linear');
 
-    @Input() fields: FormScheme;
+    fields = input.required<FormScheme>();
     @Input() conditions: Condition[];
     @Input() actions: ActionsDescriptor;
     _activePage = 0;
@@ -70,9 +62,8 @@ export class CollectorComponent extends InputBaseComponent<any> {
         text: 'Previous',
     };
 
-    private formFieldsInfo: {
-        [name: string]: { index: number; page: number };
-    } = null;
+    private formFieldsInfo = new Map<Field, { index: number; page: number }>();
+
     private _focusedField: Field;
     @Input()
     public get focusedField(): Field {
@@ -83,19 +74,23 @@ export class CollectorComponent extends InputBaseComponent<any> {
         this._focusedField = v;
         if (this.pages?.length === 0) this.populatePagesInFields();
 
-        this.activePage = v ? this.formFieldsInfo[v.name].page : null;
-        setTimeout(() => {
-            const element = document.getElementById(v.name);
-            if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
-        }, 300);
+        this.activePage = v ? this.formFieldsInfo.get(v).page : null;
+        // setTimeout(() => {
+        //     const element = document.getElementById(v.name);
+        //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
+        // }, 300);
     }
 
     pages: FormPage[] = [];
     _pageInvalid = true;
     loading = false;
 
+    get controls() {
+        return this.dynamicForm().graph;
+    }
+
     get formElement() {
-        return this.dynamicForm.form;
+        return this.dynamicForm().form();
     }
 
     _totalPages: number;
@@ -132,21 +127,16 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes['fields'] && !changes['fields'].firstChange) this.populatePagesInFields();
-    }
-
-    ngOnInit() {
-        if (!this.formFieldsInfo && this.fields) this.populatePagesInFields();
+        if (changes['fields']) this.populatePagesInFields();
     }
 
     populatePagesInFields() {
-        const fields = Object.values(this.fields);
-        this.pages = fieldsArrayToPages(this.collectStyle, fields);
+        this.pages = fieldsArrayToPages(this.collectStyle(), this.controls());
 
-        this.formFieldsInfo = {};
+        this.formFieldsInfo = new Map();
         for (let i = 0; i < this.pages.length; i++) {
-            const pfs = this.pages[i].fields;
-            for (let j = 0; j < pfs.length; j++) this.formFieldsInfo[pfs[j].name] = { index: j, page: i };
+            const pfs = Object.entries(this.pages[i].fields);
+            for (let j = 0; j < pfs.length; j++) this.formFieldsInfo[pfs[j][0]] = { index: j, page: i };
         }
 
         this.showFieldsOfPage();
@@ -159,16 +149,17 @@ export class CollectorComponent extends InputBaseComponent<any> {
         }
 
         const page = this.pages[pageIndex];
-        this._pageInvalid = this.dynamicForm && page.fields.some((f) => this.dynamicForm.controls.get(f)?.invalid === true);
+        this._pageInvalid = Array.from(page.fields).some(([name, f]) => this.controls().get('')?.invalid === true);
     }
 
     showFieldsOfPage() {
-        const fields = Object.values(this.fields);
+        const fields = this.fields();
+
         if (this.activePage > -1) {
-            fields.forEach((f: any) => {
+            Object.values(fields).forEach((f: any) => {
                 const info = this.formFieldsInfo[f.name];
                 const hidden = info && info.page !== this.activePage;
-                this.fields[f.name].ui = { ...f.ui, hidden };
+                f.ui = { ...f.ui, hidden };
             });
         }
         this._checkPageInvalid(this.activePage);
@@ -181,7 +172,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     async onSubmit() {
         this.loading = true;
         this._checkPageInvalid(this.activePage);
-        if (!this._pageInvalid) this.submit.emit(this.dynamicForm.value);
+        if (!this._pageInvalid) this.submit.emit(this.value());
         this.loading = false;
     }
 
@@ -194,7 +185,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     next() {
-        this.dynamicForm?.form().markAsTouched();
+        this.dynamicForm().form().markAsTouched();
         if (this.canGoNext()) this.activePage++;
     }
 

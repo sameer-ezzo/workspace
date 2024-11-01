@@ -4,7 +4,6 @@ export const defaultVerifyCodeField: FormScheme = {
     code: {
         type: 'field',
         input: 'text',
-        name: 'code',
         ui: {
             inputs: { label: 'Code', placeholder: 'Enter the 6-digit code' },
         },
@@ -23,7 +22,6 @@ export const defaultVerifyCodeField: FormScheme = {
 export const defaultEmailField: FieldItem = {
     type: 'field',
     input: 'email',
-    name: 'email',
     ui: { inputs: { label: 'Email', placeholder: 'Use a valid email' } },
     validations: [{ name: 'required' }, { name: 'email' }],
 };
@@ -33,7 +31,6 @@ export const defaultLoginFormFields: FormScheme = {
     password: {
         type: 'field',
         input: 'text',
-        name: 'password',
         ui: {
             inputs: {
                 label: 'Password',
@@ -55,7 +52,6 @@ export const defaultVerifyFormFields: FormScheme = {
     token: {
         type: 'field',
         input: 'hidden',
-        name: 'token',
         ui: { validations: [{ name: 'required' }] },
     },
 };
@@ -63,7 +59,6 @@ export const defaultVerifyFormFields: FormScheme = {
 export const userFullNameField: FieldItem = {
     type: 'field',
     input: 'text',
-    name: 'name',
     ui: {
         inputs: { label: 'Full Name', placeholder: 'Ex: John Doe' },
     },
@@ -72,7 +67,6 @@ export const userFullNameField: FieldItem = {
 export const userNameField: FieldItem = {
     type: 'field',
     input: 'text',
-    name: 'username',
     ui: { inputs: { label: 'Username', placeholder: 'Ex: x_man' } },
     validations: [
         { name: 'required' },
@@ -81,8 +75,7 @@ export const userNameField: FieldItem = {
         {
             name: 'latin',
             arguments: /^[a-zA-Z0-9_.@-]*$/,
-            message:
-                'Only latin characters, numbers, period, @ symbol and underscore are allowed',
+            message: 'Only latin characters, numbers, period, @ symbol and underscore are allowed',
         },
     ],
 };

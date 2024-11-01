@@ -1,74 +1,40 @@
-<mat-drawer-container
-    [dir]="languageService.dir$ | async"
-    autosize
-    style="flex: 1"
->
-    <mat-drawer
-        #editPanel
-        class="sidenav"
-        [opened]="focused !== undefined"
-        mode="side"
-        position="end"
-    >
-        EDIT PANEL
-    </mat-drawer>
+<mat-drawer-container [dir]="languageService.dir$ | async" autosize style="flex: 1">
+    <mat-drawer #editPanel class="sidenav" [opened]="focused !== undefined" mode="side" position="end"> EDIT PANEL </mat-drawer>
     <mat-drawer-content>
-        @if(adapter){
-        <mat-toolbar class="toolbar">
-            <!-- <ng-container *ngIf="path$ | async as path">
+        @if (adapter) {
+            <mat-toolbar class="toolbar">
+                <!-- <ng-container *ngIf="path$ | async as path">
                 <ng-container *ngIf="path.length > 0">
                     <mat-icon>folder_open</mat-icon>
                     <a *ngFor="let p of path; let i = index" (click)="path$.next(path.slice(0, i + 1))">{{p}}</a>
                 </ng-container>
             </ng-container> -->
 
-            <button
-                mat-raised-button
-                color="primary"
-                class="mbe-1"
-                type="button"
-                (click)="selectFile(fileSelect)"
-            >
-                <mat-icon>upload_file</mat-icon> Upload
-            </button>
-            <span class="spacer"></span>
-            <!-- add native search input paced inside wrapper -->
-            <!-- <div class="search-wrapper">
+                <button mat-raised-button color="primary" class="mbe-1" type="button" (click)="selectFile(fileSelect)"><mat-icon>upload_file</mat-icon> Upload</button>
+                <span class="spacer"></span>
+                <!-- add native search input paced inside wrapper -->
+                <!-- <div class="search-wrapper">
                 <input #searchInput matInput placeholder="Search" [value]="q" (input)="q$.next(searchInput.value)">
             </div> -->
 
-            <mat-button-toggle-group
-                #viewGroup="matButtonToggleGroup"
-                [value]="view()"
-                (change)="view.set($event.value)"
-            >
-                <mat-button-toggle value="list">
-                    <mat-icon>list</mat-icon>
-                </mat-button-toggle>
-                <mat-button-toggle value="grid">
-                    <mat-icon>grid_on</mat-icon>
-                </mat-button-toggle>
-            </mat-button-toggle-group>
-            @if(focused!==undefined){
-            <button mat-icon-button (click)="editPanel.toggle()">
-                <mat-icon>{{ editPanel.opened ? 'close' : 'edit' }}</mat-icon>
-            </button>
-            }
-        </mat-toolbar>
+                <mat-button-toggle-group #viewGroup="matButtonToggleGroup" [value]="view()" (change)="view.set($event.value)">
+                    <mat-button-toggle value="list">
+                        <mat-icon>list</mat-icon>
+                    </mat-button-toggle>
+                    <mat-button-toggle value="grid">
+                        <mat-icon>grid_on</mat-icon>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
+                @if (focused !== undefined) {
+                    <button mat-icon-button (click)="editPanel.toggle()">
+                        <mat-icon>{{ editPanel.opened ? 'close' : 'edit' }}</mat-icon>
+                    </button>
+                }
+            </mat-toolbar>
 
-        <file-select
-            #fileSelect
-            [hideSelectButton]="true"
-            [value]="this.files$ | async"
-            [view]="view()"
-        ></file-select>
+            <file-select #fileSelect [hideSelectButton]="true" [value]="this.files$ | async" [view]="view()" [path]="path()"></file-select>
 
-        <mat-paginator
-            [pageIndex]="adapter().page.pageIndex"
-            [length]="adapter().page.length"
-            [pageSize]="adapter().page.pageSize"
-            showFirstLastButtons
-        ></mat-paginator>
+            <mat-paginator [pageIndex]="adapter().page.pageIndex" [length]="adapter().page.length" [pageSize]="adapter().page.pageSize" showFirstLastButtons></mat-paginator>
         }
         <!-- [disabled]="(loading$ | async) === true"
     [pageSizeOptions]="pageSizeOptions"

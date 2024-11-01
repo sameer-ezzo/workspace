@@ -53,7 +53,6 @@ export class VerifyComponent {
         value: {
             type: 'field',
             input: 'text',
-            name: 'value',
             ui: { inputs: { label: '', placeholder: '' } },
             validations: [{ name: 'required' }],
         },

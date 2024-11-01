@@ -1,17 +1,19 @@
 <form #dynForm="ngForm" [name]="name()" [attr.id]="name() + '_form'" (ngSubmit)="onSubmit($event)">
     @for (record of fields() | orderedKeyValue; track $index) {
         @let field = record.value;
+        @let fieldName = record.key;
 
         <ng-container
             *ngTemplateOutlet="
                 fieldTemplate;
                 context: {
-                    fieldName: field.name,
+                    fieldName,
                     group: form(),
                 }
             "
         ></ng-container>
     }
+
     <input type="submit" style="display: none" />
 </form>
 
@@ -20,10 +22,9 @@
     @let control = group.get(fieldName);
     @let field = control['field']();
     @let ui = field.ui;
-    @let id = ui?.id || field.name;
     @let input = field.input;
     @if (field.type === 'fieldset' || field.type === 'array') {
-        <fieldset [attr.id]="id" class="{{ input }}-input {{ id }}-container field" [formGroup]="group" [class.hidden]="ui?.hidden === true">
+        <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="group" [class.hidden]="ui?.hidden === true">
             @if (input === 'paragraph' || field.text) {
                 <paragraph [text]="field.text" [renderer]="ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
             }
@@ -50,15 +51,15 @@
             }
             @case ('paragraph') {
                 <paragraph
-                    [attr.id]="id"
-                    class="{{ input }}-input {{ id }}-container field"
+                    [attr.name]="fieldName + '-text'"
+                    class="{{ input }}-input-text {{ fieldName }}-container-text"
                     [class.hidden]="ui?.hidden === true"
                     [text]="field.text"
                     [renderer]="ui?.inputs?.['renderer'] || 'markdown'"
                 ></paragraph>
             }
             @default {
-                <field [field]="field" [formControl]="control" [control]="control"></field>
+                <field [name]="fieldName" [field]="field" [formControl]="control" [control]="control"></field>
             }
         }
     }

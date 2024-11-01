@@ -1,5 +1,5 @@
 import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, effect, forwardRef, inject, input, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { AbstractControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
 import { ActionDescriptor, ActionEvent, EventBus, InputBaseComponent } from '@upupa/common';
 import { filter, tap } from 'rxjs';
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
@@ -39,11 +39,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     includeAccess = input(false);
 
     // @Input() base = this.uploadClient.baseOrigin;
-    path = input<string, string>('', {
-        transform: (v) => {
-            const v_lower = (v ?? '').toLocaleLowerCase();
-            return v_lower === 'undefined' || v_lower === 'null' ? '' : v;
-        },
+    path = input.required<string, string>({
+        transform: (v: string) =>
+            v
+                .replace(/\/$/, '')
+                .split('/')
+                .filter((v) => v)
+                .join('/'),
     });
 
     minAllowedFiles = input(0);
@@ -79,8 +81,9 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
             icon: 'delete',
         } as ActionDescriptor,
     ]);
-    dragging = false;
+    dragging = signal(false);
     viewModel = signal<SelectInputFileVm[]>([]);
+
     private readonly destroyRef = inject(DestroyRef);
     base: string;
 
@@ -100,7 +103,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
         public readonly dialog: DialogService,
     ) {
         super();
-        this.base ??= uploadClient.baseUrl;
+        this.base = uploadClient.baseUrl;
 
         this.clipboard.paste$
             .pipe(
@@ -176,7 +179,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     private _validateFileList(f: FileList) {
         return Array.from(f)
             .slice()
-            .map(async (file, id) => {
+            .map((file, idx) => {
                 const extensionErrors = this.validateFileExtensions(file, this.accept());
                 const maxSizeErrors = this.validateFileMaxSize(file, this.maxFileSize());
                 const minSizeErrors = this.validateFileMinSize(file, this.minSize());
@@ -184,7 +187,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
                 const error = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
 
                 const res = {
-                    id,
+                    id: idx,
                     file,
                     error: Object.getOwnPropertyNames(error).length > 0 ? error : null,
                 } as SelectInputFileVm;
@@ -324,14 +327,14 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
 
     async onDrop(event) {
         event.preventDefault();
-        this.dragging = false;
+        this.dragging.set(false);
         await this.uploadFileList(event.dataTransfer.files);
     }
 
     dragLeave(e) {
-        this.dragging = false;
+        this.dragging.set(false);
     }
     dragOver(e) {
-        if (!this.readonly) this.dragging = true;
+        if (!this.readonly()) this.dragging.set(true);
     }
 }

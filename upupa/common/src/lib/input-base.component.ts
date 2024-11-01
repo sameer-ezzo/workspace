@@ -18,7 +18,8 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     control = input<FormControl>(this._control ?? this._defaultControl);
     handleUserInput(v: T) {
         this.value.set(v);
-        if (this._defaultControl === this.control()) { // only notify changes if control was provided externally
+        if (this._defaultControl === this.control()) {
+            // only notify changes if control was provided externally
             this.markAsTouched();
             this.propagateChange();
         }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostBinding, OnInit, inject } from '@angular/core';
+import { AfterViewInit, Component, HostBinding, OnInit, inject, model } from '@angular/core';
 import {
     IdPs_OPTIONS,
     LOG_IN_EXTERNAL_LINKS_TOKEN, LOG_IN_INITIAL_VALUE_FACTORY_TOKEN,
@@ -28,7 +28,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     readonly initialValueFactory = inject(LOG_IN_INITIAL_VALUE_FACTORY_TOKEN, { optional: true }) ?? (() => (
         { email: '', password: "", rememberMe: false }
     ));
-    model = this.initialValueFactory() as any
+    value = model(this.initialValueFactory() as any)
     readonly links = inject(LOG_IN_LINKS_TOKEN) ?? [];
     external_links = inject(LOG_IN_EXTERNAL_LINKS_TOKEN) ?? [];
 

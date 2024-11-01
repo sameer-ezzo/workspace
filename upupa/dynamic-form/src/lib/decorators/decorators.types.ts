@@ -12,7 +12,6 @@ export class AdapterFieldOptions {
     adapter: DataAdapterDescriptor = { type: 'client', data: [] };
 }
 
-
 export type BaseFormFieldOptions = {
     required?: boolean;
     validations?: Validator[];
@@ -21,6 +20,7 @@ export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     name?: string;
     label?: string;
     placeholder?: string;
+    floatLabel: 'auto' | 'always' | 'never';
     text?: string;
     hint?: string;
     appearance?: 'fill' | 'outline';
@@ -60,7 +60,7 @@ export type TableInputOptions = {
         headerActions: [];
     };
 };
-export type FormFieldOptions =
+export type DynamicFormFieldOptions =
     | ({ input: 'hidden' } & BaseFormFieldOptions)
     | (VisibleFormFieldOptions &
           (
@@ -93,7 +93,7 @@ export type FormFieldOptions =
                     uploadPath: string;
                     editorType: 'decoupled' | 'classic';
                 })
-              | ({ input: 'table' } & TableInputOptions)
+              | ({ input: 'array' } & TableInputOptions)
               | ({ input: 'chips' } & {
                     parentPath?: string;
                     visible?: boolean;
@@ -101,7 +101,6 @@ export type FormFieldOptions =
                     removable?: boolean;
                     separatorKeysCodes?: string[];
                 })
-              | ({ input: string } & Partial<
-                    AdapterFieldOptions & { inputs: Record<string, any> }
-                >)
           ));
+export type DynamicFormFieldInputType = DynamicFormFieldOptions['input'];
+export type FormFieldOptions = DynamicFormFieldOptions | ({ input: string } & Partial<AdapterFieldOptions & { inputs: Record<string, any> }>);

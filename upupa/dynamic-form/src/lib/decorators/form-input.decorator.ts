@@ -6,10 +6,12 @@ import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
 import { DynamicFormInputs } from '../dynamic-form-inputs';
 import { JsonPointer } from '@noah-ark/json-patch';
-import { FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
+import { AdapterFieldOptions, DynamicFormFieldInputType, DynamicFormFieldOptions, FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
 import { getLanguageInfo } from '@upupa/language';
 import { DataAdapterDescriptor } from '@upupa/data';
 import { Class } from '@noah-ark/common';
+import { cloneDeep } from 'lodash';
+import { name } from 'platform';
 
 const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
@@ -129,7 +131,7 @@ function guessFieldInputType(target, propertyKey, options): string {
     else return 'text';
 }
 
-export function formInput(options: FormFieldOptions = { input: 'text' }) {
+export function formInput(options: Pick<FormFieldOptions, 'input'> & Partial<FormFieldOptions> = { input: 'text' }) {
     return function (target: any, propertyKey: string) {
         const opts = resolveDynamicFormOptionsFor(target.constructor);
         opts.fields ??= {};
@@ -156,9 +158,9 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
         actions: formOptions.actions,
         onSubmitAction: formOptions.onSubmitAction,
     };
-    const fields = {} as FormScheme;
 
-    buildFormScheme('', formOptions as Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, fields);
+    const fields = new Map<string, Field>();
+    buildFormScheme(formOptions as Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, fields);
 
     return { viewModelType: viewModel, ...inputs, fields };
 }
@@ -179,7 +181,7 @@ function sortFieldsByOrder(fields: DynamicFormOptionsMetaData['fields']) {
     }
     return sortFields(entries);
 }
-function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, parentFormScheme: FormScheme): void {
+function buildFormScheme(info: Pick<DynamicFormOptionsMetaData, 'fields' | 'locales'>, parentFormScheme: Map<string, Field>): void {
     const { fields, locales } = info;
     const fieldNamesSorted = sortFieldsByOrder(fields);
 
@@ -188,8 +190,8 @@ function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaDa
         const input = guessFieldInputType(target, key, options);
         //todo: introduce array field type instead of using fieldset
 
-        if (input === 'fieldset' || input === 'array') makeFieldset(parentPath, key, options, target, localize, locales, parentFormScheme);
-        else makeFieldItem(parentPath, key, options, target, localize, locales, parentFormScheme);
+        if (input === 'fieldset' || input === 'array') makeFieldset(key, options, target, localize, locales, parentFormScheme);
+        else makeFieldItem(key, options, target, localize, locales, parentFormScheme);
     }
 
     const translationsFieldset = parentFormScheme['translations'];
@@ -197,146 +199,81 @@ function buildFormScheme(parentPath: string, info: Pick<DynamicFormOptionsMetaDa
     if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme['translations'] = translationsFieldset;
 }
 
-function makeFormFieldOptions(propertyKey: string, options: Partial<FormFieldOptions>) {
+function makeFormFieldOptions(fieldName: string, options: Partial<FormFieldOptions>) {
     const opts = options ?? {};
-    const label = opts['label'] ?? toTitleCase(propertyKey);
+    const label = opts['label'] ?? toTitleCase(fieldName);
 
     const inputs = {
-        required: options.required,
+        required: opts['required'] === true,
         text: opts['text'],
         hidden: opts['hidden'] === true,
         label,
         placeholder: opts['placeholder'],
         appearance: opts['appearance'],
-        fieldName: propertyKey,
-        // ...options,
-        ...(options['inputs'] || {}),
+        fieldName,
+        ...(opts['inputs'] || {}),
     } as VisibleFormFieldOptions;
 
+    if (opts['floatLabel'] && !inputs.floatLabel) inputs.floatLabel = opts['floatLabel'];
     if ('readonly' in inputs) inputs['readonly'] = inputs['readonly'] === true;
     if ('disabled' in inputs) inputs['disabled'] = inputs['disabled'] === true;
 
-    const fieldBase = {
-        name: propertyKey,
-        validations: options.validations || [],
+    return {
+        name: fieldName,
+        validations: options['validations'] || [],
         ui: { inputs },
-    } as Field;
-    return fieldBase;
+    } as unknown as Field;
 }
 
 function makeFieldItem(
-    parentPath: string,
-    propertyKey: string,
+    fieldName: string,
     options: Partial<FormFieldOptions>,
     target: any,
     localize: boolean,
     locales: DynamicFormOptionsMetaData['locales'],
-    parentFormScheme: FormScheme,
+    parentFormScheme: Map<string, Field>,
 ) {
-    const make = (field: FieldItem, options: Partial<FormFieldOptions>) => {
-        if (localize) _localizeField(field, locales, parentFormScheme, options);
-        JsonPointer.set(parentFormScheme, field.path, field);
-    };
+    const fieldBase = makeFormFieldOptions(fieldName, options);
+    const input = guessFieldInputType(target, fieldName, options);
 
-    const fieldBase = makeFormFieldOptions(propertyKey, options);
-    const input = guessFieldInputType(target, propertyKey, options);
-    const path = [parentPath, propertyKey].join('/');
-
-    const field = {
-        ...fieldBase,
-        type: 'field',
-        path,
-        input,
-    } as FieldItem;
-
-    if (input.length === 0) field.input = 'hidden';
-
-    if (input === 'array' || options['adapter']) {
-        const descriptor: DataAdapterDescriptor = options['adapter'] ?? { type: 'client', data: [] };
-        field.ui.inputs['_adapter'] = descriptor;
-        delete field.ui.inputs['adapter'];
-        field.ui.inputs['minAllowed'] = options['minAllowed'] ?? 1;
-        field.ui.inputs['maxAllowed'] = options['maxAllowed'] ?? 1;
-    }
-
-    if (input === 'hidden') return make(field, options);
-
-    if (input === 'switch') {
-        const switchOptions = options as any;
-        field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
-        field.ui.inputs['renderer'] = switchOptions.renderer ?? 'none';
-    }
-    if (input === 'password') {
-        const pwdOptions = options as any;
-        field.ui.inputs['showConfirmPasswordInput'] = pwdOptions.showConfirmPasswordInput ?? false;
-        field.ui.inputs['showPassword'] = pwdOptions.showPassword ?? false;
-        field.ui.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
-        field.ui.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
-        field.ui.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
-        return make(field, options);
-    }
-
-    if (input === 'file') {
-        const fileOptions = options as any;
-        field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
-        field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
-        field.ui.inputs['path'] = fileOptions.path || field.path || field.name;
-        field.ui.inputs['accept'] = fileOptions.accept || '*.*';
-        field.ui.inputs['view'] = fileOptions.view || 'list';
-        field.ui.inputs['fileSelector'] = fileOptions.fileSelector || 'system';
-        field.ui.inputs['color'] = fileOptions.color || 'accent';
-        field.ui.inputs['dateFormat'] = fileOptions.dateFormat || 'dd MMM yyyy';
-        field.ui.inputs['includeAccess'] = fileOptions.includeAccess || false;
-        field.ui.inputs['minSize'] = fileOptions.minSize || 0;
-        field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
-        return make(field, options);
-    }
-    if (input === 'html') {
-        const htmlOptions = options as any;
-        field.ui.inputs['uploadPath'] = htmlOptions.path || field.path || field.name;
-        return make(field, options);
-    }
-
-    return make(field, options);
+    const field = fillFieldInputs(fieldName, fieldBase, input as any, options);
+    if (localize) _localizeField(fieldName, field, locales, parentFormScheme, options);
+    parentFormScheme[fieldName] = field;
 }
 
 function makeFieldset(
-    parentPath: string,
     name: string,
     options: Partial<FormFieldOptions>,
     target: any,
     localize: boolean,
     locales: DynamicFormOptionsMetaData['locales'],
-    parentFormScheme: FormScheme,
+    parentFormScheme: Map<string, Field>,
 ) {
-    const path = [parentPath, name].join('/');
-    const fieldset = { ...makeFormFieldOptions(name, options), type: 'fieldset', path, items: {} } as Fieldset;
+    const fieldset = { ...makeFormFieldOptions(name, options), type: 'fieldset', items: new Map<string, Field>() } as Fieldset;
 
     const propType = options.input?.['viewModel'] ?? Reflect.getMetadata('design:type', target, name);
     const fieldsetFormOptions: DynamicFormOptionsMetaData = typeof propType === 'function' ? resolveDynamicFormOptionsFor(propType) : ({} as DynamicFormOptionsMetaData);
+    const fieldsetScheme = new Map<string, Field>();
     buildFormScheme(
-        parentPath,
         {
             fields: fieldsetFormOptions.fields,
             locales: locales,
         },
-        fieldset.items,
+        fieldsetScheme,
     );
 
     const translationsFieldset = fieldset.items['translations'];
     delete fieldset.items['translations'];
     if (translationsFieldset && Object.keys(translationsFieldset)) fieldset.items['translations'] = translationsFieldset;
 
-    parentFormScheme[fieldset.name] = fieldset;
+    parentFormScheme.set(name, fieldset);
 }
 
-const makeTranslationFieldset = (name, path, label): Fieldset => {
+const makeTranslationFieldset = (name, label): Fieldset => {
     return {
         type: 'fieldset',
         input: 'fieldset',
-        name,
         items: {},
-        path,
         ui: {
             inputs: {
                 label,
@@ -345,34 +282,162 @@ const makeTranslationFieldset = (name, path, label): Fieldset => {
     } as Fieldset;
 };
 
-const _localizeField = (field: FieldItem, locales: DynamicFormOptionsMetaData['locales'], parentFormScheme: FormScheme, options: Partial<FormFieldOptions>): void => {
+const _localizeField = (
+    name: string,
+    field: Field,
+    locales: DynamicFormOptionsMetaData['locales'],
+    parentFormScheme: Map<string, Field>,
+    options: Partial<FormFieldOptions>,
+): void => {
+    if (field.type === 'fieldset') return;
+
     if (!locales) return;
     const defaultLocale = (locales.defaultLocale ?? '').trim();
     const translations = (locales.translations ?? []).filter((x) => (x ?? '').trim());
     if (!defaultLocale.length || !translations.length) return;
 
-    const translationFieldset = JsonPointer.get(parentFormScheme, '/translations') ?? makeTranslationFieldset('translations', '/translations', 'Translations');
-
-    const fieldPath = field.path ?? `/${field.name}`;
-
-    const segments = fieldPath.split('/').filter((s) => s);
+    parentFormScheme['translations'] ??= makeTranslationFieldset('translations', 'Translations');
+    const translationFieldset = parentFormScheme['translations'] as Fieldset;
 
     for (const locale of translations) {
-        const p = [locale, ...segments].slice(0, -1);
-        let b = '';
-        let fieldset = null;
-        for (const s of p) {
-            b += `/${s}`;
-            fieldset = JsonPointer.get(translationFieldset.items, `${b}`);
-            if (!fieldset) {
-                fieldset = makeTranslationFieldset(s, `translations${b}`, getLanguageInfo(locale).nativeName);
-                JsonPointer.set(translationFieldset.items, b, fieldset);
-            }
-        }
-
-        const translationField = { ...(field as any) };
-        translationField.path = `${fieldset['path']}${fieldPath}`;
-        JsonPointer.set(fieldset.items, field.name, translationField);
-        JsonPointer.set(parentFormScheme, 'translations', translationFieldset);
+        let localeFieldset = (translationFieldset.items[locale] as Fieldset) ?? makeTranslationFieldset(locale, getLanguageInfo(locale).nativeName);
+        const translationField = cloneDeep(field);
+        localeFieldset.items[name] = translationField;
+        translationFieldset.items[locale] = localeFieldset;
     }
 };
+
+function fixAdapterOptions(field: Field, options: Partial<FormFieldOptions>) {
+    if (options['adapter']) {
+        const descriptor: DataAdapterDescriptor = options['adapter'] ?? { type: 'client', data: [] };
+        field.ui.inputs['_adapter'] = descriptor;
+        delete field.ui.inputs['adapter'];
+        field.ui.inputs['minAllowed'] = options['minAllowed'] ?? 1;
+        field.ui.inputs['maxAllowed'] = options['maxAllowed'] ?? 1;
+    }
+}
+function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInputType, options: Partial<FormFieldOptions>): Field {
+    const field = {
+        ...base,
+        input,
+    } as Field;
+    field.type = input === 'fieldset' ? 'fieldset' : 'field';
+
+    fixAdapterOptions(field, options);
+    switch (input) {
+        case 'select':
+            break;
+        case 'array':
+            // todo: implement array field
+            break;
+        case 'checks':
+        case 'radios':
+            const choicesOptions = options as any;
+            field.ui.inputs['direction'] = choicesOptions.direction ?? 'vertical';
+            field.ui.inputs['template'] = choicesOptions.template ?? 'normal';
+            field.ui.inputs['thumbSize'] = choicesOptions.thumbSize ?? 50;
+            field.ui.inputs['renderer'] = choicesOptions.renderer ?? 'none';
+            break;
+        case 'fieldset':
+            const fieldsetOptions = options as any;
+            field.ui.inputs['label'] = fieldsetOptions.label ?? field.ui.inputs['label'];
+            break;
+
+        case 'switch':
+            const switchOptions = options as any;
+            field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
+            field.ui.inputs['renderer'] = switchOptions.renderer ?? 'none';
+            break;
+        case 'password':
+            const pwdOptions = options as any;
+            field.ui.inputs['showConfirmPasswordInput'] = pwdOptions.showConfirmPasswordInput ?? false;
+            field.ui.inputs['showPassword'] = pwdOptions.showPassword ?? false;
+            field.ui.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
+            field.ui.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
+            field.ui.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
+            break;
+        case 'file':
+            const fileOptions = options as any;
+            field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
+            field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
+            field.ui.inputs['path'] = fileOptions.path || name;
+            field.ui.inputs['accept'] = fileOptions.accept || '*.*';
+            field.ui.inputs['view'] = fileOptions.view || 'list';
+            field.ui.inputs['fileSelector'] = fileOptions.fileSelector || 'system';
+            field.ui.inputs['color'] = fileOptions.color || 'accent';
+            field.ui.inputs['dateFormat'] = fileOptions.dateFormat || 'dd MMM yyyy';
+            field.ui.inputs['includeAccess'] = fileOptions.includeAccess || false;
+            field.ui.inputs['minSize'] = fileOptions.minSize || 0;
+            field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
+            break;
+        case 'html':
+            const htmlOptions = options as any;
+            field.ui.inputs['uploadPath'] = htmlOptions.path || name;
+            break;
+        case 'date':
+            break;
+        case 'text':
+            break;
+        case 'number':
+            break;
+        case 'hidden':
+            break;
+        case 'chips':
+            break;
+        case 'textarea':
+            field.ui.inputs['cdkAutosizeMinRows'] = options['cdkAutosizeMinRows'];
+            field.ui.inputs['cdkAutosizeMaxRows'] = options['cdkAutosizeMaxRows'];
+            field.ui.inputs['cdkTextareaAutosize'] = options['cdkTextareaAutosize'];
+            field.ui.inputs['minSize'] = options['minSize'];
+
+            break;
+
+        default:
+            fixAdapterOptions(field, options);
+            field.ui.inputs = { ...field.ui.inputs, ...options };
+    }
+
+    // return make(field, options);
+
+    // if (input.length === 0) field.input = 'hidden';
+
+    // if (input === 'hidden') return make(field, options);
+
+    // if (input === 'switch') {
+    //     const switchOptions = options as any;
+    //     field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
+    //     field.ui.inputs['renderer'] = switchOptions.renderer ?? 'none';
+    // }
+    // if (input === 'password') {
+    //     const pwdOptions = options as any;
+    //     field.ui.inputs['showConfirmPasswordInput'] = pwdOptions.showConfirmPasswordInput ?? false;
+    //     field.ui.inputs['showPassword'] = pwdOptions.showPassword ?? false;
+    //     field.ui.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
+    //     field.ui.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
+    //     field.ui.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
+    //     return make(field, options);
+    // }
+
+    // if (input === 'file') {
+    //     const fileOptions = options as any;
+    //     field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
+    //     field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
+    //     field.ui.inputs['path'] = fileOptions.path || field.path || field.name;
+    //     field.ui.inputs['accept'] = fileOptions.accept || '*.*';
+    //     field.ui.inputs['view'] = fileOptions.view || 'list';
+    //     field.ui.inputs['fileSelector'] = fileOptions.fileSelector || 'system';
+    //     field.ui.inputs['color'] = fileOptions.color || 'accent';
+    //     field.ui.inputs['dateFormat'] = fileOptions.dateFormat || 'dd MMM yyyy';
+    //     field.ui.inputs['includeAccess'] = fileOptions.includeAccess || false;
+    //     field.ui.inputs['minSize'] = fileOptions.minSize || 0;
+    //     field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
+    //     return make(field, options);
+    // }
+    // if (input === 'html') {
+    //     const htmlOptions = options as any;
+    //     field.ui.inputs['uploadPath'] = htmlOptions.path || field.path || field.name;
+    //     return make(field, options);
+    // }
+
+    return field;
+}

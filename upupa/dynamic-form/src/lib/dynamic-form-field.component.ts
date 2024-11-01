@@ -1,5 +1,5 @@
 import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors, NG_ASYNC_VALIDATORS } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from '@angular/forms';
 import { PortalComponent, DynamicComponent } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
 import { FieldItem } from './types';
@@ -30,12 +30,11 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
             <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)">
             </portal>
         } @else {
-            <div class="error">Template not found for {{ field().name }}</div>
+            <div class="error">Template not found for {{ name() }}</div>
         }
     `,
 
     host: {
-        '[id]': 'id()',
         '[class]': 'classList()',
     },
 })
@@ -45,11 +44,11 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     field = input.required<FieldItem>();
     control = input.required<UntypedFormGroup>();
 
-    id = computed(() => this.field().ui?.id || this.field().name);
+    name = input.required<string>();
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [`${this.id()}-field`, `${field.input}-input`, 'field', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
+        return [`${this.name()}-field`, `${field.input}-input`, 'field', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
             .filter((c) => c)
             .join(' ')
             .trim();

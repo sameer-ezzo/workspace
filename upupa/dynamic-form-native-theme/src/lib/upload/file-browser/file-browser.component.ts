@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, forwardRef, OnInit, Injector, signal, inject, model } from '@angular/core';
+import { Component, Input, forwardRef, OnInit, Injector, signal, inject, model, SimpleChanges, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@upupa/auth';
@@ -7,7 +7,7 @@ import { EventBus } from '@upupa/common';
 import { DataAdapter, DataService, ServerDataSource } from '@upupa/data';
 import { LanguageService } from '@upupa/language';
 import { FileInfo } from '@upupa/upload';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { FileSelectComponent } from '../file-select/file-select.component';
 import { ValueDataComponentBase } from '@upupa/table';
 import { SnackBarService } from '@upupa/dialog';
@@ -34,51 +34,48 @@ export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> imple
     public route = inject(ActivatedRoute);
     public snack = inject(SnackBarService);
     public bus = inject(EventBus);
-    constructor() {
-        super();
-    }
+    normalizedChangeSub: Subscription | undefined;
 
-    view = signal<'list' | 'grid'>('list');
     files = [];
+    view = signal<'list' | 'grid'>('list');
     focused = undefined as FileInfo | undefined;
 
     keyProperty = '_id' as keyof FileInfo;
     valueProperty = ['_id', 'fieldname', 'originalname', 'filename', 'size', 'encoding', 'mimetype', 'destination', 'path', 'date', 'status', 'user', 'meta'] as (keyof FileInfo)[];
 
+    path = input.required<string, string>({
+        transform: (v) =>
+            v
+                .replace(/\/$/, '')
+                .split('/')
+                .filter((v) => v)
+                .join('/'),
+    });
     override adapter = model(
         new DataAdapter<FileInfo>(new ServerDataSource(this.data, '/storage', this.valueProperty), this.keyProperty, undefined, this.valueProperty, undefined, {
+            filter: {
+                destination: ['storage', this.path()].join('/'),
+            },
             terms: [
                 { field: 'originalname' as keyof FileInfo, type: 'like' },
-                { field: 'fillename' as keyof FileInfo, type: 'like' },
+                { field: 'fieldname' as keyof FileInfo, type: 'like' },
             ],
             page: { pageSize: 50 },
-        })
+        }),
     );
     files$ = new BehaviorSubject<FileInfo[]>([]);
-    private _path = undefined as string | undefined;
-    @Input()
-    public get path() {
-        return this._path;
-    }
-    public set path(value) {
-        if (this._path === value) return;
-        this._path = value;
 
-        const filter =
-            value && value !== '/'
-                ? {
-                      destination: ['storage', this.path.split('/')].filter((v) => v).join('/'),
-                  }
-                : undefined;
-
-        this.adapter().filter = filter;
-        this.adapter().refresh();
-    }
-
-    override ngOnInit(): void {
-        super.ngOnInit();
-        if (!this.path) throw new Error('Base path is not provided');
-        this.adapter().normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        super.ngOnChanges(changes);
+        if (changes['path']) {
+            this.normalizedChangeSub?.unsubscribe();
+            const filter = {
+                destination: ['storage', this.path().split('/')].filter((v) => v).join('/'),
+            };
+            this.adapter().filter = filter;
+            this.normalizedChangeSub = this.adapter().normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
+            this.adapter().refresh();
+        }
     }
 
     selectFile(fileSelect: FileSelectComponent) {
