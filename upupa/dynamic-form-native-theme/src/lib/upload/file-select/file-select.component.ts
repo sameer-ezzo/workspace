@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, forwardRef, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
 import { filter } from 'rxjs';
@@ -26,7 +26,7 @@ type ViewType = 'list' | 'grid';
         class: 'view()',
     },
 })
-export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implements OnChanges {
+export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>('accent');
     dateFormat = input('dd MMM yyyy');
     placeholder = input('');
@@ -94,7 +94,16 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
         public readonly dialog: DialogService,
     ) {
         super();
+
         this.base.set(new URL(uploadClient.baseUrl).origin + '/');
+
+        effect(
+            () => {
+                const v = this.value();
+                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
+            },
+            { allowSignalWrites: true },
+        );
 
         this.clipboard.paste$
             .pipe(
@@ -111,12 +120,6 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
             });
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes['value'] || changes['control']) {
-            const v = this.control() ? this.control().value : this.value();
-            this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null })));
-        }
-    }
     selectFile() {
         if (!this.canUpload()) return;
         const viewer = this.fileSelector();
@@ -192,7 +195,6 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> implemen
     }
 
     viewerEventsHandler(e: FileEvent) {
-        
         if (e.name === 'remove') {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()

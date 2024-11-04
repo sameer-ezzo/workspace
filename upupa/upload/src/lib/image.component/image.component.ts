@@ -51,7 +51,6 @@ export class ImageComponent implements OnDestroy, OnChanges {
             if (this.src() instanceof File) {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    console.log(reader.result);
                     this._src = reader.result as string;
                     this.setSource();
                 };
