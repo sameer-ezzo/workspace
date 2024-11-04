@@ -37,7 +37,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     private readonly injector = inject(Injector);
 
     dynamicFormEl = viewChild(DynamicFormComponent);
-    form = input(new FormGroup({}));
+    form = input<FormGroup, FormGroup>(undefined, { transform: (v) => v ?? new FormGroup({}) });
     dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>>;
 
     loading = signal(false);
