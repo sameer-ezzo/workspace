@@ -21,7 +21,7 @@ import {
     InjectionToken,
     signal,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, ValueChangeEvent } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, ValueChangeEvent, FormControl, FormGroup } from '@angular/forms';
 import { FormScheme } from './types';
 import { Condition } from '@noah-ark/expression-engine';
 import { Subscription } from 'rxjs';
@@ -106,8 +106,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     class = input('');
     theme = input<string>('material');
 
-    ngForm = viewChild.required<NgForm>('dynForm');
-    form = computed(() => this.ngForm().form);
+    form = input(new FormGroup({}));
 
     value = model(undefined);
 

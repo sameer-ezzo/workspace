@@ -38,7 +38,6 @@ export class LoginFormComponent {
 
     async signin() {
         this.error = null;
-        const form = this.loginForm().ngForm();
         this.loading.set(true);
 
         try {

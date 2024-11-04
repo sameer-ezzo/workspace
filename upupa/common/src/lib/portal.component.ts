@@ -1,9 +1,7 @@
 import { CommonModule } from "@angular/common";
 import {
     Component,
-    inject,
     EnvironmentInjector,
-    input,
     Type,
     ComponentRef,
     SimpleChanges,
@@ -11,10 +9,13 @@ import {
     ComponentMirror,
     ViewContainerRef,
     EventEmitter,
+    Injector,
+    inject,
+    input,
     output,
 } from "@angular/core";
-import { ContentNode, createContentNodes } from "./routing/with-content-projection";
 import { Subscription } from "rxjs";
+import { ContentNode, createContentNodes } from "./routing/with-content-projection";
 
 export type DynamicComponent = {
     component: Type<any>;
@@ -22,6 +23,7 @@ export type DynamicComponent = {
     content?: ContentNode[][];
     outputs?: Record<string, (e: any) => void | Promise<void>>;
     class?: string;
+    injector?: Injector;
 };
 
 @Component({
@@ -38,52 +40,67 @@ export class PortalComponent {
     componentRef?: ComponentRef<any>;
     componentMirror?: ComponentMirror<any>;
 
-    injector = input(this.host.injector);
-    component = input.required<Type<any>>();
-    inputs = input({});
-    class = input("");
-    outputs = input({});
-    content = input(undefined, {
-        transform: (content: ContentNode[][]) => createContentNodes(content, this.environmentInjector),
-    });
+    template = input<DynamicComponent>();
 
-    attached = output<{ componentRef: ComponentRef<any> }>();
-    detached = output<{ componentRef: ComponentRef<any> }>();
+    component = input<Type<any>>();
+    inputs = input<Record<string, any>>();
+    class = input<string>();
+    outputs = input<Record<string, (any) => void>>();
+    content = input<ContentNode[][]>(undefined);
+    injector = input<Injector>(this.host.injector);
 
-    subscriptions: Subscription[] = [];
+    attached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
+    detached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
+
+    _outputSubs: Subscription[] = [];
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes["component"] || changes["content"]) {
+        const _template = this.template();
+        const _component = this.component();
+        if (_template && _component) throw new Error("You must provide either template or component but not both");
+        if (!_template && !_component) throw new Error("You must provide either template or component but not both");
+
+        const template: DynamicComponent = {
+            component: _component ?? _template?.component,
+            inputs: this.inputs() ?? _template?.inputs,
+            content: this.content() ?? _template?.content,
+            outputs: this.outputs() ?? _template?.outputs,
+            class: this.class() ?? _template?.class,
+            injector: this.injector() ?? _template?.injector,
+        };
+
+        if (changes["component"] || changes["content"] || changes["template"]) {
             this.detach();
-            this.attach();
+            this.attach(template);
         }
 
         if (changes["outputs"] && !changes["outputs"].firstChange) {
-            this.subscribeToOutputs();
+            this.subscribeToOutputs(template.outputs ?? {});
         }
 
         if (changes["inputs"] && !changes["inputs"].firstChange) {
-            this.setInput();
+            this.setInputs(template.inputs ?? {});
         }
     }
 
-    attach() {
-        const component = this.component();
+    attach(template: DynamicComponent) {
+        const component = template.component;
         if (!component) return;
+        const content = createContentNodes(template.content, this.environmentInjector);
         this.componentMirror = reflectComponentType(component) ?? undefined;
         this.componentRef = this.host.createComponent(component, {
             environmentInjector: this.environmentInjector,
-            projectableNodes: this.content(),
-            injector: this.injector(),
+            projectableNodes: content,
+            injector: template.injector,
         });
 
-        const c = this.class();
-        if (c && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(c);
+        const cssClass = template.class;
+        if (cssClass && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(cssClass);
 
-        this.subscribeToOutputs();
-        this.setInput();
+        this.subscribeToOutputs(template.outputs ?? {});
+        this.setInputs(template.inputs ?? {});
 
-        this.attached.emit({ componentRef: this.componentRef });
+        this.attached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }
 
     detach() {
@@ -97,11 +114,10 @@ export class PortalComponent {
 
         this.host.clear();
 
-        this.detached.emit({ componentRef: this.componentRef });
+        this.detached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }
 
-    setInput() {
-        const inputs = this.inputs() ?? {};
+    setInputs(inputs: Record<string, any>) {
         for (const [key, value] of Object.entries(inputs)) {
             if (this.componentMirror.inputs.some((i) => i.templateName === key)) {
                 this.componentRef.setInput(key, value);
@@ -110,10 +126,9 @@ export class PortalComponent {
         this.componentRef.changeDetectorRef.detectChanges();
     }
 
-    subscribeToOutputs() {
+    subscribeToOutputs(outputs: Record<string, (e: any) => void | Promise<void>>) {
         this.unsubscribeToOutputs();
 
-        const outputs = this.outputs() ?? {};
         for (const [key, value] of Object.entries(outputs)) {
             if (this.componentMirror.outputs.some((o) => o.templateName === key)) {
                 const emitter = this.componentRef.instance[key] as EventEmitter<any>;
@@ -123,9 +138,9 @@ export class PortalComponent {
     }
 
     unsubscribeToOutputs() {
-        if (this.subscriptions?.length) {
-            this.subscriptions.forEach((s) => s.unsubscribe());
-            this.subscriptions = [];
+        if (this._outputSubs?.length) {
+            this._outputSubs.forEach((s) => s.unsubscribe());
+            this._outputSubs = [];
         }
     }
 

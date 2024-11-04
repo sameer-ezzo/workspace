@@ -28,7 +28,7 @@
         <mat-btn [descriptor]="prevBtn" (onClick)="prev()"></mat-btn>
     }
     @if (submitBtn) {
-        <mat-btn [disabled]="_pageInvalid || loading || (ngForm().invalid && ngForm().touched)" [descriptor]="submitBtn" (onClick)="onSubmit()"></mat-btn>
+        <mat-btn [disabled]="_pageInvalid || loading || (form().invalid && form().touched)" [descriptor]="submitBtn" (onClick)="onSubmit()"></mat-btn>
     }
     @for (act of actions; track act) {
         <mat-btn [descriptor]="act" (onClick)="actionClicked(act)"></mat-btn>

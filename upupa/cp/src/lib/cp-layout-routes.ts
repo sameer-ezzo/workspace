@@ -1,17 +1,18 @@
-import { Type } from '@angular/core';
-import { Route } from '@angular/router';
-import { Observable } from 'rxjs';
-import { CpLayoutComponent } from './cp-layout/cp-layout.component';
-import { DataListComponent } from './data-list/data-list.component';
-import { SCAFFOLDING_SCHEME, CP_SIDE_BAR_ITEMS } from './di.token';
-import { SideBarViewModel } from './side-bar-group-item';
-import { mergeScaffoldingScheme } from './decorators/scheme.router.decorator';
-import { DynamicComponent, RouteFeature } from '@upupa/common';
-import { DataAdapter, DataAdapterDescriptor } from '@upupa/data';
-import { DataListWithInputsComponent } from './data-list-with-inputs/data-list-with-inputs.component';
-import { DataFormWithViewModelComponent } from './data-form-with-view-model/data-form-with-view-model.component';
-import { Class } from '@noah-ark/common';
-import { FormViewModelMirror } from '@upupa/dynamic-form';
+import { Type } from "@angular/core";
+import { Route } from "@angular/router";
+import { Observable } from "rxjs";
+import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
+import { DataListComponent } from "./data-list/data-list.component";
+import { SCAFFOLDING_SCHEME, CP_SIDE_BAR_ITEMS } from "./di.token";
+import { SideBarViewModel } from "./side-bar-group-item";
+import { mergeScaffoldingScheme } from "./decorators/scheme.router.decorator";
+import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
+import { DataListWithInputsComponent } from "./data-list-with-inputs/data-list-with-inputs.component";
+import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
+import { Class } from "@noah-ark/common";
+import { FormViewModelMirror } from "@upupa/dynamic-form";
+import { FormGroup } from "@angular/forms";
 
 export function withLayoutComponent(config: {
     layout?: Type<CpLayoutComponent>;
@@ -19,7 +20,7 @@ export function withLayoutComponent(config: {
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
 }): RouteFeature {
     return {
-        name: 'withLayoutComponent',
+        name: "withLayoutComponent",
         modify: () => ({
             component: config.layout ?? CpLayoutComponent,
             data: {
@@ -35,13 +36,13 @@ export function withLayoutComponent(config: {
     };
 }
 
-export function layoutListRoute(options: { component?: Route['component'] } = { component: DataListComponent }, route: Omit<Route, 'component'>): Route {
+export function layoutListRoute(options: { component?: Route["component"] } = { component: DataListComponent }, route: Omit<Route, "component">): Route {
     if (!options) options = { component: DataListComponent };
     if (!options.component) options.component = DataListComponent;
     return {
         ...route,
         component: options.component,
-        runGuardsAndResolvers: 'pathParamsChange',
+        runGuardsAndResolvers: "pathParamsChange",
     };
 }
 
@@ -51,7 +52,7 @@ export function withTableComponent<T = unknown>(config: {
     tableHeaderComponent?: Type<any> | DynamicComponent;
 }): RouteFeature {
     return {
-        name: 'withTableComponent',
+        name: "withTableComponent",
         modify: () => ({
             component: DataListWithInputsComponent,
             data: {
@@ -63,15 +64,33 @@ export function withTableComponent<T = unknown>(config: {
     };
 }
 
-export function withFormComponent<T>(config: { viewModel: Class | FormViewModelMirror; value?: T }): RouteFeature {
+export type DynamicFormConfig = { viewModel: Class | FormViewModelMirror; value?: any; form?: FormGroup };
+
+export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
     return {
-        name: 'withFormComponent',
+        name: "withFormComponent",
         modify: () => ({
             component: DataFormWithViewModelComponent,
             data: {
                 viewModel: config.viewModel,
                 value: config.value,
+                form: config.form,
             },
         }),
+    };
+}
+
+export function provideFormRoute<T>(config: Route & DynamicFormConfig) {
+    return provideRoute(config, withFormComponent(config));
+}
+
+export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent {
+    return {
+        component: DataFormWithViewModelComponent,
+        inputs: {
+            viewModel: config.viewModel,
+            value: config.value,
+            form: config.form,
+        },
     };
 }
