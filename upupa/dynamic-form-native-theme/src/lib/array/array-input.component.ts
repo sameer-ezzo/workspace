@@ -20,7 +20,7 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
         },
     ],
 })
-export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> implements OnDestroy, OnChanges, OnInit {
+export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> implements OnDestroy, OnChanges {
     label = input('');
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
@@ -42,7 +42,6 @@ export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> impl
         if (changes['adapter']) {
             this.dataSource.all = this.value() as Partial<T>[];
             this.adapter().refresh();
-            console.log('ArrayInputComponent.ngOnChanges Adapter', this.adapter().normalized);
             this.adapter.set(this._adapter);
         }
         await super.ngOnChanges(changes);

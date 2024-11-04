@@ -12,6 +12,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 })
 export class TagsChipsInputComponent extends ChipsComponent {
     readonly = input<boolean>(false);
+    
     private readonly tagsService = inject(TagsService);
     private readonly tagsDs = new ClientDataSource([]);
     override readonly adapter = model(

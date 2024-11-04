@@ -25,28 +25,25 @@ export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implem
     changed = output<Partial<FileInfo> | Partial<FileInfo>[]>();
 
     base: string;
-    constructor(protected host: ElementRef<HTMLElement>, protected breakpointObserver: BreakpointObserver, protected dialog: MatDialog, public client: UploadClient) {
+    constructor(
+        protected host: ElementRef<HTMLElement>,
+        protected breakpointObserver: BreakpointObserver,
+        protected dialog: MatDialog,
+        public client: UploadClient,
+    ) {
         super();
         this.base = this.client.baseUrl;
         this.loading.set(true);
     }
 
-    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        super.ngOnChanges(changes);
-        if (changes['thumbs']) {
-            // this.writeValue(this.thumbs as any, false);
-        }
-    }
-
-    override ngOnInit() {
-        super.ngOnInit();
-        this.adapter().refresh();
-        this.adapter()
-            .dataSource.refresh()
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((x) => {
-                this.loading.set(false);
-            });
+    ngOnInit() {
+        // this.adapter().refresh();
+        // this.adapter()
+        //     .dataSource.refresh()
+        //     .pipe(takeUntilDestroyed(this.destroyRef))
+        //     .subscribe((x) => {
+        //         this.loading.set(false);
+        //     });
     }
 
     async remove(t: NormalizedItem<FileInfo>) {

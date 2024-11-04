@@ -25,15 +25,7 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
     placeholder = input('');
     hint = input('');
 
-
     _onlySelected = false;
-
-    override ngOnInit() {
-        // this._value ??= '';
-        super.ngOnInit();
-    }
-
-  
 
     optionSelected(option: MatAutocompleteSelectedEvent) {
         this.handleUserInput(option.option.value);

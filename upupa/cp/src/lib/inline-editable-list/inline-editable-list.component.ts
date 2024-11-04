@@ -1,34 +1,10 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import {
-    Component,
-    ElementRef,
-    forwardRef,
-    Inject,
-    input,
-    Input,
-    model,
-    OnChanges,
-    OnInit,
-    SimpleChange,
-    SimpleChanges,
-} from '@angular/core';
+import { Component, ElementRef, forwardRef, Inject, input, Input, model, OnChanges, OnInit, SimpleChange, SimpleChanges } from '@angular/core';
 import { inject } from '@angular/core/testing';
-import {
-    ControlValueAccessor,
-    UntypedFormControl,
-    NG_VALUE_ACCESSOR,
-} from '@angular/forms';
-import {
-    MatDialog,
-    MatDialogRef,
-    MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ActionDescriptor } from '@upupa/common';
-import {
-    DataComponentBase,
-    DataTableModule,
-    ValueDataComponentBase,
-} from '@upupa/table';
+import { DataComponentBase, DataTableModule, ValueDataComponentBase } from '@upupa/table';
 import { ClientDataSource, DataAdapter } from '@upupa/data';
 import { DynamicFormModule, Field, FormScheme } from '@upupa/dynamic-form';
 import { languageDir, LanguageService } from '@upupa/language';
@@ -51,10 +27,7 @@ import { InputDefaults } from '@upupa/dynamic-form-native-theme';
         },
     ],
 })
-export class InlineEditableListComponent
-    extends ValueDataComponentBase<any>
-    implements OnInit, OnChanges, ControlValueAccessor
-{
+export class InlineEditableListComponent extends ValueDataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
     appearance = input(InputDefaults.appearance);
     placeholder = input('');
     fields = input<Field[]>([]);
@@ -77,14 +50,13 @@ export class InlineEditableListComponent
         public confirm: ConfirmService,
         private lang: LanguageService,
         protected dialog: MatDialog,
-        private dialogService: DialogService
+        private dialogService: DialogService,
     ) {
         super();
     }
 
     clientDataSource: ClientDataSource;
-    override ngOnInit(): void {
-        super.ngOnInit();
+    ngOnInit(): void {
         this.clientDataSource = new ClientDataSource(<any>(this.value ?? []));
         this.adapter.set(new DataAdapter(this.clientDataSource));
         this.adapter().refresh();
@@ -101,7 +73,7 @@ export class InlineEditableListComponent
                         direction: languageDir(this.lang.language),
                         data: { value: event.data[0], fields: this.fields },
                     })
-                    .afterClosed()
+                    .afterClosed(),
             );
 
             if (res) value.splice(value.indexOf(event.data[0]), 1, res);
@@ -117,7 +89,7 @@ export class InlineEditableListComponent
                         direction: languageDir(this.lang.language),
                         data: { value: {}, fields: this.fields },
                     })
-                    .afterClosed()
+                    .afterClosed(),
             );
 
             if (Object.keys(res ?? {}).length > 0) {
@@ -151,7 +123,7 @@ export class InlineEditableListFormComponent {
     fields: FormScheme;
     constructor(
         public dialogRef: MatDialogRef<InlineEditableListFormComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: any,
     ) {
         this.value = data.value ?? {};
         this.fields = data.fields ?? [];

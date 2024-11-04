@@ -24,7 +24,7 @@ import { SnackBarService } from '@upupa/dialog';
         },
     ],
 })
-export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> implements OnInit {
+export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> {
     private readonly data = inject(DataService);
     public injector = inject(Injector);
     public auth = inject(AuthService);

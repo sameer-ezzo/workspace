@@ -39,7 +39,6 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     filterModel = model<string>();
     updateFilter() {
         this.adapter().filter = { terms: [this.filterModel()] };
-        
     }
 
     clearValue(e) {
@@ -75,30 +74,11 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
         await firstValueFrom(this.adapter().normalized$);
     }
 
-    // async valueChanged(key: keyof T | (keyof T)[]) {
-    //     let v = undefined;
-    //     if (key !== undefined) {
-    //         if (Array.isArray(key)) {
-    //             key.forEach(async (k) => this.select(k));
-    //             v = this.selectedNormalized.map((x) => x.value);
-    //         } else {
-    //             this.select(key);
-    //             v = this.selectedNormalized[0].value;
-    //         }
-    //     }
-    //     this.handleUserInput();
-    // }
-
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Input() actions: ActionDescriptor[] = [];
     onAction(event: any, action: ActionDescriptor) {
         event.stopPropagation();
         this.action.emit(action);
         // this.bus.emit(action.name, { msg: action.name }, this); //select-{name}-{action}
-    }
-
-    override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes);
-        console.log(this.name(), changes);
     }
 }

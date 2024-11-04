@@ -22,10 +22,10 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @if (selectedNormalized$ | async; as sns) {
+            @if (selectedNormalizedArray(); as sns) {
                 @if (sns.length > 0) {
                     <div class="selected-wrapper">
-                        <span>{{ selected.length }} Selected</span>
+                        <span>{{ sns.length }} Selected</span>
                         <span style="flex: 1 1 auto"></span>
                         <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'selected'" (change)="viewDataSource$.next(toggle.checked ? 'selected' : 'adapter')"
                             >Show only selected
@@ -88,7 +88,7 @@
     @if (loading()) {
         <mat-progress-spinner matSuffix [diameter]="20" mode="indeterminate"></mat-progress-spinner>
     }
-    @if (selected.length > 0 && !loading() && !disabled) {
+    @if (selectedNormalizedArray().length > 0 && !loading() && !disabled()) {
         <button matSuffix mat-icon-button (click)="clearValue($event)">
             <mat-icon>clear</mat-icon>
         </button>

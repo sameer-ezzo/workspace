@@ -1,5 +1,5 @@
 import { Component, effect, inject, input, model, output, SimpleChanges } from '@angular/core';
-import { BehaviorSubject, debounceTime, Observable, switchMap } from 'rxjs';
+import { BehaviorSubject, debounceTime, Observable, of, switchMap } from 'rxjs';
 import { DataComponentBase } from './data-base.component';
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 import { ControlValueAccessor } from '@angular/forms';
@@ -33,7 +33,9 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
     loadingMode = input<'lazy' | 'eager'>('lazy');
     viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>(this.loadingMode() === 'eager' ? 'adapter' : 'selected');
-    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(switchMap((view) => (view === 'adapter' ? this.adapter().normalized$ : this.selectedNormalized$)));
+    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(
+        switchMap((view) => (view === 'adapter' ? this.adapter().normalized$ : of(this.selectedNormalizedArray()))),
+    );
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
@@ -65,17 +67,8 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
         });
         effect(() => {
             const v = this.value();
-            if (v === undefined) return;
-            const v_arr = Array.isArray(v) ? v : [v];
-            const keys = this.adapter().getKeysFromValue(v_arr);
-            this.selectionModel.clear(false);
-
-            this.adapter()
-                .getItems(keys)
-                .then((items) => {
-                    this.selectedNormalized = items ?? [];
-                    this.singleSelected.set(this.selectedNormalized?.[0]?.key);
-                });
+            if (v === undefined) return this.selectionModel.clear();
+            this.select(v);
         });
     }
     // >>>>> ControlValueAccessor ----------------------------------------

@@ -1,8 +1,7 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { Subscription, BehaviorSubject, Observable, firstValueFrom, of } from 'rxjs';
-import { shareReplay, switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { DataAdapter, NormalizedItem } from '@upupa/data';
 import { SelectionModel } from '@angular/cdk/collections';
 
@@ -14,6 +13,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     styles: [],
 })
 export class DataComponentBase<T = any> {
+    selectionModel: SelectionModel<Partial<T>>;
+    readonly selectedNormalized = signal<NormalizedItem<T> | NormalizedItem<T>[]>([]);
+    readonly selectedNormalizedArray = computed<NormalizedItem<T>[]>(() => {
+        const n = this.selectedNormalized();
+        return Array.isArray(n) ? n : [n];
+    });
+
     add = output();
 
     loading = signal(false);
@@ -32,13 +38,22 @@ export class DataComponentBase<T = any> {
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
-    ngOnInit() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
-            this.adapter().getItems(s.source.selected);
-            // .then((selected) => {
-            //     this.selectedNormalized = selected;
-            //     this.singleSelected.set(this.selectedNormalized?.[0]?.key);
-            // });
+    constructor() {
+        effect(() => {
+            const maxAllowed = this.maxAllowed();
+            const adapter = this.adapter();
+            if (!adapter) return;
+            if (maxAllowed === 1) {
+                this.selectionModel = new SelectionModel<Partial<T>>(false, undefined, true);
+            } else {
+                this.selectionModel = new SelectionModel<Partial<T>>(true, [], true);
+            }
+            this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
+                const keys = adapter.getKeysFromValue(s.source.selected);
+                adapter.getItems(keys).then((items) => {
+                    this.selectedNormalized.set(items);
+                });
+            });
         });
     }
 
@@ -61,15 +76,14 @@ export class DataComponentBase<T = any> {
         }
     }
 
+    get selected() {
+        if (this.maxAllowed() === 1) return this.selectionModel.selected[0];
+        return this.selectionModel.selected;
+    }
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = [];
     onDataChange(data: NormalizedItem<T>[]) {
         this.firstLoad.set(false);
         this.dataChangeListeners.forEach((x) => x(data));
-        this.selectedNormalized = this.selected.map((k) => data.find((d) => d.key === k)).filter((x) => x);
-        this.singleSelected.set(this.selectedNormalized?.[0]?.key);
-
-        console.log('onDataChange', this.selectedNormalized, this.singleSelected());
-
         this.loading.set(false);
     }
 
@@ -93,40 +107,35 @@ export class DataComponentBase<T = any> {
         this.sortChange.emit(sort);
     }
 
-    singleSelected = signal(undefined);
-
     //selection
-    selectionModel = new SelectionModel<keyof T>(true, [], true);
     toggleSelectAll() {
         //selection can have items from data from other pages or filtered data so:
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-        const selected = this.selected as (keyof T)[];
+        const adapter = this.adapter();
+        const selected = this.selectionModel.selected;
         if (this.maxAllowed() === 1) {
-            if (this.selected.length > 0) this.selectionModel.clear(false);
-        } else {
-            if (this.adapter().normalized.length === selected.length) this.selectionModel.deselect(...selected);
-            else {
-                this.selectionModel.select(...this.adapter().normalized.map((n) => n.key));
-            }
+            if (selected.length > 0) this.selectionModel.clear();
+            return;
         }
+
+        if (adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
+        else this.selectionModel.select(...adapter.normalized.map((x) => x.value));
     }
 
-    select(...keys: (keyof T)[]) {
-        if (this.maxAllowed() === 1) {
-            this.selectionModel.clear(false);
-            this._selectedNormalized$.next([]);
-        }
-        this.selectionModel.select(...keys);
+    select(value: Partial<T> | Partial<T>[]) {
+        const v = Array.isArray(value) ? value : [value];
+        this.selectionModel.select(...v);
     }
 
-    deselect(key: keyof T) {
-        this.selectionModel.deselect(key);
+    deselect(value: Partial<T>) {
+        this.selectionModel.deselect(value);
     }
-    toggle(key: keyof T) {
-        if (this.selectionModel.isSelected(key)) this.deselect(key);
-        else this.select(key);
+
+    toggle(value: Partial<T>) {
+        if (this.selectionModel.isSelected(value)) this.deselect(value);
+        else this.select(value);
     }
 
     setFocusedItem(row) {
@@ -161,27 +170,5 @@ export class DataComponentBase<T = any> {
         }
 
         this.longPressed = null; //clear long press notification
-    }
-
-    get selected(): (keyof T)[] {
-        return this.selectionModel.selected;
-    }
-    @Input()
-    set selected(n: keyof T | (keyof T)[]) {
-        this.selectionModel.clear(false);
-        this._selectedNormalized$.next([]);
-        if (n === undefined) return;
-        const v = (Array.isArray(n) ? n : [n]) as (keyof T)[];
-        this.selectionModel.select(...(v as any[]));
-    }
-
-    private readonly _selectedNormalized$ = new BehaviorSubject<NormalizedItem<T>[]>([]);
-    selectedNormalized$ = this._selectedNormalized$.pipe(shareReplay(1));
-
-    public get selectedNormalized(): NormalizedItem<T>[] {
-        return this._selectedNormalized$.value;
-    }
-    protected set selectedNormalized(v: NormalizedItem<T>[]) {
-        this._selectedNormalized$.next(v);
     }
 }
