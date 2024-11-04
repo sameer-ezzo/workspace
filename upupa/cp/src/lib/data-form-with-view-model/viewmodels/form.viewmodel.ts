@@ -57,5 +57,3 @@ export interface OnAfterSubmit {
 export interface OnValueChange {
     onValueChange(e: ExtendedValueChangeEvent);
 }
-
-export interface DataFormViewModel extends OnSubmit, OnValidate, OnAfterSubmit {}

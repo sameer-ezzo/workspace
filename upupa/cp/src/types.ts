@@ -4,7 +4,6 @@ import { FormScheme } from '@upupa/dynamic-form';
 import { FlatHierarchy } from '@noah-ark/path-matcher';
 import { ActionDescriptor } from '@upupa/common';
 import { DataAdapter, FilterDescriptor } from '@upupa/data';
-import { DataFormViewModel } from './lib/data-form-with-view-model/viewmodels/data-form.viewmodel';
 
 
 
@@ -41,7 +40,7 @@ export type DataListFilterForm = {
 };
 export type DataFormResolverResult = {
   path: string;
-  formViewModel: DataFormViewModel;
+  formViewModel: any;
 };
 export type DataListResolverResult = {
   path: string;
@@ -78,7 +77,7 @@ export type ScaffoldingViewModel = {
 };
 export type FormScaffoldingModel = ScaffoldingViewModel & {
   type: 'form';
-  viewModel: DataFormViewModel;
+  viewModel: any;
 } & any;
 export type ListScaffoldingModel = ScaffoldingViewModel & {
   type: 'list';
