@@ -23,7 +23,7 @@ import { DynamicFormComponent } from '../dynamic-form.component';
 })
 export class CollectorComponent extends InputBaseComponent<any> {
     dynamicForm = viewChild<DynamicFormComponent>('dynForm');
-    ngForm = computed(()=> this.dynamicForm().ngForm())
+    form = computed(()=> this.dynamicForm().form())
     @Output() submit = new EventEmitter();
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Output() activePageChange = new EventEmitter<number>();
