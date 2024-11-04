@@ -1,8 +1,10 @@
 <div style="margin: 0; display: flex; align-items: flex-start">
     @if (!template()) {
         <mat-slide-toggle
+            #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             (change)="handleUserInput($event.source?.checked)"
+            [formControl]="control()"
             [checked]="value"
             (blur)="markAsTouched()"
             [disabled]="readonly()"
@@ -11,8 +13,10 @@
     }
     @if (template()) {
         <mat-checkbox
+            #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             (change)="handleUserInput($event.checked)"
+            [formControl]="control()"
             [checked]="value"
             (blur)="markAsTouched()"
             [disabled]="readonly()"
@@ -20,11 +24,10 @@
         </mat-checkbox>
     }
     @if (label()) {
-        <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+        <paragraph (click)="changeValue()" [text]="label()" [renderer]="renderer()"></paragraph>
     }
 </div>
 @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
 }
 <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-

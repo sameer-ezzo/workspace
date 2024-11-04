@@ -4,7 +4,7 @@ import { FileInfo } from '@noah-ark/common';
 
 @Pipe({ name: 'fileIcon' })
 export class FileIconPerTypePipe implements PipeTransform {
-    transform(value: FileInfo | File, ...args: any[]): string {
+    transform(value: any, ...args: any[]): string {
         return this._getFileType(value);
     }
 
@@ -13,8 +13,8 @@ export class FileIconPerTypePipe implements PipeTransform {
 
         const mimetype = file?.mimetype ?? '';
 
-        if (mimetype.startsWith('image/svg'))
-            return 'svg';
+        // if (mimetype.startsWith('image/svg'))
+        //     return 'svg';
         if (mimetype.startsWith('image/'))
             return 'image';
         if (mimetype.startsWith('video/'))

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model, SimpleChanges } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 
 @Component({ template: '' })
@@ -13,15 +13,19 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     required = input(false);
     value = model<T>();
 
-    _control = inject(NgControl, { optional: true })?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
     _defaultControl = new FormControl();
     control = input<FormControl>(this._control ?? this._defaultControl);
     handleUserInput(v: T) {
         this.value.set(v);
-        if (this._defaultControl === this.control()) {
+
+        if (this._ngControl) {
             // only notify changes if control was provided externally
             this.markAsTouched();
             this.propagateChange();
+        } else {
+            this.control().setValue(v);
         }
     }
 

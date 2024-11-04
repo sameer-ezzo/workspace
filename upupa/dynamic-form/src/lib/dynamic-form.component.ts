@@ -44,9 +44,10 @@ export class ExtendedValueChangeEvent<T = any> {
         return this.source?.path ?? '/';
     }
     constructor(
-        public value: T,
-        public graph: FormGraph,
-        public source?: FieldFormControl | FieldFormGroup,
+        public readonly value: T,
+        public readonly graph: FormGraph,
+        public readonly source?: FieldFormControl | FieldFormGroup,
+        public readonly patch?: Record<`/${string}`, unknown>,
     ) {}
 }
 
@@ -89,6 +90,11 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     public readonly bus = inject(EventBus);
     public readonly dialog = inject(DialogService);
     public readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
+    private _patches: {};
+
+    get patches(): Patch[] {
+        return Object.entries(this._patches).map(([path, value]) => ({ path, op: 'replace', value }));
+    }
 
     fields = input.required<FormScheme>();
 
@@ -172,14 +178,20 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         effect(() => {
             this.form().events.subscribe((e) => {
                 if (e instanceof ValueChangeEvent) {
-                    const value = this.value() ?? {};
+                    const value = this.value();
                     const source = e.source as FieldFormControl | FieldFormGroup;
                     const path = source.path ?? '/';
                     JsonPointer.set(value, path, source.value);
+                    let patch = undefined;
+                    if (source.path) {
+                        patch = { [source.path]: source.value };
+                        this._patches[source.path] = source.value;
+                    }
+
                     this.value.set(value);
                     this.propagateChange();
 
-                    const ee = new ExtendedValueChangeEvent(value, this.graph(), source.path ? source : undefined);
+                    const ee = new ExtendedValueChangeEvent(value, this.graph(), source.path ? source : undefined, patch);
                     this.fieldValueChange.emit(ee);
                     console.log('valueChanges', ee);
                 }
@@ -196,6 +208,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             const scheme = this.fields();
             if (typeof scheme !== 'object' || Array.isArray(scheme)) throw new Error('fields must be passed as dictionary format');
 
+            this._patches = {};
             this.graph.set(this._builder.build(this.form(), this.fields(), this.value()));
 
             // emit initial value change event
@@ -206,6 +219,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
         if (changes['value']) {
+            if (this.value() === undefined || this.value() === null) this.value.set({});
+            this._patches = {};
             this.form().patchValue(this.value());
         }
 

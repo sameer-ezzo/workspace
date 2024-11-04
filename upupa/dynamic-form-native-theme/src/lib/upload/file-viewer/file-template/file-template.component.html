@@ -1,20 +1,75 @@
-@if (!hasError()) {
-    <img #renderer [attr.loading]="loading" [src]="source" [alt]="alt" (error)="errorHandler($event, renderer)" [width]="width" [height]="height" [ngStyle]="styles()" />
-} @else {
-    <ng-template [ngTemplateOutlet]="errorTemplate"></ng-template>
+@let fileVm = vm();
+@let file = fileVm.file;
+@let _stream = stream();
+
+<div class="checkbox">
+    @if (selectable()) {
+        <!-- <mat-checkbox
+                    #chkBox
+                    [checked]="selectionModel.isSelected(file._id)"
+                    (change)="selectionModel.toggle(file._id); changed.emit(selectionModel.selected)"
+                ></mat-checkbox> -->
+    }
+</div>
+
+<image class="thumb flex centered selection" [width]="imageDim()" [height]="imageDim()" [src]="imageSrc()" [includeAccess]="includeAccess()" [alt]="fileVm.fileName"> </image>
+
+<div class="name">
+    {{ fileVm.fileName }}
+    @if (_stream?.progress$ | async; as progress) {
+        <br />
+        <div class="progress">
+            <strong> {{ progress }}% </strong>
+        </div>
+    }
+    @if (error(); as error) {
+        <br />
+        <small style="color: red">
+            {{ error.message }}
+        </small>
+    }
+</div>
+<div class="size">
+    @if (file) {
+        {{ file.size | fileSize }}
+    }
+</div>
+<div class="date">
+    {{ fileVm['date'] | date: dateFormat() }}
+</div>
+
+@if (fileVm.actions.length || fileVm.menuActions.length) {
+    <div class="actions hover-container">
+        @for (a of fileVm.actions; track $index) {
+            <mat-btn class="action onhover" (onClick)="onMenuAction(a, fileVm)" [descriptor]="a"></mat-btn>
+        }
+        @if (fileVm.menuActions?.length > 0) {
+            <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                @for (a of fileVm.menuActions; track a) {
+                    <button type="button" mat-menu-item (click)="onMenuAction(a, fileVm)">
+                        @if (a.icon) {
+                            <mat-icon>{{ a.icon }}</mat-icon>
+                        }
+                        {{ a.text }}
+                    </button>
+                }
+            </mat-menu>
+        }
+    </div>
 }
-<ng-template #defaultErrorTemplate>
+
+<ng-template #errorPlaceholderTemplate>
     <svg
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:cc="http://creativecommons.org/ns#"
         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
         xmlns:svg="http://www.w3.org/2000/svg"
         xmlns="http://www.w3.org/2000/svg"
-        width="100%"
-        height="100%"
         viewBox="0 0 256 256"
         version="1.1"
-        [ngStyle]="styles()"
     >
         <g>
             <path

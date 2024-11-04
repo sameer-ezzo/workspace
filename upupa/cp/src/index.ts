@@ -26,6 +26,9 @@ export * from './lib/dbI18n.pipe';
 export * from './lib/cp-layout-routes';
 export * from './lib/decorators/scheme.router.decorator';
 export * from './lib/data-list-with-inputs/data-list-with-inputs.component';
+export * from './lib/data-list-with-inputs/viewmodels/api-data-table-viewmodel';
 export * from './lib/data-form-with-view-model/data-form-with-view-model.component';
+export * from './lib/data-form-with-view-model/viewmodels/data-form.viewmodel';
+
 export * from './lib/helpers';
 export * from './lib/form-view-model/form-view-model.component';

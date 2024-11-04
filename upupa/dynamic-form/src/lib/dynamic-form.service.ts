@@ -4,7 +4,6 @@ import { ValidatorFn } from '@angular/forms';
 import { FieldItem, Validator } from './types';
 import { _mergeFields } from './dynamic-form.helper';
 import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
-import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { DynamicComponentMapper, DynamicComponentMapping } from './types/types';
 import { unreachable } from '@noah-ark/common';
 
@@ -12,7 +11,7 @@ import { unreachable } from '@noah-ark/common';
     providedIn: 'root',
 })
 export class DynamicFormService {
-    public options = inject(DYNAMIC_FORM_OPTIONS) as DynamicFormModuleOptions;
+    public options = inject(DYNAMIC_FORM_OPTIONS);
     public defaultThemeName = inject(DEFAULT_THEME_NAME) as string;
     private componentMapper = inject(DYNAMIC_COMPONENT_MAPPER) as DynamicComponentMapper;
 

@@ -1,17 +1,15 @@
 // make a property decorator that creates a FormFieldItem from a property
 // export * from './lib/decorators/form-field.decorator';
 import 'reflect-metadata';
-import { Field, FieldItem, Fieldset, FormScheme, Validator } from '../types';
+import { Field, Fieldset } from '../types';
 import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import { PasswordStrength } from '@upupa/auth';
 import { DynamicFormInputs } from '../dynamic-form-inputs';
-import { JsonPointer } from '@noah-ark/json-patch';
-import { AdapterFieldOptions, DynamicFormFieldInputType, DynamicFormFieldOptions, FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
+import { DynamicFormFieldInputType, FormFieldOptions, VisibleFormFieldOptions } from './decorators.types';
 import { getLanguageInfo } from '@upupa/language';
 import { DataAdapterDescriptor } from '@upupa/data';
 import { Class } from '@noah-ark/common';
 import { cloneDeep } from 'lodash';
-import { name } from 'platform';
 
 const formSchemeMetadataKey = Symbol('custom:form_scheme_options');
 
@@ -79,12 +77,15 @@ export function formScheme(options?: DynamicFormOptions) {
         setDynamicFormOptionsMetadataFor(target, opts);
     };
 }
-export function submitAction(action: Partial<Omit<ActionDescriptor, 'name'>>) {
+export function submitAction(action?: Partial<Omit<ActionDescriptor, 'name'>>) {
     return function (target: any, propertyKey: string) {
         const inputs = resolveDynamicFormOptionsFor(target.constructor) ?? ({} as DynamicFormOptionsMetaData);
 
         const submitAction = {
-            ...action,
+            text: 'Submit',
+            color: 'primary',
+            variant: 'raised',
+            ...(action ?? {}),
             name: 'onSubmit',
             type: 'submit',
             handlerName: propertyKey,
@@ -194,9 +195,9 @@ function buildFormScheme(info: Pick<DynamicFormOptionsMetaData, 'fields' | 'loca
         else makeFieldItem(key, options, target, localize, locales, parentFormScheme);
     }
 
-    const translationsFieldset = parentFormScheme['translations'];
-    delete parentFormScheme['translations'];
-    if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme['translations'] = translationsFieldset;
+    const translationsFieldset = parentFormScheme.get('translations');
+    parentFormScheme.delete('translations');
+    if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme.set('translations', translationsFieldset);
 }
 
 function makeFormFieldOptions(fieldName: string, options: Partial<FormFieldOptions>) {
@@ -252,20 +253,8 @@ function makeFieldset(
     const fieldset = { ...makeFormFieldOptions(name, options), type: 'fieldset', items: new Map<string, Field>() } as Fieldset;
 
     const propType = options.input?.['viewModel'] ?? Reflect.getMetadata('design:type', target, name);
-    const fieldsetFormOptions: DynamicFormOptionsMetaData = typeof propType === 'function' ? resolveDynamicFormOptionsFor(propType) : ({} as DynamicFormOptionsMetaData);
-    const fieldsetScheme = new Map<string, Field>();
-    buildFormScheme(
-        {
-            fields: fieldsetFormOptions.fields,
-            locales: locales,
-        },
-        fieldsetScheme,
-    );
-
-    const translationsFieldset = fieldset.items['translations'];
-    delete fieldset.items['translations'];
-    if (translationsFieldset && Object.keys(translationsFieldset)) fieldset.items['translations'] = translationsFieldset;
-
+    const mirror: FormViewModelMirror = typeof propType === 'function' ? reflectFormViewModelType(propType) : ({} as FormViewModelMirror);
+    fieldset.items = mirror.fields;
     parentFormScheme.set(name, fieldset);
 }
 
@@ -312,8 +301,8 @@ function fixAdapterOptions(field: Field, options: Partial<FormFieldOptions>) {
         const descriptor: DataAdapterDescriptor = options['adapter'] ?? { type: 'client', data: [] };
         field.ui.inputs['_adapter'] = descriptor;
         delete field.ui.inputs['adapter'];
-        field.ui.inputs['minAllowed'] = options['minAllowed'] ?? 1;
-        field.ui.inputs['maxAllowed'] = options['maxAllowed'] ?? 1;
+        field.ui.inputs['minAllowed'] = options['minAllowed'];
+        field.ui.inputs['maxAllowed'] = options['maxAllowed'];
     }
 }
 function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInputType, options: Partial<FormFieldOptions>): Field {
@@ -372,7 +361,7 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
             break;
         case 'html':
             const htmlOptions = options as any;
-            field.ui.inputs['uploadPath'] = htmlOptions.path || name;
+            field.ui.inputs['uploadPath'] = htmlOptions.uploadPath || name;
             break;
         case 'date':
             break;

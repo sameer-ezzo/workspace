@@ -7,7 +7,7 @@
     @for(item of items$ | async; track item.key){
     <mat-checkbox
         class="choice"
-        (change)="toggle(item.key); valueChanged(selectionModel.selected)"
+        (change)="toggle(item.key); handleUserInput(selectionModel.selected)"
         [checked]="selectionModel.isSelected(item.key)"
     >
         <paragraph
@@ -22,7 +22,7 @@
     (focusleave)="markAsTouched()"
     class="{{ direction() }} {{ template() }} choices"
     [(ngModel)]="selected"
-    (ngModelChange)="valueChanged($event)"
+    (ngModelChange)="handleUserInput($event)"
 >
     @for(item of items$ | async; track item.key){
     <mat-radio-button class="choice" [value]="item.key">
@@ -45,7 +45,7 @@
         [style.width]="thumbSize() + 'px'"
         [style.height]="thumbSize() + 'px'"
         class="choice"
-        (click)="toggle(item.key); valueChanged(selectionModel.selected)"
+        (click)="toggle(item.key); handleUserInput(selectionModel.selected)"
     >
         @if (item.image) {
         <img

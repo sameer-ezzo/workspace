@@ -61,13 +61,18 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     async ngOnChanges(changes: SimpleChanges) {
         if (changes['field']) {
             const field = this.field();
+            field.ui ??= {};
+            field.ui.inputs ??= {};
+
             let inputs = { ...(field.ui?.inputs ?? {}) };
             await this.adapterResolver.resolve(inputs);
+            field.ui.inputs = inputs;
+
             this.template.set({
                 component: this.formService.getControl(field.input, this.theme()).component,
                 inputs: inputs,
-                outputs: field.ui?.outputs,
-                class: field.ui?.class,
+                outputs: field.ui.outputs,
+                class: field.ui.class,
             });
         }
     }

@@ -1,34 +1,12 @@
-import {
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    Component,
-    Injector,
-    OnDestroy,
-    Type,
-    computed,
-    inject,
-    input,
-    runInInjectionContext,
-    viewChild,
-} from '@angular/core';
-import {
-    createDataAdapter,
-    DataAdapter,
-    DataAdapterDescriptor,
-    DataAdapterType,
-} from '@upupa/data';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from '@angular/core';
+import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from '@upupa/data';
 import { ActivatedRoute } from '@angular/router';
 import { ActionEvent, DynamicComponent } from '@upupa/common';
-import {
-    DataListViewModelQueryParam,
-    DataTableComponent,
-    DataTableModule,
-    resolveDataListInputsFor,
-} from '@upupa/table';
-import { DataListViewModel } from './viewModels/api-data-table-viewModel';
+import { DataListViewModelQueryParam, DataTableComponent, DataTableModule, resolveDataListInputsFor } from '@upupa/table';
 
 import { CommonModule } from '@angular/common';
 import { PortalComponent } from '../../../../common/src/lib/portal.component';
+import { DataListViewModel } from './viewmodels/api-data-table-viewmodel';
 
 @Component({
     selector: 'cp-data-list-with-inputs',
@@ -49,10 +27,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     readonly injector = inject(Injector);
     readonly route = inject(ActivatedRoute);
 
-    tableHeaderComponent = input<
-        DynamicComponent,
-        Type<any> | DynamicComponent
-    >(undefined, {
+    tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             if (c instanceof Type) return { component: c };
             return c;
@@ -61,10 +36,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
     viewModel = input.required<Type<DataListViewModel>>();
 
-    dataAdapter = input.required<
-        DataAdapter,
-        DataAdapter | DataAdapterDescriptor<DataAdapterType>
-    >({
+    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
         transform: (adapterOrDescriptor) => {
             if (adapterOrDescriptor instanceof DataAdapter) {
                 return adapterOrDescriptor;
@@ -88,9 +60,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
         this.instance.dataAdapter = this.dataAdapter();
 
         this.instance.injector = Injector.create({
-            providers: [
-                { provide: DataAdapter, useValue: this.instance.dataAdapter },
-            ],
+            providers: [{ provide: DataAdapter, useValue: this.instance.dataAdapter }],
             parent: this.injector,
         });
         this.instance.component = this;
@@ -103,8 +73,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     async ngAfterViewInit() {
         await this.instance?.['afterViewInit']?.();
         if (this.instance.inputs.queryParams) {
-            const vmQps: DataListViewModelQueryParam[] =
-                this.instance.inputs.queryParams;
+            const vmQps: DataListViewModelQueryParam[] = this.instance.inputs.queryParams;
             this.route.queryParams.subscribe((params) => {
                 const qps = vmQps
                     .filter((qp) => params[qp.param])
@@ -142,31 +111,29 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
     onSelectionChange(event: any) {
         const vm = this.vm();
-        vm.onSelectionChange?.(event, {
-            component: this,
-            dataTable: this.dataTable(),
-        });
+        // if ('onSelect' in vm) {
+        //     runInInjectionContext(this.injector, () => {
+        //         vm['onSelect'](event);
+        //     });
+        // }
     }
     onPageChange(event: any) {
         const vm = this.vm();
-        vm.onPageChange?.(event, {
-            component: this,
-            dataTable: this.dataTable(),
-        });
+        // runInInjectionContext(this.injector, () => {
+        //     vm.onPageChange?.(event);
+        // });
     }
     onSortChange(event: any) {
         const vm = this.vm();
-        vm.onSortChange?.(event, {
-            component: this,
-            dataTable: this.dataTable(),
-        });
+        // runInInjectionContext(this.injector, () => {
+        //     vm.onSort?.(event);
+        // });
     }
 
     onFocusedItemChanged($event: any) {
         const vm = this.vm();
-        vm.onFocusedItemChanged?.($event, {
-            component: this,
-            dataTable: this.dataTable(),
-        });
+        // runInInjectionContext(this.injector, () => {
+        //     vm.onFocusedItemChange?.($event);
+        // });
     }
 }

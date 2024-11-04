@@ -8,7 +8,6 @@ import { DataFormWithViewModelComponent } from './data-form-with-view-model/data
 import { DataService, NormalizedItem } from '@upupa/data';
 import { Class } from '@noah-ark/common';
 
-
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
 }
@@ -70,7 +69,6 @@ export class EditButtonComponent<T = any> {
             const resolvedPath = typeof path === 'function' ? path(value) : path;
             value = await firstValueFrom(ds.get(resolvedPath)).then((r) => r.data?.[0]);
         }
-
         const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
             ...this.dialogOptions(),
             inputs: {

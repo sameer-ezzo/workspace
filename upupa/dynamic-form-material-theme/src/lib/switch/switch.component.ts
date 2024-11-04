@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, input, viewChild } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
@@ -20,6 +22,11 @@ import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
 })
 export class MatSwitchComponent extends SwitchComponent {
     class = '';
-
+    inputEl = viewChild.required<MatSlideToggle | MatCheckbox>('_inputElement');
     override template = input<'checkbox' | 'toggle'>('checkbox');
+
+    changeValue() {
+        const input = this.inputEl();
+        input?.toggle();
+    }
 }

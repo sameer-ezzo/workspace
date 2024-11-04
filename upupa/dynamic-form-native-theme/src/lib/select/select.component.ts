@@ -1,10 +1,10 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model } from '@angular/core';
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges } from '@angular/core';
 import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { ActionDescriptor } from '@upupa/common';
 import { ValueDataComponentBase } from '@upupa/table';
 
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { InputDefaults } from '../defaults';
 
 @Component({
@@ -39,11 +39,12 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     filterModel = model<string>();
     updateFilter() {
         this.adapter().filter = { terms: [this.filterModel()] };
+        
     }
 
     clearValue(e) {
         e.stopPropagation();
-        this.valueChanged(undefined);
+        this.handleUserInput(undefined);
     }
 
     keyDown(e: KeyboardEvent, input?: { open: () => void; panelOpen: boolean }) {
@@ -53,13 +54,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     isPanelOpened = false;
-    paginatorSubscription: Subscription;
     matSelectInput = viewChild<MatSelect>('selectInput');
-
-    removeScrollPaginator(selectInput: MatSelect) {
-        this.paginatorSubscription?.unsubscribe();
-        this.paginatorSubscription = null;
-    }
 
     firstLoaded = false;
     async openedChange(open: boolean, input?: { open: () => void }) {
@@ -75,42 +70,35 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     async loadData() {
-        this.refreshData();
         this.viewDataSource$.next('adapter');
+        this.refreshData();
         await firstValueFrom(this.adapter().normalized$);
     }
 
-    async valueChanged(key: keyof T | (keyof T)[]) {
-        let v = undefined;
-        if (key !== undefined) {
-            if (Array.isArray(key)) {
-                key.forEach(async (k) => await this.select(k));
-                v = this.selectedNormalized.map((x) => x.value);
-            } else {
-                await this.select(key);
-                v = this.selectedNormalized[0].value;
-            }
-        }
-        this.handleUserInput(v);
-    }
-
-    // openedChange(event) {
-    //   if (event) {
-    //     if (this.adapter.normalized.length < 5) this.vScrollHeight = this.adapter.normalized.length * 42
-    //     else this.vScrollHeight = this.vScrollHeight = 5 * 42
-    //     this.cdkVirtualScrollViewPort.setRenderedRange({ start: 0, end: this.cdkVirtualScrollViewPort.getRenderedRange().end + 1 })
-    //     this.scrollToSelectedIndex()
-    //     this.cdkVirtualScrollViewPort.checkViewportSize()
-    //   } else {
-    //     this.filter$.next('')
-    //   }
-
+    // async valueChanged(key: keyof T | (keyof T)[]) {
+    //     let v = undefined;
+    //     if (key !== undefined) {
+    //         if (Array.isArray(key)) {
+    //             key.forEach(async (k) => this.select(k));
+    //             v = this.selectedNormalized.map((x) => x.value);
+    //         } else {
+    //             this.select(key);
+    //             v = this.selectedNormalized[0].value;
+    //         }
+    //     }
+    //     this.handleUserInput();
     // }
+
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Input() actions: ActionDescriptor[] = [];
     onAction(event: any, action: ActionDescriptor) {
         event.stopPropagation();
         this.action.emit(action);
         // this.bus.emit(action.name, { msg: action.name }, this); //select-{name}-{action}
+    }
+
+    override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
+        console.log(this.name(), changes);
     }
 }

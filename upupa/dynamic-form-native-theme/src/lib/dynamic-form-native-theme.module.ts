@@ -37,6 +37,7 @@ import { FileUploadService } from './upload/file-upload.service';
 import { FilesViewerComponent } from './upload/file-viewer/file-viewer.component';
 import { LocalFileInputComponent } from './upload/local-file-input/local-file-input.component';
 import { MatBtnComponent } from '@upupa/mat-btn';
+import { FileTemplateComponent } from './upload/file-viewer/file-template/file-template.component';
 
 export const NATIVE_THEME_NAME = 'native';
 export const DF_NATIVE_THEME_INPUTS = {
@@ -113,6 +114,7 @@ const declarations = [
     LocalFileInputComponent,
     FileBrowserComponent,
     FilesViewerComponent,
+    FileTemplateComponent,
     FileSelectComponent,
     FileIconPerTypePipe,
     HiddenComponent,

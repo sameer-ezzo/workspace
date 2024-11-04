@@ -1,23 +1,15 @@
+<input type="hidden" [value]="value()" [formControl]="control()" [required]="required()" />
+
 @if (viewFiles()) {
     <fieldset>
         @if (label()) {
             <legend class="mbe-1">{{ label() }}</legend>
         }
         <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
-        @if (!hideSelectButton()) {
-            <div class="upload-button">
-                <button mat-raised-button class="mbe-1" type="button" (click)="selectFile()" [color]="color()">
-                    @if (uploading()) {
-                        <mat-icon class="rotate">loop</mat-icon>
-                    } @else {
-                        <mat-icon>upload_file</mat-icon>
-                    }
-                    Upload
-                </button>
-                @for (file of files; track file) {
-                    <span>{{ file.name }}</span>
-                }
-            </div>
+        <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
+
+        @if (control().touched && control().errors) {
+            <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
         }
     </fieldset>
 } @else if (enableDragDrop() === true) {
@@ -25,20 +17,9 @@
         <mat-label class="mbe-1">{{ label() }}</mat-label>
     }
     <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
-    @if (!hideSelectButton()) {
-        <div class="upload-button">
-            <button mat-raised-button class="mbe-1" type="button" (click)="selectFile()" [color]="color()">
-                @if (uploading()) {
-                    <mat-icon class="rotate">loop</mat-icon>
-                } @else {
-                    <mat-icon>upload_file</mat-icon>
-                }
-                Upload
-            </button>
-            @for (file of files; track file) {
-                <span>{{ file.name }}</span>
-            }
-        </div>
+    <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
+    @if (control().touched && control().errors) {
+        <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
     }
 }
 @if (placeholder() && viewModel()?.length === 0) {
@@ -46,19 +27,33 @@
         {{ placeholder() }}
     </div>
 }
-
+<ng-template #uploadBtnTemplate>
+    @if (canUpload() && !hideSelectButton()) {
+        <div class="upload-button">
+            <button mat-raised-button class="mbe-1" type="button" (click)="selectFile()" [color]="color()">
+                <!-- @if (uploading()) {
+                    <mat-icon class="rotate">loop</mat-icon>
+                } @else {
+                } -->
+                <mat-icon>upload_file</mat-icon>
+                Upload
+            </button>
+            <!-- @for (file of files; track file) {
+                <span>{{ file.name }}</span>
+            } -->
+        </div>
+    }
+</ng-template>
 <ng-template #contentTemplate>
     <file-viewer
-        [base]="uploadClient.baseOrigin"
+        [base]="base()"
         [path]="path()"
-        [files]="viewModel()"
+        [value]="viewModel()"
         [view]="view()"
         (click)="$event.stopPropagation()"
         [selectable]="false"
         [includeAccess]="includeAccess()"
-        (event)="viewerEventsHandler($event)"
-        [actions]="actions()"
-        (action)="onAction($event)"
+        (events)="viewerEventsHandler($event)"
         (changed)="selectionChanged($event)"
     ></file-viewer>
 </ng-template>

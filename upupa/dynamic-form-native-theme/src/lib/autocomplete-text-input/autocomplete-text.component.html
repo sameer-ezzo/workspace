@@ -10,7 +10,7 @@
         #input
         [value]="value()"
         [required]="required()"
-        (input)="_valueChanged($event.target?.['value'])"
+        (input)="handleUserInput($event.target?.['value'])"
         (blur)="markAsTouched()"
         [placeholder]="placeholder()"
     />

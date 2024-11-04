@@ -33,14 +33,9 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
         super.ngOnInit();
     }
 
-    _valueChanged(value: any) {
-        // this._value = value;
-        // this.q = value as string;
-        this.adapter().refresh();
-        this.propagateChange();
-    }
+  
 
     optionSelected(option: MatAutocompleteSelectedEvent) {
-        this._valueChanged(option.option.value);
+        this.handleUserInput(option.option.value);
     }
 }

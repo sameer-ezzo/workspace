@@ -1,7 +1,7 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, inject, input, model, output, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { Subscription, BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { Subscription, BehaviorSubject, Observable, firstValueFrom, of } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
 import { DataAdapter, NormalizedItem } from '@upupa/data';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -15,13 +15,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class DataComponentBase<T = any> {
     add = output();
+
     loading = signal(false);
     firstLoad = signal(true);
 
     noDataImage = input<string>('');
 
-    minAllowed = input(0);
-    maxAllowed = input(null);
+    minAllowed = input<number, number | null | undefined>(0, { transform: (v) => (Number.isNaN(v) ? 0 : Math.max(0, v)) });
+    maxAllowed = input<number, number | null | undefined>(Number.MAX_SAFE_INTEGER, { transform: (v) => (Number.isNaN(v) ? Number.MAX_SAFE_INTEGER : Math.max(0, v)) });
 
     adapter = model.required<DataAdapter<T>>();
     normalized$sub: Subscription;
@@ -31,15 +32,13 @@ export class DataComponentBase<T = any> {
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
-    viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>('adapter');
-
-    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(switchMap((view) => (view === 'adapter' ? this.adapter().normalized$ : this.selectedNormalized$)));
-
     ngOnInit() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (s) => {
-            const selectedNormalized = await this.adapter().getItems(s.source.selected);
-            this.selectedNormalized = selectedNormalized;
-            this.singleSelected.set(this.selectedNormalized?.[0]?.key);
+        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
+            this.adapter().getItems(s.source.selected);
+            // .then((selected) => {
+            //     this.selectedNormalized = selected;
+            //     this.singleSelected.set(this.selectedNormalized?.[0]?.key);
+            // });
         });
     }
 
@@ -51,8 +50,8 @@ export class DataComponentBase<T = any> {
     protected readonly destroyRef = inject(DestroyRef);
     async ngOnChanges(changes: SimpleChanges) {
         if (changes['adapter']) {
-            if (!this.adapter) throw new Error('Adapter is required');
             this.firstLoad.set(true);
+            if (!this.adapter()) throw new Error('Adapter is required');
 
             this.adapter()
                 .normalized$.pipe(takeUntilDestroyed(this.destroyRef))
@@ -67,6 +66,10 @@ export class DataComponentBase<T = any> {
         this.firstLoad.set(false);
         this.dataChangeListeners.forEach((x) => x(data));
         this.selectedNormalized = this.selected.map((k) => data.find((d) => d.key === k)).filter((x) => x);
+        this.singleSelected.set(this.selectedNormalized?.[0]?.key);
+
+        console.log('onDataChange', this.selectedNormalized, this.singleSelected());
+
         this.loading.set(false);
     }
 
@@ -110,14 +113,12 @@ export class DataComponentBase<T = any> {
         }
     }
 
-    async select(key: keyof T) {
-        if (this.selectionModel.isSelected(key)) return;
+    select(...keys: (keyof T)[]) {
         if (this.maxAllowed() === 1) {
             this.selectionModel.clear(false);
             this._selectedNormalized$.next([]);
         }
-        this.selectionModel.select(key);
-        await firstValueFrom(this.selectedNormalized$)
+        this.selectionModel.select(...keys);
     }
 
     deselect(key: keyof T) {

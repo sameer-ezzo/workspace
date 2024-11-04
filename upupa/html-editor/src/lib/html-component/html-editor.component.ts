@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { HtmlUploadAdapter } from '../html-upload-adapter';
 import { InputBaseComponent, UtilsModule } from '@upupa/common';
-import { UploadModule, UploadService } from '@upupa/upload';
+import { UploadClient, UploadModule, UploadService } from '@upupa/upload';
 import { AuthService } from '@upupa/auth';
 
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
@@ -38,9 +38,9 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
 
     config: EditorConfig;
 
-    uploadPath = input('/storage');
+    uploadPath = input('/html-editor-assets');
     editorConfig = input<EditorConfig>(DecoupledEditor.defaultConfig);
-    private readonly upload = inject(UploadService);
+    private readonly uploadClient = inject(UploadClient);
     private readonly auth = inject(AuthService);
 
     editor: Editor;
@@ -106,10 +106,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
     public uploadAdapterPlugin(editor: any): void {
         const path = this.uploadPath();
         editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-            const adapter = new HtmlUploadAdapter(loader) as any;
-            adapter.url = path;
-            adapter.auth = this.auth;
-            adapter.uploader = this.upload;
+            const adapter = new HtmlUploadAdapter(loader, path, this.uploadClient, this.auth);
             return adapter;
         };
     }
