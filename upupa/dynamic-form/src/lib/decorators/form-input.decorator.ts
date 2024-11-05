@@ -375,9 +375,9 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
         case "chips":
             break;
         case "textarea":
-            field.ui.inputs["rows"] = options["rows"];
-            field.ui.inputs["maxRows"] = options["maxRows"];
-            field.ui.inputs["minSize"] = options["minSize"];
+            if (options["rows"]) field.ui.inputs["rows"] = options["rows"];
+            if (options["maxRows"]) field.ui.inputs["maxRows"] = options["maxRows"];
+            if (options["minSize"]) field.ui.inputs["minSize"] = options["minSize"];
 
             break;
 

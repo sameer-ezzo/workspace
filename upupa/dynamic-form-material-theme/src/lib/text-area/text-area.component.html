@@ -4,12 +4,9 @@
     }
     <textarea
         matInput
-        #input
         [value]="value()"
         [formControl]="control()"
-        (input)="handleUserInput(input.value)"
-        [formControl]="control()"
-        (blur)="markAsTouched()"
+        [required]="required()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
         [cdkTextareaAutosize]="true"

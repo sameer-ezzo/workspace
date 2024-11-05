@@ -3,6 +3,9 @@ import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { InputDefaults } from "../defaults";
 import { InputBaseComponent } from "@upupa/common";
 
+const _defaultRows = 3;
+const _defaultMaxRows = 5;
+
 @Component({
     selector: "form-text-area",
     templateUrl: "./text-area.component.html",
@@ -26,6 +29,6 @@ export class TextAreaComponent extends InputBaseComponent<string> {
     hint = input("");
     readonly = input(false);
 
-    rows = input(3, { transform: (v: number) => Math.max(1, v) });
-    maxRows = input(5, { transform: (v: number) => Math.max(2, v) });
+    rows = input(_defaultRows, { transform: (v: number) => Math.max(1, v ?? _defaultRows) });
+    maxRows = input(_defaultMaxRows, { transform: (v: number) => Math.max(2, v ?? _defaultMaxRows) });
 }
