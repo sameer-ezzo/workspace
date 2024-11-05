@@ -6,20 +6,19 @@
         matInput
         #input
         [value]="value()"
+        [formControl]="control()"
         (input)="handleUserInput(input.value)"
         [formControl]="control()"
         (blur)="markAsTouched()"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
-        cdkTextareaAutosize
-        [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
-        [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
-        [cdkTextareaAutosize]="cdkTextareaAutosize()"
+        [cdkTextareaAutosize]="true"
+        [cdkAutosizeMinRows]="rows()"
+        [cdkAutosizeMaxRows]="maxRows()"
     >
     </textarea>
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-
 </mat-form-field>

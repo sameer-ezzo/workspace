@@ -12,7 +12,7 @@ import { InputBaseComponent } from "@upupa/common";
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => TextAreaComponent),
             multi: true,
-        }
+        },
     ],
 })
 export class TextAreaComponent extends InputBaseComponent<string> {
@@ -26,11 +26,6 @@ export class TextAreaComponent extends InputBaseComponent<string> {
     hint = input("");
     readonly = input(false);
 
-    cdkAutosizeMinRows = input(3, {
-        transform: (v: number) => Math.max(1, v),
-    });
-    cdkAutosizeMaxRows = input(5, {
-        transform: (v: number) => Math.max(1, v),
-    });
-    cdkTextareaAutosize = input<boolean>(true);
+    rows = input(3, { transform: (v: number) => Math.max(1, v) });
+    maxRows = input(5, { transform: (v: number) => Math.max(2, v) });
 }

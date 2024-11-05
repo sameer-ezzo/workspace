@@ -212,6 +212,7 @@ function makeFormFieldOptions(fieldName: string, options: Partial<FormFieldOptio
         placeholder: opts["placeholder"],
         appearance: opts["appearance"],
         fieldName,
+        hint: opts["hint"],
         ...(opts["inputs"] || {}),
     } as VisibleFormFieldOptions;
 
@@ -374,9 +375,8 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
         case "chips":
             break;
         case "textarea":
-            field.ui.inputs["cdkAutosizeMinRows"] = options["cdkAutosizeMinRows"];
-            field.ui.inputs["cdkAutosizeMaxRows"] = options["cdkAutosizeMaxRows"];
-            field.ui.inputs["cdkTextareaAutosize"] = options["cdkTextareaAutosize"];
+            field.ui.inputs["rows"] = options["rows"];
+            field.ui.inputs["maxRows"] = options["maxRows"];
             field.ui.inputs["minSize"] = options["minSize"];
 
             break;

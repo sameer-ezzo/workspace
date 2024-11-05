@@ -1,18 +1,15 @@
 @if (label()) {
-<label>{{ label() }}</label>
+    <label>{{ label() }}</label>
 }
-
 <textarea
     matInput
     #input
     [value]="value()"
+    [formControl]="control()"
     (input)="handleUserInput(input.value)"
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
-    #autosize="cdkTextareaAutosize"
-    [cdkAutosizeMinRows]="cdkAutosizeMinRows()"
-    [cdkAutosizeMaxRows]="cdkAutosizeMaxRows()"
-    [cdkTextareaAutosize]="cdkTextareaAutosize()"
+    [rows]="rows()"
 ></textarea>
 <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>

@@ -8,16 +8,16 @@
     (focusedItem)="onFocusedItemChanged($event)"
 >
     @if (tableHeaderComponent(); as template) {
-    <ng-container class="table-header">
-        <portal
-            [component]="template.component"
-            [inputs]="template.inputs"
-            [outputs]="template.outputs"
-            [content]="template.content"
-            [className]="template.class ?? ''"
-        ></portal>
-    </ng-container>
+        <ng-container class="table-header">
+            <portal
+                [component]="template.component"
+                [inputs]="template.inputs"
+                [outputs]="template.outputs"
+                [content]="template.content"
+                [className]="template.class ?? ''"
+            ></portal>
+        </ng-container>
     } @else {
-    <ng-content class="table-header"></ng-content>
+        <ng-content class="table-header"></ng-content>
     }
 </data-table>
