@@ -1,3 +1,4 @@
+{{ items | async }}
 <mat-form-field [appearance]="appearance()" (keydown)="keyDown($event, matSelectInput())" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
@@ -11,9 +12,6 @@
             (keydown)="keyDown($event, selectInput)"
             (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
             [panelClass]="panelClass()"
-            [value]="selected"
-            (valueChange)="handleUserInput($event)"
-            (blur)="markAsTouched()"
             [placeholder]="placeholder()"
             [required]="required()"
             [formControl]="control()"
@@ -22,18 +20,9 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @if (selectedNormalizedArray(); as sns) {
-                @if (sns.length > 0) {
-                    <div class="selected-wrapper">
-                        <span>{{ sns.length }} Selected</span>
-                        <span style="flex: 1 1 auto"></span>
-                        <mat-checkbox #toggle [checked]="(viewDataSource$ | async) === 'selected'" (change)="viewDataSource$.next(toggle.checked ? 'selected' : 'adapter')"
-                            >Show only selected
-                        </mat-checkbox>
-                    </div>
-                }
-            }
-            @for (item of items$ | async; track i; let i = $index) {
+            <ng-container [ngTemplateOutlet]="showOnlySelected"></ng-container>
+
+            @for (item of items | async; track i; let i = $index) {
                 <mat-option [value]="item.key">
                     @if (itemTemplate) {
                         <ng-container [ngTemplateOutlet]="itemTemplate()" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
@@ -64,9 +53,6 @@
             (openedChange)="openedChange($event, selectInput)"
             (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
             [panelClass]="panelClass()"
-            [value]="selected"
-            (valueChange)="handleUserInput($event)"
-            (blur)="markAsTouched()"
             [placeholder]="placeholder()"
             [required]="required()"
             [formControl]="control()"
@@ -75,7 +61,7 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @for (item of items$ | async; track i; let i = $index) {
+            @for (item of items | async; track i; let i = $index) {
                 <mat-option [value]="item.key">
                     @if (itemTemplate) {
                         <ng-container [ngTemplateOutlet]="itemTemplate()" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
@@ -101,8 +87,7 @@
     }
     @if (loading()) {
         <mat-progress-spinner matSuffix [diameter]="20" mode="indeterminate"></mat-progress-spinner>
-    }
-    @if (selectedNormalizedArray().length > 0 && !loading() && !disabled()) {
+    } @else if (value() && !disabled()) {
         <button matSuffix mat-icon-button (click)="clearValue($event)">
             <mat-icon>clear</mat-icon>
         </button>
@@ -125,6 +110,19 @@
     }
 </ng-template>
 
+<ng-template #showOnlySelected>
+    @if (selectedNormalized | async; as sns) {
+        @if (sns.length > 0) {
+            <div class="selected-wrapper">
+                <span>{{ sns.length }} Selected</span>
+                <span style="flex: 1 1 auto"></span>
+                <mat-checkbox #toggle [checked]="(viewDataSource | async) === 'selected'" (change)="viewDataSource.next(toggle.checked ? 'selected' : 'adapter')"
+                    >Show only selected
+                </mat-checkbox>
+            </div>
+        }
+    }
+</ng-template>
 <ng-template #searchBoxTemplate>
     <div id="select-filter-wrapper">
         <mat-icon>search</mat-icon>

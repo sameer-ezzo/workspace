@@ -87,11 +87,10 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
             parent.appendChild(toolbar);
             parent.appendChild(editableElement);
             this.uploadAdapterPlugin(editor);
-            editor.setData(this.value() ?? '');
+            editor.setData(this.control().value ?? '');
 
             editor.model.document.on('change:data', () => {
                 this.control().setValue(editor.getData());
-                this.handleUserInput(editor.getData());
             });
             this.editor = editor;
         } catch (error) {

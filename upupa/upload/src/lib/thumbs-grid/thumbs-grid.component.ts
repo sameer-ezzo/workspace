@@ -36,15 +36,15 @@ export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implem
         this.loading.set(true);
     }
 
-    ngOnInit() {
-        // this.adapter().refresh();
-        // this.adapter()
-        //     .dataSource.refresh()
-        //     .pipe(takeUntilDestroyed(this.destroyRef))
-        //     .subscribe((x) => {
-        //         this.loading.set(false);
-        //     });
-    }
+    // ngOnInit() {
+    //     // this.adapter().refresh();
+    //     // this.adapter()
+    //     //     .dataSource.refresh()
+    //     //     .pipe(takeUntilDestroyed(this.destroyRef))
+    //     //     .subscribe((x) => {
+    //     //         this.loading.set(false);
+    //     //     });
+    // }
 
     async remove(t: NormalizedItem<FileInfo>) {
         this.loading.set(true);

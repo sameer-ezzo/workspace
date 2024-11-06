@@ -144,7 +144,7 @@ export class DialogService {
             UpupaDialogComponent,
             dialogOptions
         );
-        dialogOptions.data['dialogRef'] = dialogRef;
+        // dialogOptions.data['dialogRef'] = dialogRef;
         return dialogRef;
     }
 

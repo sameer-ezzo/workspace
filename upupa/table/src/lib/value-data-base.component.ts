@@ -1,12 +1,11 @@
-import { Component, effect, inject, input, model, output, SimpleChanges } from '@angular/core';
-import { BehaviorSubject, debounceTime, Observable, of, switchMap } from 'rxjs';
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import { BehaviorSubject, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { DataComponentBase } from './data-base.component';
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 import { ControlValueAccessor } from '@angular/forms';
 import { forwardRef } from '@angular/core';
 import { OnChanges } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NormalizedItem } from '@upupa/data';
 
 @Component({
     selector: 'value-data-base',
@@ -32,43 +31,56 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     value = model<Partial<T> | Partial<T>[]>(undefined);
 
     loadingMode = input<'lazy' | 'eager'>('lazy');
-    viewDataSource$ = new BehaviorSubject<'adapter' | 'selected'>(this.loadingMode() === 'eager' ? 'adapter' : 'selected');
-    items$: Observable<NormalizedItem<T>[]> = this.viewDataSource$.pipe(
-        switchMap((view) => (view === 'adapter' ? this.adapter().normalized$ : of(this.selectedNormalizedArray()))),
+    readonly viewDataSource = new BehaviorSubject<'adapter' | 'selected'>('selected');
+    items = this.viewDataSource.pipe(
+        distinctUntilChanged(),
+        switchMap((vds) => {
+            if (vds === 'adapter') return this.adapter().normalized$;
+            return this.selectedNormalized;
+        }),
     );
+
+    compareWithFn = signal((optionValue: any, selectionValue: any) => {
+        return optionValue === selectionValue;
+    });
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
     _defaultControl = new FormControl();
     control = input<FormControl>(this._control ?? this._defaultControl);
-    handleUserInput(v: Partial<T> | Partial<T>[]) {
-        if (v === undefined) {
-            this.selectionModel.clear(false);
-            this.value.set(undefined);
-        } else this.value.set(v);
 
-        if (this._ngControl) {
-            // only notify changes if control was provided externally
-            this.markAsTouched();
-            this.propagateChange();
-        } else {
-            this.control().setValue(this.value());
-        }
-    }
     constructor() {
         super();
+        effect(
+            () => {
+                const adapter = this.adapter();
+                const keyProperty = adapter?.keyProperty;
+                if (keyProperty) {
+                    this.compareWithFn.set((optionValue: any, selectionValue: any) => {
+                        if (optionValue === undefined || selectionValue === undefined) return false;
+                        return optionValue[keyProperty] === selectionValue?.[keyProperty];
+                    });
+                } else {
+                    this.compareWithFn.set((optionValue: any, selectionValue: any) => {
+                        return optionValue === selectionValue;
+                    });
+                }
+            },
+            { allowSignalWrites: true },
+        );
         effect(() => {
-            const mode = this.loadingMode();
-            const firstLoad = this.firstLoad() === true;
-            if (firstLoad && mode === 'eager' && this.viewDataSource$.value === 'selected') {
-                this.viewDataSource$.next('adapter');
-                this.refreshData();
-            } else if (firstLoad && mode === 'lazy' && this.viewDataSource$.value === 'adapter') this.viewDataSource$.next('selected');
+            if (this.loadingMode() !== 'eager') return;
+            this.viewDataSource.next('adapter');
+            this.refreshData();
         });
+
         effect(() => {
-            const v = this.value();
-            if (v === undefined) return this.selectionModel.clear();
-            this.select(v);
+            const control = this.control();
+            if (control) {
+                control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef), distinctUntilChanged()).subscribe((v) => {
+                    this.writeValue(v);
+                });
+            }
         });
     }
     // >>>>> ControlValueAccessor ----------------------------------------
@@ -85,6 +97,8 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
 
     writeValue(v: Partial<T> | Partial<T>[]): void {
         this.value.set(v);
+        this.selectionModel.clear();
+        if (v != undefined) this.select(v);
     }
 
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {

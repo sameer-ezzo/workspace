@@ -56,7 +56,8 @@ export class InlineEditableListComponent extends ValueDataComponentBase<any> imp
     }
 
     clientDataSource: ClientDataSource;
-    ngOnInit(): void {
+    override ngOnInit(): void {
+        super.ngOnInit();
         this.clientDataSource = new ClientDataSource(<any>(this.value ?? []));
         this.adapter.set(new DataAdapter(this.clientDataSource));
         this.adapter().refresh();

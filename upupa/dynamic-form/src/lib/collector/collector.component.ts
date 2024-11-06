@@ -23,7 +23,7 @@ import { DynamicFormComponent } from '../dynamic-form.component';
 })
 export class CollectorComponent extends InputBaseComponent<any> {
     dynamicForm = viewChild<DynamicFormComponent>('dynForm');
-    form = computed(()=> this.dynamicForm().form())
+    form = computed(() => this.dynamicForm().form());
     @Output() submit = new EventEmitter();
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Output() activePageChange = new EventEmitter<number>();
@@ -90,7 +90,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     get formElement() {
-        return this.dynamicForm().form();
+        return this.form();
     }
 
     _totalPages: number;

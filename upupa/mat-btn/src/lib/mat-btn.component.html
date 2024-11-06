@@ -1,151 +1,168 @@
-@let d = descriptor(); @switch (variant()) { @case ('raised') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    (keydown.enter)="onAction($event)"
-    mat-raised-button
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+@let d = descriptor();
+@switch (variant()) {
+    @case ('raised') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            (keydown.enter)="onAction($event)"
+            mat-raised-button
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            {{ d.text }}
+            <ng-content class="spinner"> </ng-content>
+        </button>
     }
-    {{ d.text }}
-</button>
-} @case ('flat') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-flat-button
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @case ('flat') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-flat-button
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            {{ d.text }}
+            <ng-content class="spinner"></ng-content>
+        </button>
     }
-    {{ d.text }}
-</button>
-} @case ('stroked') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-stroked-button
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @case ('stroked') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-stroked-button
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+
+            {{ d.text }}
+            <ng-content class="spinner"> </ng-content>
+        </button>
     }
-    {{ d.text }}
-</button>
-} @case ('icon') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? d.text ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-icon-button
-    [attr.aria-labelledby]="d.text"
-    [attr.aria-label]="d.text"
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @case ('icon') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? d.text ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-icon-button
+            [attr.aria-labelledby]="d.text"
+            [attr.aria-label]="d.text"
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            <ng-content class="spinner"> </ng-content>
+        </button>
     }
-</button>
-} @case ('fab') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? d.text ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-fab
-    [attr.aria-labelledby]="d.text"
-    [attr.aria-label]="d.text"
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @case ('fab') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? d.text ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-fab
+            [attr.aria-labelledby]="d.text"
+            [attr.aria-label]="d.text"
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            <ng-content class="spinner"> </ng-content>
+        </button>
     }
-</button>
-} @case ('mini-fab') {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-mini-fab
-    [attr.aria-labelledby]="d.text"
-    [attr.aria-label]="d.text"
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @case ('mini-fab') {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-mini-fab
+            [attr.aria-labelledby]="d.text"
+            [attr.aria-label]="d.text"
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            <ng-content class="spinner"> </ng-content>
+        </button>
     }
-</button>
-} @default {
-<button
-    authAction
-    [path]="d['path']"
-    [action]="d['action']"
-    [title]="d.tooltip ?? ''"
-    [attr.type]="d.type || 'button'"
-    [attr.id]="d.name"
-    [disabled]="isDisabled()"
-    [color]="color()"
-    (keydown.enter)="onAction($event)"
-    [matBadge]="d.matBadge"
-    [matBadgeColor]="d.matBadgeColor"
-    (click)="onAction($event)"
-    mat-button
->
-    @if (icon()) {
-    <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+    @default {
+        <button
+            authAction
+            [path]="d['path']"
+            [action]="d['action']"
+            [title]="d.tooltip ?? ''"
+            [attr.type]="d.type || 'button'"
+            [attr.id]="d.name"
+            [disabled]="isDisabled()"
+            [color]="color()"
+            (keydown.enter)="onAction($event)"
+            [matBadge]="d.matBadge"
+            [matBadgeColor]="d.matBadgeColor"
+            (click)="onAction($event)"
+            mat-button
+        >
+            @if (icon()) {
+                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            }
+            {{ d.text }}
+            <ng-content class="spinner"></ng-content>
+        </button>
     }
-    {{ d.text }}
-</button>
-} }
+}

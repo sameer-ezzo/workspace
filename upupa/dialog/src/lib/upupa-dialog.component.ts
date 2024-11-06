@@ -1,19 +1,5 @@
-import {
-    AfterViewInit,
-    ViewEncapsulation,
-    HostListener,
-    inject,
-    DestroyRef,
-    PLATFORM_ID,
-    signal,
-    input,
-    computed,
-} from '@angular/core';
-import {
-    MatDialogRef,
-    MAT_DIALOG_DATA,
-    MatDialogModule,
-} from '@angular/material/dialog';
+import { AfterViewInit, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, input, computed } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 
 import { Component } from '@angular/core';
 import { fromEvent } from 'rxjs';
@@ -24,48 +10,25 @@ import { ActionDescriptor, ActionEvent } from '@upupa/common';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import {
-    DialogRefD,
-    UpupaDialogActionContext,
-    UpupaDialogPortal,
-} from './dialog.service';
-import {
-    DynamicComponent,
-    PortalComponent,
-} from '../../../common/src/lib/portal.component';
+import { DialogRefD, UpupaDialogActionContext, UpupaDialogPortal } from './dialog.service';
+import { DynamicComponent, PortalComponent } from '../../../common/src/lib/portal.component';
 
 @Component({
     selector: 'upupa-dialog',
     standalone: true,
-    imports: [
-        MatDialogModule,
-        MatBtnComponent,
-        MatButtonModule,
-        MatIconModule,
-        PortalComponent,
-    ],
+    imports: [MatDialogModule, MatBtnComponent, MatButtonModule, MatIconModule, PortalComponent],
     templateUrl: './upupa-dialog.component.html',
     styleUrls: ['./upupa-dialog.component.scss'],
     encapsulation: ViewEncapsulation.None,
     host: {
         '[class]': 'hostClass()',
     },
+    // providers: [{ provide: MatDialogRef, useFactory: (upupa: UpupaDialogComponent) => upupa.dialogRef, deps: [UpupaDialogComponent] }],
 })
-export class UpupaDialogComponent<C = any>
-    implements UpupaDialogPortal<C>, AfterViewInit
-{
-    hostClass = computed(() =>
-        [
-            this.panelClass(),
-            this.dialogActions().length > 0 ? 'y-scroll' : '',
-        ].join(' ')
-    );
+export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, AfterViewInit {
+    hostClass = computed(() => [this.panelClass(), this.dialogActions().length > 0 ? 'y-scroll' : ''].join(' '));
     panelClass = input<string, string>('upupa-dialog-container', {
-        transform: (v: string) =>
-            `upupa-dialog-container ${(v ?? '').replace(
-                'upupa-dialog-container',
-                ''
-            )}`,
+        transform: (v: string) => `upupa-dialog-container ${(v ?? '').replace('upupa-dialog-container', '')}`,
     });
 
     dialogActions = signal([]);
@@ -85,16 +48,13 @@ export class UpupaDialogComponent<C = any>
     }
 
     public dialogData = inject(MAT_DIALOG_DATA) as DialogRefD;
-    dialogRef: MatDialogRef<UpupaDialogComponent<C>>;
+    dialogRef: MatDialogRef<UpupaDialogComponent<C>> = inject(MatDialogRef);
     template = signal<DynamicComponent>(null);
     constructor() {
         const data = this.dialogData as DialogRefD['data'];
-        this.dialogRef = data.dialogRef ?? inject(MatDialogRef);
         this.dialogRef.addPanelClass('upupa-dialog-overlay');
         this.template.set(data.component);
-        this.dialogActions.set(
-            (data.dialogActions || []) as ActionDescriptor[]
-        );
+        this.dialogActions.set((data.dialogActions || []) as ActionDescriptor[]);
         this.title.set(data.title);
         this.subTitle.set(data.subTitle);
         this.hideCloseButton.set(data.hideCloseButton === true);
@@ -109,14 +69,9 @@ export class UpupaDialogComponent<C = any>
     private registerWidthWatcher() {
         if (isPlatformBrowser(this.platformId))
             fromEvent(window, 'resize')
-                .pipe(
-                    startWith(0),
-                    debounceTime(50),
-                    takeUntilDestroyed(this.destroyRef)
-                )
+                .pipe(startWith(0), debounceTime(50), takeUntilDestroyed(this.destroyRef))
                 .subscribe((e) => {
-                    if (window.innerWidth < 790)
-                        this.dialogRef.updateSize('80%');
+                    if (window.innerWidth < 790) this.dialogRef.updateSize('80%');
                     else this.dialogRef.updateSize('100%');
                 });
     }

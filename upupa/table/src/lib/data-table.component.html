@@ -15,7 +15,7 @@
     >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
-                @if (maxAllowed() !== 1 && selectedNormalizedArray(); as sns) {
+                @if (maxAllowed() !== 1 && selectedNormalized | async; as sns) {
                     <mat-checkbox
                         (change)="toggleSelectAll()"
                         [checked]="sns.length >= adapter().normalized?.length"
@@ -75,7 +75,7 @@
             </ng-container>
         }
 
-        <tr mat-header-row *matHeaderRowDef="_columns; sticky: stickyHeader()" [class.selected]="selectedNormalized.length > 0"></tr>
+        <tr mat-header-row *matHeaderRowDef="_columns; sticky: stickyHeader()" [class.selected]="(selectedNormalized | async).length > 0"></tr>
         <tr
             mat-row
             *matRowDef="let row; let i = $index; columns: _columns"

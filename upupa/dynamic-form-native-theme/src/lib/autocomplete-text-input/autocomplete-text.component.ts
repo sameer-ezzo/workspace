@@ -28,6 +28,6 @@ export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
     _onlySelected = false;
 
     optionSelected(option: MatAutocompleteSelectedEvent) {
-        this.handleUserInput(option.option.value);
+        // this.handleUserInput(option.option.value);
     }
 }

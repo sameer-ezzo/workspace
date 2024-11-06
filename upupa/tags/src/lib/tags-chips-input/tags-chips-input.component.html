@@ -1,16 +1,16 @@
 <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     <input type="hidden" [value]="value()" />
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
     <mat-chip-grid #chipGrid [attr.aria-label]="label()" [disabled]="disabled()" [formControl]="control()">
-        @for (item of selectedNormalizedArray(); track item.key) {
-        <mat-chip-row (removed)="remove(item)">
-            {{ item.display }}
-            <button matChipRemove [attr.aria-label]="'remove ' + item.key">
-                <mat-icon>cancel</mat-icon>
-            </button>
-        </mat-chip-row>
+        @for (item of selectedNormalized | async; track item.key) {
+            <mat-chip-row (removed)="remove(item)">
+                {{ item.display }}
+                <button matChipRemove [attr.aria-label]="'remove ' + item.key">
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </mat-chip-row>
         }
     </mat-chip-grid>
 
@@ -32,19 +32,20 @@
     />
 
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
-        @for (opt of items$ | async; track opt.key) {
-        <mat-option [value]="opt.key">
-            @if (opt.image) {
-            <img [src]="opt.image" [attr.alt]="opt.value" />
-            }
-            <span>{{ opt.display }}</span>
-        </mat-option>
+        @for (opt of items | async; track opt.key) {
+            <mat-option [value]="opt.key">
+                @if (opt.image) {
+                    <img [src]="opt.image" [attr.alt]="opt.value" />
+                }
+                <span>{{ opt.display }}</span>
+            </mat-option>
 
-        @if (canAdd && filterInput.value.length > 0 && options().length === 0) {
-        <mat-option [value]="null">
-            <span>Add</span>
-        </mat-option>
-        } }
+            @if (canAdd && filterInput.value.length > 0 && options().length === 0) {
+                <mat-option [value]="null">
+                    <span>Add</span>
+                </mat-option>
+            }
+        }
     </mat-autocomplete>
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 </mat-form-field>

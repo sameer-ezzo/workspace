@@ -79,14 +79,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     handset: boolean;
     selectionChange = output<NormalizedItem<T>[]>();
-    constructor() {
-        super();
-        effect(() => {
-            const sns = this.selectedNormalizedArray();
-            this.selectionChange.emit(sns);
-        });
-    }
-    ngOnInit() {
+
+    override ngOnInit() {
+        super.ngOnInit();
         this.dataChangeListeners.push((data) => {
             if (this.columns() === 'auto') this.generateColumns();
         });
@@ -97,6 +92,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             .subscribe((result) => {
                 this.handset = result.matches;
             });
+
+        this.selectedNormalized.subscribe((sns) => {
+            this.selectionChange.emit(sns);
+        });
     }
 
     override async ngOnChanges(changes: SimpleChanges) {

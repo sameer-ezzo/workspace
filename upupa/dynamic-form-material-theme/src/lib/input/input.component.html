@@ -2,21 +2,12 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <input
-        matInput
-        #input
-        [type]="type()"
-        [value]="value() ?? ''"
-        (input)="handleUserInput(input.value)"
-        [formControl]="control()"
-        (blur)="markAsTouched()"
-        [readonly]="readonly()"
-        [placeholder]="placeholder()"
-        [required]="required()"
-    />
+    <input matInput [type]="type()" [formControl]="control()" [readonly]="readonly()" [placeholder]="placeholder()" [required]="required()" />
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
 
-    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+    <mat-error>
+        <span *errors="control().errors; control: control(); let message">{{ message }}</span>
+    </mat-error>
 </mat-form-field>

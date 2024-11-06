@@ -1,9 +1,8 @@
 // https://github.com/surfer77/mongoose-string-query
 
-import { ObjectId } from "mongodb";
-import { logger } from "./logger";
-import { Model } from "mongoose";
-
+import { ObjectId } from 'mongodb';
+import { logger } from './logger';
+import { Model } from 'mongoose';
 
 // */
 const operatorPattern = /^\{(\S+)\}(.*)/;
@@ -92,27 +91,83 @@ http://localhost:3001/agg/blogs?tags2.name={in}node1
 http://localhost:3001/agg/item?campaigns={ne}null&lookup_match=branch:vendor:campaigns.vender:branches:location:{center}28.8640022277832,41.00006305078956,0.01
 */
 
-
 //DISTINCT http://localhost:3001/agg/transaction?group_by=account&page=1&per_page=2
 //FULL http://localhost:3001/agg/transaction?group_by=account,{project}total={sum}amount&select=_id,account,two,status,amount&sort_by=net&page=1&per_page=100&fields1=one={add}1:&fields2=two={add}1:$one
 
 export class QueryParser {
-
     private dateOperators = ['year', 'month', 'date', 'hour', 'minute', 'second'];
-    private dateMethods = [(d: Date) => d.getFullYear(), (d: Date) => d.getMonth(), (d: Date) => d.getDate(), (d: Date) => d.getHours(), (d: Date) => d.getMinutes(), (d: Date) => d.getSeconds()];
+    private dateMethods = [
+        (d: Date) => d.getFullYear(),
+        (d: Date) => d.getMonth(),
+        (d: Date) => d.getDate(),
+        (d: Date) => d.getHours(),
+        (d: Date) => d.getMinutes(),
+        (d: Date) => d.getSeconds(),
+    ];
     private objectIdPattern = /^[0-9a-fA-F]{24}$/; // Regular expression for ObjectId
 
     _operator(s: string, key?: string, model?: Model<any>) {
-
         const operatorMatches = operatorPattern.exec(s);
-        if (operatorMatches) return { operator: operatorMatches[1], val: this.autoParseValue(operatorMatches[2], key, model) };
+        if (!operatorMatches) return null;
+        const operator = operatorMatches[1];
+        const val = operatorMatches[2];
+
+        if (operator === 'eq' || operator === 'ne' || operator === 'not') return { [key]: { ['$' + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') return { [key]: { ['$' + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === 'btw') {
+            const range = (val || '').split(',');
+            const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
+            if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
+                return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
+            } else return;
+        } else if (operator === 'all' || operator === 'in' || operator === 'nin' || /in\d/.test(operator)) {
+            const array = typeof val === 'string' ? (val || '').split(',') : [val];
+            if (/in\d/.test(operator)) {
+                //nesting
+                const [, nesting] = /in(\d)/.exec(operator) || [];
+                let n = +nesting;
+                if (n > 0) {
+                    const elemMatch: any = {};
+                    let pointer = elemMatch;
+
+                    while (n > 0) {
+                        --n;
+                        pointer['$elemMatch'] = {};
+                        pointer = pointer['$elemMatch'];
+                    }
+                    pointer['name'] = array[0];
+                    return { [key]: elemMatch };
+                }
+            }
+            return { [key]: { ['$' + operator]: array.map((val) => this.autoParseValue(val, key, model)) } };
+        } else if (operator === 'center') {
+            const [long, lat, radius] = (val || '').split(',').map((p: string) => +p);
+            const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
+            return { [key]: within };
+        } else if (operator === 'exists') return { [key]: { $exists: true } };
+        else if (this.dateOperators.indexOf(operator) > -1) {
+            const date = this.autoParseValue(val, key, model);
+            if (!(date instanceof Date)) {
+                logger.warn('DATE_EXPECTED', { key, val });
+                return undefined;
+            }
+
+            const max: SpreadDate = [date.getFullYear(), 11, 31, 23, 59, 59, 999];
+            const min: SpreadDate = [date.getFullYear(), 0, 1, 0, 0, 0, 0];
+
+            const operatorOrder = this.dateOperators.indexOf(operator);
+            for (let i = 1; i < operatorOrder; i++) {
+                max[i] = min[i] = this.dateMethods[i](date);
+            }
+            return [{ [key]: { $gte: new Date(...min) } }, { [key]: { $lte: new Date(...max) } }];
+        } else console.error('UNKNOWN OP', { key, operator });
     }
 
     private parseExpression(key: string, value: string, model?: Model<any>): any {
         //OR
-        const subExpressions = value.split('|').filter(s => s);
+        const subExpressions = value.split('|').filter((s) => s);
         if (subExpressions.length > 1) {
-            const $or = subExpressions.map(sub => {
+            const $or = subExpressions.map((sub) => {
                 const s_exp = sub.split('=');
                 if (s_exp.length === 1) return this.parseExpression(key, sub, model);
                 else return this.parseExpression(s_exp[0], s_exp[1], model);
@@ -123,75 +178,68 @@ export class QueryParser {
         //OPERATOR
         const o = this._operator(value, key, model);
         if (o) {
-            const { operator, val } = o;
+            return o;
+            // const { operator, val } = o;
 
-            if (operator === 'eq' || operator === 'ne' || operator === 'not') return { [key]: { ['$' + operator]: val } };
-            else if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') return { [key]: { ['$' + operator]: val } };
-            else if (operator === 'btw') {
-                const range = (val || '').split(',');
-                const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
-                if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
-                    return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }]
-                }
-                else return;
+            // if (operator === 'eq' || operator === 'ne' || operator === 'not') return { [key]: { ['$' + operator]: val } };
+            // else if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') return { [key]: { ['$' + operator]: val } };
+            // else if (operator === 'btw') {
+            //     const range = (val || '').split(',');
+            //     const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
+            //     if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
+            //         return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
+            //     } else return;
+            // } else if (operator === 'all' || operator === 'in' || operator === 'nin' || /in\d/.test(operator)) {
+            //     const array = typeof val === 'string' ? (val || '').split(',') : [val];
+            //     if (/in\d/.test(operator)) {
+            //         //nesting
+            //         const [, nesting] = /in(\d)/.exec(operator) || [];
+            //         let n = +nesting;
+            //         if (n > 0) {
+            //             const elemMatch: any = {};
+            //             let pointer = elemMatch;
 
-            }
-            else if (operator === 'all' || operator === 'in' || operator === 'nin' || /in\d/.test(operator)) {
-                const array = typeof val === 'string' ? (val || '').split(',') : [val];
-                if (/in\d/.test(operator)) { //nesting
-                    const [, nesting] = /in(\d)/.exec(operator) || [];
-                    let n = +nesting;
-                    if (n > 0) {
-                        const elemMatch: any = {}
-                        let pointer = elemMatch;
+            //             while (n > 0) {
+            //                 --n;
+            //                 pointer['$elemMatch'] = {};
+            //                 pointer = pointer['$elemMatch'];
+            //             }
+            //             pointer['name'] = array[0];
+            //             return { [key]: elemMatch };
+            //         }
+            //     }
+            //     return { [key]: { ['$' + operator]: array } };
+            // } else if (operator === 'center') {
+            //     const [long, lat, radius] = (val || '').split(',').map((p: string) => +p);
+            //     const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
+            //     return { [key]: within };
+            // } else if (operator === 'exists') return { [key]: { $exists: true } };
+            // else if (val instanceof Date && this.dateOperators.indexOf(operator) > -1) {
+            //     const max: SpreadDate = [val.getFullYear(), 11, 31, 23, 59, 59, 999];
+            //     const min: SpreadDate = [val.getFullYear(), 0, 1, 0, 0, 0, 0];
 
-                        while (n > 0) {
-                            --n;
-                            pointer['$elemMatch'] = {};
-                            pointer = pointer['$elemMatch']
-                        }
-                        pointer['name'] = array[0];
-                        return { [key]: elemMatch };
-                    }
-                }
-                return { [key]: { ['$' + operator]: array } };
-            }
-            else if (operator === 'center') {
-                const [long, lat, radius] = (val || '').split(',').map((p: string) => +p);
-                const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
-                return { [key]: within }
-            }
-            else if (operator === 'exists') return { [key]: { $exists: true } }
-            else if (val instanceof Date && this.dateOperators.indexOf(operator) > -1) {
-                const max: SpreadDate = [val.getFullYear(), 11, 31, 23, 59, 59, 999];
-                const min: SpreadDate = [val.getFullYear(), 0, 1, 0, 0, 0, 0];
-
-                const operatorOrder = this.dateOperators.indexOf(operator);
-                for (let i = 1; i < operatorOrder; i++) {
-                    max[i] = min[i] = this.dateMethods[i](val);
-                }
-                return [{ [key]: { $gte: new Date(...min) } }, { [key]: { $lte: new Date(...max) } }];
-            }
-            else console.error("UNKNOWN OP", { key, operator });
-
-        }
-        else { //If not operator the default value conversion is string
+            //     const operatorOrder = this.dateOperators.indexOf(operator);
+            //     for (let i = 1; i < operatorOrder; i++) {
+            //         max[i] = min[i] = this.dateMethods[i](val);
+            //     }
+            //     return [{ [key]: { $gte: new Date(...min) } }, { [key]: { $lte: new Date(...max) } }];
+            // } else console.error('UNKNOWN OP', { key, operator });
+        } else {
+            //If not operator the default value conversion is string
             const val = this.autoParseValue(value, key, model);
             if (val === '') return;
             if (val === undefined) return { [key]: { $exists: false } };
-            else if (typeof val === "string" && val.indexOf('*') > -1) {
+            else if (typeof val === 'string' && val.indexOf('*') > -1) {
                 const purified = this.escapeRegex(value);
-                return { [key]: new RegExp(purified, 'gi') }
-            }
-            else return { [key]: val }
+                return { [key]: new RegExp(purified, 'gi') };
+            } else return { [key]: val };
         }
     }
-
 
     private escapeRegex(value: string) {
         let purified = '';
         for (let i = 0; i < value.length; i++) {
-            const char = value[i]
+            const char = value[i];
             const prevChar = i > 0 ? value[i - 1] : null;
 
             if (i === 0 && char != '*') purified = '^'; //strict check
@@ -199,23 +247,32 @@ export class QueryParser {
             switch (char) {
                 case '*':
                     if (prevChar === '*' || prevChar === null) break;
-                    else purified += '*'; break;
-                case '\\': break; //bad char
+                    else purified += '*';
+                    break;
+                case '\\':
+                    break; //bad char
                 case '.':
-                case '+': case '?':
-                case '^': case '$':
-                case '{': case '}':
-                case '(': case ')':
-                case '[': case ']':
-                case '|': purified += '\\' + char; break; //escape regex char
-                default: purified += char; break;
+                case '+':
+                case '?':
+                case '^':
+                case '$':
+                case '{':
+                case '}':
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case '|':
+                    purified += '\\' + char;
+                    break; //escape regex char
+                default:
+                    purified += char;
+                    break;
             }
-
         }
         purified = purified.endsWith('*') ? purified.substring(0, purified.length - 1) : purified;
         return purified;
     }
-
 
     private getPathType(path: string, model: Model<any>) {
         return model.schema.path(path)?.instance ?? 'String';
@@ -228,26 +285,28 @@ export class QueryParser {
         if (value === 'true') return true;
         if (value === 'false') return false;
 
-        const keyType = key && model ? this.getPathType(key, model) ?? 'String' : 'String';
+        const keyType = key && model ? (this.getPathType(key, model) ?? 'String') : 'String';
         if (keyType === 'String') return value;
         if (keyType === 'Date') return new Date(value);
         if (keyType === 'ObjectId') return new ObjectId(value);
         if (keyType === 'Number') return +value;
         if (keyType === 'Array') {
-            if (value.indexOf && value.indexOf(':') > -1) return value.split(':').filter(x => x).map(x => this.autoParseValue(x, key, model));
-            return value
-        }
-
-        else return value;
+            if (value.indexOf && value.indexOf(':') > -1)
+                return value
+                    .split(':')
+                    .filter((x) => x)
+                    .map((x) => this.autoParseValue(x, key, model));
+            return value;
+        } else return value;
     }
 
     private _select(s: string) {
-        const select: { [field: string]: 1 | 0 } = {}
-        const fields = s.split(',')
+        const select: { [field: string]: 1 | 0 } = {};
+        const fields = s.split(',');
         for (const x of fields) {
-            select[x] = x.startsWith('!') ? 0 : 1
+            select[x] = x.startsWith('!') ? 0 : 1;
         }
-        return select
+        return select;
     }
 
     private _fields(s: string) {
@@ -260,17 +319,21 @@ export class QueryParser {
             if (segments.length > 1) {
                 fields = fields || {};
                 const o = this._operator(segments[1]);
-                if (o) fields[segments[0]] = { ['$' + o.operator]: o.val || 1 };
-                else fields[segments[0]] = segments[1];
+                if (o) {
+                    const res = Object.entries(o).at(0) as [string, any];
+                    fields[segments[0]] = { [res[0]]: res[1] || 1 };
+                } else fields[segments[0]] = segments[1];
             }
         }
         return fields;
     }
 
-
     parse(query: { [key: string]: string }[], model?: Model<any>) {
-
-        const queryArray = query.map(x => Object.keys(x).map(k => { return { key: k, value: x[k] } }));
+        const queryArray = query.map((x) =>
+            Object.keys(x).map((k) => {
+                return { key: k, value: x[k] };
+            }),
+        );
         const q = queryArray.length ? queryArray.reduce((a, b) => a.concat(b)) : [];
 
         const filter: { $and?: any[] } = { $and: [] };
@@ -281,12 +344,10 @@ export class QueryParser {
         let fields1: { [field: string]: any } | undefined;
         let fields2: { [field: string]: any } | undefined;
         let fields3: { [field: string]: any } | undefined;
-        let lookups: { from: string, foreignField: string, localField: string, as: string, unwind?: boolean }[] | undefined;
-        let lookupsMatch: { from: string, foreignField: string, localField: string, match: any[], as: string }[] | undefined;
+        let lookups: { from: string; foreignField: string; localField: string; as: string; unwind?: boolean }[] | undefined;
+        let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
-
-
 
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
@@ -298,38 +359,35 @@ export class QueryParser {
                 group = { _id: '$' + key };
 
                 if (g.length && g[0].startsWith('{project}')) {
-                    group.items = { $push: "$$ROOT" };
+                    group.items = { $push: '$$ROOT' };
                     g[0] = g[0].substring(9);
                     group_fields = this._fields(g.join(','));
                 }
-            }
-            else if (x.key === 'sort_by' && x.value) {
+            } else if (x.key === 'sort_by' && x.value) {
                 const sort_by_array = x.value.split(',');
                 const [field, direction] = sort_by_array;
                 if (sort_by_array.length === 1 && field.startsWith('-')) sort = { [field.substring(1)]: -1 };
                 else sort = { [field]: direction === 'desc' ? -1 : 1 };
-            }
-            else if (x.key === 'select' && x.value) select = this._select(x.value);
+            } else if (x.key === 'select' && x.value) select = this._select(x.value);
             else if (x.key === 'fields1' && x.value) fields1 = this._fields(x.value);
             else if (x.key === 'fields2' && x.value) fields2 = this._fields(x.value);
             else if (x.key === 'fields3' && x.value) fields3 = this._fields(x.value);
             else if (x.key === 'lookup' && x.value) {
                 //lookup=lookup_1;lookup_2
-                lookups = x.value.split(';').map(l => { //lookup=collection:foriegn:local:as
+                lookups = x.value.split(';').map((l) => {
+                    //lookup=collection:foriegn:local:as
                     const p = l.split(':');
                     if (p.length === 4 || p.length === 5) {
                         const [from, foreignField, localField, as] = p;
                         let unwind = false;
                         if (p.length === 5 && p[4] === 'unwind') unwind = true;
-                        return { from, foreignField, localField, as, unwind }
-                    }
-                    else throw "INVALID_LOOKUP_PARAMS";
-
+                        return { from, foreignField, localField, as, unwind };
+                    } else throw 'INVALID_LOOKUP_PARAMS';
                 });
-            }
-            else if (x.key === 'lookup_match') {
+            } else if (x.key === 'lookup_match') {
                 //lookup_match=lookup_1;lookup_2
-                lookupsMatch = x.value.split(';').map(l => { //lookup=collection:foriegn:local:as:f1:v1
+                lookupsMatch = x.value.split(';').map((l) => {
+                    //lookup=collection:foriegn:local:as:f1:v1
                     let p = l.split(':');
 
                     const [from, foreignField, localField, as] = p;
@@ -339,13 +397,11 @@ export class QueryParser {
                         const exp = this.parseExpression(p[i], p[i + 1], model);
                         logger.info(exp);
 
-                        match.push(exp)
+                        match.push(exp);
                     }
-                    return { from, foreignField, localField, as, match }
+                    return { from, foreignField, localField, as, match };
                 });
-
-            }
-            else if (x.value) {
+            } else if (x.value) {
                 const exp = this.parseExpression(x.key, x.value, model);
                 if (exp) {
                     if (Array.isArray(exp)) filter.$and = filter.$and?.concat(exp);
@@ -357,8 +413,11 @@ export class QueryParser {
         if (filter.$and?.length === 0) delete filter.$and; //and won't accept zero expressions
 
         if (group && group_fields) {
-            Object.keys(group_fields).forEach(k => { group[k] = (<any>group_fields)[k] }); // { exta_field : {$operator:value} }
-            if (group.items) { //move items to last entry
+            Object.keys(group_fields).forEach((k) => {
+                group[k] = (<any>group_fields)[k];
+            }); // { exta_field : {$operator:value} }
+            if (group.items) {
+                //move items to last entry
                 const items = group.items;
                 delete group.items;
                 group.items = items;
@@ -367,8 +426,6 @@ export class QueryParser {
 
         return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch };
     }
-
 }
-
 
 //todo test lookup_mach for non array join

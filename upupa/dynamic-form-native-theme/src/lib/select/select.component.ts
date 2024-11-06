@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges } from '@angular/core';
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed } from '@angular/core';
 import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { ActionDescriptor } from '@upupa/common';
@@ -43,7 +43,8 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
 
     clearValue(e) {
         e.stopPropagation();
-        this.handleUserInput(undefined);
+        this.selectionModel.clear();
+        this.control().setValue(undefined);
     }
 
     keyDown(e: KeyboardEvent, input?: { open: () => void; panelOpen: boolean }) {
@@ -55,21 +56,20 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     isPanelOpened = false;
     matSelectInput = viewChild<MatSelect>('selectInput');
 
-    firstLoaded = false;
     async openedChange(open: boolean, input?: { open: () => void }) {
         this.isPanelOpened = open;
-        if (!this.firstLoaded && open) {
+        if (this.viewDataSource.value === 'selected' && open) {
+            this.loading.set(true);
+            this.viewDataSource.next('adapter');
+
             await this.loadData();
             setTimeout(() => {
                 input?.open();
             }, 250);
         }
-        // if (open) this.setScrollPaginator(selectInput)
-        // else this.removeScrollPaginator(selectInput)
     }
 
     async loadData() {
-        this.viewDataSource$.next('adapter');
         this.refreshData();
         await firstValueFrom(this.adapter().normalized$);
     }

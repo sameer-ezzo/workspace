@@ -1,7 +1,7 @@
 import { Component, DestroyRef, EventEmitter, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, map, Subscription } from 'rxjs';
 import { DataAdapter, NormalizedItem } from '@upupa/data';
 import { SelectionModel } from '@angular/cdk/collections';
 
@@ -13,12 +13,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     styles: [],
 })
 export class DataComponentBase<T = any> {
-    selectionModel: SelectionModel<Partial<T>>;
-    readonly selectedNormalized = signal<NormalizedItem<T> | NormalizedItem<T>[]>([]);
-    readonly selectedNormalizedArray = computed<NormalizedItem<T>[]>(() => {
-        const n = this.selectedNormalized();
-        return Array.isArray(n) ? n : [n];
-    });
+    protected readonly selectionModel = new SelectionModel<Partial<T>>(true, [], true);
+    readonly selectedNormalized = new BehaviorSubject<NormalizedItem<T>[]>([]);
 
     add = output();
 
@@ -27,8 +23,12 @@ export class DataComponentBase<T = any> {
 
     noDataImage = input<string>('');
 
-    minAllowed = input<number, number | null | undefined>(0, { transform: (v) => (Number.isNaN(v) ? 0 : Math.max(0, v)) });
-    maxAllowed = input<number, number | null | undefined>(Number.MAX_SAFE_INTEGER, { transform: (v) => (Number.isNaN(v) ? Number.MAX_SAFE_INTEGER : Math.max(0, v)) });
+    minAllowed = input<number, number | null | undefined>(0, {
+        transform: (v) => Math.max(0, Math.round(Math.abs(v ?? 0))),
+    });
+    maxAllowed = input<number, number | null | undefined>(1, {
+        transform: (v) => Math.max(1, Math.round(Math.abs(v ?? 1))),
+    });
 
     adapter = model.required<DataAdapter<T>>();
     normalized$sub: Subscription;
@@ -38,48 +38,39 @@ export class DataComponentBase<T = any> {
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
-    constructor() {
-        effect(() => {
-            const maxAllowed = this.maxAllowed();
-            const adapter = this.adapter();
-            if (!adapter) return;
-            if (maxAllowed === 1) {
-                this.selectionModel = new SelectionModel<Partial<T>>(false, undefined, true);
-            } else {
-                this.selectionModel = new SelectionModel<Partial<T>>(true, [], true);
-            }
-            this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
-                const keys = adapter.getKeysFromValue(s.source.selected);
-                adapter.getItems(keys).then((items) => {
-                    this.selectedNormalized.set(items);
-                });
-            });
+    ngOnInit() {
+        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
+            this.updateAdapterFromSelection(s.source.selected);
         });
     }
-
     refreshData() {
-        this.loading.set(true);
+        if (!this.firstLoad()) this.loading.set(true);
         this.adapter()?.refresh();
     }
 
     protected readonly destroyRef = inject(DestroyRef);
     async ngOnChanges(changes: SimpleChanges) {
         if (changes['adapter']) {
+            const adapter = this.adapter();
             this.firstLoad.set(true);
-            if (!this.adapter()) throw new Error('Adapter is required');
+            if (!adapter) throw new Error('Adapter is required');
 
-            this.adapter()
-                .normalized$.pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe((data) => {
-                    this.onDataChange(data);
-                });
+            adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
+                this.onDataChange(data);
+            });
         }
     }
 
-    get selected() {
-        if (this.maxAllowed() === 1) return this.selectionModel.selected[0];
-        return this.selectionModel.selected;
+    private updateAdapterFromSelection(value: Partial<T>[]) {
+        const keys = this.adapter().getKeysFromValue(value);
+        if (keys == undefined) return this.selectedNormalized.next([]);
+        this.adapter()
+            .getItems(keys)
+            .then((items) => {
+                this.selectedNormalized.next(items);
+            });
     }
+
     dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = [];
     onDataChange(data: NormalizedItem<T>[]) {
         this.firstLoad.set(false);

@@ -1,44 +1,37 @@
-import { Component, Optional, Inject, ChangeDetectionStrategy } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
+import { Component, ChangeDetectionStrategy, input, inject } from '@angular/core';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
-import { ActionEvent } from "@upupa/common";
-import { MatBtnComponent } from "@upupa/mat-btn";
+import { ActionDescriptor } from '@upupa/common';
+import { MatBtnComponent } from '@upupa/mat-btn';
 
 @Component({
-    selector: "confirm",
+    selector: 'confirm',
     standalone: true,
     imports: [MatDialogModule, MatBtnComponent],
-    templateUrl: "confirm.component.html",
-    styleUrls: ["confirm.component.scss"],
+    templateUrl: 'confirm.component.html',
+    styleUrls: ['confirm.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmComponent {
-    confirmText = "Do you confirm?";
-    confirmTitle = "Confirmation";
-    confirmNoButton = "No";
-    confirmYesButton = "Yes";
-    img: string;
+    dialogRef = inject(MatDialogRef);
 
-    constructor(@Optional() @Inject(MAT_DIALOG_DATA) public data: any) {
-        if (data.title !== undefined) {
-            this.confirmTitle = data.title;
-        }
-        if (data.img !== undefined) {
-            this.img = data.img;
-        }
-        if (data.confirmText !== undefined) {
-            this.confirmText = data.confirmText;
-        }
-        if (data.yes !== undefined) {
-            this.confirmYesButton = data.yes;
-        }
-        if (data.no !== undefined) {
-            this.confirmNoButton = data.no;
-        }
-    }
-
-    async onAction(e: ActionEvent) {
-        const dialogRef = e.context.dialogRef;
-        return dialogRef.close(e.action.name === "yes");
-    }
+    confirmTitle = input('Confirm');
+    confirmText = input('Do you confirm?');
+    discardButton = input<ActionDescriptor, Partial<ActionDescriptor>>(undefined, {
+        transform: (x) => ({
+            name: 'discard',
+            color: x.color,
+            variant: 'button',
+            text: x.text ?? 'Discard',
+        }),
+    });
+    confirmButton = input<ActionDescriptor, Partial<ActionDescriptor>>(undefined, {
+        transform: (x) => ({
+            name: 'confirm',
+            color: x.color || 'primary',
+            variant: 'raised',
+            text: x.text ?? 'Confirm',
+        }),
+    });
+    img = input<string | undefined>();
 }
