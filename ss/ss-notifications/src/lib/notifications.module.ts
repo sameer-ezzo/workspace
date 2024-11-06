@@ -1,11 +1,5 @@
-import {
-    DynamicModule,
-    Inject,
-    Module,
-    OnModuleInit,
-    Provider,
-} from '@nestjs/common';
-import { DataModule, DataService } from '@ss/data';
+import { DynamicModule, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
+import { DataModule, DataService, getDataServiceToken } from '@ss/data';
 import { ModuleRef } from '@nestjs/core';
 import { NotificationService } from './notification.svr';
 import { NotificationController } from './notification.controller';
@@ -27,21 +21,16 @@ export class NotificationsModule implements OnModuleInit {
         //     new Schema({}, { strict: false })
         // );
     }
-    static register(
-        channels: (NotificationChannel | Provider)[],
-        topics: Topics = {},
-        config = { dbName: 'DB_DEFAULT', readNotificationSettings: true }
-    ): DynamicModule {
+    static register(channels: (NotificationChannel | Provider)[], topics: Topics = {}, config = { dbName: 'DB_DEFAULT', readNotificationSettings: true }): DynamicModule {
         const _providers: Provider[] = [];
         for (const channel of channels) {
-            if ('name' in channel)
-                _providers.push({ provide: channel.name, useValue: channel });
+            if ('name' in channel) _providers.push({ provide: channel.name, useValue: channel });
             else _providers.push(channel);
         }
 
         _providers.push({
             provide: 'DB_NOTIFICATION',
-            useExisting: config.dbName,
+            useExisting: getDataServiceToken(config.dbName),
         });
         topics ??= {};
 
@@ -52,9 +41,7 @@ export class NotificationsModule implements OnModuleInit {
                         store: false,
                         additionalFields: [],
                     };
-                    topics[topic].options.additionalFields.push(
-                        'notificationSettings'
-                    ); //load user's notificationSettings objects
+                    topics[topic].options.additionalFields.push('notificationSettings'); //load user's notificationSettings objects
                 }
             }
 
@@ -84,7 +71,7 @@ export class NotificationsModule implements OnModuleInit {
                             schema: new Schema({}, { strict: false }),
                         },
                     ],
-                    config.dbName
+                    config.dbName,
                 ),
             ],
             controllers: [NotificationController],
