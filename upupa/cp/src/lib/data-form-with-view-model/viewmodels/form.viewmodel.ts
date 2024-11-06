@@ -27,9 +27,8 @@ export async function apiSubmit<TSelf>(self: TSelf, collection: string, patch = 
     try {
         if (!id) res = await apiPost(ds, collection, self);
         else {
-            if (patch === true && patches) {
-                const patchesArr = Object.entries(patches ?? {}).map(([path, value]) => ({ op: 'replace', path, value }) as Patch);
-                res = await ds.patch(`/blogs/${id}`, patchesArr);
+            if (patch === true && patches.length > 0) {
+                res = await ds.patch(`/blogs/${id}`, patches as Patch[]);
             } else {
                 res = await apiPut(ds, `${collection}/${id}`, self);
             }

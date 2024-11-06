@@ -1,4 +1,4 @@
-<div id="form-wrapper">
+<div class="form-wrapper">
     @let _vm = viewModel();
     <dynamic-form
         #dynForm
@@ -15,9 +15,9 @@
     ></dynamic-form>
 </div>
 
-@if (actions(); as _actions) {
+@if (actions().length) {
     <div class="toolbar footer">
-        @for (descriptor of _actions; track descriptor.name) {
+        @for (descriptor of actions(); track descriptor.name) {
             <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
         }
     </div>

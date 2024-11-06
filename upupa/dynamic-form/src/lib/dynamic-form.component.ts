@@ -184,7 +184,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                     let patch = undefined;
                     if (source.path) {
                         patch = { [source.path]: source.value };
-                        this._patches[source.path] = source.value;
+                        this._patches.set(source.path, source.value);
                     }
 
                     this.value.set(value);
@@ -218,7 +218,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
         if (changes['value']) {
-            this._patches.clear();
+            // this._patches.clear();
             this.form().patchValue(this.value());
             this.propagateChange();
         }

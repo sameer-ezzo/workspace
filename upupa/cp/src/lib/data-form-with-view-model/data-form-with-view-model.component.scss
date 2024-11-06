@@ -1,43 +1,44 @@
 :host {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
-  display: grid;
-  grid-template-rows: 1fr auto;
-  overflow: hidden;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
 
-  #form-wrapper {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem 0;
-  }
+    .form-wrapper {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        overflow-y: auto;
+    }
 }
 
 .mat-form-field {
-  width: 100%;
+    width: 100%;
 }
 
 .dynamic > form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .dynamic > form > * {
-  margin: 0 5px;
-  border-radius: 2px;
+    margin: 0 5px;
+    border-radius: 2px;
 }
 
 .dynamic > form > fieldset {
-  margin: 6px 0;
+    margin: 6px 0;
 }
 
 .horizontal.choices {
-  margin: 0.5rem;
+    margin: 0.5rem;
 }
 
 mat-form-field {
-  width: 100%;
+    width: 100%;
 }
 
 // .mat-dialog-container {
@@ -47,22 +48,22 @@ mat-form-field {
 // }
 
 .mat-form-field-subscript-wrapper {
-  position: relative !important;
+    position: relative !important;
 }
 
 .toolbar {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.25rem 1rem !important;
-  margin: 0 !important;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 1rem !important;
+    margin: 0 !important;
 
-  &.footer {
-    justify-content: flex-end;
-    border-radius: 0 0 3px 3px;
-    & > mat-btn:not(:last-child) {
-      margin-inline-end: 0.5rem;
+    &.footer {
+        justify-content: flex-end;
+        border-radius: 0 0 3px 3px;
+        & > mat-btn:not(:last-child) {
+            margin-inline-end: 0.5rem;
+        }
     }
-  }
 }

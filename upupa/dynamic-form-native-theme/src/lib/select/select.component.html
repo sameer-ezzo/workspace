@@ -124,7 +124,7 @@
     }
 </ng-template>
 <ng-template #searchBoxTemplate>
-    <div id="select-filter-wrapper">
+    <div class="select-filter-wrapper">
         <mat-icon>search</mat-icon>
         <input
             #filterInput
@@ -132,7 +132,7 @@
             [placeholder]="placeholder() ?? ''"
             focusType="select"
             style="flex: 1; border: none; outline: none"
-            [value]="filterModel()"
+            [value]="filterModel()||''"
             (input)="filterModel.set($event.target?.['value'])"
             (keydown.enter)="$event.stopPropagation(); updateFilter()"
         />
