@@ -11,6 +11,7 @@ import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => MatTextAreaComponent),
             multi: true,
-    }    ],
+        },
+    ],
 })
 export class MatTextAreaComponent extends TextAreaComponent {}

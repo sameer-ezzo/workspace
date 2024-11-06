@@ -1,6 +1,6 @@
-import { PasswordStrength } from '@upupa/auth';
-import { Validator } from '../types';
-import { DataAdapterDescriptor } from '@upupa/data';
+import { PasswordStrength } from "@upupa/auth";
+import { Validator } from "../types";
+import { DataAdapterDescriptor } from "@upupa/data";
 
 export interface IDynamicFormFieldOptions {}
 export class TextFieldOptions {}
@@ -9,7 +9,7 @@ export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
     minAllowed?: number = 1;
     maxAllowed?: number = 1;
-    adapter: DataAdapterDescriptor = { type: 'client', data: [] };
+    adapter: DataAdapterDescriptor = { type: "client", data: [] };
 }
 
 export type BaseFormFieldOptions = {
@@ -20,10 +20,10 @@ export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     name?: string;
     label?: string;
     placeholder?: string;
-    floatLabel: 'auto' | 'always' | 'never';
+    floatLabel: "auto" | "always" | "never";
     text?: string;
     hint?: string;
-    appearance?: 'fill' | 'outline';
+    appearance?: "fill" | "outline";
     disabled?: boolean;
     readonly?: boolean;
     hidden?: boolean;
@@ -35,22 +35,22 @@ export type FileInputOptions = {
     includeAccess?: boolean;
     base?: string;
     path?: string;
-    color?: 'primary' | 'accent' | 'warn';
+    color?: "primary" | "accent" | "warn";
     dateFormat?: string;
     minAllowedFiles?: number;
     maxAllowedFiles?: number;
     minSize?: number;
     maxSize?: number;
     accept?: string;
-    view?: 'list' | 'grid';
-    fileSelector?: 'browser' | 'system';
+    view?: "list" | "grid";
+    fileSelector?: "browser" | "system";
 };
 export type ChoicesFieldOptions = VisibleFormFieldOptions &
     AdapterFieldOptions & {
-        direction?: 'horizontal' | 'vertical';
-        template?: 'normal' | 'thumbs';
+        direction?: "horizontal" | "vertical";
+        template?: "normal" | "thumbs";
         thumbSize?: number;
-        renderer?: 'markdown' | 'html' | 'none';
+        renderer?: "markdown" | "html" | "none";
     };
 
 export type TableInputOptions = {
@@ -61,40 +61,39 @@ export type TableInputOptions = {
     };
 };
 export type DynamicFormFieldOptions =
-    | ({ input: 'hidden' } & BaseFormFieldOptions)
+    | ({ input: "hidden" } & BaseFormFieldOptions)
     | (VisibleFormFieldOptions &
           (
-              | ({ input: 'fieldset' } & BaseFormFieldOptions)
-              | ({ input: 'text' } & TextFieldOptions)
-              | ({ input: 'textarea' } & TextFieldOptions & {
-                        cdkAutosizeMinRows?: number;
-                        cdkAutosizeMaxRows?: number;
-                        cdkTextareaAutosize?: boolean;
+              | ({ input: "fieldset" } & BaseFormFieldOptions)
+              | ({ input: "text" } & TextFieldOptions)
+              | ({ input: "textarea" } & TextFieldOptions & {
+                        rows?: number;
+                        maxRows?: number;
                     })
-              | ({ input: 'phone' } & TextFieldOptions)
-              | ({ input: 'password' } & TextFieldOptions & {
+              | ({ input: "phone" } & TextFieldOptions)
+              | ({ input: "password" } & TextFieldOptions & {
                         showConfirmPasswordInput?: boolean;
                         showPassword?: boolean;
                         canGenerateRandomPassword?: boolean;
                         passwordStrength?: PasswordStrength;
-                        autocomplete?: 'current-password' | 'new-password';
+                        autocomplete?: "current-password" | "new-password";
                     })
-              | ({ input: 'number' } & NumberFieldOptions)
-              | ({ input: 'switch' } & BooleanFieldOptions & {
-                        template?: 'checkbox' | 'toggle';
-                        renderer?: 'markdown' | 'html' | 'none';
+              | ({ input: "number" } & NumberFieldOptions)
+              | ({ input: "switch" } & BooleanFieldOptions & {
+                        template?: "checkbox" | "toggle";
+                        renderer?: "markdown" | "html" | "none";
                     })
-              | ({ input: 'checks' } & ChoicesFieldOptions)
-              | ({ input: 'radios' } & ChoicesFieldOptions)
-              | ({ input: 'select' } & AdapterFieldOptions)
-              | { input: 'date' }
-              | ({ input: 'file' } & FileInputOptions)
-              | ({ input: 'html' } & {
+              | ({ input: "checks" } & ChoicesFieldOptions)
+              | ({ input: "radios" } & ChoicesFieldOptions)
+              | ({ input: "select" } & AdapterFieldOptions)
+              | { input: "date" }
+              | ({ input: "file" } & FileInputOptions)
+              | ({ input: "html" } & {
                     uploadPath: string;
-                    editorType: 'decoupled' | 'classic';
+                    editorType: "decoupled" | "classic";
                 })
-              | ({ input: 'array' } & TableInputOptions)
-              | ({ input: 'chips' } & {
+              | ({ input: "array" } & TableInputOptions)
+              | ({ input: "chips" } & {
                     parentPath?: string;
                     visible?: boolean;
                     selectable?: boolean;
@@ -102,5 +101,5 @@ export type DynamicFormFieldOptions =
                     separatorKeysCodes?: string[];
                 })
           ));
-export type DynamicFormFieldInputType = DynamicFormFieldOptions['input'];
+export type DynamicFormFieldInputType = DynamicFormFieldOptions["input"];
 export type FormFieldOptions = DynamicFormFieldOptions | ({ input: string } & Partial<AdapterFieldOptions & { inputs: Record<string, any> }>);
