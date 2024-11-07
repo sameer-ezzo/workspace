@@ -6,13 +6,14 @@ import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { CommonModule } from '@angular/common';
 import { ActionEvent, deepAssign } from '@upupa/common';
-import { Class } from '@noah-ark/common';
-import { FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Class, delay } from '@noah-ark/common';
+import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'cp-data-form-with-view-model',
     standalone: true,
-    imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule],
+    imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: './data-form-with-view-model.component.html',
     styleUrls: ['./data-form-with-view-model.component.scss'],
     providers: [
@@ -36,6 +37,7 @@ import { FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/form
 export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
     private readonly injector = inject(Injector);
 
+
     dynamicFormEl = viewChild(DynamicFormComponent);
     form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
     dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>>;
@@ -52,12 +54,19 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     value = model<T>();
 
     // form actions
-    actions = computed(() => {
-        const { onSubmitAction, actions } = this.viewModel();
-        const formActions = actions ?? [];
-        console.log('formActions', formActions, onSubmitAction);
 
-        return [onSubmitAction, ...formActions].filter((x) => x);
+    submitActionButton = computed(() => {
+        const form = this.form();
+        const { onSubmitAction } = this.viewModel();
+        if (!onSubmitAction) return undefined;
+        return onSubmitAction;
+    });
+    canSubmit = signal(false);
+    actions = computed(() => {
+        const { actions } = this.viewModel();
+        const formActions = actions ?? [];
+
+        return [...formActions].filter((x) => x);
     });
 
     // private instance = signal<any>(null);
@@ -76,18 +85,27 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     }
 
     onValueChange(e: any) {
+        
+
+
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             await vm['onValueChange']?.(e);
         });
     }
 
-    onSubmit() {
+    submitting = signal(false);
+    async onSubmit() {
         const vm = this.value();
-
         runInInjectionContext(this.injector, async () => {
-            await vm['onSubmit']();
-            if (vm['afterSubmit']) vm['afterSubmit']?.();
+            try {
+                this.submitting.set(true);
+                await vm['onSubmit']();
+                if (vm['afterSubmit']) vm['afterSubmit']?.();
+            } catch (error) {
+            } finally {
+                this.submitting.set(false);
+            }
         });
     }
 

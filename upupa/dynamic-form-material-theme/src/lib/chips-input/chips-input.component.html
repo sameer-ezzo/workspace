@@ -3,7 +3,7 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()">
+    <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()" [attr.name]="name()">
         @for (item of selectedNormalized | async; track item.key) {
             <mat-chip-row (removed)="remove(item)">
                 {{ item.display }}

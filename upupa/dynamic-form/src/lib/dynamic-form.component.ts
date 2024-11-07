@@ -21,7 +21,18 @@ import {
     InjectionToken,
     signal,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, NgForm, UntypedFormBuilder, ValueChangeEvent, FormControl, FormGroup } from '@angular/forms';
+import {
+    NG_VALUE_ACCESSOR,
+    ControlValueAccessor,
+    AbstractControl,
+    NgForm,
+    UntypedFormBuilder,
+    ValueChangeEvent,
+    FormControl,
+    FormGroup,
+    FormGroupDirective,
+    Form,
+} from '@angular/forms';
 import { FormScheme } from './types';
 import { Condition } from '@noah-ark/expression-engine';
 import { Subscription } from 'rxjs';
@@ -79,41 +90,35 @@ export function injectField(path: string): FieldFormControl | FieldFormGroup {
         },
     ],
     host: {
-        '[class]': "'dynamic-form' + class()",
-        '[attr.name]': 'hostName()',
+        '[class]': "'dynamic-form ' + class()",
     },
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
-    private readonly el = inject(ElementRef);
-    private readonly renderer = inject(Renderer2);
     private readonly conditionalService = inject(ConditionalLogicService);
-    private readonly dialog = inject(DialogService);
     private readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
     public readonly bus = inject(EventBus);
     private readonly _patches: Map<`/${string}`, unknown> = new Map();
-
-    get patches(): Patch[] {
-        return Array.from(this._patches.entries()).map(([path, value]) => ({ path, op: 'replace', value }));
-    }
-
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
     name = input<string>(Date.now().toString(), { alias: 'formName' });
-    hostName = computed(() => `dynForm_${this.name()}`);
     disabled = input(false);
     readonly = input(false);
     class = input('');
     theme = input<string>('material');
 
     form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-
+    readonly formRef = viewChild<FormGroupDirective>('ngFormRef');
     value = model(undefined);
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
 
     submit = output<DynamicFormComponent>();
     preventDirtyUnload = input(false);
+
+    get patches(): Patch[] {
+        return Array.from(this._patches.entries()).map(([path, value]) => ({ path, op: 'replace', value }));
+    }
 
     get dirty() {
         return this.form()?.dirty;
@@ -218,7 +223,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
         if (changes['value']) {
-            // this._patches.clear();
+            this._patches.clear();
             this.form().patchValue(this.value());
             this.propagateChange();
         }
@@ -233,6 +238,9 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     injector = inject(Injector);
     ngOnInit() {}
 
+    ngSubmit() {
+        this.formRef().ngSubmit.emit();
+    }
     onSubmit(e: Event) {
         e?.stopPropagation();
         e?.preventDefault();
@@ -278,11 +286,11 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.graph()).find((c) => c[1].invalid && c[1].field().ui?.hidden !== true);
+        const c = Array.from(this.graph()).find(([c, f]) => f.invalid && f.field().ui?.hidden !== true);
         if (!c) return;
         const control = c[1] as FieldFormControl;
         control.markAsTouched();
-        const el = this.host.nativeElement.querySelector(`[name=${control.name}]`) as HTMLElement;
+        const el = this.host.nativeElement.querySelector(`form [name=${control.name}]`) as HTMLElement;
         if (el) this.scrollToElement(el);
     }
 
@@ -297,15 +305,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                     value: JsonPointer.get(this.value(), path),
                 } as Patch;
             });
-    }
-
-    getDirtyValue(): Record<string, any> {
-        const dirty = {};
-        const dirtyControls = Array.from(this.graph()).filter((e) => (e[1] as AbstractControl).dirty);
-        if (dirtyControls.length === 0) return null;
-
-        dirtyControls.map((e) => e[1]?.['path']).forEach((p) => JsonPointer.set(dirty, p, JsonPointer.get(this.value(), p)));
-        return dirty;
     }
 
     @HostListener('window:beforeunload', ['$event'])

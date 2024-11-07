@@ -23,7 +23,8 @@ type ViewType = 'list' | 'grid';
     ],
     exportAs: 'fileSelect',
     host: {
-        class: 'view()',
+        '[class]': 'view()',
+        '[attr.name]': 'name()',
     },
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {

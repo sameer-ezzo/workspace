@@ -8,6 +8,7 @@
             [checked]="value"
             (blur)="markAsTouched()"
             [disabled]="readonly()"
+            [attr.name]="name()"
         >
         </mat-slide-toggle>
     }
@@ -20,6 +21,8 @@
             [checked]="value"
             (blur)="markAsTouched()"
             [disabled]="readonly()"
+            [attr.name]="name()"
+
         >
         </mat-checkbox>
     }

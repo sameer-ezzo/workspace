@@ -3,7 +3,7 @@
         @if (label()) {
             <mat-label>{{ label() }}</mat-label>
         }
-        <input type="text" matInput [matAutocomplete]="auto" #input [value]="value()" [required]="required()" [formControl]="control()" [placeholder]="placeholder()" />
+        <input type="text" matInput [matAutocomplete]="auto" #input [required]="required()" [attr.name]="name()" [formControl]="control()" [placeholder]="placeholder()" />
         <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
             @for (item of adapter().normalized$ | async; track item) {
                 <mat-option [value]="item.display">

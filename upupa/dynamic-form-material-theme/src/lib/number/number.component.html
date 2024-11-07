@@ -2,19 +2,9 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <input
-        matInput
-        #input
-        type="number"
-        [value]="value()"
-        (input)="handleUserInput( $event.target?.['value'])"
-        (blur)="markAsTouched()"
-        [readonly]="readonly()"
-        [placeholder]="placeholder()"
-    />
+    <input matInput #input type="number" [formControl]="control()" [attr.name]="name()" [readonly]="readonly()" [placeholder]="placeholder()" />
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-
 </mat-form-field>

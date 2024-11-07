@@ -6,16 +6,18 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { AuthorizeModule } from '@upupa/authz';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
 import { JsonPipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'mat-btn',
     templateUrl: './mat-btn.component.html',
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, JsonPipe],
+    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, JsonPipe, MatProgressSpinnerModule],
     standalone: true,
 })
 export class MatBtnComponent {
     onClick = output<ActionEvent>();
 
+    loading = input(false);
     descriptor = input.required<ActionDescriptor>();
     disabled = input(false);
     isDisabled = computed(() => this.disabled() || this.descriptor().disabled);

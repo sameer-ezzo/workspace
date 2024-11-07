@@ -25,6 +25,8 @@
             (input)="inputChange($event.target, colorInput)"
             [value]="value()"
             (ngModelChange)="propagateChange();"
+            [attr.name]="name()"
+            [formControl]="control()"
         />
     </div>
 </div>

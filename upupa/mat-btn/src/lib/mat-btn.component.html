@@ -16,11 +16,13 @@
             (keydown.enter)="onAction($event)"
             mat-raised-button
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
+            }
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
             }
             {{ d.text }}
-            <ng-content class="spinner"> </ng-content>
         </button>
     }
     @case ('flat') {
@@ -39,11 +41,13 @@
             (click)="onAction($event)"
             mat-flat-button
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
+            }
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
             }
             {{ d.text }}
-            <ng-content class="spinner"></ng-content>
         </button>
     }
     @case ('stroked') {
@@ -62,12 +66,14 @@
             (click)="onAction($event)"
             mat-stroked-button
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
+            }
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
             }
 
             {{ d.text }}
-            <ng-content class="spinner"> </ng-content>
         </button>
     }
     @case ('icon') {
@@ -88,10 +94,12 @@
             [attr.aria-labelledby]="d.text"
             [attr.aria-label]="d.text"
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
             }
-            <ng-content class="spinner"> </ng-content>
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
+            }
         </button>
     }
     @case ('fab') {
@@ -112,10 +120,12 @@
             [attr.aria-labelledby]="d.text"
             [attr.aria-label]="d.text"
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
             }
-            <ng-content class="spinner"> </ng-content>
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
+            }
         </button>
     }
     @case ('mini-fab') {
@@ -136,10 +146,12 @@
             [attr.aria-labelledby]="d.text"
             [attr.aria-label]="d.text"
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
             }
-            <ng-content class="spinner"> </ng-content>
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
+            }
         </button>
     }
     @default {
@@ -158,11 +170,13 @@
             (click)="onAction($event)"
             mat-button
         >
-            @if (icon()) {
-                <mat-icon [attr.disabled]="disabled">{{ icon() }}</mat-icon>
+            @if (loading()) {
+                <mat-icon><mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="color()"></mat-spinner></mat-icon>
+            }
+            @if (icon() && !loading()) {
+                <mat-icon [attr.disabled]="isDisabled()">{{ icon() }}</mat-icon>
             }
             {{ d.text }}
-            <ng-content class="spinner"></ng-content>
         </button>
     }
 }

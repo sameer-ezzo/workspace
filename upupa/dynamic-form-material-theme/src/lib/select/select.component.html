@@ -15,7 +15,7 @@
             [required]="required()"
             [formControl]="control()"
             [compareWith]="compareWithFn()"
-            name="name()"
+            [attr.name]="name()"
         >
             <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
             @if (showSearch()) {
@@ -52,7 +52,7 @@
             [required]="required()"
             [formControl]="control()"
             [compareWith]="compareWithFn()"
-            name="name()"
+            [attr.name]="name()"
         >
             <ng-container [ngTemplateOutlet]="loadingTemplate"></ng-container>
             @if (showSearch()) {
@@ -112,7 +112,7 @@
             [placeholder]="placeholder() ?? ''"
             focusType="select"
             style="flex: 1; border: none; outline: none"
-            [value]="filterModel()??''"
+            [value]="filterModel() ?? ''"
             (input)="filterModel.set($event.target?.['value'])"
             (keydown.enter)="$event.stopPropagation(); updateFilter()"
         />

@@ -1,5 +1,6 @@
 <div class="form-wrapper">
     @let _vm = viewModel();
+
     <dynamic-form
         #dynForm
         [fields]="_vm.fields"
@@ -15,8 +16,13 @@
     ></dynamic-form>
 </div>
 
-@if (actions().length) {
+@if (submitActionButton() || actions().length) {
     <div class="toolbar footer">
+        @if (submitActionButton()) {
+            <!-- [disabled]="this.submitting() || (f.invalid && (f.dirty || f.touched))" -->
+            <mat-btn [descriptor]="submitActionButton()" [loading]="submitting()" (onClick)="dynForm.ngSubmit()"> </mat-btn>
+        }
+
         @for (descriptor of actions(); track descriptor.name) {
             <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
         }

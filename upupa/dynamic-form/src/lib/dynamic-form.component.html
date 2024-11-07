@@ -1,4 +1,4 @@
-<form [formGroup]="form()" [name]="name()" [attr.id]="name() + '_form'" (ngSubmit)="onSubmit($event)" >
+<form #ngFormRef="ngForm" [formGroup]="form()" [name]="name()" [attr.id]="name()" (ngSubmit)="onSubmit($event)">
     @for (record of fields() | orderedKeyValue; track $index) {
         @let fieldName = record.key;
 

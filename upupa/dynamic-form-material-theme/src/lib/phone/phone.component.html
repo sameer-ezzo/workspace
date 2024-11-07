@@ -38,6 +38,8 @@
             [readonly]="readonly()"
             [disabled]="disabled()"
             [placeholder]="placeholder()"
+            [attr.name]="name()"
+            [formControl]="control()"
         />
     </div>
 
@@ -93,4 +95,3 @@
     </div>
 </div>
 <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-
