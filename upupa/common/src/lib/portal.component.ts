@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+import { CommonModule } from '@angular/common';
 import {
     Component,
     EnvironmentInjector,
@@ -13,21 +13,14 @@ import {
     inject,
     input,
     output,
-} from "@angular/core";
-import { Subscription } from "rxjs";
-import { ContentNode, createContentNodes } from "./routing/with-content-projection";
-
-export type DynamicComponent = {
-    component: Type<any>;
-    inputs?: Record<string, any>;
-    content?: ContentNode[][];
-    outputs?: Record<string, (e: any) => void | Promise<void>>;
-    class?: string;
-    injector?: Injector;
-};
+} from '@angular/core';
+import { Subscription } from 'rxjs';
+import { createContentNodes } from './routing/create-content-nodes';
+import { ContentNode } from './routing/content-node';
+import { DynamicComponent } from './dynamic-component';
 
 @Component({
-    selector: "portal",
+    selector: 'portal',
     standalone: true,
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
@@ -57,8 +50,8 @@ export class PortalComponent {
     ngOnChanges(changes: SimpleChanges) {
         const _template = this.template();
         const _component = this.component();
-        if (_template && _component) throw new Error("You must provide either template or component but not both");
-        if (!_template && !_component) throw new Error("You must provide either template or component but not both");
+        if (_template && _component) throw new Error('You must provide either template or component but not both');
+        if (!_template && !_component) throw new Error('You must provide either template or component but not both');
 
         const template: DynamicComponent = {
             component: _component ?? _template?.component,
@@ -69,16 +62,16 @@ export class PortalComponent {
             injector: this.injector() ?? _template?.injector,
         };
 
-        if (changes["component"] || changes["content"] || changes["template"]) {
+        if (changes['component'] || changes['content'] || changes['template']) {
             this.detach();
             this.attach(template);
         }
 
-        if (changes["outputs"] && !changes["outputs"].firstChange) {
+        if (changes['outputs'] && !changes['outputs'].firstChange) {
             this.subscribeToOutputs(template.outputs ?? {});
         }
 
-        if (changes["inputs"] && !changes["inputs"].firstChange) {
+        if (changes['inputs'] && !changes['inputs'].firstChange) {
             this.setInputs(template.inputs ?? {});
         }
     }

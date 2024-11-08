@@ -12,6 +12,7 @@ export * from './lib/collector/utils';
 export * from './lib/focusleave.dir';
 export * from './lib/collector/collector.component';
 export * from './lib/dynamic-form.component';
+export * from './lib/dynamic-form-field.component';
 
 export * from './lib/di.token';
 

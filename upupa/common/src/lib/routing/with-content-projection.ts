@@ -1,10 +1,9 @@
-import { DOCUMENT } from "@angular/common";
-import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef, signal } from "@angular/core";
-import { RouteFeature } from "./route-feature";
-import { EnvironmentContext } from "twilio/lib/rest/serverless/v1/service/environment";
-import { DynamicComponent, PortalComponent } from "../portal.component";
-
-export type ContentNode = string | Type<any> | DynamicComponent | ComponentRef<any> | TemplateRef<any>;
+import { DOCUMENT } from '@angular/common';
+import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef } from '@angular/core';
+import { RouteFeature } from './route-feature';
+import { PortalComponent } from '../portal.component';
+import { ContentNode } from './content-node';
+import { createContentNodes } from './create-content-nodes';
 
 /**
  * a wrapper for function @angular/core:createComponent that enables dynamic projection of content nodes to the component.
@@ -20,7 +19,7 @@ export function provideComponent(
         inputs?: Record<string, any>;
         projectableNodes?: ContentNode[][];
 
-        injector?: EnvironmentContext;
+        injector?: Injector;
         hostElement?: Element;
         elementInjector?: Injector;
     },
@@ -41,17 +40,12 @@ export function provideComponent(
     return ref;
 }
 
-export function createContentNodes(content: ContentNode[][], environmentInjector: EnvironmentInjector): Node[][] {
-    if (!content) return [];
-    return content.map((projectedContents) => projectedContents.map((content) => createContentNode(content, environmentInjector)));
-}
-
-function createContentNode(content: ContentNode, environmentInjector: EnvironmentInjector | null): Node {
+export function createContentNode(content: ContentNode, environmentInjector: EnvironmentInjector | null): Node {
     //native html element
-    if (typeof content === "string") {
+    if (typeof content === 'string') {
         const document = environmentInjector.get(DOCUMENT);
-        document.createElement("div").innerHTML = content;
-        const div = document.createElement("div");
+        document.createElement('div').innerHTML = content;
+        const div = document.createElement('div');
         div.innerHTML = content;
         return div;
     }
@@ -66,7 +60,7 @@ function createContentNode(content: ContentNode, environmentInjector: Environmen
 
     // create component (and set inputs if necessary)
     let componentRef: ComponentRef<any>;
-    if ("component" in content) componentRef = provideComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
+    if ('component' in content) componentRef = provideComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
     else componentRef = provideComponent(content, { environmentInjector });
 
     return componentRef.location.nativeElement;
@@ -79,7 +73,7 @@ function createContentNode(content: ContentNode, environmentInjector: Environmen
  */
 export function withComponentInputs(inputs: Record<string, any>): RouteFeature {
     return {
-        name: "withComponentInputs",
+        name: 'withComponentInputs',
         modify: () => ({ data: input }),
     };
 }
@@ -91,7 +85,7 @@ export function withComponentInputs(inputs: Record<string, any>): RouteFeature {
  */
 export function withContentProjection(projectedNodes: ContentNode[][]): RouteFeature {
     return {
-        name: "withContentProjection",
+        name: 'withContentProjection',
         modify: (route) => ({
             sealed: true,
             component: PortalComponent, // override route.component

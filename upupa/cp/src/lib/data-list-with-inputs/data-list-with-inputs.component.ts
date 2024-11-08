@@ -1,11 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from '@angular/core';
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from '@upupa/data';
 import { ActivatedRoute } from '@angular/router';
-import { ActionEvent, DynamicComponent } from '@upupa/common';
+import { ActionEvent, DynamicComponent, PortalComponent } from '@upupa/common';
 import { DataListViewModelQueryParam, DataTableComponent, DataTableModule, resolveDataListInputsFor } from '@upupa/table';
 
 import { CommonModule } from '@angular/common';
-import { PortalComponent } from '../../../../common/src/lib/portal.component';
+
 import { DataListViewModel } from './viewmodels/api-data-table-viewmodel';
 
 @Component({

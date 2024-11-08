@@ -45,6 +45,8 @@ export * from './lib/routing/route-feature';
 export * from './lib/routing/route-preload';
 export * from './lib/routing/route-resolver';
 export * from './lib/routing/with-content-projection';
+export * from './lib/routing/content-node';
+export * from './lib/routing/create-content-nodes';
 
 export * from './lib/view-transitions/view-transitions';
 
@@ -53,3 +55,4 @@ export * from './lib/portal.component';
 
 
 export * from './lib/portal.component';
+export * from './lib/dynamic-component';
