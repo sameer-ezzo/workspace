@@ -50,3 +50,6 @@ export * from './lib/view-transitions/view-transitions';
 
 export * from './lib/ssr/http-tokens';
 export * from './lib/portal.component';
+
+
+export * from './lib/portal.component';

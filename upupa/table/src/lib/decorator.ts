@@ -1,5 +1,6 @@
 import { DataAdapterDescriptor, DataAdapterType } from '@upupa/data';
 import { ColumnsDescriptor } from './types';
+import 'reflect-metadata';
 
 const dataListInputsMetadataKey = Symbol('custom:data_list_view_model_inputs');
 
@@ -25,19 +26,9 @@ export function resolveDataListInputsFor(target: any): DataListViewModelInputs {
     return Reflect.getMetadata(dataListInputsMetadataKey, target) ?? {};
 }
 
-export const setDataListMetadataFor = (
-    target: any,
-    value: Record<string, unknown>
-) => {
+export const setDataListMetadataFor = (target: any, value: Record<string, unknown>) => {
     let targetMeta = resolveDataListInputsFor(target);
-    const parent = target.prototype
-        ? Object.getPrototypeOf(target.prototype)?.constructor
-        : null;
-    if (parent && parent.constructor)
-        targetMeta = { ...resolveDataListInputsFor(parent), ...targetMeta };
-    Reflect.defineMetadata(
-        dataListInputsMetadataKey,
-        { ...targetMeta, ...value },
-        target
-    );
+    const parent = target.prototype ? Object.getPrototypeOf(target.prototype)?.constructor : null;
+    if (parent && parent.constructor) targetMeta = { ...resolveDataListInputsFor(parent), ...targetMeta };
+    Reflect.defineMetadata(dataListInputsMetadataKey, { ...targetMeta, ...value }, target);
 };

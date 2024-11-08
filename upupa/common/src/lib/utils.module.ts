@@ -21,6 +21,7 @@ import { FocusDirective } from './directives/focus.directive';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { ErrorsDirective } from './directives/errors.directive';
+import { PortalComponent } from './portal.component';
 
 const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe, ErrorsDirective];
 
@@ -38,21 +39,11 @@ const imports = [
     ReactiveFormsModule,
     MatBadgeModule,
     MatTooltipModule,
+    PortalComponent,
 ];
 @NgModule({
     declarations,
     imports: [CommonModule, FormsModule, ...imports],
     exports: [...declarations, ...imports],
 })
-export class UtilsModule {
-    static forRoot(
-        options: { logLevel: 'ERROR' | 'DEBUG' | 'INFO' } = {
-            logLevel: 'ERROR',
-        }
-    ): ModuleWithProviders<UtilsModule> {
-        return {
-            ngModule: UtilsModule,
-            providers: [],
-        };
-    }
-}
+export class UtilsModule {}

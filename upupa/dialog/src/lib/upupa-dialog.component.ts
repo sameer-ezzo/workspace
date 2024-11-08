@@ -6,12 +6,12 @@ import { fromEvent } from 'rxjs';
 import { debounceTime, startWith } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
-import { ActionDescriptor, ActionEvent } from '@upupa/common';
+import { ActionDescriptor, ActionEvent, DynamicComponent, PortalComponent } from '@upupa/common';
 import { MatBtnComponent } from '@upupa/mat-btn';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { DialogRefD, UpupaDialogActionContext, UpupaDialogPortal } from './dialog.service';
-import { DynamicComponent, PortalComponent } from '../../../common/src/lib/portal.component';
+
 
 @Component({
     selector: 'upupa-dialog',
