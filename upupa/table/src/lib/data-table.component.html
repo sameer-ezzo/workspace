@@ -60,6 +60,7 @@
                                 [inputs]="
                                     merge(template.inputs, {
                                         value: element.item | jpointer: descriptor.key,
+                                        item: element.item,
                                         element,
                                         descriptor,
                                         dataIndex,
@@ -68,7 +69,7 @@
                                 [outputs]="template['outputs']"
                             ></portal>
                         } @empty {
-                            <cell-template [value]="element.item | jpointer: descriptor.key" [element]="element" [descriptor]="descriptor"></cell-template>
+                            <cell-template [value]="element.item | jpointer: descriptor.key" [item]="element" [element]="element.item" [descriptor]="descriptor"></cell-template>
                         }
                     </div>
                 </td>

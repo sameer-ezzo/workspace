@@ -62,7 +62,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     });
     pageSizeOptions = input<number[]>([10, 25, 50, 100, 200]);
 
-    rowClass = input<(item: NormalizedItem<T>) => string>((item) => item.key.toString());
+    rowClass = input<(item: NormalizedItem<T>) => string>((item) => (item.key ?? item).toString());
 
     _properties: ColumnsDescriptorStrict = {}; //only data columns
     _columns: string[] = [];

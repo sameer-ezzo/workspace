@@ -1,11 +1,8 @@
-@if (label()) {
-    <h3 class="label">{{ label() }}</h3>
-}
 @if (showSearch()) {
     <!-- (click)="onFilter(q())"  (keydown.enter)="onFilter(q())" -->
     <div id="search-box-wrapper">
-        <input style="background: transparent; outline: none; border: none; display: flex; flex: 1" placeholder="Search" [(ngModel)]="q"  />
-        <button mat-icon-button >
+        <input style="background: transparent; outline: none; border: none; display: flex; flex: 1" placeholder="Search" [(ngModel)]="q" />
+        <button mat-icon-button>
             <mat-icon>search</mat-icon>
         </button>
     </div>

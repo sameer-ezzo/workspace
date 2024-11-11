@@ -6,6 +6,7 @@ import { ControlValueAccessor } from '@angular/forms';
 import { forwardRef } from '@angular/core';
 import { OnChanges } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
     selector: 'value-data-base',
@@ -20,7 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     ],
 })
 export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
-    name = input<string, string>('', {
+    name = input<string, string>(`field_${Date.now()}`, {
         alias: 'fieldName',
         transform: (v) => (v ? v : `field_${Date.now()}`),
     });
@@ -57,11 +58,12 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
                 const keyProperty = adapter?.keyProperty;
                 if (keyProperty) {
                     this.compareWithFn.set((optionValue: any, selectionValue: any) => {
-                        if (optionValue === undefined || selectionValue === undefined) return false;
+                        if (optionValue == null || selectionValue == null) return false;
                         return optionValue[keyProperty] === selectionValue?.[keyProperty];
                     });
                 } else {
                     this.compareWithFn.set((optionValue: any, selectionValue: any) => {
+                        if (optionValue == null || selectionValue == null) return false;
                         return optionValue === selectionValue;
                     });
                 }
@@ -72,15 +74,6 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
             if (this.loadingMode() !== 'eager') return;
             this.viewDataSource.next('adapter');
             this.refreshData();
-        });
-
-        effect(() => {
-            const control = this.control();
-            if (control) {
-                control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef), distinctUntilChanged()).subscribe((v) => {
-                    this.writeValue(v);
-                });
-            }
         });
     }
     // >>>>> ControlValueAccessor ----------------------------------------
@@ -98,7 +91,7 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     writeValue(v: Partial<T> | Partial<T>[]): void {
         this.value.set(v);
         this.selectionModel.clear();
-        if (v != undefined) this.select(v);
+        if (v != null) this.select(v);
     }
 
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {

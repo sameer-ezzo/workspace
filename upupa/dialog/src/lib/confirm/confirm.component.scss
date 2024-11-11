@@ -1,11 +1,12 @@
 :host {
     display: flex;
     flex-flow: column nowrap;
-    padding: 1rem;
+
     .body {
         display: flex;
         flex-flow: row nowrap;
         padding: 1rem;
+        margin-block-end: 1rem;
         img {
             max-width: 50px;
         }
@@ -19,9 +20,9 @@
         display: flex;
         flex-flow: row nowrap;
         justify-content: flex-end;
-        padding: 0 1rem;
-        button {
-            margin-left: 1rem;
+        padding-inline: 1rem;
+        & > mat-btn:not(:last-child) {
+            margin-inline-end: 0.25rem;
         }
     }
 }

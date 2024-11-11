@@ -118,13 +118,13 @@ const declarations = [
     FileSelectComponent,
     FileIconPerTypePipe,
     HiddenComponent,
-    ParagraphComponent,
     RecaptchaComponent,
     RecaptchaDirective,
 ];
 
 const imports = [
     ...materialModules,
+    ParagraphComponent,
     ArrayInputComponent,
     UtilsModule,
     CommonModule,

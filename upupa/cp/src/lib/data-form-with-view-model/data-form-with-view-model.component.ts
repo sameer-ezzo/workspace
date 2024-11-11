@@ -1,4 +1,4 @@
-import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef } from '@angular/core';
+import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef, output } from '@angular/core';
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from '@upupa/dynamic-form';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
@@ -37,10 +37,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
     private readonly injector = inject(Injector);
 
-
     dynamicFormEl = viewChild(DynamicFormComponent);
     form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-    dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>>;
+    dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>> = inject(MatDialogRef, { optional: true });
 
     loading = signal(false);
 
@@ -56,9 +55,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     // form actions
 
     submitActionButton = computed(() => {
-        const form = this.form();
         const { onSubmitAction } = this.viewModel();
-        if (!onSubmitAction) return undefined;
         return onSubmitAction;
     });
     canSubmit = signal(false);
@@ -85,24 +82,24 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     }
 
     onValueChange(e: any) {
-        
-
-
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             await vm['onValueChange']?.(e);
         });
     }
 
+    submitted = output<{ submitResult?: any; error?: any }>();
     submitting = signal(false);
     async onSubmit() {
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             try {
                 this.submitting.set(true);
-                await vm['onSubmit']();
-                if (vm['afterSubmit']) vm['afterSubmit']?.();
+                const submitResult = await vm['onSubmit']();
+                this.submitted.emit({ submitResult });
+                this.dialogRef?.close(this.value());
             } catch (error) {
+                this.submitted.emit({ error });
             } finally {
                 this.submitting.set(false);
             }

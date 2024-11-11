@@ -1,28 +1,16 @@
 @if (label()) {
-<mat-label>{{ label() }}</mat-label>
+    <mat-label>{{ label() }}</mat-label>
 }
 
-<!-- (selectionChange)="onSelectionChange($event)"
-(sortChange)="onSortChange($event)"
-(focusedItem)="onFocusedItemChanged($event)" -->
-<!-- [tableName]="name()" -->
-{{ adapter().normalized$ | async | json }}
-<data-table
-    #dataTable
-    [adapter]="adapter()"
-    [columns]="columns()"
-    (pageChange)="onPageChange($event)"
->
+<data-table #dataTable [tableName]="name()" [adapter]="adapter" [columns]="columns()">
     @if (tableHeaderComponent(); as template) {
-    <portal
-        class="table-header"
-        [component]="template.component"
-        [inputs]="template.inputs"
-        [outputs]="template.outputs"
-        [content]="template.content"
-        [className]="template.class"
-    ></portal>
-    } @else {
-    <ng-content class="table-header"></ng-content>
+        <portal
+            class="table-header"
+            [component]="template.component"
+            [inputs]="template.inputs"
+            [outputs]="template.outputs"
+            [content]="template.content"
+            [className]="template.class"
+        ></portal>
     }
 </data-table>

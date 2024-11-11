@@ -19,8 +19,13 @@
 @if (submitActionButton() || actions().length) {
     <div class="toolbar footer">
         @if (submitActionButton()) {
-            <!-- [disabled]="this.submitting() || (f.invalid && (f.dirty || f.touched))" -->
-            <mat-btn [descriptor]="submitActionButton()" [loading]="submitting()" (onClick)="dynForm.ngSubmit()"> </mat-btn>
+            <mat-btn
+                [descriptor]="submitActionButton()"
+                [loading]="submitting()"
+                (onClick)="dynForm.ngSubmit()"
+                [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
+            >
+            </mat-btn>
         }
 
         @for (descriptor of actions(); track descriptor.name) {

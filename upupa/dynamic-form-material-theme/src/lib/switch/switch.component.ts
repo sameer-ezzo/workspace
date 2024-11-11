@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, forwardRef, input, viewChild } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, effect, forwardRef, input, viewChild } from '@angular/core';
+import { FormControlDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { MatError, MatHint } from '@angular/material/form-field';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
+import { UtilsModule } from '@upupa/common';
+import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
     selector: 'mat-form-switch-input',
@@ -15,6 +17,8 @@ import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
             multi: true,
         },
     ],
+    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule],
+    standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': 'template()',
@@ -25,6 +29,19 @@ export class MatSwitchComponent extends SwitchComponent {
     inputEl = viewChild.required<MatSlideToggle | MatCheckbox>('_inputElement');
     override template = input<'checkbox' | 'toggle'>('checkbox');
 
+    constructor() {
+        super();
+        effect(
+            () => {
+                const ctrl = this.control();
+                const disabled = this.disabled();
+                if (!ctrl) return;
+                if (disabled) ctrl.disable();
+                else ctrl.enable();
+            },
+            { allowSignalWrites: true },
+        );
+    }
     changeValue() {
         const input = this.inputEl();
         input?.toggle();

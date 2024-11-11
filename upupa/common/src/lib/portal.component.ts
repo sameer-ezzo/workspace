@@ -38,7 +38,7 @@ export class PortalComponent {
     component = input<Type<any>>();
     inputs = input<Record<string, any>>();
     class = input<string>();
-    outputs = input<Record<string, (any) => void>>();
+    outputs = input<Record<string, (source: ComponentRef<any>, e: any) => void>>();
     content = input<ContentNode[][]>(undefined);
     injector = input<Injector>(this.host.injector);
 
@@ -119,13 +119,13 @@ export class PortalComponent {
         this.componentRef.changeDetectorRef.detectChanges();
     }
 
-    subscribeToOutputs(outputs: Record<string, (e: any) => void | Promise<void>>) {
+    subscribeToOutputs(outputs: Record<string, (source: ComponentRef<any>, e: any) => void | Promise<void>>) {
         this.unsubscribeToOutputs();
 
-        for (const [key, value] of Object.entries(outputs)) {
+        for (const [key, handler] of Object.entries(outputs)) {
             if (this.componentMirror.outputs.some((o) => o.templateName === key)) {
                 const emitter = this.componentRef.instance[key] as EventEmitter<any>;
-                emitter.subscribe(value);
+                emitter.subscribe((e) => handler(this.componentRef, e));
             }
         }
     }

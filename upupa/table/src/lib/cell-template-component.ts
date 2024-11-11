@@ -3,9 +3,10 @@ import { Component, input, Input, InputSignal } from '@angular/core';
 import { ColumnDescriptor } from './types';
 import { NormalizedItem } from '@upupa/data';
 
-export interface ITableCellTemplate<TValue = any, TElement = any> {
+export interface ITableCellTemplate<TValue = any, TItem = any> {
     value?: InputSignal<TValue>;
-    element?: InputSignal<{ item: TElement }>;
+    element?: InputSignal<{ item: TItem }>;
+    item?: InputSignal<TItem>;
     dataIndex?: InputSignal<number>;
     descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
@@ -13,24 +14,20 @@ export interface ITableCellTemplate<TValue = any, TElement = any> {
 @Component({
     selector: 'cell-template',
     template: `
-        @if (descriptor().value.pipe) { @if (descriptor().value.pipe["pipe"]) {
-        <div
-            [innerHTML]="
-                value()
-                    | dynamic
-                        : descriptor().value.pipe['pipe']
-                        : descriptor().value.pipe['args']
-            "
-        ></div>
+        @if (descriptor().value.pipe) {
+            @if (descriptor().value.pipe['pipe']) {
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
+            } @else {
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
+            }
         } @else {
-        <div [innerHTML]="value() | dynamic : descriptor().value.pipe"></div>
-        } } @else {
-        {{ value() }}
+            {{ value() }}
         }
     `,
 })
 export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
     value = input.required();
     element = input.required<NormalizedItem<T>>();
+    item = input.required<T>();
     descriptor = input<KeyValue<string, ColumnDescriptor>>();
 }

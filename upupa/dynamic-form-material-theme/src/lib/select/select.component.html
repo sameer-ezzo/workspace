@@ -43,9 +43,11 @@
         </mat-select>
     } @else {
         <!-- [disabled]="disabled()" -->
+        <!-- (selectionChange)="select($event.value)" -->
         <mat-select
             #selectInput
             (openedChange)="openedChange($event, selectInput)"
+            (keydown)="keyDown($event, selectInput)"
             (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
             [panelClass]="panelClass()"
             [placeholder]="placeholder()"

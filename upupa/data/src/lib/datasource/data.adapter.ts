@@ -16,7 +16,7 @@ export type DataAdapterDescriptor<TData = any> = {
     imageProperty?: Key<TData>;
     options?: ProviderOptions<TData>;
 } & (
-    | ({ type: 'server'; path: string } | { type: 'api'; path: string })
+    | ({ type: 'server'; path: string; select?: string[] } | { type: 'api'; path: string; select?: string[] })
     | { type: 'client'; data: TData[] | Promise<TData[]> }
     | { type: 'http'; url: string; httpOptions?: HttpServerDataSourceOptions }
 );
@@ -75,7 +75,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         readonly displayProperty?: Key<T>,
         readonly valueProperty?: Key<T>,
         readonly imageProperty?: Key<T>,
-        readonly options?: ProviderOptions<T>
+        readonly options?: ProviderOptions<T>,
     ) {
         super(dataSource.data$);
 
@@ -115,7 +115,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         const source = this.dataSource.getItems(itemsNotInAdapter, this.keyProperty).pipe(
             map((items) => items.filter((x) => itemsInAdapter.findIndex((n) => n.key === x?.[this.keyProperty]) === -1)),
             map((items) => items.map((i) => this.normalize(i))),
-            map((items) => items.concat(itemsInAdapter))
+            map((items) => items.concat(itemsInAdapter)),
         );
 
         return firstValueFrom(source);
@@ -218,7 +218,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
                 this.filter,
                 this.sort,
                 this.page,
-                terms.map((t) => t.field)
+                terms.map((t) => t.field),
             );
         } else {
             this.dataSource.init({
