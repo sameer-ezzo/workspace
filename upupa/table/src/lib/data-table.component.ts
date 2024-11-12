@@ -25,7 +25,7 @@ import {
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
-import { NormalizedItem } from '@upupa/data';
+import { DataAdapter, NormalizedItem } from '@upupa/data';
 
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { DataComponentBase } from './data-base.component';
@@ -97,6 +97,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                         provide: ROW_ITEM,
                         useValue: row.item,
                     },
+                    {
+                        provide: DataAdapter,
+                        useValue: this.adapter(),
+                    },
                 ],
                 name: 'RowInjector',
                 parent: this.injector,
@@ -116,6 +120,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     override ngOnInit() {
         super.ngOnInit();
         this.dataChangeListeners.push((data) => {
+            this._rowInjectors.clear(); //clear row injectors on data change
             if (this.columns() === 'auto') this.generateColumns();
         });
 

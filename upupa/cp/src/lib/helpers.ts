@@ -2,14 +2,14 @@ import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputE
 import { ActionDescriptor, ActionEvent, DynamicComponent } from '@upupa/common';
 import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService } from '@upupa/dialog';
 import { MatBtnComponent } from '@upupa/mat-btn';
-import { DataTableComponent } from '@upupa/table';
+import { DataTableComponent, injectRowItem } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
 import { DataFormWithViewModelComponent } from './data-form-with-view-model/data-form-with-view-model.component';
-import { ClientDataSource, DataService, NormalizedItem } from '@upupa/data';
+import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from '@upupa/data';
 import { Class } from '@noah-ark/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
-import { HttpClient } from '@angular/common/http';
+import { run } from 'node:test';
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
@@ -98,7 +98,7 @@ export function createButton(formViewModel: Class, options?: { descriptor?: Part
 
     return inlineButton({
         descriptor: options.descriptor,
-        handler: (source) => editFormDialog(formViewModel, source),
+        handler: (source) => editFormDialog.call(source, formViewModel),
         item: null,
     });
 }
@@ -139,7 +139,6 @@ async function editFormDialog<T>(vm: Class, value = readInput('item', this)) {
     const snack = inject(SnackBarService);
     const injector = inject(Injector);
     const v = await value;
-
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector });
     const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent['submitted']>('submitted', componentRef.instance);
     if (error) snack.openFailed('', error);
@@ -175,6 +174,66 @@ function readInput(input: string, instance = this) {
     const inputRef = instance[input];
     if (typeof inputRef === 'function') return inputRef();
     return inputRef;
+}
+
+export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean> {
+    const confirm = inject(ConfirmService);
+    return confirm.openWarning(options);
+}
+
+
+
+
+async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any | Promise<any> = null) {
+    const snack = inject(SnackBarService);
+    const injector = inject(Injector);
+    if (!(await openConfirmationDialog(confirmOptions))) return;
+    try {
+        runInInjectionContext(injector, async () => {
+            return await deleteFn?.();
+        });
+    } catch (error) {
+        snack.openFailed('', error);
+    }
+}
+
+export function deleteValueFromAdapter(item: any) {
+    const adapter = inject(DataAdapter);
+    if (!adapter) throw new Error('DataAdapter not found');
+    if (!(adapter.dataSource instanceof ClientDataSource)) throw new Error('DataAdapter is not a ClientDataSource');
+    adapter.dataSource.all = adapter.dataSource.all.filter((i) => i !== item);
+}
+
+export function deleteValueFromApi(path: string) {
+    const ds = inject(DataService);
+    return ds.delete(path);
+}
+
+export function deleteButton(
+    deleteFn: () => any | Promise<any>,
+    options?: {
+        confirm?: ConfirmOptions;
+        descriptor?: Partial<ActionDescriptor>;
+    },
+): Type<any> | DynamicComponent {
+    options ??= {};
+    const defaultDeleteDescriptor: Partial<ActionDescriptor> = {
+        text: 'Delete',
+        icon: 'delete',
+        variant: 'icon',
+        color: 'warn',
+    };
+    options.descriptor = merge(defaultDeleteDescriptor, options.descriptor);
+
+    const confirmOptions = merge({ title: 'Delete', confirmText: 'Are you sure you want to delete this item?', no: 'Keep it', yes: 'Delete' }, options?.confirm ?? {});
+    return inlineButton({
+        descriptor: options.descriptor,
+        handler: (source) => {
+            // const item = readInput('item', source);
+            deleteItem.call(source, confirmOptions, deleteFn);
+        },
+        item: null,
+    });
 }
 
 @Component({
@@ -227,10 +286,7 @@ export class DeleteButtonComponent<T = any> {
             } else {
                 const path = options.path;
                 if (!path || path.trim().length === 0) throw new Error('Path is required');
-
                 await ds.delete(path);
-                await ds.refreshCache(path);
-                this.table.adapter().refresh();
             }
         } catch (e) {
             console.error(e);
@@ -238,101 +294,4 @@ export class DeleteButtonComponent<T = any> {
             this.deleting.set(false);
         }
     }
-}
-
-@Component({
-    selector: 'edit-button',
-    imports: [MatBtnComponent],
-    standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
-    styles: [],
-})
-export class EditButtonComponent<T = any> {
-    dialogOptions = input<Partial<DialogServiceConfig>>({
-        title: 'Edit',
-        canEscape: false,
-    });
-
-    viewModel = input.required<Class>();
-    buttonDescriptor = input.required<ActionDescriptor>();
-    options = input.required<any>();
-    dialog = inject(DialogService);
-    path = input<(item) => string>();
-    element = input<NormalizedItem<T>>(null);
-
-    private readonly table = inject(DataTableComponent);
-    private readonly injector = inject(Injector);
-    async onClick(e: ActionEvent) {
-        const viewModel = this.viewModel();
-        const element = this.element();
-        let value = element.item;
-        const path = this.path();
-        if (path) {
-            const ds = this.injector.get(DataService);
-            const resolvedPath = typeof path === 'function' ? path(value) : path;
-            value = await firstValueFrom(ds.get(resolvedPath)).then((r) => r.data?.[0]);
-        }
-        const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
-            ...this.dialogOptions(),
-            inputs: {
-                ...this.dialogOptions().inputs,
-                viewModel: viewModel,
-                value: value,
-            },
-        });
-        const result = await firstValueFrom(ref.afterClosed());
-
-        const adapter = this.table.adapter();
-        if (adapter.dataSource instanceof ClientDataSource) {
-            const normalizedResult = adapter.normalize(result);
-            adapter.dataSource.all = adapter.dataSource.all.map((i) => (i === element.item ? normalizedResult : i));
-        } else this.table.adapter().refresh();
-    }
-}
-
-// export function editButton(options: { descriptor?: Partial<ActionDescriptor>; formViewModel: Class; path?: (item) => string }): DynamicComponent {
-//     if (!options || !options.formViewModel) throw new Error('formViewModel is required');
-//     const defaultEditDescriptor: Partial<ActionDescriptor> = {
-//         text: 'Edit',
-//         icon: 'edit',
-//         variant: 'icon',
-//         color: 'accent',
-//     };
-//     options.descriptor = merge(defaultEditDescriptor, options.descriptor || {});
-
-//     const template = {
-//         inputs: {
-//             viewModel: options.formViewModel,
-//             buttonDescriptor: options.descriptor,
-//             path: options.path,
-//         },
-//         component: EditButtonComponent,
-//     } as DynamicComponent;
-
-//     return template;
-// }
-
-export function deleteButton(options?: {
-    descriptor?: Partial<ActionDescriptor>;
-    optionsFactory?: (selected: any) => Partial<{ path: string } & ConfirmOptions>;
-}): DynamicComponent {
-    options = options || {};
-
-    const defaultDeleteDescriptor: Partial<ActionDescriptor> = {
-        text: 'Delete',
-        icon: 'delete',
-        variant: 'icon',
-        color: 'warn',
-    };
-    options.descriptor = merge(defaultDeleteDescriptor, options.descriptor || {});
-
-    const template = {
-        inputs: {
-            buttonDescriptor: options.descriptor,
-            options: options.optionsFactory,
-        },
-        component: DeleteButtonComponent,
-    } as DynamicComponent;
-
-    return template;
 }
