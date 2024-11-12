@@ -92,7 +92,7 @@
 
         <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc"></tr>
 
-        @if (expandable() !== 'none' && expandableTemplate()) {
+        @if (expandable() !== "none" && expandableTemplate()) {
             <ng-container matColumnDef="expandedDetail" [sticky]="columns()['actions']?.sticky === 'start'">
                 <td
                     mat-cell
@@ -108,7 +108,7 @@
         }
     </table>
 
-    @if (firstLoad() === true && (adapter().normalized$ | async)?.length === 0) {
+    @if (!items().length) {
         <div id="no-data" style="text-align: center; padding: 2rem">
             @if (noDataImage()) {
                 <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />

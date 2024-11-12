@@ -1,5 +1,4 @@
-{{ items | async }}
-<mat-form-field [appearance]="appearance()" (keydown)="keyDown($event, matSelectInput())" [floatLabel]="floatLabel()" style="width: 100%">
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
@@ -20,9 +19,9 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            <ng-container [ngTemplateOutlet]="showOnlySelected"></ng-container>
+            <ng-container [ngTemplateOutlet]="showOnlySelectedTemplate"></ng-container>
 
-            @for (item of items | async; track i; let i = $index) {
+            @for (item of items(); track i; let i = $index) {
                 <mat-option [value]="item.key">
                     @if (itemTemplate) {
                         <ng-container [ngTemplateOutlet]="itemTemplate()" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
@@ -61,7 +60,7 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @for (item of items | async; track i; let i = $index) {
+            @for (item of items(); track i; let i = $index) {
                 <mat-option [value]="item.key">
                     @if (itemTemplate) {
                         <ng-container [ngTemplateOutlet]="itemTemplate()" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
@@ -110,15 +109,13 @@
     }
 </ng-template>
 
-<ng-template #showOnlySelected>
+<ng-template #showOnlySelectedTemplate>
     @if (selectedNormalized | async; as sns) {
         @if (sns.length > 0) {
             <div class="selected-wrapper">
                 <span>{{ sns.length }} Selected</span>
                 <span style="flex: 1 1 auto"></span>
-                <mat-checkbox #toggle [checked]="(viewDataSource | async) === 'selected'" (change)="viewDataSource.next(toggle.checked ? 'selected' : 'adapter')"
-                    >Show only selected
-                </mat-checkbox>
+                <mat-checkbox #toggle [checked]="showOnlySelected()" (change)="showOnlySelected.set($event.checked)">Show only selected</mat-checkbox>
             </div>
         }
     }
@@ -132,7 +129,7 @@
             [placeholder]="placeholder() ?? ''"
             focusType="select"
             style="flex: 1; border: none; outline: none"
-            [value]="filterModel()||''"
+            [value]="filterModel() || ''"
             (input)="filterModel.set($event.target?.['value'])"
             (keydown.enter)="$event.stopPropagation(); updateFilter()"
         />

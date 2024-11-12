@@ -30,7 +30,7 @@
     />
 
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event.option.value)">
-        @for (opt of items | async; track opt.key) {
+        @for (opt of items(); track opt.key) {
             <mat-option [value]="opt.key">
                 @if (opt.image) {
                     <img [src]="opt.image" [attr.alt]="opt.display" />

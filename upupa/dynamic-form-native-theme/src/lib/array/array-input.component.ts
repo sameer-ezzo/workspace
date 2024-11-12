@@ -20,7 +20,7 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
         },
     ],
 })
-export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> implements OnDestroy, OnChanges {
+export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> implements OnChanges {
     label = input('');
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {

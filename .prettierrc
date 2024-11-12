@@ -1,0 +1,14 @@
+{
+    "tabWidth": 4,
+    "printWidth": 180,
+    "overrides": [
+        {
+            "files": [
+                "*.component.html"
+            ],
+            "options": {
+                "parser": "angular"
+            }
+        }
+    ]
+}

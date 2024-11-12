@@ -1,15 +1,32 @@
-import { Component, DestroyRef, EventEmitter, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import { BehaviorSubject, map, Subscription } from 'rxjs';
-import { DataAdapter, NormalizedItem } from '@upupa/data';
-import { SelectionModel } from '@angular/cdk/collections';
+import {
+    Component,
+    DestroyRef,
+    EventEmitter,
+    Injector,
+    Output,
+    Signal,
+    SimpleChanges,
+    computed,
+    effect,
+    inject,
+    input,
+    model,
+    output,
+    runInInjectionContext,
+    signal,
+} from "@angular/core";
+import { PageEvent } from "@angular/material/paginator";
+import { Sort } from "@angular/material/sort";
+import { BehaviorSubject, firstValueFrom, map, Subscription } from "rxjs";
+import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { SelectionModel } from "@angular/cdk/collections";
 
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
+import { delay } from "@noah-ark/common";
 
 @Component({
-    selector: 'data-base',
-    template: '',
+    selector: "data-base",
+    template: "",
     styles: [],
 })
 export class DataComponentBase<T = any> {
@@ -19,9 +36,9 @@ export class DataComponentBase<T = any> {
     add = output();
 
     loading = signal(false);
-    firstLoad = signal(true);
+    dataLoaded = signal(false);
 
-    noDataImage = input<string>('');
+    noDataImage = input<string>("");
 
     minAllowed = input<number, number | null | undefined>(0, {
         transform: (v) => Math.max(0, Math.round(Math.abs(v ?? 0))),
@@ -31,38 +48,61 @@ export class DataComponentBase<T = any> {
     });
 
     adapter = model.required<DataAdapter<T>>();
-    normalized$sub: Subscription;
+
     filterDebounceTime = input(300);
 
     focusedItem = model<NormalizedItem<T>>(null);
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
-    ngOnInit() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
-            this.updateAdapterFromSelection(s.source.selected);
+    constructor() {
+        this.selectionModel.changed.pipe(takeUntilDestroyed()).subscribe((s) => {
+            this.updateSelection(s.source.selected);
         });
     }
-    refreshData() {
-        if (!this.firstLoad()) this.loading.set(true);
-        this.adapter()?.refresh();
+
+    async loadData() {
+        if (this.dataLoaded()) return;
+        if (!this.adapter().dataSource.allDataLoaded) {
+            this.loading.set(true);
+            this.adapter().refresh();
+            await firstValueFrom(this.adapter().normalized$);
+            this.loading.set(false);
+        }
+        this.dataLoaded.set(true);
     }
 
-    protected readonly destroyRef = inject(DestroyRef);
-    async ngOnChanges(changes: SimpleChanges) {
-        if (changes['adapter']) {
-            const adapter = this.adapter();
-            this.firstLoad.set(true);
-            if (!adapter) throw new Error('Adapter is required');
+    items!: Signal<NormalizedItem<T>[]>;
+    lazyLoadData = input(false);
+    compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
 
-            adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-                this.onDataChange(data);
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes["adapter"]) {
+            const adapter = this.adapter();
+            if (!adapter) throw new Error("Adapter is required");
+
+            const keyProperty = adapter?.keyProperty;
+
+            this.compareWithFn = keyProperty
+                ? (optVal: any, selectVal: any) => {
+                      if (optVal === selectVal) return true;
+                      if (optVal == undefined || selectVal == undefined) return false;
+                      return optVal[keyProperty] === selectVal[keyProperty];
+                  }
+                : (optVal: any, selectVal: any) => optVal === selectVal;
+
+            if (adapter.dataSource.allDataLoaded || !this.lazyLoadData()) this.loadData();
+
+            runInInjectionContext(this.injector, () => {
+                this.items = toSignal(this.adapter().normalized$);
             });
         }
     }
 
-    private updateAdapterFromSelection(value: Partial<T>[]) {
-        const keys = this.adapter().getKeysFromValue(value);
+    injector = inject(Injector);
+
+    private updateSelection(selection: Partial<T>[]) {
+        const keys = this.adapter().getKeysFromValue(selection);
         if (keys == undefined) return this.selectedNormalized.next([]);
         this.adapter()
             .getItems(keys)
@@ -71,21 +111,9 @@ export class DataComponentBase<T = any> {
             });
     }
 
-    dataChangeListeners: ((data: NormalizedItem<T>[]) => void)[] = [];
-    onDataChange(data: NormalizedItem<T>[]) {
-        this.firstLoad.set(false);
-        this.dataChangeListeners.forEach((x) => x(data));
-        this.loading.set(false);
-    }
-
-    ngOnDestroy() {
-        this.normalized$sub?.unsubscribe();
-    }
-
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() pageChange = new EventEmitter<PageEvent>();
     onPageChange(page: PageEvent) {
-        this.loading.set(true);
         this.adapter().page = page;
         this.pageChange.emit(page);
     }
@@ -93,7 +121,6 @@ export class DataComponentBase<T = any> {
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() sortChange = new EventEmitter<Sort>();
     onSortData(sort: Sort) {
-        this.loading.set(true);
         this.adapter().sort = sort;
         this.sortChange.emit(sort);
     }
