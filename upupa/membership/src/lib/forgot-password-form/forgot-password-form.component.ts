@@ -4,6 +4,7 @@ import { ActionDescriptor } from '@upupa/common';
 import { CollectorComponent, FormScheme } from '@upupa/dynamic-form';
 import { defaultForgotPasswordFormFields } from '../default-values';
 import { Condition } from '@noah-ark/expression-engine';
+import { FormControl } from '@angular/forms';
 
 
 @Component({
@@ -12,6 +13,8 @@ import { Condition } from '@noah-ark/expression-engine';
     styleUrls: ['./forgot-password-form.component.scss']
 })
 export class ForgotPasswordFormComponent {
+
+    control = new FormControl();    
     @ViewChild('loginForm') loginForm: CollectorComponent;
     private readonly auth = inject(AuthService)
     loading = signal(false);

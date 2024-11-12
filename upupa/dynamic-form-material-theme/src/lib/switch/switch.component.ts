@@ -1,26 +1,49 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input, forwardRef } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { SwitchComponent } from '@upupa/dynamic-form-native-theme';
-
+import { ChangeDetectionStrategy, Component, effect, forwardRef, input, viewChild } from '@angular/core';
+import { FormControlDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatError, MatHint } from '@angular/material/form-field';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { UtilsModule } from '@upupa/common';
+import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
-  selector: 'mat-form-switch-input',
-  templateUrl: './switch.component.html',
-  styleUrls: ['./switch.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MatSwitchComponent),
-      multi: true,
+    selector: 'mat-form-switch-input',
+    templateUrl: './switch.component.html',
+    styleUrls: ['./switch.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => MatSwitchComponent),
+            multi: true,
+        },
+    ],
+    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule],
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        '[class]': 'template()',
     },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatSwitchComponent), multi: true }
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatSwitchComponent extends SwitchComponent {
-  class = '';
+    class = '';
+    inputEl = viewChild.required<MatSlideToggle | MatCheckbox>('_inputElement');
+    override template = input<'checkbox' | 'toggle'>('checkbox');
 
-  @Input()
-  @HostBinding('class')
-  override template: 'checkbox' | 'toggle' = 'checkbox';
+    constructor() {
+        super();
+        effect(
+            () => {
+                const ctrl = this.control();
+                const disabled = this.disabled();
+                if (!ctrl) return;
+                if (disabled) ctrl.disable();
+                else ctrl.enable();
+            },
+            { allowSignalWrites: true },
+        );
+    }
+    changeValue() {
+        const input = this.inputEl();
+        input?.toggle();
+    }
 }

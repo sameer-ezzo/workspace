@@ -1,5 +1,5 @@
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 // import { Options } from "@angular-slider/ngx-slider";
 import { SliderComponent } from '@upupa/dynamic-form-native-theme';
 
@@ -15,8 +15,6 @@ import { SliderComponent } from '@upupa/dynamic-form-native-theme';
             useExisting: forwardRef(() => MatSliderComponent),
             multi: true,
         },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatSliderComponent), multi: true }
-
-    ]
+    ],
 })
 export class MatSliderComponent extends SliderComponent {}

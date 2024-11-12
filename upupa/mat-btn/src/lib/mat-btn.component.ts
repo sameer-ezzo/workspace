@@ -1,59 +1,52 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, inject, Renderer2, ElementRef } from '@angular/core';
+import { Component, output, input, computed } from '@angular/core';
 
-import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthorizeModule } from '@upupa/authz';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
-
-
-
+import { JsonPipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'mat-btn',
     templateUrl: './mat-btn.component.html',
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule],
-    standalone: true
+    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, JsonPipe, MatProgressSpinnerModule],
+    standalone: true,
 })
-export class MatBtnComponent implements OnChanges {
-    @Input() descriptor: ActionDescriptor;
-    @Input() disabled: boolean = false;
+export class MatBtnComponent {
+    onClick = output<ActionEvent>();
 
-    color = '';
-    @Output() action = new EventEmitter<ActionEvent>();
+    loading = input(false);
+    descriptor = input.required<ActionDescriptor>();
+    disabled = input(false);
+    isDisabled = computed(() => this.disabled() || this.descriptor().disabled);
+    variant = computed(() => this.descriptor().variant ?? 'button');
+    color = computed(() => {
+        const validColors = ['primary', 'accent', 'warn'];
+        const descriptorColor = this.descriptor().color ?? '';
+        return validColors.includes(descriptorColor) ? descriptorColor : '';
+    });
 
+    icon = computed(() => {
+        const descriptor = this.descriptor();
+        let icon = descriptor.icon;
+        if (descriptor.variant === 'icon' && !icon) icon = 'circle';
+        return icon;
+    });
 
+    context = input(undefined);
+    data = input<any>();
 
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['descriptor']) {
-            // Default the variant to 'button' if not provided
-            this.descriptor.variant = this.descriptor.variant || 'button';
-
-            // Set the color only if it's 'primary', 'accent', or 'warn'
-            const validColors = ['primary', 'accent', 'warn'];
-            this.color = validColors.includes(this.descriptor.color) ? this.descriptor.color : '';
-
-            // Set the disabled status
-            this.disabled = this.descriptor.disabled;
-            if (this.descriptor.variant === 'icon') this.descriptor.icon ??= 'circle';
-            this.descriptor.tooltip ??= this.descriptor.variant === 'icon' && this.descriptor.text ? this.descriptor.text : '';
-            if (this.descriptor.tooltip.length) {
-                this.descriptor.tooltipPosition ??= 'above'
-            }
-        }
-    }
-
-
-    @Input() context: any
-    @Input() data: any
-
-    async onAction(event) {
+    async onAction(event: Event) {
         event.preventDefault();
         event.stopPropagation();
 
-        this.action.emit({ ...event, action: this.descriptor, data: this.data, context: this.context } as ActionEvent);
+        this.onClick.emit({
+            ...event,
+            action: this.descriptor(),
+            data: this.data(),
+            context: this.context(),
+        } as ActionEvent);
     }
-
-
 }

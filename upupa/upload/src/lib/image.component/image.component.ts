@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, Optional, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, Optional, ElementRef, signal, input, computed, inject } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { AuthService } from '@upupa/auth';
 import { takeUntil } from 'rxjs/operators';
@@ -6,27 +6,31 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
     selector: 'image',
     templateUrl: './image.component.html',
-    styleUrls: ['./image.component.scss']
+    styleUrls: ['./image.component.scss'],
+    host: {
+        '[attr.width]': 'width()',
+        '[attr.height]': 'height()',
+    },
 })
 export class ImageComponent implements OnDestroy, OnChanges {
     source = '';
     sourceSub: Subscription;
-    hasError = false;
+    hasError = signal(false);
 
     @Input() alt = '';
 
-    @Input() src: string | File = '';
-    @Input() loading: 'eager' | 'lazy' = 'lazy';
+    src = input<string | File>('');
+    loading = input<'eager' | 'lazy'>('lazy');
 
-    @Input() width: number | 'auto' = 'auto';
-    @Input() height: number | 'auto' = 'auto';
+    width = input<number | 'auto'>('auto');
+    height = input<number | 'auto'>('auto');
+
     @Input() includeAccess = false;
     @Output() errorEvent = new EventEmitter<any>();
 
     @ViewChild('renderer') renderer: ElementRef<HTMLImageElement>;
     @ViewChild('defaultErrorTemplate') defaultErrorTemplate: any;
-    @Input() errorTemplate: any = null
-
+    @Input() errorTemplate: any = null;
 
     destroyed = new Subject<void>();
     ngOnDestroy(): void {
@@ -34,57 +38,56 @@ export class ImageComponent implements OnDestroy, OnChanges {
         this.destroyed.complete();
     }
 
-    constructor(@Optional() public auth: AuthService) { }
+    public readonly auth = inject(AuthService, { optional: true });
 
+    styles = computed(() => ({
+        width: this.width() === 'auto' ? 'auto' : `${this.width()}px`,
+        height: this.height() === 'auto' ? 'auto' : `${this.height()}px`,
+    }));
 
-
-
-
-
-
-    styles = {}
+    _src = '';
     ngOnChanges(changes) {
-
-        if (changes['src'] || changes['width'] || changes['height'] || changes['includeAccess']) {
-
-            if (typeof this.src !== 'string') {
-                const reader = new FileReader()
-                reader.readAsDataURL(this.src);
+        if (changes['src'] || changes['includeAccess']) {
+            if (this.src() instanceof File) {
+                const reader = new FileReader();
                 reader.onload = () => {
-                    this.styles = { objectFit: 'cover', objectPosition: 'center', width: '100%', height: '100%' }
-                    this.source = reader.result as string;
-                }
-            }
-            else {
-                if (!this.src?.trim()) return;
-                this.setSource(this.src);
+                    this._src = reader.result as string;
+                    this.setSource();
+                };
+                reader.readAsDataURL(this.src() as File);
+            } else {
+                this._src = this.src() as string;
+                this.setSource();
                 if (this.includeAccess && this.auth) {
                     this.sourceSub?.unsubscribe();
                     this.sourceSub = this.auth.token$.pipe(takeUntil(this.destroyed)).subscribe(() => {
-                        this.setSource(this.src as string);
+                        this.setSource();
                     });
                 }
             }
         }
     }
 
-    setSource(src: string) {
-        this.hasError = false;
+    setSource() {
+        const src = this._src;
+        this.hasError.set(false);
         const q: any = { view: 1 };
-        this.styles = { width: this.width, height: this.height }
-        if (this.width) q.w = this.width;
-        if (this.height) q.h = this.height;
+        const w = this.width();
+        const h = this.height();
+        if (w !== 'auto') q.w = w;
+        if (h !== 'auto') q.h = h;
         if (this.includeAccess) q.access_token = this.auth.get_token();
-        const queryString = Object.keys(q).map(n => `${n}=${q[n]}`).join('&');
+        const queryString = Object.keys(q)
+            .map((n) => `${n}=${q[n]}`)
+            .join('&');
         this.source = queryString.length > 0 ? `${src}?${queryString}` : src;
     }
 
     errorHandler(event, el) {
-        this.hasError = true;
+        this.hasError.set(true);
         this.errorEvent.emit(event);
         el.src = '';
         el.onerror = null;
         if (!this.errorTemplate) this.errorTemplate = this.defaultErrorTemplate;
     }
-
 }

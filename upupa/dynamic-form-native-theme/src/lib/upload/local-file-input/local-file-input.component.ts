@@ -1,14 +1,13 @@
-import { Component, Input, forwardRef, OnChanges, SimpleChanges, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, DestroyRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ThemePalette } from '@angular/material/core';
 import { DataService } from '@upupa/data';
-import {  InputBaseComponent } from '@upupa/common';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { InputBaseComponent } from '@upupa/common';
 
 import { AuthService } from '@upupa/auth';
 import { ClipboardService, openFileDialog } from '@upupa/upload';
 import { DialogService } from '@upupa/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'local-file-input',
@@ -20,60 +19,50 @@ import { DialogService } from '@upupa/dialog';
             useExisting: forwardRef(() => LocalFileInputComponent),
             multi: true,
         },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => LocalFileInputComponent), multi: true }
-
-    ]
+    ],
 })
-export class LocalFileInputComponent extends InputBaseComponent implements OnChanges, OnDestroy {
-    @Input() color: ThemePalette = 'accent';
-    @Input() dateFormat = 'dd MMM yyyy';
-    @Input() placeholder: string;
-    @Input() label: string;
-    @Input() hint: string;
-    @Input() readonly = false;
-    @Input() errorMessages: { [errorCode: string]: string } = {};
+export class LocalFileInputComponent extends InputBaseComponent implements OnChanges {
+    color = input<ThemePalette>('accent');
+    dateFormat = input('dd MMM yyyy');
+    placeholder = input('');
+    label = input('');
+    hint = input('');
+    readonly = input(false);
 
+    minAllowedFiles = input(0);
+    maxAllowedFiles = input(1);
+    minSize = input(0);
+    maxSize = input(1024 * 1024 * 10); //10 MB
+    accept = input('*.*');
 
-    @Input() minAllowedFiles = 0;
-    @Input() maxAllowedFiles = 1;
-    @Input() minSize = 0;
-    @Input() maxSize = 1024 * 1024 * 10; //10 MB
-    @Input() accept: string;
+    includeAccess = input(false);
 
-
-    destroyed = new Subject<void>();
-    @Input() includeAccess: boolean;
-
+    destroyRef = inject(DestroyRef);
 
     uploading = false;
     uploadingProgress: number | null = null;
     access_token = null;
 
-    constructor(public data: DataService,
-        private auth: AuthService,
-        public clipboard: ClipboardService,
-        public dialog: DialogService) {
+    constructor(public data: DataService, private auth: AuthService, public clipboard: ClipboardService, public dialog: DialogService) {
         super();
     }
-    ngOnDestroy(): void {
-        this.destroyed.next();
-        this.destroyed.complete();
-    }
 
-    override ngOnChanges(changes: SimpleChanges): void {
-        super.ngOnChanges(changes)
-        if (this.includeAccess === true) {
-            this.auth.token$.pipe(takeUntil(this.destroyed)).subscribe(t => this.access_token = `?access_token=${t}`);
+    ngOnChanges(changes: SimpleChanges): void {
+        if (this.includeAccess() === true) {
+            this.auth.token$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => this.access_token.set(`?access_token=${t}`));
         }
     }
 
     private validateFileExtensions(file: File, accepts: string) {
         if (file && accepts) {
-            const segments = file.name.split(".");
+            const segments = file.name.split('.');
             segments.shift();
             const fileExtension = segments.join('.').toLowerCase();
-            const extensions = accepts.split(',').filter(x => x != '*.*').map(x => x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase());
-            return extensions.some(x => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
+            const extensions = accepts
+                .split(',')
+                .filter((x) => x != '*.*')
+                .map((x) => (x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase()));
+            return extensions.some((x) => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
         }
         return null;
     }
@@ -90,37 +79,36 @@ export class LocalFileInputComponent extends InputBaseComponent implements OnCha
         return null;
     }
 
-
     async selectFile() {
-        const files = await openFileDialog(this.accept, this.maxAllowedFiles !== 1);
+        const files = await openFileDialog(this.accept(), this.maxAllowedFiles() !== 1);
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
 
-            const extensionErrors = this.validateFileExtensions(file, this.accept);
+            const extensionErrors = this.validateFileExtensions(file, this.accept());
 
-            const maxSizeErrors = this.validateFileMaxSize(file, this.maxSize);
-            const minSizeErrors = this.validateFileMinSize(file, this.minSize);
+            const maxSizeErrors = this.validateFileMaxSize(file, this.maxSize());
+            const minSizeErrors = this.validateFileMinSize(file, this.minSize());
 
             if (extensionErrors?.extension?.length > 0 || maxSizeErrors || minSizeErrors) {
                 const errors = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
-                this.control.setErrors(errors);
-                this.control.markAllAsTouched();
+                //this.control().errors = errors
+                this.markAsTouched();
                 continue;
             }
         }
 
-        if (Object.keys(this.control.errors ?? {}).length === 0) {
-            if (this.maxAllowedFiles > 1) this.value = Array.from(files);
-            else this.value = files.item(0);
+        if (Object.keys(this.control().errors ?? {}).length === 0) {
+            if (this.maxAllowedFiles() > 1) this.value.set(Array.from(files));
+            else this.value.set(files.item(0));
         }
     }
 
     removeFile(file: File) {
-        if (Array.isArray(this.value)) {
-            const i = this.value.indexOf(file);
-            this.value.splice(i, 1);
-            this.value = this.value.filter(x => x);
-        }
-        else this.value = null
+        const v = this.value();
+        if (Array.isArray(v)) {
+            const i = v.indexOf(file);
+            v.splice(i, 1);
+            this.value.set(v);
+        } else this.value.set(null);
     }
 }

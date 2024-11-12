@@ -19,7 +19,7 @@ import { ActionDescriptor, ActionEvent } from '@upupa/common';
     styleUrls: ['./data-table-actions-wrapper.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DataTableActionsWrapperComponent<T = any> {
+export class DataTableActionsPortalComponent<T = any> {
     @HostBinding('attr.tabindex') tabindex = 0;
 
     context = input.required<any>();

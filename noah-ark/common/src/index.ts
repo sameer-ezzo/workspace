@@ -12,6 +12,7 @@ export * from './lib/random'
 export * from './lib/string'
 export * from './lib/task'
 export * from './lib/objectid'
+export * from './lib/utils'
 
 export * from './lib/rules/rule'
 export * from './lib/rules/permission'

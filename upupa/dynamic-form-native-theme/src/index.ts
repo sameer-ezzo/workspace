@@ -1,5 +1,5 @@
 export * from './lib/dynamic-form-native-theme.module';
-export * from './lib/table/array-input.component';
+export * from './lib/array/array-input.component';
 export * from './lib/defaults';
 export * from './lib/input/input.component';
 export * from './lib/hidden/hidden.component';
@@ -29,3 +29,5 @@ export * from './lib/scale-component/review-scale/review-input.component';
 export * from './lib/scale-component/slider/slider.component';
 export * from './lib/range-components/numbers-range/numbers-range.component';
 export * from './lib/range-components/date-range/date-range.component';
+
+export * from './lib/upload/file-viewer/file-template/file-template.component';

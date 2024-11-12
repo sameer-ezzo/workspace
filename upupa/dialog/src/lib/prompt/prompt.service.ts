@@ -14,7 +14,7 @@ export class PromptService {
     const o = Object.assign(new PromptOptions(), options);
     const closable = o.required !== true;
     const _options = {
-      hideCloseBtn: closable,
+      hideCloseButton: closable,
       disableClose: !closable,
       canEscape: closable,
       ...o,

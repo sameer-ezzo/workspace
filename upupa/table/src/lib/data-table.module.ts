@@ -1,9 +1,23 @@
-
 import { TranslationModule } from '@upupa/language';
-import { UtilsModule } from '@upupa/common';
+import { UtilsModule, PortalComponent } from '@upupa/common';
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
 
-import { CommonModule, DatePipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe } from '@angular/common';
+import {
+    CommonModule,
+    DatePipe,
+    PercentPipe,
+    CurrencyPipe,
+    DecimalPipe,
+    AsyncPipe,
+    JsonPipe,
+    KeyValuePipe,
+    LowerCasePipe,
+    SlicePipe,
+    TitleCasePipe,
+    UpperCasePipe,
+    I18nPluralPipe,
+    I18nSelectPipe,
+} from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -21,7 +35,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 
-import { DynamicPipe, NonePureDynamicPipe } from "./dynamic.pipe";
+import { DynamicPipe, NonePureDynamicPipe } from './dynamic.pipe';
 import { DataTableComponent } from './data-table.component';
 import { JsonPointerPipe } from './json-pointer.pipe';
 import { ColumnsSelectComponent } from './columns-select.component/columns-select.component';
@@ -33,46 +47,93 @@ import { DefaultTableCellTemplate } from './cell-template-component';
 import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
 import { ActionDescriptorComponent, MatBtnComponent } from '@upupa/mat-btn';
 import { TableColumnSelectorPipe } from './table-column-selector.pipe';
-import { DataTableActionsWrapperComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
-import { TableFormInput } from './table-form-input/table-form-input.component';
+import { DataTableActionsPortalComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
 import { ValueDataComponentBase } from './value-data-base.component';
+import { TableHeaderComponent } from './table-header.component';
 
+const pipes = [
+    DatePipe,
+    TableColumnSelectorPipe,
+    PercentPipe,
+    CurrencyPipe,
+    DecimalPipe,
+    AsyncPipe,
+    JsonPipe,
+    KeyValuePipe,
+    LowerCasePipe,
+    SlicePipe,
+    TitleCasePipe,
+    UpperCasePipe,
+    I18nPluralPipe,
+    I18nSelectPipe,
+];
 
-
-
-
-const pipes = [DatePipe, TableColumnSelectorPipe, PercentPipe, CurrencyPipe, DecimalPipe, AsyncPipe, JsonPipe, KeyValuePipe, LowerCasePipe, SlicePipe, TitleCasePipe, UpperCasePipe, I18nPluralPipe, I18nSelectPipe];
-
-const material = [MatCardModule, MatTableModule, MatChipsModule, MatDialogModule, MatTooltipModule, MatProgressBarModule, MatMenuModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatSortModule, MatPaginatorModule, MatIconModule, MatButtonModule, MatToolbarModule,];
-const declarations = [DataTableComponent, DataTableActionsWrapperComponent, TableFormInput, DefaultTableCellTemplate, ColumnsSelectComponent, DynamicPipe, NonePureDynamicPipe, JsonPointerPipe, TableColumnSelectorPipe, DataComponentBase, ValueDataComponentBase]
-
+const material = [
+    MatCardModule,
+    MatTableModule,
+    MatChipsModule,
+    MatDialogModule,
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatMenuModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatIconModule,
+    MatButtonModule,
+    MatToolbarModule,
+];
+const declarations = [
+    DataTableComponent,
+    DataTableActionsPortalComponent,
+    DefaultTableCellTemplate,
+    ColumnsSelectComponent,
+    DynamicPipe,
+    NonePureDynamicPipe,
+    JsonPointerPipe,
+    TableColumnSelectorPipe,
+    DataComponentBase,
+    ValueDataComponentBase,
+];
 
 @NgModule({
     declarations: declarations,
     imports: [
-    CommonModule,
-    UtilsModule,
-    RouterModule,
-    FormsModule,
-    UtilsModule,
-    DragDropModule,
-    ...material,
-    TranslationModule,
-    MatBtnComponent,
-    ActionDescriptorComponent
-],
+        CommonModule,
+        UtilsModule,
+        RouterModule,
+        FormsModule,
+        UtilsModule,
+        DragDropModule,
+        ...material,
+        TranslationModule,
+        MatBtnComponent,
+        ActionDescriptorComponent,
+        PortalComponent,
+        TableHeaderComponent,
+    ],
     exports: [...declarations, DragDropModule],
-    providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }]
+    providers: [
+        ...pipes,
+        { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() },
+    ],
 })
 export class DataTableModule {
-
-    static forRoot(providers: Provider[]): ModuleWithProviders<DataTableModule> {
+    static forRoot(
+        providers: Provider[]
+    ): ModuleWithProviders<DataTableModule> {
         return {
             ngModule: DataTableModule,
-            providers: [...pipes, ...providers,
-            { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions() } }
-            ]
-        }
+            providers: [
+                ...pipes,
+                ...providers,
+                {
+                    provide: DATA_TABLE_OPTIONS,
+                    useValue: { ...new DataTableOptions() },
+                },
+            ],
+        };
     }
-
 }

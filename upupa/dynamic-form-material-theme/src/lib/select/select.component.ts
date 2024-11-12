@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, forwardRef } from '@angular/core'
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { SelectComponent } from '@upupa/dynamic-form-native-theme'
+import { SelectComponent } from '@upupa/dynamic-form-native-theme';
+import { isEmpty } from 'lodash';
 
 @Component({
     selector: 'mat-form-select-input',
@@ -9,9 +10,8 @@ import { SelectComponent } from '@upupa/dynamic-form-native-theme'
     styleUrls: ['./select.component.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatSelectComponent), multi: true },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => MatSelectComponent), multi: true }
-    ]
+    providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatSelectComponent), multi: true }],
 })
 export class MatSelectComponent<T = any> extends SelectComponent<T> {
+    emptyValue = (v) => isEmpty(v);
 }

@@ -1,20 +1,38 @@
-@if (!editing) {
-  <div class="view">
-    <label for="">{{label}}</label> {{value}}
-    @if (readonly) {
-      <button mat-icon-button color="primary" (click)="editing=true;"><mat-icon>edit</mat-icon></button>
+@if (!editing()) {
+<div class="view">
+    <label [attr.for]="name()">{{ label() }}</label> {{ value() }}
+    @if (readonly()) {
+    <button mat-icon-button color="primary" (click)="editing.set(true)">
+        <mat-icon>edit</mat-icon>
+    </button>
     }
-  </div>
-}
-@if (editing) {
-<div style="display: flex;
-flex-flow: row nowrap;
-align-items: center;
-align-content: flex-start;">
-    <dynamic-form [fields]="fileds" [value]="formData" (valueChange)="valueChanged($event)"></dynamic-form>
-    <span style="display: flex;">
-      <button mat-icon-button color="primary" (click)="changeProp(); editing=false" [disabled]="control.invalid"><mat-icon>check</mat-icon></button>
-      <button mat-icon-button (click)="editing=false;revert()" ><mat-icon>clear</mat-icon></button>
+</div>
+} @if (editing()) {
+<div
+    style="
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        align-content: flex-start;
+    "
+>
+    <dynamic-form
+        [fields]="fileds"
+        [value]="formData"
+        (valueChange)="valueChanged($event)"
+    ></dynamic-form>
+    <span style="display: flex">
+        <button
+            mat-icon-button
+            color="primary"
+            (click)="changeProp(); editing.set(false)"
+            [disabled]="disabled()"
+        >
+            <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button (click)="editing.set(false); revert()">
+            <mat-icon>clear</mat-icon>
+        </button>
     </span>
-  </div>
+</div>
 }

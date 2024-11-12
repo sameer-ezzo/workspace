@@ -1,63 +1,176 @@
-<input type="hidden" [formControl]="control">
-<mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%; text-align: left;">
-  @if (label) {
-    <mat-label>{{label }}</mat-label>
-  }
-    <div dir=ltr style="direction: ltr; display: flex;flex-direction: row;flex-wrap: nowrap;
-    justify-content: flex-start;align-items: center;">
+<input type="hidden" [value]="value()" />
+<mat-form-field
+    [appearance]="appearance()"
+    [floatLabel]="floatLabel()"
+    style="width: 100%; text-align: left"
+>
+    @if (label()) {
+    <mat-label>{{ label() }}</mat-label>
+    }
+    <div
+        dir="ltr"
+        style="
+            direction: ltr;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: center;
+        "
+    >
+        <button
+            dir="ltr"
+            matPrefix
+            [disabled]="disabled() || readonly()"
+            id="codes-trigger"
+            style="
+                border: none;
+                background-color: transparent;
+                display: inline-flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: center;
+            "
+            (click)="toggleCodes()"
+        >
+            @if (country) {
+            <div
+                style="
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 0.25rem;
+                    line-height: 1;
+                "
+            >
+                <img
+                    style="width: 25px"
+                    src="https://hatscripts.github.io/circle-flags/flags/{{
+                        country?.alpha_2 | lowercase
+                    }}.svg"
+                    alt="{{ country?.name }}"
+                />
+                <span style="margin-inline-start: 0.5rem">
+                    +{{ country?.phone_code }}
+                </span>
+            </div>
+            } @if (!country) {
+            <span>select-country </span>
+            }
+        </button>
 
+        <input
+            dir="ltr"
+            style="direction: ltr"
+            matInput
+            #input
+            type="tel"
+            placeholder="{{ placeholder() }}"
+            [value]="number()"
+            (input)="onNumberInputChange($event, $event.target?.['value'])"
+            (blur)="markAsTouched()"
+            [readonly]="readonly()"
+            [disabled]="disabled()"
+            [placeholder]="placeholder()"
+        />
+    </div>
 
-        <button dir=ltr matPrifix [disabled]="control.disabled || readonly" id="codes-trigger" style="border: none;background-color: transparent;display: inline-flex;
-        flex-direction: row;flex-wrap: nowrap;align-items: center;justify-content: center;" matPrefix (click)="toggleCodes()">
-      @if (country) {
-        <div
-          style="cursor: pointer; display: flex; align-items: center; padding: 0 .25rem; line-height: 1;">
-          <img style="width: 25px;"
-            src="https://hatscripts.github.io/circle-flags/flags/{{country?.alpha_2 | lowercase}}.svg"
-            alt="{{country?.name}}">
-          <span style="margin-inline-start: .5rem;">
-            +{{country?.phone_code}}
-          </span>
-        </div>
-      }
-      @if (!country) {
-        <span>select-country </span>
-      }
-    </button>
-
-    <input dir=ltr style="direction: ltr;" matInput #input type="tel" placeholder="{{placeholder}}" [value]="number" (input)="onNumberInputChange($event.target?.['value'])" (blur)="onTouch();" [readonly]="readonly" [disabled]="control.disabled" [placeholder]="placeholder "
-      [required]="required">
-  </div>
-
-  @if (hint?.length > 0) {
-    <mat-hint>{{hint }}</mat-hint>
-  }
-
+    @if (hint()) {
+    <mat-hint>{{ hint() }}</mat-hint>
+    }
 </mat-form-field>
 
-
-<div id="{{id}}" (click)="onOverlayClick($event)" style="display: none; z-index: 99999;background-color: transparent;overflow:hidden; left: 0px;
-top: 0px; position: fixed; width: 100vw; height: 100vh;">
-  <div id="box" style="box-shadow: 0px 0px 2px #333; background-color: #fff;overflow:hidden; padding-block-end: 3rem; position: fixed; max-width: 230px; max-height: 300px; width: 100%; height: 100%;">
-    <input id="{{id}}-input" #searchInput tabindex="-1" placeholder="filter" type="text" (click)="filterClick($event)"
-      (keydown.enter)="enterOnFilter($event)" (keydown.arrowdown)="filter_arrowdown($event)" (keydown.arrowup)="filter_arrowup($event)"
-      (input)="filterCountries($event.target['value'])" style="outline: none; background-color: #f6f6f6; border: none; padding: 0 0.5rem; width: calc(100% - 0.25rem);margin-block-end: 0.25rem;box-sizing: border-box;" />
-    <div style="overflow-y: auto;display: flex;flex-flow: column nowrap;height: 100%;width: 100%;">
-
-      @for (c of countriesService.filtered; track c) {
-        <div (click)="country = c;control.markAsDirty();toggleCodes(false)" class="phone-item" [class.active]="countriesService.filtered.length != countriesService.all.length">
-          <img style="width: 35px;" lazyload [srcSet]="'https://hatscripts.github.io/circle-flags/flags/'+(c.alpha_2 | lowercase) +'.svg'" alt="{{c.name}}">
-          <div style="margin-inline-start: .5rem;">
-            <b>{{c.native_name}}</b><br />
-            <small>{{c.name}}</small>
-          </div>
+<div
+    [attr.id]="id"
+    (click)="onOverlayClick($event)"
+    style="
+        display: none;
+        z-index: 99999;
+        background-color: transparent;
+        overflow: hidden;
+        left: 0px;
+        top: 0px;
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+    "
+>
+    <div
+        id="box"
+        style="
+            box-shadow: 0px 0px 2px #333;
+            background-color: #fff;
+            overflow: hidden;
+            padding-block-end: 3rem;
+            position: fixed;
+            max-width: 230px;
+            max-height: 300px;
+            width: 100%;
+            height: 100%;
+        "
+    >
+        <input
+            id="{{ id }}-input"
+            #searchInput
+            tabindex="-1"
+            placeholder="filter"
+            type="text"
+            (click)="filterClick($event)"
+            (keydown.enter)="enterOnFilter($event)"
+            (keydown.arrowdown)="filter_arrowdown($event)"
+            (keydown.arrowup)="filter_arrowup($event)"
+            (input)="filterCountries($event.target['value'])"
+            style="
+                outline: none;
+                background-color: #f6f6f6;
+                border: none;
+                padding: 0 0.5rem;
+                width: calc(100% - 0.25rem);
+                margin-block-end: 0.25rem;
+                box-sizing: border-box;
+            "
+        />
+        <div
+            style="
+                overflow-y: auto;
+                display: flex;
+                flex-flow: column nowrap;
+                height: 100%;
+                width: 100%;
+            "
+        >
+            @for (c of countriesService.filtered; track c) {
+            <div
+                (click)="
+                    country = c;
+                    toggleCodes(false);
+                    propagateChange();
+                    markAsTouched()
+                "
+                class="phone-item"
+                [class.active]="
+                    countriesService.filtered.length !=
+                    countriesService.all.length
+                "
+            >
+                <img
+                    style="width: 35px"
+                    lazyload
+                    [srcSet]="
+                        'https://hatscripts.github.io/circle-flags/flags/' +
+                        (c.alpha_2 | lowercase) +
+                        '.svg'
+                    "
+                    alt="{{ c.name }}"
+                />
+                <div style="margin-inline-start: 0.5rem">
+                    <b>{{ c.native_name }}</b
+                    ><br />
+                    <small>{{ c.name }}</small>
+                </div>
+            </div>
+            }
         </div>
-      }
     </div>
-  </div>
-</div>
-@if (control.touched) {
-  @for (error of control?.errors | keyvalue; track error) {
-    <mat-error style="margin-top: -25px;">{{errorMessages?.[error.key+''] || error.key }}</mat-error>
-  }
-}
+</div>    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>

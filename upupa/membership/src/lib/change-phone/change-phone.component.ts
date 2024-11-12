@@ -3,7 +3,7 @@ import { AuthService } from '@upupa/auth';
 import {  FilterService, countries } from '@upupa/common';
 import { DataService } from '@upupa/data';
 import { Subscription } from 'rxjs';
-import { UntypedFormControl, NgModel } from '@angular/forms';
+import { UntypedFormControl, NgModel, FormControl } from '@angular/forms';
 import { SnackBarService } from '@upupa/dialog';
 
 
@@ -15,6 +15,7 @@ export class ChangePhoneComponent {
     @Input() appearance = 'fill';
     @Input() name = 'phone';
 
+    control = new FormControl();
     countriesService = new FilterService(countries, ["name", "name", "phone_code"]);
 
     phoneControl = new UntypedFormControl()

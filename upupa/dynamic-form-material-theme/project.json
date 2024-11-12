@@ -6,7 +6,7 @@
   "prefix": "",
   "targets": {
     "build": {
-      "executor": "@nrwl/angular:package",
+      "executor": "@nx/angular:package",
       "options": {
         "tsConfig": "libs/workspace/upupa/dynamic-form-material-theme/tsconfig.lib.json",
         "project": "libs/workspace/upupa/dynamic-form-material-theme/ng-package.json"
@@ -18,7 +18,7 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "options": {
         "lintFilePatterns": [
           "libs/workspace/upupa/dynamic-form-material-theme/src/**/*.ts",
@@ -27,7 +27,7 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": [
         "{workspaceRoot}/coverage/libs/workspace/upupa/dynamic-form"
       ],

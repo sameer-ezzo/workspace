@@ -1,112 +1,81 @@
-import { Inject, Injectable, Type, inject } from "@angular/core";
-import { ValidatorFn } from "@angular/forms";
+import { Inject, Injectable, Type, inject } from '@angular/core';
+import { ValidatorFn } from '@angular/forms';
 
-import { FieldItem, Validator } from "./types";
-import { _mergeFields } from "./dynamic-form.helper";
-import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from "./di.token";
-import { DynamicFormModuleOptions } from "./dynamic-form.options";
-import { DynamicComponentMapper, DynamicComponentMapping } from "./types/types";
-import { BaseTextInputComponent } from "@upupa/common";
+import { FieldItem, Validator } from './types';
+import { _mergeFields } from './dynamic-form.helper';
+import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
+import { DynamicComponentMapper, DynamicComponentMapping } from './types/types';
+import { unreachable } from '@noah-ark/common';
 
 @Injectable({
-  providedIn: "root",
+    providedIn: 'root',
 })
 export class DynamicFormService {
+    public options = inject(DYNAMIC_FORM_OPTIONS);
+    public defaultThemeName = inject(DEFAULT_THEME_NAME) as string;
+    private componentMapper = inject(DYNAMIC_COMPONENT_MAPPER) as DynamicComponentMapper;
 
+    getControl(type: string = 'text', theme: string = this.defaultThemeName): DynamicComponentMapping {
+        const result = this.componentMapper[theme][type];
 
-  public options = inject(DYNAMIC_FORM_OPTIONS) as DynamicFormModuleOptions
-  public defaultThemeName = inject(DEFAULT_THEME_NAME) as string
-  private componentMapper = inject(DYNAMIC_COMPONENT_MAPPER) as DynamicComponentMapper
-
-  getControl(type: string = "text", theme: string = this.defaultThemeName): DynamicComponentMapping {
-    const result = this.componentMapper[theme][type]
-
-    if (result) return result;
-    if (this.options.enableLogs === true) {
-      const text = `Dynamic Service: UnrecognizedType: ${type} in theme: ${theme}`
-      console.warn(text)
+        if (result) return result;
+        if (this.options.enableLogs === true) {
+            const text = `Dynamic Service: UnrecognizedType: ${type} in theme: ${theme}`;
+            console.warn(text);
+        }
+        throw new Error(`Dynamic Service: UnrecognizedType: ${type} in theme: ${theme}`);
     }
 
-    return {
-      component: BaseTextInputComponent,
-      // field: { ui: { inputs: { header: "Missing Component Type" } } },
-    };
-
-  }
-
-  addControlType(type: string, component: Type<any>, theme: string, field?: FieldItem) {
-    this.componentMapper[theme][type] = { component, field };
-  }
-  getValidatorFactory(name: string): (control) => ValidatorFn {
-    return validatorsMap[name] as (control) => ValidatorFn;
-  }
+    addControlType(type: string, component: Type<any>, theme: string, field?: FieldItem) {
+        this.componentMapper[theme][type] = { component, field };
+    }
+    getValidatorFactory(name: Validator['name']): (control) => ValidatorFn {
+        return defaultValidator(name);
+    }
 }
 
-const validatorsMap: { [name: string]: (validator: Validator) => ValidatorFn } = {
-  required: (v) => (control) => {
+function _error(v: Validator) {
+    return { [v.name]: v };
+}
 
-    const res = empty(control) ? { [v.message || "required"]: true } : null
+export function defaultValidator(name: Validator['name']) {
+    switch (name) {
+        case 'required':
+            return (v) => (control) => (v.arguments !== false && empty(control) ? _error(v) : null);
+        case 'requiredTrue':
+            return (v) => (control) => (control.value === undefined ? _error(v) : null);
+        case 'pattern':
+            return (v) => (control) => (empty(control) || new RegExp(<string>v.arguments).test(control.value) ? null : _error(v));
+        case 'max':
+            return (v) => (control) => (control.value > v.arguments ? _error(v) : null);
+        case 'min':
+            return (v) => (control) => (control.value < v.arguments ? _error(v) : null);
+        case 'greaterThan':
+            return (v) => (control) => (control.value <= v.arguments ? _error(v) : null);
+        case 'lessThan':
+            return (v) => (control) => (control.value >= v.arguments ? _error(v) : null);
+        case 'maxLength':
+            return (v) => (control) => (control.value?.length > v.arguments ? _error(v) : null);
+        case 'minLength':
+            return (v) => (control) => (control.value?.length < v.arguments ? _error(v) : null);
+        case 'latin':
+            return (v) => (control) => (empty(control) || /^[a-zA-Z0-9^ ]+$/.test(control.value) ? null : _error(v));
+        case 'email':
+            return (v) => (control) => (empty(control) || /^[^@]+@[^.]+\.[a-zA-Z.-]{2,20}$/.test(control.value) ? null : _error(v));
+        case 'endsWith':
+            return (v) => (control) => (empty(control) || control.value.endsWith(v.arguments) ? null : _error(v));
+        case 'startsWith':
+            return (v) => (control) => (empty(control) || control.value.startsWith(v.arguments) ? null : _error(v));
+        case 'includes':
+            return (v) => (control) => (empty(control) || control.value.includes(v.arguments) ? null : _error(v));
+        case 'length':
+            return (v) => (control) => (control.value?.length === v.arguments ? null : _error(v));
 
-    return res
-  },
-  requiredTrue: (v) => (control) => {
-    if (!control) return null
-    console.log(control.value);
-    return control.value === undefined ? { [v.message || "required"]: true } : null
-  },
-  pattern: (v) => (control) =>
-    empty(control) || new RegExp(<string>v.arguments).test(control.value)
-      ? null
-      : { [v.message || "pattern-error"]: true },
-  max: (v) => (control) =>
-    control?.value > v.arguments
-      ? { [v.message || "max-error"]: v.arguments }
-      : null,
-  min: (v) => (control) =>
-    control?.value < v.arguments
-      ? { [v.message || "min-error"]: v.arguments }
-      : null,
-  greaterThan: (v) => (control) =>
-    control?.value <= v.arguments
-      ? { [v.message || "greaterThan-error"]: v.arguments }
-      : null,
-  lessThan: (v) => (control) =>
-    control?.value >= v.arguments
-      ? { [v.message || "lessThan-error"]: v.arguments }
-      : null,
-  maxLength: (v) => (control) =>
-    control?.value?.length > v.arguments
-      ? { [v.message || "max-length-error"]: v.arguments }
-      : null,
-  minLength: (v) => (control) =>
-    control?.value?.length < v.arguments
-      ? { [v.message || "min-length-error"]: v.arguments }
-      : null,
-  latin: (v) => (control) => {
-    const p = v.arguments as RegExp || /^[a-zA-Z0-9^ ]+$/
-    return empty(control) || p.test(control.value)
-      ? null
-      : { [v.message || "latin-error"]: true }
-  },
-  email: (v) => (control) => {
-
-    const res = empty(control) || /^[^@]+@[^.]+\.[a-zA-Z.-]{2,20}$/.test(control.value)
-      ? null
-      : { [v.message || "email-error"]: true }
-
-    return res
-  },
-  timeSpanMax: (v) => (control) =>
-    Date.now() - (control.value as number) > (v.arguments as number)
-      ? { [v.message || "timespan-max-error"]: true }
-      : null,
-  timeSpanMin: (v) => (control) =>
-    Date.now() - (control.value as number) < (v.arguments as number)
-      ? { [v.message || "timespan-min-error"]: true }
-      : null,
-};
+        default:
+            throw unreachable('default validator name', name as never);
+    }
+}
 
 function empty(control) {
-  return control === null || control.value === null || control.value === undefined || control.value === "" || control.value.length === 0;
+    return control === null || control.value === null || control.value === undefined || control.value === '' || control.value.length === 0;
 }
-

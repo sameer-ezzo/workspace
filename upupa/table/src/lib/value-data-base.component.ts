@@ -1,131 +1,106 @@
-import { Component, Input, Output, EventEmitter, SimpleChanges } from "@angular/core";
-import { BehaviorSubject, debounceTime } from "rxjs";
-import { DataComponentBase } from "./data-base.component";
-import { FormControl } from "@angular/forms";
-import { ControlValueAccessor } from "@angular/forms";
-import { NG_VALIDATORS } from "@angular/forms";
-import { forwardRef } from "@angular/core";
-import { Validator } from "@angular/forms";
-import { OnChanges } from "@angular/core";
-import { ValidationErrors } from "@angular/forms";
-import { AbstractControl } from "@angular/forms";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { logger, Logger } from "@upupa/common";
-
-
-
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import { BehaviorSubject, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { DataComponentBase } from './data-base.component';
+import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
+import { ControlValueAccessor } from '@angular/forms';
+import { forwardRef } from '@angular/core';
+import { OnChanges } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
     selector: 'value-data-base',
     template: '',
     styles: [],
     providers: [
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => ValueDataComponentBase), multi: true }
-    ]
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => ValueDataComponentBase),
+            multi: true,
+        },
+    ],
 })
-export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, Validator, OnChanges {
+export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
+    name = input<string, string>(`field_${Date.now()}`, {
+        alias: 'fieldName',
+        transform: (v) => (v ? v : `field_${Date.now()}`),
+    });
 
-    @Input() name = `${Date.now()}`
+    valueChange = output<Partial<T> | Partial<T>[]>();
+    required = input<boolean>(false);
+    disabled = model(false);
+    value = model<Partial<T> | Partial<T>[]>(undefined);
 
-    @Input() control = new FormControl<Partial<T> | Partial<T>[]>(undefined)
-    @Output() valueChange = new EventEmitter<Partial<T> | Partial<T>[]>()
-    value1$ = new BehaviorSubject<Partial<T> | Partial<T>[]>(undefined)
+    loadingMode = input<'lazy' | 'eager'>('lazy');
+    readonly viewDataSource = new BehaviorSubject<'adapter' | 'selected'>('selected');
+    items = this.viewDataSource.pipe(
+        distinctUntilChanged(),
+        switchMap((vds) => {
+            if (vds === 'adapter') return this.adapter().normalized$;
+            return this.selectedNormalized;
+        }),
+    );
 
-    @Input() required: boolean
-    @Input() disabled: boolean
-    @Input()
-    public get value(): Partial<T> | Partial<T>[] { return this.value1$.value }
-    public set value(v: Partial<T> | Partial<T>[]) { this.writeValue(v, true) }
+    compareWithFn = signal((optionValue: any, selectionValue: any) => {
+        return optionValue === selectionValue;
+    });
 
-    public get _value(): Partial<T> | Partial<T>[] { return this.value1$.value }
-    public set _value(v: Partial<T> | Partial<T>[]) { this.writeValue(v, false) }
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl();
+    control = input<FormControl>(this._control ?? this._defaultControl);
 
+    constructor() {
+        super();
+        effect(
+            () => {
+                const adapter = this.adapter();
+                const keyProperty = adapter?.keyProperty;
+                if (keyProperty) {
+                    this.compareWithFn.set((optionValue: any, selectionValue: any) => {
+                        if (optionValue == null || selectionValue == null) return false;
+                        return optionValue[keyProperty] === selectionValue?.[keyProperty];
+                    });
+                } else {
+                    this.compareWithFn.set((optionValue: any, selectionValue: any) => {
+                        if (optionValue == null || selectionValue == null) return false;
+                        return optionValue === selectionValue;
+                    });
+                }
+            },
+            { allowSignalWrites: true },
+        );
+        effect(() => {
+            if (this.loadingMode() !== 'eager') return;
+            this.viewDataSource.next('adapter');
+            this.refreshData();
+        });
+    }
+    // >>>>> ControlValueAccessor ----------------------------------------
+    _onChange: (value: Partial<T> | Partial<T>[]) => void;
+    _onTouch: () => void;
 
-    //ControlValueAccessor
-    _onChange: ((value: Partial<T> | Partial<T>[]) => void)
-    _onTouch: (() => void)
-
-    validate(control: AbstractControl): ValidationErrors | null {
-        return control.validator ? control.validator(control) : null
+    propagateChange() {
+        this._onChange?.(this.value()); //ngModel/ngControl notify (value accessor)
     }
 
-
-    _propagateChange() {
-        if (this._onChange) this._onChange(this.value) //ngModel/ngControl notify (value accessor)
-        this.valueChange.emit(this.value) //value event binding notify
+    markAsTouched() {
+        if (this._onTouch) this._onTouch();
     }
 
-    override ngOnInit(): void {
-        // super.ngOnInit()
-
-        this.subscriptToFilterChanges()
-
-        this.selectionModel.changed.pipe(
-            debounceTime(50),
-            takeUntilDestroyed(this.destroyRef)
-        ).subscribe(async s => {
-            
-            const selectedNormalized = await this.adapter.getItems(s.source.selected)
-            this.selectedNormalized = selectedNormalized
-            const v = Array.isArray(this.value) ? this.value : [this.value]
-            if (this.maxAllowed === 1) {
-                const valueKey = this.adapter.getKeysFromValue(v)?.[0]
-                const selectedKey = selectedNormalized?.[0]?.key
-                if (valueKey === selectedKey) return
-                this.value = selectedNormalized?.[0]?.value
-            }
-            else {
-                const valueKeys = this.adapter.getKeysFromValue(v)
-                const selectedKeys = selectedNormalized?.map(x => x.key)
-                const set = new Set([...valueKeys, ...selectedKeys])
-                if (selectedKeys.length === valueKeys.length && valueKeys.length === set.size) return
-                this.value = selectedNormalized?.map(x => x.value)
-            }
-        })
-
-    }
-    override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes)
-        if (changes['control']) {
-            this._value = this.control?.value //read value from control (but why not write value to control?)
-            this.control?.registerOnChange((value: Partial<T> | Partial<T>[]) => this._value = value)
-        }
+    writeValue(v: Partial<T> | Partial<T>[]): void {
+        this.value.set(v);
+        this.selectionModel.clear();
+        if (v != null) this.select(v);
     }
 
-
-    writeValue(v: Partial<T> | Partial<T>[], emitEvent = false): void {
-        if (v === this.value) return
-        this.value1$.next(v)
-        this.control?.setValue(v, { emitEvent })
-
-        if (this.value === undefined) this.selected = [];
-        if (this.adapter) {
-            const _v = (Array.isArray(this.value) ? this.value : [this.value]) as Partial<T>[];
-            if (_v.length === 0) this.selected = [];
-            this.selected = this.adapter.getKeysFromValue(_v);
-        }
-        this.singleSelected.set(this.selected?.[0])
-
-        this._updateViewModel()
-
-        if (emitEvent) this._propagateChange()
+    registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
+        this._onChange = fn;
     }
-
-    onTouch() {
-        this.control?.markAsTouched()
-        if (this._onTouch) this._onTouch()
+    registerOnTouched(fn: () => void): void {
+        this._onTouch = fn;
     }
-    registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void { this._onChange = fn }
-    registerOnTouched(fn: () => void): void { this._onTouch = fn }
     setDisabledState?(isDisabled: boolean): void {
-        if (isDisabled && this.control?.enabled) this.control?.disable()
-        else if (isDisabled === false && this.control?.disabled) this.control?.enable()
-    }
-
-
-    async _updateViewModel() {
-        if (this.value !== undefined && this.firstLoad()) {
-            this.viewDataSource$.next('selected')
-        }
+        this.disabled.set(isDisabled);
     }
 }

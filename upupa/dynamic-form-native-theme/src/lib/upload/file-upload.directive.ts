@@ -141,7 +141,7 @@ export class FileUploadDirective {
 
     selectionChanged(e) {
         this.value = e;
-        this._propagateChange()
+        this.propagateChange()
         this.control.markAsDirty()
     }
 

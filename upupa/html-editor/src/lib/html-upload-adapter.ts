@@ -1,44 +1,40 @@
-import { AuthService } from "@upupa/auth";
-import { UploadService, UploadStream } from "@upupa/upload";
+import { AuthService } from '@upupa/auth';
+import { UploadClient, UploadService, UploadStream } from '@upupa/upload';
 
 export class HtmlUploadAdapter {
     TOKEN_COOKIE_NAME = 'ckCsrfToken';
     TOKEN_LENGTH = 40;
 
-    loader: any;
-    url: string;
     xhr: XMLHttpRequest;
     tokenCharset = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    uploader: UploadService
-    auth: AuthService;
-    constructor(loader: any, url: string, upload: UploadService, auth: AuthService) {
-        this.loader = loader
-        this.url = url.split('/').filter(x => x).join('/') + '/'
-        this.uploader = upload
-        this.auth = auth
-    }
 
-    task: UploadStream
-    abort = () => this.task?.cancel()
+    constructor(
+        private readonly loader: any,
+        private readonly url: string,
+        private readonly client: UploadClient,
+        private readonly auth: AuthService,
+    ) {}
+
+    task: UploadStream;
+    abort = () => this.task?.cancel();
     async upload() {
-        const file = await this.loader.file
-
+        const file = await this.loader.file;
 
         return new Promise((resolve, reject) => {
-
-            this.task = this.uploader.upload(this.url, file, file.fieldname)
+            this.task = this.client.upload(this.url, file, file.name);
             const genericError = `Cannot upload file: ${file.name}.`;
 
-            this.task.progress$.subscribe(p => this.loader.uploadTotal = p)
+            this.task.progress$.subscribe((p) => (this.loader.uploadTotal = p));
             this.task.response$.subscribe({
                 next: (fileInfo) => {
                     this.loader.uploaded = true;
+                    const qps = this.auth.get_token() ? `?access_token=${this.auth.get_token()}` : '';
                     resolve({
-                        default: `/${fileInfo.path}?access_token=${this.auth.get_token()}`
-                    })
+                        default: `${this.client.baseOrigin}${fileInfo.path}${qps}`,
+                    });
                 },
-                error: (err) => reject(err?.message ?? genericError)
-            })
-        })
+                error: (err) => reject(genericError + ' ' + err?.message),
+            });
+        });
     }
 }

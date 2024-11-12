@@ -1,6 +1,5 @@
-import { Component, Input, forwardRef } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { InputDefaults } from '../../defaults';
+import { Component, forwardRef, input } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NumbersRangeComponent } from '../numbers-range/numbers-range.component';
 
 
@@ -14,11 +13,10 @@ import { NumbersRangeComponent } from '../numbers-range/numbers-range.component'
       useExisting: forwardRef(() => DateRangeComponent),
       multi: true,
     },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => DateRangeComponent), multi: true }
   ]
 })
 export class DateRangeComponent extends NumbersRangeComponent<Date> {
-	@Input() readonly = false;
+	readonly = input(false);
 
 }
 

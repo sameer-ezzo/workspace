@@ -1,10 +1,9 @@
-import { Component, Input, forwardRef, SimpleChanges } from '@angular/core';
-import { NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, SimpleChanges, computed } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ThemePalette } from '@angular/material/core';
 import { DataService, ClientDataSource, DataAdapter } from '@upupa/data';
 import { ActionDescriptor, ActionEvent } from '@upupa/common';
-import { filter, map, takeUntil } from 'rxjs/operators';
 import { FileSelectComponent } from '../file-select/file-select.component';
 
 import { AuthService } from '@upupa/auth';
@@ -13,8 +12,6 @@ import { ValueDataComponentBase } from '@upupa/table';
 import { firstValueFrom } from 'rxjs';
 import { DialogService } from '@upupa/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-
 
 @Component({
     selector: 'file-input',
@@ -25,12 +22,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => FileInputComponent),
             multi: true,
-        },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => FileInputComponent), multi: true }
-    ]
+        }
+    ],
 })
 export class FileInputComponent extends ValueDataComponentBase {
-
     @Input() includeAccess = false;
     @Input() base = '';
     @Input() path = '';
@@ -41,8 +36,6 @@ export class FileInputComponent extends ValueDataComponentBase {
     @Input() label: string;
     @Input() hint: string;
     @Input() readonly = false;
-    @Input() errorMessages: { [errorCode: string]: string } = {};
-
 
     @Input() minAllowedFiles = 0;
     @Input() maxAllowedFiles = 1;
@@ -50,58 +43,54 @@ export class FileInputComponent extends ValueDataComponentBase {
     @Input() maxSize = 1024 * 1024 * 10; //10 MB
     @Input() accept: string;
 
-    @Input() view: 'list' | 'grid' = 'list'
-    @Input() fileSelector: 'browser' | 'system' = 'system'
+    @Input() view: 'list' | 'grid' = 'list';
+    @Input() fileSelector: 'browser' | 'system' = 'system';
 
-    constructor(public uploadClient: UploadClient,
-        public data: DataService,
-        public auth: AuthService,
-        public clipboard: ClipboardService,
-        public dialog: DialogService) {
-        super()
+    constructor(public uploadClient: UploadClient, public data: DataService, public auth: AuthService, public clipboard: ClipboardService, public dialog: DialogService) {
+        super();
         this.base = uploadClient.baseUrl;
     }
 
     actions = [
-        { action: 'download', text: 'Download', icon: 'get_app' } as ActionDescriptor,
+        {
+            action: 'download',
+            text: 'Download',
+            icon: 'get_app',
+        } as ActionDescriptor,
         { action: 'remove', text: 'Remove', icon: 'clear' } as ActionDescriptor,
-    ]
+    ];
 
     onAction(e: ActionEvent) {
         if (e.action.name === 'remove') {
-            this.removeFile(e.data[0].item)
+            this.removeFile(e.data[0].item);
         }
     }
 
-    dataAdapter = this.value1$.pipe(
-        filter(v => v != null || v != undefined),
-        map(v => {
-            const x = Array.isArray(v) ? v : [v]
-            return new DataAdapter(new ClientDataSource(x), '_id', undefined, undefined, undefined)
-        })
-    )
+    dataAdapter = computed(() => {
+        const v = this.value();
+        const x = Array.isArray(v) ? v : [v];
+        return new DataAdapter(new ClientDataSource(x), '_id', undefined, undefined, undefined);
+    });
 
     access_token = null;
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        await super.ngOnChanges(changes)
-        if (changes['control'] && this.control) {
-            this.value = this.control.value;
+        await super.ngOnChanges(changes);
 
-        }
         if (this.includeAccess === true) {
-            this.auth.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(t => this.access_token = `?access_token=${this.auth.get_token()}`);
+            this.auth.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => (this.access_token = `?access_token=${this.auth.get_token()}`));
         }
     }
 
-
-
     private validateFileExtensions(file: File, accepts: string) {
         if (file && accepts) {
-            const segments = file.name.split(".");
+            const segments = file.name.split('.');
             segments.shift();
             const fileExtension = segments.join('.').toLowerCase();
-            const extensions = accepts.split(',').filter(x => x != '*.*').map(x => x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase());
-            return extensions.some(x => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
+            const extensions = accepts
+                .split(',')
+                .filter((x) => x != '*.*')
+                .map((x) => (x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase()));
+            return extensions.some((x) => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
         }
         return null;
     }
@@ -118,11 +107,9 @@ export class FileInputComponent extends ValueDataComponentBase {
         return null;
     }
 
-
     uploading = false;
     uploadingProgress: number | null = null;
     async selectFile() {
-
         if (this.fileSelector === 'browser') {
             return await this.showFileExplorer();
         }
@@ -141,14 +128,13 @@ export class FileInputComponent extends ValueDataComponentBase {
 
             if (extensionErrors?.extension?.length > 0 || maxSizeErrors || minSizeErrors) {
                 const errors = Object.assign({}, extensionErrors, maxSizeErrors, minSizeErrors);
-                this.control.setErrors(errors);
-                this.control.markAllAsTouched();
+                // this.control().errors.set(errors as any);
                 continue;
             }
 
             const uploadStream = this.uploadClient.upload(this.path, files[i], files[i].name);
-            uploadStream.progress$.subscribe(p => this.uploadingProgress = p);
-            uploadStream.response$.subscribe(res => {
+            uploadStream.progress$.subscribe((p) => (this.uploadingProgress = p));
+            uploadStream.response$.subscribe((res) => {
                 //this.value = res;
                 uploadedFiles++;
                 this.uploading = files.length > uploadedFiles;
@@ -158,28 +144,29 @@ export class FileInputComponent extends ValueDataComponentBase {
                 // this.value = [...(this.value || []), ...r];
             });
         }
-
-
     }
 
     private async showFileExplorer() {
         const result = this.dialog.open(FileSelectComponent, {
-            data: { path: this.path, base: this.base, value: this.value }
+            data: { path: this.path, base: this.base, value: this.value },
         });
         //todo: convert selectionChanged to eventEmitter instead of replaySubject.
         // result.componentInstance.selectionChanged.subscribe(e => {
         //     result.close(e);
         // });
 
-        this.value = await firstValueFrom(result.afterClosed());
-        this.control.markAsDirty()
+        const value = await firstValueFrom(result.afterClosed());
+        this.value.set(value);
+        this.propagateChange();
+        this.markAsTouched();
     }
 
-
-
     removeFile(file: FileInfo) {
-        const i = this.value.indexOf(file)
-        this.value.splice(i, 1)
-        this.control.markAsDirty()
+        const v = this.value();
+        const i = v.indexOf(file);
+        v.splice(i, 1);
+        this.value.set(v);
+        this.propagateChange();
+        this.markAsTouched();
     }
 }

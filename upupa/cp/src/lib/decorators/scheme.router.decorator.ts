@@ -4,7 +4,7 @@ import { GenericListViewScaffolder } from '../default-scaffolders/list-view.scaf
 import { formScheme, DynamicFormOptions } from '@upupa/dynamic-form';
 import 'reflect-metadata';
 
-import { ActionDescriptor, ActionEvent, toTitleCase } from '@upupa/common';
+import { ActionDescriptor, toTitleCase } from '@upupa/common';
 import {
     CPCommandPosition,
     CreateFormOptions,
@@ -17,8 +17,8 @@ import {
 import { JsonPointer } from '@noah-ark/json-patch';
 import {
     ColumnDescriptor,
-    ColumnsDescriptor,
-    DataTableComponent,
+    resolveDataListInputsFor,
+    setDataListMetadataFor,
 } from '@upupa/table';
 import { DatePipe } from '@angular/common';
 import {
@@ -29,47 +29,6 @@ import {
 } from '@upupa/data';
 import { Injector, Type } from '@angular/core';
 export type DataListViewModelType = any;
-
-const dataListInputsMetadataKey = Symbol('custom:data_list_view_model_inputs');
-
-export type DataListViewModelQueryParam = {
-    param: string;
-    propertyKey: string;
-};
-export type DataListViewModelInputs = {
-    dataAdapterDescriptor: DataAdapterDescriptor<DataAdapterType>;
-    headerActions: {
-        order: number;
-        descriptor: (rows: any[]) => DataTableActionDescriptor;
-    }[];
-    rowActions: {
-        order: number;
-        descriptor: (row: any) => DataTableActionDescriptor;
-    }[];
-    columns: ColumnsDescriptor;
-    queryParams: DataListViewModelQueryParam[];
-};
-
-export function resolveDataListInputsFor(target: any): DataListViewModelInputs {
-    return Reflect.getMetadata(dataListInputsMetadataKey, target) ?? {};
-}
-
-const setDataListMetadataFor = (
-    target: any,
-    value: Record<string, unknown>
-) => {
-    let targetMeta = resolveDataListInputsFor(target);
-    const parent = target.prototype
-        ? Object.getPrototypeOf(target.prototype)?.constructor
-        : null;
-    if (parent && parent.constructor)
-        targetMeta = { ...resolveDataListInputsFor(parent), ...targetMeta };
-    Reflect.defineMetadata(
-        dataListInputsMetadataKey,
-        { ...targetMeta, ...value },
-        target
-    );
-};
 
 export const _LISTS_INFO: Record<string, Partial<ListViewOptions>> = {};
 const _scaffoldingScheme: ScaffoldingScheme = {};
@@ -154,7 +113,7 @@ export function createFormScaffolder(
     options: CreateFormOptions = {}
 ) {
     return function (target) {
-        applyFormScheme(path, target, { ...options, path });
+        applyFormScheme(path, target, { ...options });
         const registeredRoute = _scaffoldingScheme['create']?.[path];
         const type =
             registeredRoute?.type ??
@@ -227,12 +186,10 @@ function applyFormScheme(
 ) {
     const opts = {
         name: options.name,
-        initialValueFactory: options.initialValueFactory,
         recaptcha: options.recaptcha,
         preventDirtyUnload: options.preventDirtyUnload,
         conditions: options.conditions,
         theme: options.theme,
-        locales: options.locales,
         path,
     } as DynamicFormOptions;
 

@@ -1,5 +1,5 @@
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { PasswordInputComponent } from '@upupa/dynamic-form-native-theme'
 
@@ -9,7 +9,6 @@ import { PasswordInputComponent } from '@upupa/dynamic-form-native-theme'
     styleUrls: ['./password.component.scss'],
     providers: [
         { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => PasswordInputComponent), multi: true },
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => PasswordInputComponent), multi: true }
     ]
 })
 export class MatPasswordInputComponent extends PasswordInputComponent { }

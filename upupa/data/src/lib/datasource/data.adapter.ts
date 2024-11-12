@@ -1,12 +1,12 @@
-import { JsonPointer } from "@noah-ark/json-patch";
-import { Subscription, Observable, ReplaySubject, of, firstValueFrom } from "rxjs";
-import { ClientDataSource } from "./client.data.source";
-import { filterNormalized } from "./filter.fun";
-import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
-import { map, tap } from "rxjs/operators";
-import { HttpServerDataSourceOptions } from "./http-server-data-source";
+import { JsonPointer } from '@noah-ark/json-patch';
+import { Subscription, Observable, ReplaySubject, firstValueFrom } from 'rxjs';
+import { ClientDataSource } from './client.data.source';
+import { filterNormalized } from './filter.fun';
+import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from './model';
+import { map } from 'rxjs/operators';
+import { HttpServerDataSourceOptions } from './http-server-data-source';
 
-export type DataAdapterType = "server" | "client" | "http";
+export type DataAdapterType = 'server' | 'api' | 'client' | 'http';
 
 export type DataAdapterDescriptor<TData = any> = {
     type: DataAdapterType;
@@ -16,9 +16,9 @@ export type DataAdapterDescriptor<TData = any> = {
     imageProperty?: Key<TData>;
     options?: ProviderOptions<TData>;
 } & (
-    | { type: "server"; path: string | ((url: string, ...args: any[]) => string) }
-    | { type: "client"; data: TData[] | Promise<TData[]> }
-    | { type: "http"; url: string; httpOptions?: HttpServerDataSourceOptions }
+    | ({ type: 'server'; path: string; select?: string[] } | { type: 'api'; path: string; select?: string[] })
+    | { type: 'client'; data: TData[] | Promise<TData[]> }
+    | { type: 'http'; url: string; httpOptions?: HttpServerDataSourceOptions }
 );
 
 export class Normalizer<S = any, N = any> {
@@ -150,14 +150,14 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
                 if (property.length === 1) return this.__extract(item, property[0]);
                 const result: Partial<T> = {};
                 property.forEach((k) => (result[k] = this.__extract(item, k as string)));
-                if (flatten) return Object.values(result).join(" ");
+                if (flatten) return Object.values(result).join(' ');
                 else return result;
             } else return this.__extract(item, property as string) ?? item;
         } else return fallback;
     }
 
     private __extract(item: any, property: any) {
-        if (property.indexOf(".") > -1) return JsonPointer.get(item, property.replaceAll(".", "/"));
+        if (property.indexOf('.') > -1) return JsonPointer.get(item, property.replaceAll('.', '/'));
         else return item[property];
     }
 
@@ -167,10 +167,10 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
             filter.terms = [];
             return filter;
         }
-        const terms = q.split(" ").filter((x) => x);
+        const terms = q.split(' ').filter((x) => x);
         terms.forEach((t) => {
-            if (t.indexOf(":") > 0) {
-                const [key, value] = t.split(":");
+            if (t.indexOf(':') > 0) {
+                const [key, value] = t.split(':');
                 filter[key] = value;
             } else {
                 if (!filter.terms) filter.terms = [];
@@ -240,22 +240,22 @@ export class SmartMap<V> {
 
     delete(key: any): boolean {
         const t = typeof key;
-        if (t === "object") return this._weak.delete(key);
+        if (t === 'object') return this._weak.delete(key);
         else return this._strong.delete(key);
     }
     get(key: any): V | undefined {
         const t = typeof key;
-        if (t === "object") return this._weak.get(key);
+        if (t === 'object') return this._weak.get(key);
         else return this._strong.get(key);
     }
     has(key: any): boolean {
         const t = typeof key;
-        if (t === "object") return this._weak.has(key);
+        if (t === 'object') return this._weak.has(key);
         else return this._strong.has(key);
     }
     set(key: any, value: V) {
         const t = typeof key;
-        if (t === "object") return this._weak.set(key, value);
+        if (t === 'object') return this._weak.set(key, value);
         else return this._strong.set(key, value);
     }
 }

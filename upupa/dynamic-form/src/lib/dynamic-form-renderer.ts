@@ -1,330 +1,131 @@
-import { Renderer2 } from '@angular/core';
-import {
-  AbstractControl,
-  UntypedFormBuilder,
-  ValidatorFn,
-  UntypedFormGroup,
-  UntypedFormControl,
-} from '@angular/forms';
-import { EventBus } from '@upupa/common';
-import {
-  Subject,
-  Subscription,
-  debounceTime,
-  filter,
-  firstValueFrom,
-  skip,
-} from 'rxjs';
+import { ValidatorFn, FormGroup, UntypedFormGroup, AbstractControl } from '@angular/forms';
 import { _mergeFields } from './dynamic-form.helper';
 import { DynamicFormService } from './dynamic-form.service';
-import { Field, Fieldset, FieldItem, ValidationTask, Validator } from './types';
-import { TaskValidationComponent } from './task.validation.component/task.validation.component';
-import { DynamicFormEvents as DF_Events } from './events/events';
-import { DialogService } from '@upupa/dialog';
+import { Field, FieldItem, Validator, FormScheme, Fieldset } from './types';
+import { JsonPointer } from '@noah-ark/json-patch';
+import { cloneDeep } from 'lodash';
+import { Signal, signal } from '@angular/core';
+import { name } from 'platform';
+import { FieldFormControl, FieldFormGroup } from './field-form.control';
+import { FormGraph } from './dynamic-form.component';
 
-export class DynamicFormRenderer<T = any> {
-  _lockChange = 0;
-  value$ = new Subject<T>();
-  _value: T;
+export class DynamicFormBuilder {
+    constructor(private readonly formService: DynamicFormService) {}
 
-  lot_number = 0; //to mark controls as they are created
-  form = null;
-  controls = new Map<Field, UntypedFormControl>();
+    build(form: FormGroup, scheme: FormScheme, value: any, path = '/', rootForm: FormGroup = form): FormGraph {
+        const graph = new Map<string, FieldFormControl | FieldFormGroup>();
+        // this.removeControls(form);
+        for (const fieldName in scheme) {
+            const field = scheme[fieldName];
+            const fieldValue = JsonPointer.get(value ?? {}, fieldName);
+            const _path = `${path}${fieldName}` as `/${string}`;
+            if (field.type === 'fieldset') {
+                const group = this.getFieldset(fieldName, field, _path, rootForm);
 
-  validationTasks: { [field: string]: ValidationTask } = {};
-
-  _fields: Field[];
-  _sub: Subscription;
-
-  constructor(
-    private formService: DynamicFormService,
-    public defaultTheme: string,
-    public bus: EventBus,
-    public fb: UntypedFormBuilder,
-    public dialog: DialogService,
-    public parent: any,
-    public renderer: Renderer2,
-    public disabled = false
-  ) {
-    this.form = this.fb.group({});
-    if (this.disabled) this.form.disable();
-  }
-
-  private get theme() {
-    return this.parent?.theme ?? this.defaultTheme;
-  }
-
-  getValidator(validator: Validator): ValidatorFn {
-    const validatorFactory = this.formService.getValidatorFactory(
-      validator.name
-    );
-    if (validatorFactory) return validatorFactory(validator);
-    else throw 'INVALID_VALIDATOR: ' + validator.name;
-  }
-
-  get fields(): Field[] {
-    return this._fields;
-  }
-  set fields(val: Field[]) {
-    this._fields = val;
-    this._onFieldsChange();
-  }
-
-  private _onFieldsChange() {
-    if (this.fields) {
-      this.lot_number++;
-      this.processFields(this.fields, this.form, '', this.value);
-
-      const abandonedControls = Array.from(this.controls).filter(
-        ([_, c]) => c['lot_number'] != this.lot_number
-      );
-      abandonedControls.forEach(([field, control]) => {
-        const formGroup = control.parent as UntypedFormGroup;
-        if (formGroup && control === formGroup.controls[field.name]) {
-          //double checking on control because removing is by name
-          formGroup.removeControl(field.name);
+                form.addControl(fieldName, group, { emitEvent: false });
+                graph.set(_path, group);
+                const subControls = this.build(group, field.items, fieldValue, `${path}${fieldName}/`, rootForm);
+                for (const [key, value] of subControls) {
+                    graph.set(key, value);
+                }
+            } else if (field.type == 'array') {
+                // const array = new FormArray([], { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+                // array["name"] = field.name;
+                // form.addControl(fieldName, array);
+                // this.buildArray(array, field.items, fieldValue);
+            } else {
+                const control = this.getControl(fieldName, field, fieldValue, _path);
+                control.form = rootForm;
+                form.addControl(fieldName, control, { emitEvent: false });
+                graph.set(_path, control);
+            }
         }
-        this.controls.delete(field);
-      });
-    } else throw 'scheme must be provided with at least one field.';
 
-    if (this._sub) this._sub.unsubscribe();
-    this._sub = this.form.valueChanges
-      .pipe(debounceTime(200))
-      .subscribe((v) => {
-        if (this._lockChange > 0) return;
-        this._value = Object.assign({}, this.value ?? {}, v);
-        this.value$.next(this._value);
-      });
+        return graph;
+    }
 
-    this.writeValue(this._value);
-  }
-
-  processFields(
-    scheme: Field[],
-    form: UntypedFormGroup,
-    path: string,
-    value?: any
-  ) {
-    for (const fieldName in scheme) {
-      const field = scheme[fieldName];
-      if (field.type === 'fieldset')
-        this.processFieldset(<Fieldset>field, form, path, value?.[field.name]);
-      else
-        this.processFieldItem(
-          <FieldItem>field,
-          form,
-          path,
-          value?.[field.name]
+    private getFieldset(name: string, field: Fieldset, _path: `/${string}`, rootForm: FormGroup) {
+        const group = new FieldFormGroup(
+            {},
+            {
+                validators: this.getValidators(field),
+                asyncValidators: this.getAsyncValidators(field),
+            },
         );
+        group.name = name;
+        group.path = _path;
+        group.field = signal(cloneDeep(field));
+        group.form = rootForm;
+        return group;
     }
-  }
-
-  processFieldset(
-    fieldset: Fieldset,
-    form: UntypedFormGroup,
-    path: string,
-    value?: any
-  ): void {
-    let nestedForm = form.controls[fieldset.name] as UntypedFormGroup;
-    if (!nestedForm) {
-      nestedForm = this.fb.group({});
-      form.addControl(fieldset.name, nestedForm);
+    getControl(name: string, field: FieldItem, value: any, path: `/${string}`) {
+        const control = new FieldFormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+        control.name = name;
+        control.path = path;
+        control.field = signal(cloneDeep(field));
+        return control;
     }
-    this.processFields(
-      Object.values(fieldset.items),
-      nestedForm,
-      `${path}/${fieldset.name}`,
-      value
-    );
-  }
+    // buildArray(array: FormArray, items: FormScheme, value: any) {
+    //     if (!Array.isArray(value)) value = [];
+    //     const fields = Object.values(items);
+    //     for (let i = 0; i < fields.length; i++) {
+    //         const field = fields[i];
+    //         field.name = `${i}`;
+    //         const fieldValue = value[i];
+    //         if (field.type === "fieldset") {
+    //             const group = new FormGroup(
+    //                 {},
+    //                 {
+    //                     validators: this.getValidators(field),
+    //                     asyncValidators: this.getAsyncValidators(field),
+    //                 },
+    //             );
+    //             array.push(group);
+    //             this.build(group, field.items, fieldValue);
+    //         } else if (field.type == "array") {
+    //             const nestedArray = new FormArray([], {
+    //                 validators: this.getValidators(field),
+    //                 asyncValidators: this.getAsyncValidators(field),
+    //             });
+    //             array.push(nestedArray);
+    //             this.buildArray(nestedArray, field.items, fieldValue);
+    //         } else {
+    //             const control = this.getControl(field, fieldValue);
+    //             array.push(control);
+    //         }
+    //     }
+    // }
 
-  processFieldItem(
-    field: FieldItem,
-    form: UntypedFormGroup,
-    path: string,
-    value: any
-  ): void {
-    let control = this.controls.get(field);
-    if (!control) {
-      const componentMap = this.formService.getControl(field.input, this.theme);
-      if (componentMap.field) _mergeFields(field, componentMap.field);
-      field['path'] = `${path}/${field.name}`;
-
-      control = this.fb.control(undefined);
-      control.valueChanges.subscribe((v) =>
-        this.bus.emit(
-          DF_Events.valueChanged,
-          { msg: DF_Events.valueChanged, fields: field.path, value: v },
-          this.parent
-        )
-      );
-
-      control.setValue(value, { emitEvent: false, onlySelf: true });
-      const validators = this.getValidators(field);
-      control.addValidators(validators);
-      control.markAsPristine();
-      control.markAsUntouched();
-
-      this.controls.set(field, control);
-      if (form.controls[field.name]) form.removeControl(field.name);
-      form.addControl(field.name, control);
-
-      if (field.validationTask) {
-        this.setupValidationTask(field, control);
-      }
-
-      if (this.disabled) control.disable();
-      else control.enable();
+    getValidator(validator: Validator, name: string, field: Field): ValidatorFn {
+        const validatorFactory = this.formService.getValidatorFactory(validator.name);
+        if (validatorFactory) return validatorFactory(validator);
+        else throw `Field ${name} has an invalid validator: ${validator.name}`;
     }
+    getValidators(field: Field) {
+        const validations = field.validations ?? [];
+        const isRequired = field.ui?.inputs?.['required'] ?? false;
+        const requiredValidators = validations.filter((v) => v.name === 'required' || v.name === 'requiredTrue');
 
-    control['lot_number'] = this.lot_number;
-  }
-
-  private getValidators(field: Field) {
-    const validations = field.validations || [];
-    const isRequired = field.ui?.inputs?.['required'];
-    if (isRequired) validations.push({ name: 'required', message: 'required' });
-    return validations.map((v) => this.getValidator(v));
-  }
-
-  private setupValidationTask(field: FieldItem, control: AbstractControl) {
-    const task = field.validationTask;
-    this.validationTasks[field.name] = task;
-
-    const validator = control.validator;
-    control.setValidators((control) => {
-      if (!control) return undefined;
-
-      let errors = validator ? validator(control) : null;
-      if (errors === null && task.state != 'check') {
-        //if normal validators are happy and task still didn't sccuceed then show validation-task error
-        errors = {};
-        errors[task.name || 'validation-task'] = {
-          msg: task.error,
-          validationTask: true,
-        };
-      }
-      return errors;
-    });
-
-    control.valueChanges.subscribe(() => {
-      task.state = task.state === 'send' ? 'send' : 'error';
-      task.token = null;
-      if (task.confirm) task.state = task.confirm.state = 'vpn_key';
-      const errorCodes = Object.keys(control.errors || {});
-      task.disabled = !(
-        errorCodes.length === 1 && control.errors[errorCodes[0]].validationTask
-      );
-    });
-
-    control.valueChanges
-      .pipe(
-        filter((value) => value != null),
-        debounceTime(5000)
-      )
-      .subscribe(() => {
-        if (!task.disabled && task.state === 'send') {
-          control.markAsTouched();
-          this.runValidationTask(field);
+        if (isRequired && requiredValidators.length === 0) {
+            validations.push({ name: 'required' });
         }
-      });
-  }
 
-  async runValidationTask(field: FieldItem) {
-    const task = this.validationTasks[field.name];
-    const control = this.form[field.name];
-
-    if (task.disabled || task.state === 'check') return;
-
-    if (task.confirm) {
-      const token = await this.openValidationTaskDialog(field);
-      task.confirm = null;
-      if (token) task.token = token;
-      return;
-    }
-    task.state = 'error';
-
-    try {
-      const result = await task.task(field.name, control.value);
-      if (result === null || result === true) task.state = 'check';
-      else if (result['code']) {
-        task.state = 'vpn_key';
-        task.confirm = result['code'];
-        task.confirm.state = 'vpn_key';
-      } else {
-        task.error = result;
-        task.state = 'error';
-      }
-    } catch (error) {
-      task.state = 'error';
-    }
-
-    control.updateValueAndValidity({ emitEvent: false });
-  }
-
-  openValidationTaskDialog(field: FieldItem) {
-    const task = this.validationTasks[field.name];
-    const control = this.controls.get(field);
-    return firstValueFrom(
-      this.dialog
-        .openDialog(TaskValidationComponent, { data: { field, task, control } })
-        .afterClosed()
-    );
-  }
-
-  get value() {
-    return this._value;
-  }
-  set value(val: any) {
-    this.writeValue(val);
-  }
-
-  writeValue(val: any) {
-    this._lockChange++;
-    this._value = val;
-
-    try {
-      if (this.fields) {
-        for (const f of this.fields) {
-          const v = val ? val[f.name] : undefined;
-          if (v === undefined) continue;
-          if (f.type === 'fieldset') this._writeOnFieldset(f, this.form, v);
-          else {
-            this._writeOnControl(f, v);
-          }
+        if (isRequired || requiredValidators.length > 0) {
+            field.ui ??= {};
+            field.ui.inputs ??= {};
+            field.ui.inputs['required'] = true;
         }
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      this._lockChange--;
+
+        return validations.map((v) => this.getValidator(v, name, field));
     }
-  }
 
-  _writeOnFieldset(fieldset: Fieldset, form: any, val: any) {
-    const group = form[fieldset.name];
-    for (const name in fieldset.items) {
-      const f = fieldset.items[name];
-      const v = val ? val[f.name] : undefined;
-      if (v === undefined) continue;
-
-      if (f.type === 'fieldset') this._writeOnFieldset(f, group, v);
-      else this._writeOnControl(f, v);
+    getAsyncValidators(field: Field) {
+        return [];
     }
-  }
 
-  _writeOnControl(f: Field, v: any) {
-    const c = this.controls.get(f);
-    if (c?.value !== v) {
-      c?.setValue(v);
-      this.bus.emit(
-        DF_Events.valueChanged,
-        { msg: DF_Events.valueChanged, fields: f.path, value: v },
-        this.parent
-      );
+    removeControls(form: FormGroup) {
+        for (const key in form.controls) {
+            form.removeControl(key);
+        }
     }
-  }
-
-  destroy() {}
 }

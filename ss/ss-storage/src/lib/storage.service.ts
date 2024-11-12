@@ -18,14 +18,7 @@ import { PostedFile, File } from '@noah-ark/common';
 import fileSchema from './schema';
 import mongoose from 'mongoose';
 import { join } from 'path';
-import {
-    createWriteStream,
-    existsSync,
-    mkdirSync,
-    opendirSync,
-    renameSync,
-    statSync,
-} from 'fs';
+import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from 'fs';
 import { logger } from '@ss/common';
 
 const separator = '/';
@@ -62,18 +55,13 @@ export function isFile(path: string) {
 
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
     try {
-        return mongoose.Types.ObjectId.createFromHexString(
-            id
-        ) as mongoose.Types.ObjectId;
+        return mongoose.Types.ObjectId.createFromHexString(id) as mongoose.Types.ObjectId;
     } catch (error) {
         return undefined;
     }
 }
 
-export async function saveStreamToTmp(
-    path: string,
-    file: PostedFile
-): Promise<File> {
+export async function saveStreamToTmp(path: string, file: PostedFile): Promise<File> {
     return new Promise<File>((resolve, reject) => {
         const segments = path
             .replace(/\\/g, '/')
@@ -85,16 +73,12 @@ export async function saveStreamToTmp(
         let ext = Path.extname(filename!) ?? '';
         let _id: string;
 
-        if (ext.length > 0)
-            _id = filename.substring(0, filename.length - ext.length);
+        if (ext.length > 0) _id = filename.substring(0, filename.length - ext.length);
         else {
             segments.push(filename); //path originally points to dir so put the file name back
             ext = Path.extname(file.originalname);
-            _id = file.originalname.substring(
-                file.originalname.length - ext.length
-            );
-            if (!toObjectId(_id))
-                _id = new mongoose.Types.ObjectId().toHexString();
+            _id = file.originalname.substring(file.originalname.length - ext.length);
+            if (!toObjectId(_id)) _id = new mongoose.Types.ObjectId().toHexString();
         }
 
         filename = _id + ext;
@@ -103,9 +87,7 @@ export async function saveStreamToTmp(
         const fileStream = file.stream as any;
         const ws = createWriteStream(tmp);
 
-        fileStream.on('error', (err: any) =>
-            reject({ msg: 'FileStreamError', error: err })
-        );
+        fileStream.on('error', (err: any) => reject({ msg: 'FileStreamError', error: err }));
         fileStream.on('end', () => {
             ws.close();
         });
@@ -145,24 +127,18 @@ export class StorageService {
 
     async saveToDb(f: File, principle: any) {
         const { path, patches } = this.data.toPatches(`/storage/${f._id}`, f);
-        await this.data.patch(path, patches, principle, {
-            upsert: true,
-            new: true,
-            lean: true,
-        });
+        await this.data.patch(path, patches, principle);
     }
 
     async delete(path: string, principle: any) {
         const segments = path.replace(/\\/g, '/').split(separator);
         const filename = segments[segments.length - 1];
         const ext = Path.extname(filename);
-        if (!ext)
-            throw new HttpException('InvalidPath', HttpStatus.BAD_REQUEST);
+        if (!ext) throw new HttpException('InvalidPath', HttpStatus.BAD_REQUEST);
         const _id = filename.substring(0, filename.length - ext.length);
 
         const doc = await this.data.get<File>(`storage/${_id}`);
-        if (!doc)
-            throw new HttpException('No file found', HttpStatus.NOT_FOUND);
+        if (!doc) throw new HttpException('No file found', HttpStatus.NOT_FOUND);
 
         await this.data.delete(`storage/${_id}`, principle);
         const fPath = join(__dirname, doc.path);

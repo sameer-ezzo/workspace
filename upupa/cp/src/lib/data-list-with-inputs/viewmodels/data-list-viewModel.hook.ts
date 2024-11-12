@@ -1,66 +1,71 @@
-
-
 export interface DataListLifecycleHook {}
 export interface OnInit extends DataListLifecycleHook {
-  ngOnInit(): void;
+    ngOnInit?: (e: any) => void;
 }
 export interface OnDestroy extends DataListLifecycleHook {
-  ngOnDestroy(): void;
+    ngOnDestroy?: (e: any) => void;
 }
 export interface OnRefresh extends DataListLifecycleHook {
-  onRefresh(): void;
+    onRefresh?: (e: any) => void;
 }
 export interface OnSelect extends DataListLifecycleHook {
-  onSelect(): void;
+    onSelect?: (e: any) => void;
 }
 export interface OnSelectAll extends DataListLifecycleHook {
-  onSelectAll(): void;
+    onSelectAll?: (e: any) => void;
 }
 export interface OnDeselect extends DataListLifecycleHook {
-  onDeselect(): void;
+    onDeselect?: (e: any) => void;
 }
 export interface OnDeselectAll extends DataListLifecycleHook {
-  onDeselectAll(): void;
+    onDeselectAll?: (e: any) => void;
 }
 export interface OnRowAction extends DataListLifecycleHook {
-  onRowAction(): void;
+    onRowAction?: (e: any) => void;
 }
 export interface OnHeaderAction extends DataListLifecycleHook {
-  onHeaderAction(): void;
+    onHeaderAction?: (e: any) => void;
+}
+export interface OnHeaderAction extends DataListLifecycleHook {
+    onHeaderAction?: (e: any) => void;
 }
 export interface OnFilter extends DataListLifecycleHook {
-  onFilter(): void;
+    onFilter?: (e: any) => void;
 }
 export interface OnSort extends DataListLifecycleHook {
-  onSort(): void;
+    onSort?: (e: any) => void;
 }
 export interface OnPageChange extends DataListLifecycleHook {
-  onPageChange(): void;
+    onPageChange?: (e: any) => void;
 }
 export interface OnPageSizeChange extends DataListLifecycleHook {
-  onPageSizeChange(): void;
+    onPageSizeChange?: (e: any) => void;
 }
 export interface OnSearch extends DataListLifecycleHook {
-  onSearch(): void;
+    onSearch?: (e: any) => void;
 }
 export interface OnQuery extends DataListLifecycleHook {
-  onQuery(): void;
+    onQuery?: (e: any) => void;
 }
 export interface OnQueryParams extends DataListLifecycleHook {
-  onQueryParams(): void;
+    onQueryParams?: (e: any) => void;
 }
 export interface OnAdapterChange extends DataListLifecycleHook {
-  onAdapterChange(): void;
+    onAdapterChange?: (e: any) => void;
 }
 export interface OnDataChange extends DataListLifecycleHook {
-  onDataChange(): void;
+    onDataChange?: (e: any) => void;
 }
 export interface OnDataError extends DataListLifecycleHook {
-  onDataError(): void;
+    onDataError?: (e: any) => void;
 }
 export interface OnDataLoading extends DataListLifecycleHook {
-  onDataLoading(): void;
+    onDataLoading?: (e: any) => void;
 }
 export interface OnDataLoaded extends DataListLifecycleHook {
-  onDataLoaded(): void;
+    onDataLoaded?: (e: any) => void;
+}
+
+export interface OnFocusedItemChange extends DataListLifecycleHook {
+    onFocusedItemChange(event: any): void;
 }

@@ -1,31 +1,33 @@
 import { KeyValue } from '@angular/common';
-import { Component, input, Input } from '@angular/core';
+import { Component, input, Input, InputSignal } from '@angular/core';
 import { ColumnDescriptor } from './types';
+import { NormalizedItem } from '@upupa/data';
+
+export interface ITableCellTemplate<TValue = any, TItem = any> {
+    value?: InputSignal<TValue>;
+    element?: InputSignal<{ item: TItem }>;
+    item?: InputSignal<TItem>;
+    dataIndex?: InputSignal<number>;
+    descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
+}
 
 @Component({
-    selector: 'default-table-cell-template',
+    selector: 'cell-template',
     template: `
-        @if (descriptor().value.pipe) { @if (descriptor().value.pipe['pipe']) {
-        <div
-            [innerHTML]="
-                element().item[descriptor().key]
-                    | dynamic
-                        : descriptor().value.pipe['pipe']
-                        : descriptor().value.pipe['args']
-            "
-        ></div>
+        @if (descriptor().value.pipe) {
+            @if (descriptor().value.pipe['pipe']) {
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
+            } @else {
+                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
+            }
         } @else {
-        <div
-            [innerHTML]="
-                element().item[descriptor().key]
-                    | dynamic : descriptor().value.pipe
-            "
-        ></div>
-        } } @else { {{ element().item | jpointer : descriptor().key }} }
+            {{ value() }}
+        }
     `,
 })
-export class DefaultTableCellTemplate<T = any> {
-    element = input.required<{ item: T }>();
-    index = input<number>();
+export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
+    value = input.required();
+    element = input.required<NormalizedItem<T>>();
+    item = input.required<T>();
     descriptor = input<KeyValue<string, ColumnDescriptor>>();
 }

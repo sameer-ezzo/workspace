@@ -17,3 +17,5 @@ export * from './lib/datasource/http-server-data-source';
 export * from './lib/datasource/client.data.source';
 export * from './lib/datasource/url.data.source';
 export * from './lib/datasource/data.adapter';
+
+export * from './lib/create-data-adapter.fun';

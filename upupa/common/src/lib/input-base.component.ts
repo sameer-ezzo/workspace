@@ -1,114 +1,57 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, forwardRef } from '@angular/core'
-import { AbstractControl, ControlValueAccessor, NG_VALIDATORS, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms'
-import { BehaviorSubject } from 'rxjs'
+import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model, SimpleChanges } from '@angular/core';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
 
-@Component({
-    selector: 'input-base',
-    template: '',
-    providers: [
-        { provide: NG_VALIDATORS, useExisting: forwardRef(() => InputBaseComponent), multi: true }
-    ]
-})
+@Component({ template: '' })
+export class InputBaseComponent<T = any> implements ControlValueAccessor {
+    name = input<string, string>('', {
+        alias: 'fieldName',
+        transform: (v) => {
+            return v ? v : `field_${Date.now()}`;
+        },
+    });
+    disabled = model(false);
+    required = input(false);
+    value = model<T>();
 
-export class InputBaseComponent<T = any, C = UntypedFormControl> implements ControlValueAccessor, Validator, OnChanges {
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl();
+    control = input<FormControl>(this._control ?? this._defaultControl);
+    handleUserInput(v: T) {
+        this.value.set(v);
 
-    @Input() name = `${Date.now()}`
-    @Input() control: UntypedFormControl = new UntypedFormControl()
-    @Output() valueChange = new EventEmitter<T | T[]>()
-    value1$ = new BehaviorSubject<T>(undefined)
-
-    @Input() required: boolean
-    @Input() disabled: boolean
-    @Input()
-    public get value(): T { return this.value1$.value }
-    public set value(v: T) { this.writeValue(v, true) }
-
-    public get _value(): T { return this.value1$.value }
-    public set _value(v: T) { this.writeValue(v, false) }
-
-    //ControlValueAccessor
-    _onChange: ((value: T | T[]) => void)
-    _onTouch: (() => void)
-
-    validate(control: AbstractControl): ValidationErrors {
-        return control.validator ? control.validator(control) : null
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    _updateViewModel() { }
-
-    _propagateChange() {
-        if (this._onChange) this._onChange(this.value) //ngModel/ngControl notify (value accessor)
-        this.valueChange.emit(this.value) //value event binding notify
-    }
-
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['control']) {
-            this._value = this.control?.value //read value from control (but why not write value to control?)
-            this.control?.registerOnChange((value: T) => this._value = value)
+        if (this._ngControl) {
+            // only notify changes if control was provided externally
+            this.markAsTouched();
+            this.propagateChange();
+        } else {
+            this.control().setValue(v);
         }
     }
 
+    // >>>>> ControlValueAccessor ----------------------------------------
+    _onChange: (value: T) => void;
+    _onTouch: () => void;
 
-    writeValue(v: T, emitEvent = false): void {
-
-        if (v === this.value) return
-        this.value1$.next(v)
-
-        this.control?.setValue(v, { emitEvent })
-
-        this._updateViewModel()
-        if (emitEvent) this._propagateChange()
+    propagateChange() {
+        this._onChange?.(this.value());
     }
 
-    onTouch() {
-        this.control?.markAsTouched()
-        if (this._onTouch) this._onTouch()
+    markAsTouched() {
+        if (this._onTouch) this._onTouch();
     }
-    registerOnChange(fn: (value: T) => void): void { this._onChange = fn }
-    registerOnTouched(fn: () => void): void { this._onTouch = fn }
+
+    writeValue(v: T): void {
+        this.value.set(v);
+    }
+
+    registerOnChange(fn: (value: T) => void): void {
+        this._onChange = fn;
+    }
+    registerOnTouched(fn: () => void): void {
+        this._onTouch = fn;
+    }
     setDisabledState?(isDisabled: boolean): void {
-        if (isDisabled && this.control?.enabled) this.control?.disable()
-        else if (isDisabled === false && this.control?.disabled) this.control?.enable()
-    }
-}
-
-
-
-@Component({
-    selector: 'input-base',
-    template: `
-    @if (label) {
-      <label>label</label>
-    }
-    <input #input [type]="type" [value]="value || ''" (input)="value = $event.target?.['value']; _propagateChange();control.markAsDirty()" (blur)="onTouch();" [readonly]="readonly" [placeholder]="placeholder" [required]="required">
-    @for (error of control?.errors | keyvalue; track error) {
-      <span class="error">{{errorMessages[error.key+''] || error.key}}</span>
-    }
-    `
-})
-
-export class BaseTextInputComponent<T = any> extends InputBaseComponent<T>{
-    inlineError = true;
-
-    @Input() placeholder: string;
-    @Input() type = 'text';
-    @Input() label: string;
-    @Input() hint: string;
-    private _readonly = false;
-    @Input()
-    public get readonly() {
-        return this._readonly;
-    }
-    public set readonly(value) {
-        this._readonly = value;
-        this.setDisabledState(value === true)
-    }
-    @Input() errorMessages: { [errorCode: string]: string } = {};
-
-    override ngOnChanges(changes: SimpleChanges): void {
-        super.ngOnChanges(changes)
-        this.setDisabledState(this.readonly === true)
+        this.disabled.set(isDisabled);
     }
 }

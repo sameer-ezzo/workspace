@@ -1,37 +1,42 @@
-@if (title?.length > 0 || showCloseBtn) {
-  <div class="toolbar header" [class.titled]="title?.length > 0">
-    @if (title?.length > 0) {
-      <span style="line-height: 1.25">
-        <h2 style="margin: 0">{{ title }}</h2>
-        @if (subTitle?.length > 0) {
-          <small>{{ subTitle }}</small>
+@if (title() || !hideCloseButton()) {
+<div class="toolbar header" [class.titled]="title().length > 0">
+    @if (title()) {
+    <span style="line-height: 1.25">
+        <h2 style="margin: 0">{{ title() }}</h2>
+        @if (subTitle()) {
+        <small>{{ subTitle() }}</small>
         }
-      </span>
-    }
-    @if (showCloseBtn) {
-      <span style="flex: 1 1 auto"></span>
-      <button class="close-btn" tabindex="-1" mat-icon-button (click)="close()">
+    </span>
+    } @if (!hideCloseButton()) {
+    <span style="flex: 1 1 auto"></span>
+    <button class="close-btn" tabindex="-1" mat-icon-button (click)="close()">
         <mat-icon>close</mat-icon>
-      </button>
+    </button>
     }
-  </div>
+</div>
 }
 <div class="body">
-  <ng-template
-    [cdkPortalOutlet]="componentPortal"
-    (attached)="onAttached($event)"
-  ></ng-template>
+    @if(template(); as temp){
+    <portal
+        [component]="temp.component"
+        [inputs]="temp.inputs"
+        [outputs]="temp.outputs"
+        [content]="temp.content"
+        [className]="temp.class"
+        (attached)="onAttached($event)"
+    ></portal>
+    }
 </div>
 @if (dialogActions(); as actions) {
-  <div class="toolbar footer">
+<div class="toolbar footer">
     @for (descriptor of actions; track descriptor.name; let i = $index) {
-      <mat-btn
+    <mat-btn
         class="action {{ descriptor.name }}"
-        [context]="{ source: component }"
         [tabIndex]="actions.length - i - 1"
-        (action)="onAction($event)"
+        (onClick)="onAction($event)"
         [descriptor]="descriptor"
-      ></mat-btn>
+    ></mat-btn>
+    <!-- [context]="{ source: component }" -->
     }
-  </div>
+</div>
 }

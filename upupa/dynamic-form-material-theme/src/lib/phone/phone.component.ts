@@ -1,7 +1,6 @@
-import { Component, forwardRef } from '@angular/core'
-import { NG_VALUE_ACCESSOR, NG_VALIDATORS } from '@angular/forms'
-import { PhoneInputComponent } from '@upupa/dynamic-form-native-theme'
-
+import { Component, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { PhoneInputComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
     selector: 'mat-form-phone-input',
@@ -13,12 +12,6 @@ import { PhoneInputComponent } from '@upupa/dynamic-form-native-theme'
             useExisting: forwardRef(() => MatPhoneInputComponent),
             multi: true,
         },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => MatPhoneInputComponent),
-            multi: true,
-        }
-    ]
+    ],
 })
-export class MatPhoneInputComponent extends PhoneInputComponent {
-}
+export class MatPhoneInputComponent extends PhoneInputComponent {}

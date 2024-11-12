@@ -1,36 +1,63 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, Injector, Input, OnDestroy, ViewChild, inject, signal } from "@angular/core";
-import { languageDir, LanguageService } from "@upupa/language";
-import { ActionDescriptor, ActionEvent, toTitleCase } from "@upupa/common";
-import { AuthService } from "@upupa/auth";
-import { HttpClient } from "@angular/common/http";
-import { DataService, FilterDescriptor, ServerDataSource } from "@upupa/data";
-import { Observable } from "rxjs";
-import { ActivatedRoute, Params, Router } from "@angular/router";
-import { EventBus } from "@upupa/common";
-import { ScaffoldingService } from "../scaffolding.service";
-import { DataListFilterForm, DataListResolverResult } from "../../types";
-import { PathInfo } from "@noah-ark/path-matcher";
-import { DataListResolverService } from "../list-resolver.service";
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    Injector,
+    Input,
+    OnDestroy,
+    ViewChild,
+    inject,
+    signal,
+} from '@angular/core';
+import { languageDir, LanguageService } from '@upupa/language';
+import { ActionDescriptor, ActionEvent, toTitleCase } from '@upupa/common';
+import { AuthService } from '@upupa/auth';
+import { HttpClient } from '@angular/common/http';
+import { DataService, FilterDescriptor, ServerDataSource } from '@upupa/data';
+import { Observable } from 'rxjs';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { EventBus } from '@upupa/common';
+import { ScaffoldingService } from '../scaffolding.service';
+import { DataListFilterForm, DataListResolverResult } from '../../types';
+import { PathInfo } from '@noah-ark/path-matcher';
+import { DataListResolverService } from '../list-resolver.service';
 
-import { DataFilterFormComponent, formSchemeToDynamicFormFilter } from "../data-filter-form/data-filter-form.component";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { ConfirmOptions, ConfirmService, DialogService, SnackBarService, UpupaDialogActionContext } from "@upupa/dialog";
-import { DataTableModule } from "@upupa/table";
-import { MatSidenavModule } from "@angular/material/sidenav";
-import { CommonModule } from "@angular/common";
+import {
+    DataFilterFormComponent,
+    formSchemeToDynamicFormFilter,
+} from '../data-filter-form/data-filter-form.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+    ConfirmOptions,
+    ConfirmService,
+    DialogService,
+    SnackBarService,
+    UpupaDialogActionContext,
+} from '@upupa/dialog';
+import { DataTableModule } from '@upupa/table';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: "cp-data-list",
+    selector: 'cp-data-list',
     standalone: true,
-    imports: [CommonModule, DataTableModule, MatSidenavModule, DataFilterFormComponent],
-    templateUrl: "./data-list.component.html",
-    styleUrls: ["./data-list.component.scss"],
+    imports: [
+        CommonModule,
+        DataTableModule,
+        MatSidenavModule,
+        DataFilterFormComponent,
+    ],
+    templateUrl: './data-list.component.html',
+    styleUrls: ['./data-list.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataListComponent implements AfterViewInit, OnDestroy {
     private readonly destroyRef = inject(DestroyRef);
     private _filterFormValue: any;
-    private _listViewModelActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
+    private _listViewModelActions:
+        | ActionDescriptor[]
+        | ((row: any) => ActionDescriptor[]);
     dataTableActions: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
     public get filterFormValue(): any {
         return this._filterFormValue;
@@ -47,7 +74,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     focusedItem: any;
     selection = [];
 
-    @ViewChild("filterDrawer") filterDrawer: any;
+    @ViewChild('filterDrawer') filterDrawer: any;
 
     private _collection: string;
     @Input()
@@ -57,15 +84,17 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     public set collection(value: string) {
         if (value === this._collection) return;
         this._collection = value;
-        this.listService.resolve(this.collection, "list", undefined).then((r) => (this.dataListResolverResult = r));
+        this.listService
+            .resolve(this.collection, 'list', undefined)
+            .then((r) => (this.dataListResolverResult = r));
     }
 
     filterButtonActionDescriptor = {
-        name: "filter",
-        action: "filter",
-        icon: "filter_list",
+        name: 'filter',
+        action: 'filter',
+        icon: 'filter_list',
         header: true,
-        variant: "icon",
+        variant: 'icon',
     } as ActionDescriptor;
 
     _dataListResolverResult = signal<DataListResolverResult>(null);
@@ -83,20 +112,30 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         if (page) value.adapter.page.pageIndex = +page - 1;
         if (per_page) value.adapter.page.pageSize = +per_page;
         if (sort_by) {
-            const [active, direction] = sort_by.split(",");
+            const [active, direction] = sort_by.split(',');
             value.adapter.sort = { active, direction };
         }
-        if (value.adapter.options.sort) this.updateSortInfo(value.adapter.options.sort);
+        if (value.adapter.options.sort)
+            this.updateSortInfo(value.adapter.options.sort);
         this.filterFormVm = viewModel.filterForm;
         this._listViewModelActions = viewModel.rowActions;
-        this.dataTableActions = Array.isArray(this._listViewModelActions) ? [...(this._listViewModelActions ?? [])] : this._listViewModelActions;
+        this.dataTableActions = Array.isArray(this._listViewModelActions)
+            ? [...(this._listViewModelActions ?? [])]
+            : this._listViewModelActions;
 
         this.listenOnQueryParamsChange();
         if (this.filterFormVm) {
-            if (this.filterFormVm.fields === null || this.filterFormVm.fields === undefined)
-                throw new Error(`${DataListComponent.name} at ${value.path} filterForm fields is null or undefined`);
+            if (
+                this.filterFormVm.fields === null ||
+                this.filterFormVm.fields === undefined
+            )
+                throw new Error(
+                    `${DataListComponent.name} at ${value.path} filterForm fields is null or undefined`
+                );
 
-            const toFilterDescriptor = this.filterFormVm.toFilterDescriptor ?? formSchemeToDynamicFormFilter(this.filterFormVm.fields);
+            const toFilterDescriptor =
+                this.filterFormVm.toFilterDescriptor ??
+                formSchemeToDynamicFormFilter(this.filterFormVm.fields);
             this.setDataTableActions(toFilterDescriptor(this.filterFormValue));
             this.filterDrawerStatus = localStorage.getItem(`${value.path}_dld`);
         }
@@ -117,13 +156,16 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         private confirmService: ConfirmService,
         public snack: SnackBarService,
         private listService: DataListResolverService,
-        public bus: EventBus,
+        public bus: EventBus
     ) {}
 
     async ngAfterViewInit() {
-        this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-            if (this.collection !== params["collection"]) this.collection = params["collection"];
-        });
+        this.route.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params) => {
+                if (this.collection !== params['collection'])
+                    this.collection = params['collection'];
+            });
     }
 
     ngOnDestroy() {
@@ -133,39 +175,44 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    filterDrawerStatus = "closed";
+    filterDrawerStatus = 'closed';
     inputs$: Observable<DataListResolverResult>;
 
     private listenOnQueryParamsChange() {
-        this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((qps) => {
-            this.filterFormValue = this.convertQpsToFilterFormValue(qps);
-        });
+        this.route.queryParams
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((qps) => {
+                this.filterFormValue = this.convertQpsToFilterFormValue(qps);
+            });
     }
 
     toggleFilterDrawer() {
-        if (this.filterFormVm.position === "dialog") {
+        if (this.filterFormVm.position === 'dialog') {
             this.dialog.openDialog(DataFilterFormComponent, {
-                maxHeight: "90vh",
-                width: "90%",
-                maxWidth: "450px",
+                maxHeight: '90vh',
+                width: '90%',
+                maxWidth: '450px',
                 closeOnNavigation: true,
                 disableClose: true,
                 direction: languageDir(this.languageService.language),
-                title: "Filter",
+                title: 'Filter',
                 inputs: {
                     value: this.filterFormValue,
                     fields: this.filterFormVm.fields,
                     // toFilterDescriptor: this.filterFormVm.toFilterDescriptor
                 },
                 outputs: {
-                    filterChanged: async (e: FilterDescriptor, context: UpupaDialogActionContext<DataListComponent>) => {
+                    filterChanged: async (e: FilterDescriptor) => {
                         this.filterValueChangeHandler(e);
                     },
                 },
             });
         } else {
             this.filterDrawer?.toggle();
-            localStorage.setItem(`${this.dataListResolverResult.path}_dld`, this.filterDrawer?.opened ? "opened" : "closed");
+            localStorage.setItem(
+                `${this.dataListResolverResult.path}_dld`,
+                this.filterDrawer?.opened ? 'opened' : 'closed'
+            );
         }
     }
 
@@ -176,16 +223,18 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         if (page === this.page && per_page === this.per_page) return;
         this.router.navigate([], {
             queryParams: { page: this.page, per_page: this.per_page },
-            queryParamsHandling: "merge",
+            queryParamsHandling: 'merge',
             relativeTo: this.route,
         });
     }
 
     updateSortInfo($event) {
-        const { sort_by = "" } = $event.direction ? { sort_by: `${$event.active},${$event.direction}` } : {};
+        const { sort_by = '' } = $event.direction
+            ? { sort_by: `${$event.active},${$event.direction}` }
+            : {};
         this.router.navigate([], {
             queryParams: { sort_by },
-            queryParamsHandling: "merge",
+            queryParamsHandling: 'merge',
             relativeTo: this.route,
         });
     }
@@ -212,7 +261,13 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     filterValueChangeHandler(e: FilterDescriptor) {
         this.setDataTableActions(e);
         const { groupBy } = this.filterFormVm ?? ({} as any);
-        const q = groupBy ? { [this.filterFormVm.groupBy]: this.toBase64(this.filterFormValue) } : this.filterFormValue;
+        const q = groupBy
+            ? {
+                  [this.filterFormVm.groupBy]: this.toBase64(
+                      this.filterFormValue
+                  ),
+              }
+            : this.filterFormValue;
 
         const vm = this.dataListResolverResult.listViewModel as any;
         const _q = vm.query?.() ?? [];
@@ -230,7 +285,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         };
         this.router.navigate([], {
             queryParams: r,
-            queryParamsHandling: "merge",
+            queryParamsHandling: 'merge',
             relativeTo: this.route,
         });
 
@@ -245,29 +300,41 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         return this.dataListResolverResult.adapter.page?.pageSize ?? 100;
     }
     get sort_by() {
-        return this.dataListResolverResult.adapter.sort ? `${this.dataListResolverResult.adapter.sort.active},${this.dataListResolverResult.adapter.sort.direction}` : undefined;
+        return this.dataListResolverResult.adapter.sort
+            ? `${this.dataListResolverResult.adapter.sort.active},${this.dataListResolverResult.adapter.sort.direction}`
+            : undefined;
     }
 
     private setDataTableActions(e: FilterDescriptor) {
-        const filterLength = Object.keys(e ?? {}).filter((k) => e[k] !== undefined).length;
+        const filterLength = Object.keys(e ?? {}).filter(
+            (k) => e[k] !== undefined
+        ).length;
         if (filterLength > 0) {
-            this.filterButtonActionDescriptor.matBadge = "" + filterLength;
-            this.filterButtonActionDescriptor.matBadgeColor = "accent";
-            this.filterButtonActionDescriptor.matBadgePosition = "below after";
-            this.filterButtonActionDescriptor.matBadgeSize = "small";
+            this.filterButtonActionDescriptor.matBadge = '' + filterLength;
+            this.filterButtonActionDescriptor.matBadgeColor = 'accent';
+            this.filterButtonActionDescriptor.matBadgePosition = 'below after';
+            this.filterButtonActionDescriptor.matBadgeSize = 'small';
         }
 
         this.dataTableActions = Array.isArray(this._listViewModelActions)
-            ? [...(this._listViewModelActions ?? []), this.filterButtonActionDescriptor]
-            : (row: any) => ((this._listViewModelActions as Function)(row) ?? []).concat(this.filterButtonActionDescriptor).slice();
+            ? [
+                  ...(this._listViewModelActions ?? []),
+                  this.filterButtonActionDescriptor,
+              ]
+            : (row: any) =>
+                  ((this._listViewModelActions as Function)(row) ?? [])
+                      .concat(this.filterButtonActionDescriptor)
+                      .slice();
     }
 
     private async openFormDialog(collection: string, payload: ActionEvent) {
         const id = payload.data?.length > 0 ? payload.data[0]._id : null;
-        const path = "/" + [payload.action.name, collection, id].filter((s) => s).join("/");
+        const path =
+            '/' +
+            [payload.action.name, collection, id].filter((s) => s).join('/');
 
         const res = await this.scaffolder.dialogForm(path, {
-            closeOnNavigation: payload.action.name === "view",
+            closeOnNavigation: payload.action.name === 'view',
             disableClose: true,
             direction: languageDir(this.languageService.language),
             title: toTitleCase(`${payload.action.name} ${collection}`),
@@ -277,8 +344,14 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
 
     private async refreshData() {
-        if (this.dataListResolverResult.adapter.dataSource instanceof ServerDataSource) {
-            const dpath = (this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>).path;
+        if (
+            this.dataListResolverResult.adapter.dataSource instanceof
+            ServerDataSource
+        ) {
+            const dpath = (
+                this.dataListResolverResult.adapter
+                    .dataSource as ServerDataSource<any>
+            ).path;
             await this.ds.refreshCache(dpath);
             this.dataListResolverResult.adapter.refresh();
         } else {
@@ -289,22 +362,24 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     async onAction(x: ActionEvent) {
         const path = PathInfo.parse(this.dataListResolverResult.path, 1);
         switch (x.action.name) {
-            case "create":
-            case "edit":
-            case "view":
+            case 'create':
+            case 'edit':
+            case 'view':
                 await this.openFormDialog(this.collection, x);
                 break;
-            case "delete": {
+            case 'delete': {
                 if (x.data.length === 0) return;
                 const dialogData = {
-                    maxWidth: "450px",
-                    title: "Delete",
-                    confirmText: "Are you sure you want to delete this item?",
-                    yes: "Yes, delete",
-                    no: "No, cancel",
-                    yesColor: "warn",
+                    maxWidth: '450px',
+                    title: 'Delete',
+                    confirmText: 'Are you sure you want to delete this item?',
+                    yes: 'Yes, delete',
+                    no: 'No, cancel',
+                    yesColor: 'warn',
                 } as ConfirmOptions;
-                const confirmRes = await this.confirmService.openWarning(dialogData);
+                const confirmRes = await this.confirmService.openWarning(
+                    dialogData
+                );
                 if (confirmRes === true) {
                     for (const item of x.data) {
                         try {
@@ -326,7 +401,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
                         msg: id,
                         ...x,
                     },
-                    this,
+                    this
                 );
                 break;
         }

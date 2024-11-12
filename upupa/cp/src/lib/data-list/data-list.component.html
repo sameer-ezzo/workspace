@@ -20,12 +20,12 @@
 <ng-template #withSideFilterForm let-tableInputs="tableInputs" let-actions="actions" let-fields="fields" let-path="path">
     <mat-drawer-container [dir]="languageService.dir$ | async" autosize style="flex: 1">
         <mat-drawer #filterDrawer class="sidenav" [opened]="filterDrawerStatus === 'opened'" mode="side" [position]="filterFormVm.position.indexOf('start') > 0 ? 'start' : 'end'">
-            <cp-data-filter-form
+            <!-- <cp-data-filter-form
                 [fields]="filterFormVm.fields"
                 [toFilterDescriptor]="filterFormVm.toFilterDescriptor"
                 [(value)]="filterFormValue"
                 (filterChanged)="filterValueChangeHandler($event)"
-            ></cp-data-filter-form>
+            ></cp-data-filter-form> -->
         </mat-drawer>
         <mat-drawer-content style="position: relative">
             <ng-container *ngTemplateOutlet="dataTableTemplate; context: { tableInputs, actions }"></ng-container>
@@ -33,15 +33,13 @@
     </mat-drawer-container>
 </ng-template>
 
+<!-- [headerActions]="tableInputs.listViewModel.headerActions" -->
 <ng-template #dataTableTemplate let-tableInputs="tableInputs" let-actions="actions">
     @if (tableInputs.adapter) {
         <data-table
             [(focusedItem)]="item"
             [adapter]="tableInputs.adapter"
             [columns]="tableInputs.listViewModel.columns"
-            [actions]="actions"
-            [headerActions]="tableInputs.listViewModel.headerActions"
-            (action)="onAction($event)"
             (selectionChange)="selectionChanged($event)"
             (pageChange)="updatePageInfo($event)"
             (sortChange)="updateSortInfo($event)"

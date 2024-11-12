@@ -5,7 +5,6 @@
         "entryFile": "src/index.ts"
     },
     "allowedNonPeerDependencies": [
-        "@ckeditor/ckeditor5-angular",
         "@ckeditor/ckeditor5-build-decoupled-document",
         "@ckeditor/ckeditor5-style"
     ]

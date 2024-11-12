@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UtilsModule } from '@upupa/common';
+import { ErrorsDirective, UtilsModule } from '@upupa/common';
 import { TranslationModule } from '@upupa/language';
 import { DataTableModule } from '@upupa/table';
 import { UploadModule } from '@upupa/upload';
@@ -27,7 +27,7 @@ import { ReviewScaleComponent } from './scale-component/review-scale/review-inpu
 import { SliderComponent } from './scale-component/slider/slider.component';
 import { SelectComponent } from './select/select.component';
 import { SwitchComponent } from './switch/switch.component';
-import { ArrayInputComponent } from './table/array-input.component';
+import { ArrayInputComponent } from './array/array-input.component';
 import { TextAreaComponent } from './text-area/text-area.component';
 import { TreeComponent } from './tree/tree.component';
 import { FileBrowserComponent } from './upload/file-browser/file-browser.component';
@@ -37,21 +37,33 @@ import { FileUploadService } from './upload/file-upload.service';
 import { FilesViewerComponent } from './upload/file-viewer/file-viewer.component';
 import { LocalFileInputComponent } from './upload/local-file-input/local-file-input.component';
 import { MatBtnComponent } from '@upupa/mat-btn';
+import { FileTemplateComponent } from './upload/file-viewer/file-template/file-template.component';
 
-
-export const NATIVE_THEME_NAME = 'native'
+export const NATIVE_THEME_NAME = 'native';
 export const DF_NATIVE_THEME_INPUTS = {
     hidden: { component: HiddenComponent },
     paragraph: { component: ParagraphComponent },
     recaptcha: { component: RecaptchaComponent },
     text: { component: InputComponent },
-    phone: { component: PhoneInputComponent, field: { ui: { inputs: { placeholder: '(xxx) xxx xx xx' } } } },
+    phone: {
+        component: PhoneInputComponent,
+        field: { ui: { inputs: { placeholder: '(xxx) xxx xx xx' } } },
+    },
     password: { component: PasswordInputComponent },
-    number: { component: NumberComponent, field: { ui: { inputs: { type: 'number' } } } },
+    number: {
+        component: NumberComponent,
+        field: { ui: { inputs: { type: 'number' } } },
+    },
     'number-range': { component: NumbersRangeComponent },
-    'slider': { component: SliderComponent },
-    'reviews': { component: ReviewScaleComponent },
-    email: { component: InputComponent, field: { ui: { inputs: { type: 'email' } }, validations: [{ name: 'email' }] } },
+    slider: { component: SliderComponent },
+    reviews: { component: ReviewScaleComponent },
+    email: {
+        component: InputComponent,
+        field: {
+            ui: { inputs: { type: 'email' } },
+            validations: [{ name: 'email' }],
+        },
+    },
     date: { component: DateInputComponent },
     'date-range': { component: DateRangeComponent },
     select: { component: SelectComponent },
@@ -60,61 +72,75 @@ export const DF_NATIVE_THEME_INPUTS = {
     'local-file': { component: LocalFileInputComponent },
     tree: { component: TreeComponent },
     radios: {
-        component: ChoicesComponent, field: {
-            ui: { inputs: { maxAllowed: 1 } }
-        }
+        component: ChoicesComponent,
+        field: {
+            ui: { inputs: { maxAllowed: 1 } },
+        },
     },
     array: { component: ArrayInputComponent },
     checks: {
-        component: ChoicesComponent, field: {
-            ui: { inputs: { maxAllowed: 1000 } }
-        }
+        component: ChoicesComponent,
+        field: {
+            ui: { inputs: { maxAllowed: 1000 } },
+        },
     },
     switch: { component: SwitchComponent },
     color: { component: ColorInputComponent },
-    'chips': { component: ChipsComponent },
+    chips: { component: ChipsComponent },
     'autocomplete-text': { component: AutoCompleteTextComponent },
-    address: { component: AddressComponent }
+    address: { component: AddressComponent },
 };
 
-
-
 const declarations = [
-    PhoneInputComponent, TextAreaComponent, DateInputComponent,
-    SelectComponent, TreeComponent, NumberComponent,
-    ChipsComponent, PasswordInputComponent,
-    InputComponent, ArrayInputComponent, ChoicesComponent,
-    SwitchComponent, ColorInputComponent, AutoCompleteTextComponent,
-    AddressComponent, FileIconPerTypePipe, SliderComponent,
-    ReviewScaleComponent, DateRangeComponent, NumbersRangeComponent,
-    LocalFileInputComponent, FileBrowserComponent,
-    FilesViewerComponent, FileSelectComponent, FileIconPerTypePipe,
-    HiddenComponent, ParagraphComponent, RecaptchaComponent, RecaptchaDirective
-]
+    PhoneInputComponent,
+    TextAreaComponent,
+    DateInputComponent,
+    SelectComponent,
+    TreeComponent,
+    NumberComponent,
+    ChipsComponent,
+    PasswordInputComponent,
+    InputComponent,
+    ChoicesComponent,
+    SwitchComponent,
+    ColorInputComponent,
+    AutoCompleteTextComponent,
+    AddressComponent,
+    FileIconPerTypePipe,
+    SliderComponent,
+    ReviewScaleComponent,
+    DateRangeComponent,
+    NumbersRangeComponent,
+    LocalFileInputComponent,
+    FileBrowserComponent,
+    FilesViewerComponent,
+    FileTemplateComponent,
+    FileSelectComponent,
+    FileIconPerTypePipe,
+    HiddenComponent,
+    RecaptchaComponent,
+    RecaptchaDirective,
+];
 
 const imports = [
     ...materialModules,
+    ParagraphComponent,
+    ArrayInputComponent,
     UtilsModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     UploadModule,
-    UtilsModule,
     TranslationModule,
     DataTableModule,
     ScrollingModule,
-    MatBtnComponent
-]
-
+    MatBtnComponent,
+];
 
 @NgModule({
     imports: [...imports],
     declarations: [...declarations],
-    providers: [
-        provideHttpClient(withInterceptorsFromDi()),
-        FileUploadService, FileIconPerTypePipe
-    ],
-    exports: [...declarations, ...imports]
+    providers: [provideHttpClient(withInterceptorsFromDi()), FileUploadService, FileIconPerTypePipe],
+    exports: [...declarations, ...imports],
 })
-export class DynamicFormNativeThemeModule {
-}
+export class DynamicFormNativeThemeModule {}

@@ -548,8 +548,8 @@ export class UsersController {
     };
   }
 
-  @EndPoint({ http: { method: 'POST', path: '' }, operation: 'Login' })
   @Authorize({ by: 'anonymous', access: 'grant' })
+  @EndPoint({ http: { method: 'POST', path: '' }, operation: 'Login' })
   public async signIn(@Message() msg: IncomingMessage<SigninRequest>) {
     try {
       return await this._doSignIn(msg);

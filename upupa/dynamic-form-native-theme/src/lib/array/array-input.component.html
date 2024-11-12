@@ -1,0 +1,16 @@
+@if (label()) {
+    <mat-label>{{ label() }}</mat-label>
+}
+
+<data-table #dataTable [tableName]="name()" [adapter]="adapter" [columns]="columns()">
+    @if (tableHeaderComponent(); as template) {
+        <portal
+            class="table-header"
+            [component]="template.component"
+            [inputs]="template.inputs"
+            [outputs]="template.outputs"
+            [content]="template.content"
+            [className]="template.class"
+        ></portal>
+    }
+</data-table>

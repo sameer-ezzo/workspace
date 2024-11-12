@@ -13,7 +13,7 @@ export class DbConnectionOptionsFactory {
   ): DbConnectionOptions {
     const prefix =
       process.env[dbName + '_PREFIX'] ?? process.env.DBPREFIX ?? '';
-    
+
     const options = {} as DbConnectionOptions;
     options.prefix = prefix;
     return Object.assign(options, params ?? {});

@@ -21,9 +21,6 @@ export class EqualValidator implements Validator {
         return target === value ? null : { equal: { value, target } };
     }
 
-    // registerOnValidatorChange?(fn: () => void): void {
-    //     console.log('hello');
-    // };
 
     ngOnChanges() {
         if (this.control) {

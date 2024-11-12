@@ -13,26 +13,17 @@ import { ErrorPipe } from './error.pipe';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { OnlyNumberDirective } from './directives/only-numbers.directive';
-import { PortalModule } from '@angular/cdk/portal';
 import { HtmlPipe } from './html.pipe';
-import { InputBaseComponent, BaseTextInputComponent } from './input-base.component';
+import { InputBaseComponent } from './input-base.component';
 import { LazyLoadDirective } from './directives/lazy-load.directive';
 import { MarkdownPipe } from './markdown.pipe';
 import { FocusDirective } from './directives/focus.directive';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
+import { ErrorsDirective } from './directives/errors.directive';
+import { PortalComponent } from './portal.component';
 
-
-const declarations = [
-    InputBaseComponent,
-    BaseTextInputComponent,
-    OnlyNumberDirective,
-    HtmlPipe,
-    MarkdownPipe,
-    LazyLoadDirective,
-    FocusDirective,
-    ErrorPipe
-];
+const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe, ErrorsDirective];
 
 const imports = [
     MatFormFieldModule,
@@ -42,31 +33,17 @@ const imports = [
     MatSelectModule,
     MatSnackBarModule,
     MatDialogModule,
-    PortalModule,
     LanguageModule,
     MatIconModule,
     TranslationModule,
     ReactiveFormsModule,
     MatBadgeModule,
     MatTooltipModule,
-]
+    PortalComponent,
+];
 @NgModule({
     declarations,
-    imports: [
-        CommonModule,
-        FormsModule,
-        ...imports
-    ],
-    exports: [...declarations,
-    ...imports
-    ]
+    imports: [CommonModule, FormsModule, ...imports],
+    exports: [...declarations, ...imports],
 })
-export class UtilsModule {
-    static forRoot(options: { logLevel: 'ERROR' | 'DEBUG' | 'INFO' } = { logLevel: 'ERROR' }): ModuleWithProviders<UtilsModule> {
-
-        return {
-            ngModule: UtilsModule,
-            providers: []
-        }
-    }
-}
+export class UtilsModule {}

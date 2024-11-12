@@ -1,12 +1,12 @@
-import { Field } from "../types";
-import { CollectStyle } from "./types";
-
+import { FormGraph } from '../dynamic-form.component';
+import { FieldFormControl, FieldFormGroup } from '../field-form.control';
+import { Field, FormScheme } from '../types';
+import { CollectStyle } from './types';
 
 export function getGoogleFontUri(familyName: string) {
     const pos = familyName.indexOf(':');
     if (pos > 0) familyName = familyName.substring(0, pos);
     return `https://fonts.googleapis.com/css?family=${familyName.replace(' ', '+')}&display=swap`;
-
 }
 
 export function loadFontFromUri(family: string, fontUri?: string) {
@@ -21,48 +21,43 @@ export function loadFontFromUri(family: string, fontUri?: string) {
         link.setAttribute('rel', 'stylesheet');
         link.setAttribute('href', fontUri);
     }
-
-
-
 }
 
+export type FormPage = { from: number; to: number; fields: FormGraph };
 
-export type FormPage = { from: number, to: number, fields: Field[] }
-
-function _isNaturalyHidden(field: Field): boolean {
-    return field.type === "page-breaker" || (field.type === 'field' && field.input === 'hidden');
+function _isNaturallyHidden(f: Field): boolean {
+    return f.type === 'page-breaker' || (f.type === 'field' && f.input === 'hidden');
 }
 
-export function fieldsArrayToPages(collectStyle: CollectStyle, fields: Field[]): FormPage[] {
+export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGraph): FormPage[] {
     let pages: FormPage[] = [];
-
+    if(!fields) return pages;
+    const fs = Array.from(fields.entries());
     if (collectStyle === '1by1')
-        pages = fields.filter(f => !_isNaturalyHidden(f))
-            .map((f, i) => { return { from: i, to: i, fields: [f] } })
-    else if (collectStyle === 'linear') {
-        const fs = fields.filter(p => p.type != 'page-breaker');
-        pages = [{ from: 0, to: fs.length, fields: fs }];
-    }
-    else {
-        const pageBreakerIndexs = fields.filter((f: any) => f.type === 'page-breaker')
-            .map(f => fields.indexOf(f));
-
-        if (pageBreakerIndexs.length > 0) {
-            let i = 0;
-            for (i; i < pageBreakerIndexs.length; i++) {
-                const pageIndex = pageBreakerIndexs[i];
-                const from = i === 0 ? i : pageBreakerIndexs[i - 1] + 1;
-                const to = pageIndex;
-                pages.push({ from: from, to: to, fields: fields.slice(from, to) });
-            }
-            pages.push({
-                from: pageBreakerIndexs[i - 1] + 1,
-                to: fields.length,
-                fields: fields.slice(pageBreakerIndexs[i - 1] + 1, fields.length)
+        pages = fs
+            .filter(([name, f]) => !_isNaturallyHidden(f.field()))
+            .map((f, i) => {
+                return { from: i, to: i, fields: new Map([[f[0], f[1]]]) };
             });
-        }
-        else pages.push({ from: 0, to: fields.length, fields: fields.slice(0, fields.length) });
-
+    else if (collectStyle === 'linear') {
+        const _fs = fs.filter(([name, f]) => f.field().type !== 'page-breaker');
+        pages = [{ from: 0, to: fs.length, fields: new Map(_fs) }];
+    } else {
+        // const pageBreakerIndexes = fs.filter(([name, f]) => f.type === 'page-breaker').map(([name, f]) => fs.indexOf(f));
+        // if (pageBreakerIndexes.length > 0) {
+        //     let i = 0;
+        //     for (i; i < pageBreakerIndexes.length; i++) {
+        //         const pageIndex = pageBreakerIndexes[i];
+        //         const from = i === 0 ? i : pageBreakerIndexes[i - 1] + 1;
+        //         const to = pageIndex;
+        //         pages.push({ from: from, to: to, fields: fields.slice(from, to) });
+        //     }
+        //     pages.push({
+        //         from: pageBreakerIndexes[i - 1] + 1,
+        //         to: fields.length,
+        //         fields: fields.slice(pageBreakerIndexes[i - 1] + 1, fields.length),
+        //     });
+        // } else pages.push({ from: 0, to: fields.length, fields: fields.slice(0, fields.length) });
     }
 
     return pages;

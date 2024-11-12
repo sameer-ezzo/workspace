@@ -1,12 +1,13 @@
-<mat-form-field [appearance]="appearance" [floatLabel]="floatLabel" style="width: 100%;">
-  @if(label){
-    <mat-label>{{label}}</mat-label>
-  }
-  <input matInput #input [type]="type" [value]="value || ''"
-    (input)="$event.stopPropagation(); value = $event.target?.['value']; _propagateChange();control.markAsDirty()"
-    (blur)="onTouch();" [readonly]="readonly" [placeholder]="placeholder" [required]="required">
-  <!-- <mat-hint *ngIf="hint?.length > 0">{{hint}}</mat-hint> -->
-  @for (error of control?.errors | keyvalue; track error) {
-    <mat-error>{{errorMessages?.[error.key+''] || error.key}}</mat-error>
-  }
+<mat-form-field #formField [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
+    @if (label()) {
+        <mat-label>{{ label() }}</mat-label>
+    }
+    <input matInput [type]="type()" [formControl]="control()" [attr.name]="name()" [readonly]="readonly()" [placeholder]="placeholder()" [required]="required()" />
+    @if (hint()) {
+        <mat-hint>{{ hint() }}</mat-hint>
+    }
+
+    <mat-error>
+        <span *errors="control().errors; control: control(); let message">{{ message }}</span>
+    </mat-error>
 </mat-form-field>
