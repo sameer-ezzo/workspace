@@ -18,6 +18,9 @@ import {
     input,
     output,
     effect,
+    Injector,
+    InjectionToken,
+    Signal,
 } from '@angular/core';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -30,6 +33,12 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types';
 import { MatTable } from '@angular/material/table';
+
+export const ROW_ITEM = new InjectionToken<any>('ITEM');
+
+export function injectRowItem() {
+    return inject(ROW_ITEM);
+}
 
 @Component({
     selector: 'data-table',
@@ -75,6 +84,30 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         if (!this.expanded[row.key]) this.expanded[row.key] = signal(false);
         const v = this.expanded[row.key]?.();
         this.expanded[row.key].set(!v);
+    }
+
+    private readonly injector = inject(Injector);
+    private readonly _rowInjectors = new Map<NormalizedItem<T>, Injector>();
+    private createRowInjector(row: NormalizedItem<T>) {
+        this._rowInjectors.set(
+            row,
+            Injector.create({
+                providers: [
+                    {
+                        provide: ROW_ITEM,
+                        useValue: row.item,
+                    },
+                ],
+                name: 'RowInjector',
+                parent: this.injector,
+            }),
+        );
+
+        return this._rowInjectors.get(row);
+    }
+
+    getRowInjector(row: NormalizedItem<T>) {
+        return this._rowInjectors.get(row) ?? this.createRowInjector(row);
     }
 
     handset: boolean;

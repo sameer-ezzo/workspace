@@ -1,4 +1,4 @@
-import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputEmitterRef, runInInjectionContext, output, effect } from '@angular/core';
+import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputEmitterRef, runInInjectionContext, output, effect, InjectionToken, Signal } from '@angular/core';
 import { ActionDescriptor, ActionEvent, DynamicComponent } from '@upupa/common';
 import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService } from '@upupa/dialog';
 import { MatBtnComponent } from '@upupa/mat-btn';
@@ -69,7 +69,7 @@ export class InlineButtonComponent {
     }
 }
 
-export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; item: any; handler: (self) => void }): Type<any> | DynamicComponent {
+export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; item: any; handler: (instance) => void }): Type<any> | DynamicComponent {
     const template = {
         component: InlineButtonComponent,
         inputs: {
@@ -77,7 +77,9 @@ export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; 
             buttonDescriptor: options.descriptor,
         },
         outputs: {
-            clicked: (source, e) => runInInjectionContext(source.injector, () => options.handler(source.instance)),
+            clicked: (source, e) => {
+                runInInjectionContext(source.injector, () => options.handler(source.instance));
+            },
         },
     } as DynamicComponent;
     return template;
@@ -107,7 +109,7 @@ export function readValueFromApi<T = any>(path: string) {
 }
 export function editButton(
     formViewModel: Class,
-    value?: (ctx: { item: any }) => any | Promise<any>,
+    value?: () => any | Promise<any>,
     options?: {
         descriptor?: Partial<ActionDescriptor>;
     },
@@ -126,7 +128,7 @@ export function editButton(
         descriptor: options.descriptor,
         handler: (source) => {
             const item = readInput('item', source);
-            const v = value ? value({ item }) : item;
+            const v = value ? value() : item;
             editFormDialog.call(source, formViewModel, v);
         },
         item: null,
