@@ -9,6 +9,7 @@ import { FunctionalPermission, Rule, unreachable } from '@noah-ark/common';
 import { CommonModule } from '@ss/common';
 import { DataModule, DataService } from '@ss/data';
 import { RulesService } from './rules.svr';
+import { RulesImporterService } from './rules-importer.svr';
 import { AuthorizeService } from './authorize.svr';
 import { AuthorizeInterceptor } from './authorize.interceptor';
 import { PermissionController } from './permission.controller';
@@ -67,6 +68,7 @@ export class RulesModule implements OnModuleInit {
             { provide: 'ROOT_RULE', useValue: rootRule ?? DenyRule },
             { provide: 'APP_RULES', useValue: appRules },
             RulesService,
+            RulesImporterService,
             AuthorizeService,
         ];
 

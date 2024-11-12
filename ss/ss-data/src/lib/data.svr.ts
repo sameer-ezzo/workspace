@@ -50,7 +50,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         public readonly name: string,
         public readonly connection: Connection,
         public readonly options: DbConnectionOptions,
-        protected readonly broker: Broker
+        protected readonly broker: Broker,
     ) {
         this.queryParser = new QueryParser();
         this.prefix = this.options.prefix ?? process.env.DBPREFIX ?? '';
@@ -58,7 +58,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
     async getModel<T extends Document = any>(
         name: string,
-        prefix?: string
+        prefix?: string,
     ): Promise<Model<T> | undefined> {
         prefix ??= this.prefix;
         let model = this.connection.models[name];
@@ -75,7 +75,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         schema: mongoose.Schema,
         prefix?: string,
         exclude: string[] = [],
-        overwrite = false
+        overwrite = false,
     ): Promise<Model<any>> {
         prefix ??= this.prefix;
         const prefixedCollection = prefix + collection;
@@ -102,7 +102,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             if (schemaIdType !== schema.paths._id.instance) {
                 logger.error(
-                    `Schema: [${collection}] has different _id type. The existing id ${existingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`
+                    `Schema: [${collection}] has different _id type. The existing id ${existingCollection._id} of type ${typeOfId} is different from the schema id type ${schema.paths._id.instance}!`,
                 );
                 return null;
             }
@@ -117,7 +117,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     prefixedCollection,
                     {
                         overwriteModels: overwrite,
-                    }
+                    },
                 );
             } catch (error) {
                 logger.error(`Error on getting model: ${collection}`, error);
@@ -139,15 +139,15 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     getDynamicSchema(collection: string): Promise<mongoose.Schema>;
     getDynamicSchema(
         collection: string,
-        idType: 'string' | 'ObjectId'
+        idType: 'string' | 'ObjectId',
     ): Promise<mongoose.Schema>;
     getDynamicSchema(
         collection: string,
-        idType: mongoose.SchemaDefinitionProperty
+        idType: mongoose.SchemaDefinitionProperty,
     ): Promise<mongoose.Schema>;
     async getDynamicSchema(
         collection: string,
-        idType?: unknown
+        idType?: unknown,
     ): Promise<mongoose.Schema> {
         idType = idType ?? String;
 
@@ -183,7 +183,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         query?: any,
         sort?: any,
         page = 1,
-        per_page = 100
+        per_page = 100,
     ): Promise<T | undefined> {
         if (!query) query = {};
         if (!sort) sort = {};
@@ -261,7 +261,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             filter,
             sort,
             page,
-            per_page
+            per_page,
         ) as Promise<T>;
     }
 
@@ -290,7 +290,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 pathInfo.id,
                 '_id',
                 model,
-                `func(${f}) ${path} ${q}`
+                `func(${f}) ${path} ${q}`,
             );
 
         switch (f) {
@@ -329,7 +329,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 pathInfo.id,
                 '_id',
                 model,
-                `agg ${path} ${q}`
+                `agg ${path} ${q}`,
             );
             pipeline.push({ $match: { _id } });
             if (query.select) pipeline.push({ $project: query.select });
@@ -404,7 +404,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     public async post<T = any>(
         path: string | PathInfo,
         newData: any,
-        user?: any
+        user?: any,
     ): Promise<{ _id: ObjectId; result: WriteResult<T> }> {
         let segments: PathInfo;
         try {
@@ -433,7 +433,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     new: true,
                     upsert: true,
                     lean: true,
-                }
+                },
             );
             this.broker.emit<DataChangedEvent<T>>(
                 `data-changed/${segments.path}`,
@@ -448,7 +448,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                         },
                     ],
                     user,
-                }
+                },
             );
             return { _id: newData._id, result: result };
         } else {
@@ -458,7 +458,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 if (old)
                     throw new HttpException(
                         'CANNOT_POST_OVER_EXISTING_DOCUMENT',
-                        HttpStatus.NOT_ACCEPTABLE
+                        HttpStatus.NOT_ACCEPTABLE,
                     );
             }
 
@@ -469,7 +469,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     new: true,
                     upsert: true,
                     lean: true,
-                }
+                },
             );
             this.broker.emit(`data-changed/${segments.path}/${newData._id}`, {
                 path: `${segments.path}/${newData._id}`,
@@ -491,7 +491,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             // Handle arrays
             value.forEach((item, index) => {
                 patches = patches.concat(
-                    this.generatePatches(item, `${currentPath}/${index}`)
+                    this.generatePatches(item, `${currentPath}/${index}`),
                 );
             });
         } else {
@@ -501,8 +501,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     patches = patches.concat(
                         this.generatePatches(
                             value[key],
-                            `${currentPath}/${key}`
-                        )
+                            `${currentPath}/${key}`,
+                        ),
                     );
                 }
             }
@@ -516,10 +516,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         patches: Patch[],
         user: any,
         updateOptions: Partial<mongoose.QueryOptions<any>> = {
-            new: true,
-            upsert: false,
             lean: false,
-        }
+        },
     ): Promise<WriteResult<T>> {
         const segments = path.split('/').filter((s) => s);
         if (segments.length !== 2) {
@@ -529,6 +527,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
         const model = await this.getModel(collection);
+        const doc = await model.findById(id).lean();
+        if (!doc) throw { status: 404, body: 'NOT_FOUND' };
 
         const directPatches = patches.filter((p) => p.path === '/');
 
@@ -555,7 +555,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                         .split('/')
                         .filter((x) => x)
                         .join('.'),
-                    model
+                    model,
                 ),
             }));
 
@@ -578,7 +578,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
     toPatches<T = any>(
         path: string,
-        value: any
+        value: any,
     ): { path: string; patches: Patch[] } {
         const segments = path.split('/').filter((s) => s);
         if (segments.length < 2)
@@ -600,8 +600,22 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     async put<T = any>(
         path: string,
         value: any,
-        user: any
+        user: any,
     ): Promise<WriteResult<T>> {
+        let segments;
+        try {
+            segments = PathInfo.parse(path);
+        } catch (error) {
+            throw { status: 400, body: 'INVALID_PATH' };
+        }
+
+        const model = await this.getModel(segments.collection);
+        if (!model) throw { status: 400, body: 'INVALID_PATH' };
+        if(!segments.id) return this.post(path, value, user);
+        
+        const doc = await model.findById(segments.id).lean();
+        if (!doc) return this.post(path, value, user);
+
         const { path: _path, patches } = this.toPatches(path, value);
         return this.patch<T>(_path, patches, user);
     }
@@ -626,7 +640,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     update,
                     {
                         new: true,
-                    }
+                    },
                 );
                 this.broker.emit(`data-changed/${path}`, {
                     path,
@@ -653,7 +667,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         deflatedItems: Partial<T>[],
         requiredFields: (keyof T)[],
         optionalFields: (keyof T)[] = [],
-        inflateBy: (keyof T)[] = ['_id']
+        inflateBy: (keyof T)[] = ['_id'],
     ): Promise<{ inflated: T[]; notInflated: T[] }> {
         const result: { inflated: T[]; notInflated: T[] } = {
             inflated: [],
@@ -709,7 +723,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         value: string,
         path = '_id',
         model: mongoose.Model<any, {}, {}, {}, any, any>,
-        fromWhere: string
+        fromWhere: string,
     ): any {
         const instance = model.schema.paths[path]?.instance || 'ObjectId';
         if (instance === 'String') return value;
@@ -720,7 +734,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             } catch (error) {
                 logger.error(
                     `convertToModelId: ${model.modelName}.${path}:${value} => ${instance}`,
-                    error
+                    error,
                 );
                 return value;
             }
@@ -731,7 +745,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         logger.debug(
             `Models registered in ${
                 this.name
-            }: [${this.connection.modelNames()}]`
+            }: [${this.connection.modelNames()}]`,
         );
         this.connection.on('connected', async () => {
             logger.info(`${this.name} connected`);

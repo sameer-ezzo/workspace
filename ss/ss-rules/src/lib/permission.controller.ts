@@ -1,15 +1,21 @@
 import { Controller, HttpException, HttpStatus } from '@nestjs/common';
-import type { IncomingMessage, Principle, SimplePermission } from '@noah-ark/common';
+import type {
+    IncomingMessage,
+    Principle,
+    SimplePermission,
+} from '@noah-ark/common';
 import { EndPoint, EndpointsInfo, Message, logger } from '@ss/common';
 import { DataService } from '@ss/data';
 import { join } from 'path';
 import { RulesService } from './rules.svr';
+import { RulesImporterService } from './rules-importer.svr';
 import { Authorize } from './authorize.decorator';
 
 @Controller('permissions')
 export class PermissionController {
     constructor(
         private rulesService: RulesService,
+        private rulesImporter: RulesImporterService,
         private readonly data: DataService,
     ) {}
 
@@ -32,7 +38,10 @@ export class PermissionController {
     @EndPoint({ http: { method: 'POST', path: 'restore-permissions' } })
     async restorePermissions(@Message() msg: IncomingMessage<any>) {
         const permissionsTree = msg.payload;
-        return await this.rulesService.restorePermissions(permissionsTree, msg.principle);
+        return await this.rulesImporter.restore(
+            permissionsTree,
+            msg.principle,
+        );
     }
 
     @EndPoint({ http: { method: 'GET', path: 'user-permissions/:id' } })
@@ -40,8 +49,12 @@ export class PermissionController {
         const userId = msg.query.id as string;
         const principle = msg.principle as Principle;
         if (!principle && !userId) return [];
-        const user = userId && userId !== principle.sub ? await this.data.find('user', userId) : principle;
-        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        const user =
+            userId && userId !== principle.sub
+                ? await this.data.find('user', userId)
+                : principle;
+        if (!user)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         return [];
     }
 
@@ -64,14 +77,24 @@ export class PermissionController {
     })
     public async updatePermission(
         @Message()
-        msg: IncomingMessage<SimplePermission & { rule: string; action: string }>,
+        msg: IncomingMessage<
+            SimplePermission & { rule: string; action: string }
+        >,
     ) {
         try {
             const { rule, action } = msg.payload!;
-            return await this.rulesService.updatePermission(rule, action, msg.payload!, msg.principle!);
+            return await this.rulesService.updatePermission(
+                rule,
+                action,
+                msg.payload!,
+                msg.principle!,
+            );
         } catch (error) {
             logger.error(error);
-            throw new HttpException(error.message ?? 'Unexpected error', HttpStatus.BAD_REQUEST);
+            throw new HttpException(
+                error.message ?? 'Unexpected error',
+                HttpStatus.BAD_REQUEST,
+            );
         }
     }
 
@@ -81,7 +104,8 @@ export class PermissionController {
     })
     public async deletePermission(@Message() msg: IncomingMessage<any>) {
         const id = msg.query!.id as string;
-        if (!id) throw new HttpException('id is required', HttpStatus.NOT_FOUND);
+        if (!id)
+            throw new HttpException('id is required', HttpStatus.NOT_FOUND);
         return await this.rulesService.deletePermission(id, msg.principle!);
     }
 
@@ -89,10 +113,17 @@ export class PermissionController {
         http: { method: 'POST', path: 'actions' },
         cmd: 'permissions/actions',
     })
-    public async getActionsForPath(@Message() msg: IncomingMessage<{ path: string }>) {
+    public async getActionsForPath(
+        @Message() msg: IncomingMessage<{ path: string }>,
+    ) {
         const payload = msg.payload!;
-        const path = payload.path.startsWith('/') ? payload.path.substring(1) : payload.path;
-        const records = EndpointsInfo.httpEndpoints.filter((x) => path.startsWith(x.prefix) || join(x.prefix, x.path) === x.path);
+        const path = payload.path.startsWith('/')
+            ? payload.path.substring(1)
+            : payload.path;
+        const records = EndpointsInfo.httpEndpoints.filter(
+            (x) =>
+                path.startsWith(x.prefix) || join(x.prefix, x.path) === x.path,
+        );
 
         return [...new Set(records.map((x) => x.operation ?? x.path))];
     }
@@ -101,7 +132,5 @@ export class PermissionController {
 }
 
 // how the client can know what is accessible from the beginning to hide UI elements for inaccessible links????
-
 //TODO https://betterprogramming.pub/docker-for-node-js-in-production-b9dc0e9e48e0
-
 //TODO https://towardsdatascience.com/how-to-deploy-a-mongodb-replica-set-using-docker-6d0b9ac00e49
