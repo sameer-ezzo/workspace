@@ -1,8 +1,8 @@
-import { AfterViewInit, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, input, computed } from '@angular/core';
+import { AfterViewInit, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, input, computed, ComponentRef } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 
 import { Component } from '@angular/core';
-import { fromEvent } from 'rxjs';
+import { fromEvent, Subject } from 'rxjs';
 import { debounceTime, startWith } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isPlatformBrowser } from '@angular/common';
@@ -11,7 +11,6 @@ import { MatBtnComponent } from '@upupa/mat-btn';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { DialogRefD, UpupaDialogActionContext, UpupaDialogPortal } from './dialog.service';
-
 
 @Component({
     selector: 'upupa-dialog',
@@ -37,6 +36,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     hideCloseButton = signal<boolean>(true);
 
     private readonly destroyRef = inject(DestroyRef);
+    private _afterAttached$ = new Subject<ComponentRef<any>>();
 
     @HostListener('keyup', ['$event'])
     keyup(e) {
@@ -47,6 +47,10 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
         }
     }
 
+    onAttached(e: any) {
+        this._afterAttached$.next(e.componentRef);
+    }
+
     public dialogData = inject(MAT_DIALOG_DATA) as DialogRefD;
     dialogRef: MatDialogRef<UpupaDialogComponent<C>> = inject(MatDialogRef);
     template = signal<DynamicComponent>(null);
@@ -55,9 +59,15 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
         this.dialogRef.addPanelClass('upupa-dialog-overlay');
         this.template.set(data.component);
         this.dialogActions.set((data.dialogActions || []) as ActionDescriptor[]);
-        this.title.set(data.title);
+        this.title.set(data.title || '');
         this.subTitle.set(data.subTitle);
         this.hideCloseButton.set(data.hideCloseButton === true);
+
+        this.dialogRef['afterAttached'] = () => {
+            return this._afterAttached$.asObservable();
+        };
+        this.dialogRef.componentInstance;
+        // this.dialogRef['instanceRef'] = signal<any>(null);
     }
 
     // inject platform id

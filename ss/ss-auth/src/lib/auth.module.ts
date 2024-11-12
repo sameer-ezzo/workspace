@@ -1,10 +1,4 @@
-import {
-    DynamicModule,
-    Inject,
-    Module,
-    OnModuleInit,
-    Provider,
-} from '@nestjs/common';
+import { DynamicModule, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthOptions } from './auth-options';
 import { AuthenticationInterceptor } from './auth.middleware';
@@ -16,13 +10,7 @@ import { logger } from './logger';
 import { PassportModule } from '@nestjs/passport';
 import { FacebookStrategy } from './external/facebook.strategy';
 import { GoogleStrategy } from './external/google.strategy';
-import {
-    DatabaseInfo,
-    DataModule,
-    DataService,
-    DbConnectionOptions,
-    getDataServiceToken,
-} from '@ss/data';
+import { DatabaseInfo, DataModule, DataService, DbConnectionOptions, getDataServiceToken } from '@ss/data';
 import { AuthService } from './auth.svr';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import userSchema from './user.schema';
@@ -32,22 +20,16 @@ import { Connection } from 'mongoose';
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
     secret: __secret(),
-    accessTokenExpiry:
-        process.env.accessTokenExpiry || defaultAuthOptions.accessTokenExpiry,
-    refreshTokenExpiry:
-        process.env.refreshTokenExpiry || defaultAuthOptions.refreshTokenExpiry,
+    accessTokenExpiry: process.env.accessTokenExpiry || defaultAuthOptions.accessTokenExpiry,
+    refreshTokenExpiry: process.env.refreshTokenExpiry || defaultAuthOptions.refreshTokenExpiry,
     forceEmailVerification: process.env.forceEmailVerification === 'true',
     forcePhoneVerification: process.env.forcePhoneVerification === 'true',
     issuer: process.env.issuer || defaultAuthOptions.issuer,
-    maximumAllowedLoginAttempts: process.env.maximumAllowedLoginAttempts
-        ? +process.env.maximumAllowedLoginAttempts
-        : defaultAuthOptions.maximumAllowedLoginAttempts,
-    maximumAllowedLoginAttemptsExpiry: process.env
-        .maximumAllowedLoginAttemptsExpiry
+    maximumAllowedLoginAttempts: process.env.maximumAllowedLoginAttempts ? +process.env.maximumAllowedLoginAttempts : defaultAuthOptions.maximumAllowedLoginAttempts,
+    maximumAllowedLoginAttemptsExpiry: process.env.maximumAllowedLoginAttemptsExpiry
         ? +process.env.maximumAllowedLoginAttemptsExpiry
         : defaultAuthOptions.maximumAllowedLoginAttemptsExpiry,
-    resetTokenExpiry:
-        process.env.resetTokenExpiry || defaultAuthOptions.resetTokenExpiry,
+    resetTokenExpiry: process.env.resetTokenExpiry || defaultAuthOptions.resetTokenExpiry,
     sendWelcomeEmail: process.env.sendWelcomeEmail === 'true',
 } as AuthOptions;
 
@@ -75,28 +57,19 @@ if (process.env.FACEBOOK_APP_ID) {
 export class AuthModule implements OnModuleInit {
     constructor(@Inject('DB_AUTH') public readonly data: DataService) {}
     async onModuleInit() {
-        // await this.data.addModel('user', userSchema);
-        // await this.data.addModel('role', roleSchema);
     }
 
-    static register(
-        dbName = 'DB_DEFAULT',
-        authOptions: Partial<AuthOptions> = {}
-    ): DynamicModule {
+    static register(dbName = 'DB_DEFAULT', authOptions: Partial<AuthOptions> = {}): DynamicModule {
         authOptions = { ..._authOptions, ...authOptions } as AuthOptions;
         if (authOptions.secret !== __secret()) {
-            logger.warn(
-                'Auth secret has been overridden (the one passed in env is used)'
-            );
+            logger.warn('Auth secret has been overridden (the one passed in env is used)');
             authOptions.secret = __secret();
         }
         if (!authOptions.secret) {
             logger.error('Auth secret is not set');
 
             const prod = process.env.NODE_PROD === 'production';
-            authOptions.secret = prod
-                ? randomString(10)
-                : 'dev-secret-PLEASE-CHANGE!';
+            authOptions.secret = prod ? randomString(10) : 'dev-secret-PLEASE-CHANGE!';
             process.env.secret = authOptions.secret;
             process.env.SECRET = authOptions.secret;
         }
@@ -112,8 +85,7 @@ export class AuthModule implements OnModuleInit {
 
         //EXTERNAL AUTH
         if (authOptions.externalAuth?.google) providers.push(GoogleStrategy);
-        if (authOptions.externalAuth?.facebook)
-            providers.push(FacebookStrategy);
+        if (authOptions.externalAuth?.facebook) providers.push(FacebookStrategy);
 
         return {
             global: true,
@@ -128,7 +100,7 @@ export class AuthModule implements OnModuleInit {
                         { name: 'user', schema: userSchema },
                         { name: 'role', schema: roleSchema },
                     ],
-                    dbName
+                    dbName,
                 ),
             ],
             controllers: [],

@@ -16,7 +16,7 @@ export type DataAdapterDescriptor<TData = any> = {
     imageProperty?: Key<TData>;
     options?: ProviderOptions<TData>;
 } & (
-    | ({ type: "server"; path: string } | { type: "api"; path: string })
+    | ({ type: "server"; path: string; select?: string[] } | { type: "api"; path: string; select?: string[] })
     | { type: "client"; data: TData[] | Promise<TData[]> }
     | { type: "http"; url: string; httpOptions?: HttpServerDataSourceOptions }
 );

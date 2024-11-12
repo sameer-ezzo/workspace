@@ -11,44 +11,36 @@ export class ConfirmService {
     constructor(private dialog: DialogService) {}
 
     open(options?: ConfirmOptions): Promise<boolean> {
-        const o = Object.assign(new ConfirmOptions(), options);
+        const o = this._makeOptions(options);
 
-        const dRef = this.dialog.openDialog(ConfirmComponent, {
-            width: '450px',
-            maxWidth: '90%',
-            hideCloseButton: true,
-            closeOnNavigation: true,
-            title: o.title,
-            inputs: {
-                confirmText: o.confirmText,
-                img: o.img,
-                confirmButton: {
-                    name: 'yes',
-                    type: 'submit',
-                    color: o.yesColor ?? 'primary',
-                    variant: 'raised',
-                    text: o.yes ?? 'Yes',
-                },
-
-                discardButton: {
-                    name: 'no',
-                    variant: 'button',
-                    type: 'button',
-                    text: o.no ?? 'No',
-                } as ActionDescriptor,
-            },
-        } as DialogServiceConfig<any>);
+        const dRef = this.dialog.openDialog(ConfirmComponent, o);
 
         return firstValueFrom(dRef.afterClosed());
     }
 
-    openWarning(options?: ConfirmOptions): Promise<boolean> {
-        const o = Object.assign(new ConfirmOptions(), options, {
-            yesColor: 'warn',
-            width: '95%',
+    private _makeOptions(options: ConfirmOptions) {
+        const o = Object.assign({}, new ConfirmOptions(), {
             maxWidth: '450px',
-        });
-        return this.open(o);
+            width: '90%',
+            hideCloseButton: true,
+            closeOnNavigation: true,
+        }) as DialogServiceConfig;
+
+        if (options?.title) o.title = options.title;
+        o.inputs ??= {};
+        if (options?.confirmText) o.inputs['confirmText'] = options.confirmText;
+        if (options.img) o.inputs['img'] = options.img;
+        if (options.no) o.inputs['discardButton'] = { name: 'no', variant: 'button', type: 'button', text: options.no } as ActionDescriptor;
+        if (options.yes)
+            o.inputs['confirmButton'] = { name: 'yes', type: 'submit', color: options.yesColor ?? 'primary', variant: 'raised', text: options.yes } as ActionDescriptor;
+        return o;
+    }
+
+    openWarning(options?: ConfirmOptions): Promise<boolean> {
+        const o = this._makeOptions(options);
+        o.inputs['confirmButton'].color = 'warn';
+        const dRef = this.dialog.openDialog(ConfirmComponent, o);
+        return firstValueFrom(dRef.afterClosed());
     }
 }
 

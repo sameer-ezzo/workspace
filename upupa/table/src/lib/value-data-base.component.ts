@@ -19,8 +19,8 @@ import { OnChanges } from "@angular/core";
     ],
 })
 export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
-    name = input<string, string>("", {
-        alias: "fieldName",
+    name = input<string, string>(`field_${Date.now()}`, {
+        alias: 'fieldName',
         transform: (v) => (v ? v : `field_${Date.now()}`),
     });
 
@@ -51,7 +51,7 @@ export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implem
     writeValue(v: Partial<T> | Partial<T>[]): void {
         this.value.set(v);
         this.selectionModel.clear();
-        if (v != undefined) this.select(v);
+        if (v != null) this.select(v);
     }
 
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {

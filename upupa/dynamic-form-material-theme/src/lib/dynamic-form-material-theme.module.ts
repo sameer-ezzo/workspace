@@ -90,7 +90,7 @@ const declarations = [
     MatPasswordInputComponent,
     MatInputComponent,
     MatChoicesComponent,
-    MatSwitchComponent,
+
     MatColorInputComponent,
     MatAutoCompleteTextComponent,
     MatAddressComponent,
@@ -106,6 +106,7 @@ const declarations = [
 
 const imports = [
     MatArrayInputComponent,
+    MatSwitchComponent,
     ...materialModules,
     UtilsModule,
     CommonModule,
