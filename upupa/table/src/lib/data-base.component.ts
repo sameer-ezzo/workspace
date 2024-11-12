@@ -47,7 +47,7 @@ export class DataComponentBase<T = any> {
         transform: (v) => Math.max(1, Math.round(Math.abs(v ?? 1))),
     });
 
-    adapter = model.required<DataAdapter<T>>();
+    adapter = input.required<DataAdapter<T>>();
 
     filterDebounceTime = input(300);
 

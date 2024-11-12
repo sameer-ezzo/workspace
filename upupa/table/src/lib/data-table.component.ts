@@ -22,20 +22,20 @@ import {
     InjectionToken,
     Signal,
     DestroyRef,
-} from '@angular/core';
+} from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 
-import { DataAdapter, NormalizedItem } from '@upupa/data';
+import { DataAdapter, NormalizedItem } from "@upupa/data";
 
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { DataComponentBase } from './data-base.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types';
-import { MatTable } from '@angular/material/table';
+import { MatCheckboxChange } from "@angular/material/checkbox";
+import { DataComponentBase } from "./data-base.component";
+import { animate, state, style, transition, trigger } from "@angular/animations";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
+import { MatTable } from "@angular/material/table";
 
-export const ROW_ITEM = new InjectionToken<any>('ITEM');
+export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
 export function injectRowItem() {
     return inject(ROW_ITEM);
@@ -87,7 +87,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.expanded[row.key].set(!v);
     }
 
-    private readonly injector = inject(Injector);
     private readonly _rowInjectors = new Map<NormalizedItem<T>, Injector>();
     private createRowInjector(row: NormalizedItem<T>) {
         this._rowInjectors.set(
@@ -103,7 +102,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                         useValue: this.adapter(),
                     },
                 ],
-                name: 'RowInjector',
+                name: "RowInjector",
                 parent: this.injector,
             }),
         );
@@ -122,7 +121,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     ngOnInit() {
         // this.dataChangeListeners.push((data) => {
-            this._rowInjectors.clear(); //clear row injectors on data change
+        this._rowInjectors.clear(); //clear row injectors on data change
 
         //     if (this.columns() === 'auto') this.generateColumns();
         // });

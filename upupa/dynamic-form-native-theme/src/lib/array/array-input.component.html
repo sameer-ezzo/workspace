@@ -7,7 +7,6 @@
 (sortChange)="onSortChange($event)"
 (focusedItem)="onFocusedItemChanged($event)" -->
 <!-- [tableName]="name()" -->
-{{ adapter().normalized$ | async | json }}
 <data-table #dataTable [adapter]="adapter()" [columns]="columns()" (pageChange)="onPageChange($event)">
     @if (tableHeaderComponent(); as template) {
         <portal
