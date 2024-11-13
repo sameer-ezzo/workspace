@@ -1,8 +1,13 @@
 @if (label()) {
     <mat-label>{{ label() }}</mat-label>
+    <mat-label>{{ label() }}</mat-label>
 }
 
-<data-table #dataTable [tableName]="name()" [adapter]="adapter" [columns]="columns()">
+<!-- (selectionChange)="onSelectionChange($event)"
+(sortChange)="onSortChange($event)"
+(focusedItem)="onFocusedItemChanged($event)" -->
+<!-- [tableName]="name()" -->
+<data-table #dataTable [adapter]="adapter()" [columns]="columns()" (pageChange)="onPageChange($event)">
     @if (tableHeaderComponent(); as template) {
         <portal
             class="table-header"
@@ -12,5 +17,7 @@
             [content]="template.content"
             [className]="template.class"
         ></portal>
+    } @else {
+        <ng-content class="table-header"></ng-content>
     }
 </data-table>

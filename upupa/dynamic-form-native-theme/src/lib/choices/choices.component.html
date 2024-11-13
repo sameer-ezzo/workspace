@@ -1,10 +1,10 @@
 @if (label()) {
     <mat-label>{{ label() }}</mat-label>
 }
-@if (template() === 'normal') {
+@if (template() === "normal") {
     @if (!maxAllowed() || maxAllowed() > 1) {
         <div class="{{ direction() }} {{ template() }} choices" (focusleave)="markAsTouched()">
-            @for (item of items | async; track item) {
+            @for (item of items(); track item) {
                 <mat-checkbox class="choice" (change)="toggle(item.key)" [checked]="selectionModel.isSelected(item.key)">
                     <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
                 </mat-checkbox>
@@ -12,7 +12,7 @@
         </div>
     } @else {
         <mat-radio-group (focusleave)="markAsTouched()" class="{{ direction() }} {{ template() }} choices" [formControl]="control()">
-            @for (item of items | async; track item) {
+            @for (item of items(); track item) {
                 <mat-radio-button class="choice" [value]="item.key">
                     <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
                 </mat-radio-button>
@@ -21,7 +21,7 @@
     }
 } @else {
     <div class="{{ direction() }} {{ template() }} choices" (focusleave)="markAsTouched()" tabindex="0">
-        @for (item of items | async; track item) {
+        @for (item of items(); track item) {
             <button type="button" [style.width]="thumbSize() + 'px'" [style.height]="thumbSize() + 'px'" class="choice" (click)="toggle(item.key)">
                 @if (item.image) {
                     <img

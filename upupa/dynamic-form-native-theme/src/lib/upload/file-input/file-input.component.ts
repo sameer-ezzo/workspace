@@ -1,37 +1,37 @@
-import { Component, Input, forwardRef, SimpleChanges, computed } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, SimpleChanges, computed, inject, DestroyRef } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
-import { ThemePalette } from '@angular/material/core';
-import { DataService, ClientDataSource, DataAdapter } from '@upupa/data';
-import { ActionDescriptor, ActionEvent } from '@upupa/common';
-import { FileSelectComponent } from '../file-select/file-select.component';
+import { ThemePalette } from "@angular/material/core";
+import { DataService, ClientDataSource, DataAdapter } from "@upupa/data";
+import { ActionDescriptor, ActionEvent } from "@upupa/common";
+import { FileSelectComponent } from "../file-select/file-select.component";
 
-import { AuthService } from '@upupa/auth';
-import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
-import { ValueDataComponentBase } from '@upupa/table';
-import { firstValueFrom } from 'rxjs';
-import { DialogService } from '@upupa/dialog';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthService } from "@upupa/auth";
+import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
+import { ValueDataComponentBase } from "@upupa/table";
+import { firstValueFrom } from "rxjs";
+import { DialogService } from "@upupa/dialog";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
-    selector: 'file-input',
-    templateUrl: './file-input.component.html',
-    styleUrls: ['./file-input.component.scss'],
+    selector: "file-input",
+    templateUrl: "./file-input.component.html",
+    styleUrls: ["./file-input.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => FileInputComponent),
             multi: true,
-        }
+        },
     ],
 })
 export class FileInputComponent extends ValueDataComponentBase {
     @Input() includeAccess = false;
-    @Input() base = '';
-    @Input() path = '';
+    @Input() base = "";
+    @Input() path = "";
 
-    @Input() color: ThemePalette = 'accent';
-    @Input() dateFormat = 'dd MMM yyyy';
+    @Input() color: ThemePalette = "accent";
+    @Input() dateFormat = "dd MMM yyyy";
     @Input() placeholder: string;
     @Input() label: string;
     @Input() hint: string;
@@ -43,25 +43,31 @@ export class FileInputComponent extends ValueDataComponentBase {
     @Input() maxSize = 1024 * 1024 * 10; //10 MB
     @Input() accept: string;
 
-    @Input() view: 'list' | 'grid' = 'list';
-    @Input() fileSelector: 'browser' | 'system' = 'system';
+    @Input() view: "list" | "grid" = "list";
+    @Input() fileSelector: "browser" | "system" = "system";
 
-    constructor(public uploadClient: UploadClient, public data: DataService, public auth: AuthService, public clipboard: ClipboardService, public dialog: DialogService) {
+    constructor(
+        public uploadClient: UploadClient,
+        public data: DataService,
+        public auth: AuthService,
+        public clipboard: ClipboardService,
+        public dialog: DialogService,
+    ) {
         super();
         this.base = uploadClient.baseUrl;
     }
 
     actions = [
         {
-            action: 'download',
-            text: 'Download',
-            icon: 'get_app',
+            action: "download",
+            text: "Download",
+            icon: "get_app",
         } as ActionDescriptor,
-        { action: 'remove', text: 'Remove', icon: 'clear' } as ActionDescriptor,
+        { action: "remove", text: "Remove", icon: "clear" } as ActionDescriptor,
     ];
 
     onAction(e: ActionEvent) {
-        if (e.action.name === 'remove') {
+        if (e.action.name === "remove") {
             this.removeFile(e.data[0].item);
         }
     }
@@ -69,10 +75,11 @@ export class FileInputComponent extends ValueDataComponentBase {
     dataAdapter = computed(() => {
         const v = this.value();
         const x = Array.isArray(v) ? v : [v];
-        return new DataAdapter(new ClientDataSource(x), '_id', undefined, undefined, undefined);
+        return new DataAdapter(new ClientDataSource(x), "_id", undefined, undefined, undefined);
     });
 
     access_token = null;
+    destroyRef = inject(DestroyRef);
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes);
 
@@ -83,26 +90,26 @@ export class FileInputComponent extends ValueDataComponentBase {
 
     private validateFileExtensions(file: File, accepts: string) {
         if (file && accepts) {
-            const segments = file.name.split('.');
+            const segments = file.name.split(".");
             segments.shift();
-            const fileExtension = segments.join('.').toLowerCase();
+            const fileExtension = segments.join(".").toLowerCase();
             const extensions = accepts
-                .split(',')
-                .filter((x) => x != '*.*')
-                .map((x) => (x.startsWith('.') ? x.substring(1).toLowerCase() : x.toLowerCase()));
+                .split(",")
+                .filter((x) => x != "*.*")
+                .map((x) => (x.startsWith(".") ? x.substring(1).toLowerCase() : x.toLowerCase()));
             return extensions.some((x) => x === fileExtension || x === file.type) ? null : { extension: fileExtension };
         }
         return null;
     }
     private validateFileMaxSize(file: File, maxSize: number) {
         if (file && maxSize > 0) {
-            return file.size > maxSize ? { ['max-size']: file.size } : null;
+            return file.size > maxSize ? { ["max-size"]: file.size } : null;
         }
         return null;
     }
     private validateFileMinSize(file: File, mninSize: number) {
         if (file && mninSize > 0) {
-            return file.size < mninSize ? { ['min-size']: file.size } : null;
+            return file.size < mninSize ? { ["min-size"]: file.size } : null;
         }
         return null;
     }
@@ -110,7 +117,7 @@ export class FileInputComponent extends ValueDataComponentBase {
     uploading = false;
     uploadingProgress: number | null = null;
     async selectFile() {
-        if (this.fileSelector === 'browser') {
+        if (this.fileSelector === "browser") {
             return await this.showFileExplorer();
         }
 

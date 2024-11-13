@@ -5,9 +5,6 @@ export interface OnInit extends DataListLifecycleHook {
 export interface OnDestroy extends DataListLifecycleHook {
     ngOnDestroy?: (e: any) => void;
 }
-export interface OnRefresh extends DataListLifecycleHook {
-    onRefresh?: (e: any) => void;
-}
 export interface OnSelect extends DataListLifecycleHook {
     onSelect?: (e: any) => void;
 }
@@ -20,39 +17,26 @@ export interface OnDeselect extends DataListLifecycleHook {
 export interface OnDeselectAll extends DataListLifecycleHook {
     onDeselectAll?: (e: any) => void;
 }
-export interface OnRowAction extends DataListLifecycleHook {
-    onRowAction?: (e: any) => void;
-}
-export interface OnHeaderAction extends DataListLifecycleHook {
-    onHeaderAction?: (e: any) => void;
-}
-export interface OnHeaderAction extends DataListLifecycleHook {
-    onHeaderAction?: (e: any) => void;
-}
-export interface OnFilter extends DataListLifecycleHook {
+
+export interface OnFilterChange extends DataListLifecycleHook {
     onFilter?: (e: any) => void;
 }
-export interface OnSort extends DataListLifecycleHook {
+export interface OnSortChange extends DataListLifecycleHook {
     onSort?: (e: any) => void;
 }
 export interface OnPageChange extends DataListLifecycleHook {
     onPageChange?: (e: any) => void;
 }
-export interface OnPageSizeChange extends DataListLifecycleHook {
-    onPageSizeChange?: (e: any) => void;
-}
-export interface OnSearch extends DataListLifecycleHook {
-    onSearch?: (e: any) => void;
-}
+
 export interface OnQuery extends DataListLifecycleHook {
     onQuery?: (e: any) => void;
 }
-export interface OnQueryParams extends DataListLifecycleHook {
-    onQueryParams?: (e: any) => void;
+
+
+export interface OnFocusedChange extends DataListLifecycleHook {
+    onFocusedChange(event: any): void;
 }
-export interface OnAdapterChange extends DataListLifecycleHook {
-    onAdapterChange?: (e: any) => void;
-}
+
 export interface OnDataChange extends DataListLifecycleHook {
     onDataChange?: (e: any) => void;
 }
@@ -64,8 +48,4 @@ export interface OnDataLoading extends DataListLifecycleHook {
 }
 export interface OnDataLoaded extends DataListLifecycleHook {
     onDataLoaded?: (e: any) => void;
-}
-
-export interface OnFocusedItemChange extends DataListLifecycleHook {
-    onFocusedItemChange(event: any): void;
 }

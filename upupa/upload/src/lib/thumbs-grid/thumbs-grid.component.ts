@@ -20,7 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         },
     ],
 })
-export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implements OnChanges, OnInit, OnDestroy {
+export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implements OnChanges {
     thumbs = input<FileInfo[]>([]);
     changed = output<Partial<FileInfo> | Partial<FileInfo>[]>();
 

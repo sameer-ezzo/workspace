@@ -14,11 +14,13 @@ import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "@upupa/dynamic-form";
 import { FormGroup } from "@angular/forms";
 
-export function withLayoutComponent(config: {
+export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
-}): RouteFeature {
+};
+
+export function withLayoutComponent(config: LayoutConfig): RouteFeature {
     return {
         name: "withLayoutComponent",
         modify: () => ({
@@ -36,6 +38,10 @@ export function withLayoutComponent(config: {
     };
 }
 
+export function provideLayoutRoute(config: Route & LayoutConfig): Route {
+    return provideRoute(config, withLayoutComponent(config));
+}
+
 export function layoutListRoute(options: { component?: Route["component"] } = { component: DataListComponent }, route: Omit<Route, "component">): Route {
     if (!options) options = { component: DataListComponent };
     if (!options.component) options.component = DataListComponent;
@@ -46,11 +52,12 @@ export function layoutListRoute(options: { component?: Route["component"] } = { 
     };
 }
 
-export function withTableComponent<T = unknown>(config: {
+export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
     dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
-}): RouteFeature {
+};
+export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
     return {
         name: "withTableComponent",
         modify: () => ({
@@ -62,6 +69,10 @@ export function withTableComponent<T = unknown>(config: {
             },
         }),
     };
+}
+
+export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>): Route {
+    return provideRoute(config, withTableComponent(config));
 }
 
 export type DynamicFormConfig = { viewModel: Class | FormViewModelMirror; value?: any; form?: FormGroup };

@@ -3,6 +3,7 @@ import { Type } from "@angular/core";
 
 
 export type SideBarItem = ActionDescriptor & {
+    name?: string;
     link: string;
     queryParams?: any;
     href?: string;

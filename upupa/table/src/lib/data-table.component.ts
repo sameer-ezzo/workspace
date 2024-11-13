@@ -18,35 +18,45 @@ import {
     input,
     output,
     effect,
-} from '@angular/core';
+    Injector,
+    InjectionToken,
+    Signal,
+    DestroyRef,
+} from "@angular/core";
 
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 
-import { NormalizedItem } from '@upupa/data';
+import { DataAdapter, NormalizedItem } from "@upupa/data";
 
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { DataComponentBase } from './data-base.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ColumnsDescriptorStrict, ColumnsDescriptor } from './types';
-import { MatTable } from '@angular/material/table';
+import { MatCheckboxChange } from "@angular/material/checkbox";
+import { DataComponentBase } from "./data-base.component";
+import { animate, state, style, transition, trigger } from "@angular/animations";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
+import { MatTable } from "@angular/material/table";
+
+export const ROW_ITEM = new InjectionToken<any>("ITEM");
+
+export function injectRowItem() {
+    return inject(ROW_ITEM);
+}
 
 @Component({
-    selector: 'data-table',
-    templateUrl: './data-table.component.html',
-    styleUrls: ['./data-table.component.scss'],
+    selector: "data-table",
+    templateUrl: "./data-table.component.html",
+    styleUrls: ["./data-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: [
-        trigger('detailExpand', [
-            state('collapsed,void', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        trigger("detailExpand", [
+            state("collapsed,void", style({ height: "0px", minHeight: "0" })),
+            state("expanded", style({ height: "*" })),
+            transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)")),
         ]),
     ],
     host: {
-        'attr.role': 'table',
-        '[attr.tabindex]': 'tabindex',
-        '[attr.id]': 'name()',
+        "attr.role": "table",
+        "[attr.tabindex]": "tabindex",
+        "[attr.id]": "name()",
     },
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
@@ -57,7 +67,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     stickyHeader = input(false);
 
     name = input<string, string>(`table_${Date.now()}`, {
-        alias: 'tableName',
+        alias: "tableName",
         transform: (v) => (v ? v : `table_${Date.now()}`),
     });
     pageSizeOptions = input<number[]>([10, 25, 50, 100, 200]);
@@ -66,10 +76,10 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     _properties: ColumnsDescriptorStrict = {}; //only data columns
     _columns: string[] = [];
-    columns = input<ColumnsDescriptor | 'auto'>('auto'); //eventually columns are the container of all and it's a dictionary
+    columns = input<ColumnsDescriptor | "auto">("auto"); //eventually columns are the container of all and it's a dictionary
 
     expanded: { [key: string]: WritableSignal<boolean> } = {};
-    expandable = input<'single' | 'multi' | 'none'>('none');
+    expandable = input<"single" | "multi" | "none">("none");
     expandableTemplate = input(null);
     toggleExpand(row, index) {
         if (!this.expanded[row.key]) this.expanded[row.key] = signal(false);
@@ -77,14 +87,44 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         this.expanded[row.key].set(!v);
     }
 
+    private readonly _rowInjectors = new Map<NormalizedItem<T>, Injector>();
+    private createRowInjector(row: NormalizedItem<T>) {
+        this._rowInjectors.set(
+            row,
+            Injector.create({
+                providers: [
+                    {
+                        provide: ROW_ITEM,
+                        useValue: row.item,
+                    },
+                    {
+                        provide: DataAdapter,
+                        useValue: this.adapter(),
+                    },
+                ],
+                name: "RowInjector",
+                parent: this.injector,
+            }),
+        );
+
+        return this._rowInjectors.get(row);
+    }
+
+    getRowInjector(row: NormalizedItem<T>) {
+        return this._rowInjectors.get(row) ?? this.createRowInjector(row);
+    }
+
     handset: boolean;
     selectionChange = output<NormalizedItem<T>[]>();
 
-    override ngOnInit() {
-        super.ngOnInit();
-        this.dataChangeListeners.push((data) => {
-            if (this.columns() === 'auto') this.generateColumns();
-        });
+    destroyRef = inject(DestroyRef);
+
+    ngOnInit() {
+        // this.dataChangeListeners.push((data) => {
+        this._rowInjectors.clear(); //clear row injectors on data change
+
+        //     if (this.columns() === 'auto') this.generateColumns();
+        // });
 
         this.breakpointObserver
             .observe([Breakpoints.Handset])
@@ -101,20 +141,20 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes);
 
-        if (changes['adapter']) this.adapter().refresh();
-        if (changes['columns']) this.generateColumns();
+        if (changes["adapter"]) this.adapter().refresh();
+        if (changes["columns"]) this.generateColumns();
     }
 
     private generateColumns() {
         const columns = this.columns();
         const adapter = this.adapter();
-        if (columns === 'auto') {
+        if (columns === "auto") {
             this._properties = {};
             if (adapter.normalized && adapter.normalized.length) {
                 const cols: any = {};
                 adapter.normalized.forEach((x) => Object.keys(x.item).forEach((k) => (cols[k] = 1)));
                 Object.keys(cols).forEach((k) => {
-                    if (!k.startsWith('_')) this._properties[k] = {};
+                    if (!k.startsWith("_")) this._properties[k] = {};
                 });
             }
         } else if (Array.isArray(columns)) {
@@ -123,7 +163,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                 this._properties[k] = { displayPath: k, ...v };
                 if (v?.template) {
                     const template = Array.isArray(v.template) ? v.template : [v.template];
-                    this._properties[k].template = template.map((t) => ('component' in t ? t : { component: t }));
+                    this._properties[k].template = template.map((t) => ("component" in t ? t : { component: t }));
                 }
             });
         } else {
@@ -137,7 +177,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                     };
                     if (columns[k]?.template) {
                         const template = Array.isArray(columns[k]?.template) ? columns[k]?.template : [columns[k]?.template];
-                        this._properties[k].template = template.map((t) => ('component' in t ? t : { component: t }));
+                        this._properties[k].template = template.map((t) => ("component" in t ? t : { component: t }));
                     }
                 }
             });
@@ -170,27 +210,27 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
         this._columns = [];
 
-        const selectCol = this._properties['select'];
-        const iCol = this._properties['i'];
+        const selectCol = this._properties["select"];
+        const iCol = this._properties["i"];
 
-        delete this._properties['select'];
-        delete this._properties['i'];
+        delete this._properties["select"];
+        delete this._properties["i"];
 
-        if (iCol && iCol.visible !== false) this._columns.push('i');
-        if (selectCol === undefined || selectCol.visible !== false) this._columns.push('select');
+        if (iCol && iCol.visible !== false) this._columns.push("i");
+        if (selectCol === undefined || selectCol.visible !== false) this._columns.push("select");
 
         this._columns.push(...Object.keys(this._properties));
     }
 
     shiftKeyPressed = false;
-    @HostListener('document:keydown', ['$event'])
+    @HostListener("document:keydown", ["$event"])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === 'Shift') this.shiftKeyPressed = this.maxAllowed() !== 1;
+        if (event.key === "Shift") this.shiftKeyPressed = this.maxAllowed() !== 1;
     }
 
-    @HostListener('document:keyup', ['$event'])
+    @HostListener("document:keyup", ["$event"])
     handleKeyboardEventUp(event: KeyboardEvent) {
-        if (event.key === 'Shift') this.shiftKeyPressed = false;
+        if (event.key === "Shift") this.shiftKeyPressed = false;
     }
 
     toggleSelection(event: MatCheckboxChange, row, selectInBetween = false) {

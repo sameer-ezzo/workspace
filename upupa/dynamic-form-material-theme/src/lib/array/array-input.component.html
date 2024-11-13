@@ -3,7 +3,7 @@
         <legend>{{ label() }}</legend>
     }
 
-    <data-table #dataTable [tableName]="name()" [adapter]="adapter" [columns]="columns()">
+    <data-table #dataTable [tableName]="name()" [adapter]="adapter()" [columns]="columns()">
         @if (tableHeaderComponent(); as template) {
             <portal
                 class="table-header"
