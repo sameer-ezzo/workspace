@@ -1,4 +1,17 @@
-import { Component, DestroyRef, EventEmitter, Output, SimpleChanges, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import {
+    Component,
+    DestroyRef,
+    EventEmitter,
+    Output,
+    SimpleChanges,
+    computed,
+    effect,
+    inject,
+    input,
+    model,
+    output,
+    signal,
+} from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { BehaviorSubject, map, Subscription } from 'rxjs';
@@ -13,7 +26,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     styles: [],
 })
 export class DataComponentBase<T = any> {
-    protected readonly selectionModel = new SelectionModel<Partial<T>>(true, [], true);
+    protected readonly selectionModel = new SelectionModel<Partial<T>>(
+        true,
+        [],
+        true,
+    );
     readonly selectedNormalized = new BehaviorSubject<NormalizedItem<T>[]>([]);
 
     add = output();
@@ -39,9 +56,11 @@ export class DataComponentBase<T = any> {
     itemClick = output<NormalizedItem<T>>();
 
     ngOnInit() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((s) => {
-            this.updateAdapterFromSelection(s.source.selected);
-        });
+        this.selectionModel.changed
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((s) => {
+                this.updateAdapterFromSelection(s.source.selected);
+            });
     }
     refreshData() {
         if (!this.firstLoad()) this.loading.set(true);
@@ -55,9 +74,11 @@ export class DataComponentBase<T = any> {
             this.firstLoad.set(true);
             if (!adapter) throw new Error('Adapter is required');
 
-            adapter.normalized$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-                this.onDataChange(data);
-            });
+            adapter.normalized$
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((data) => {
+                    this.onDataChange(data);
+                });
         }
     }
 
@@ -111,13 +132,26 @@ export class DataComponentBase<T = any> {
             return;
         }
 
-        if (adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
-        else this.selectionModel.select(...adapter.normalized.map((x) => x.value));
+        if (adapter.normalized.length === selected.length)
+            this.selectionModel.deselect(...selected);
+        else
+            this.selectionModel.select(
+                ...adapter.normalized.map((x) => x.value),
+            );
     }
 
     select(value: Partial<T> | Partial<T>[]) {
         const v = Array.isArray(value) ? value : [value];
         this.selectionModel.select(...v);
+    }
+
+    selectAll() {
+        this.selectionModel.select(
+            ...this.adapter().normalized.map((x) => x.value),
+        );
+    }
+    deselectAll() {
+        this.selectionModel.clear();
     }
 
     deselect(value: Partial<T>) {
@@ -134,12 +168,16 @@ export class DataComponentBase<T = any> {
         this.focusedItemChange.emit(this.focusedItem());
     }
     nextFocusedItem() {
-        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : -1;
+        const i = this.focusedItem()
+            ? this.adapter().normalized.indexOf(this.focusedItem())
+            : -1;
         this.focusedItem.set(this.adapter().normalized[i + 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
     prevFocusedItem() {
-        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : this.adapter().normalized.length;
+        const i = this.focusedItem()
+            ? this.adapter().normalized.indexOf(this.focusedItem())
+            : this.adapter().normalized.length;
         this.focusedItem.set(this.adapter().normalized[i - 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
@@ -156,7 +194,8 @@ export class DataComponentBase<T = any> {
 
         if (this.longPressed) this.select(row.key);
         else {
-            if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
+            if (this.selectionModel.selected.length > 0)
+                this.selectionModel.toggle(row.key);
             else this.itemClick.emit(this.focusedItem());
         }
 

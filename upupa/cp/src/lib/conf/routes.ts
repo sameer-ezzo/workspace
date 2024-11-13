@@ -16,9 +16,9 @@ export const storageRoute = { path: 'storage', component: MediaLibraryComponent 
 export const taxonomiesRoute = { path: 'taxonomies', component: TagsComponent }
 
 export const cpRoutes: Routes = [
-    listRoute,
-    createRoute,
-    editRoute,
+    // listRoute,
+    // createRoute,
+    // editRoute,
     usersRoute,
     rolesRoute,
     permissionsRoute,

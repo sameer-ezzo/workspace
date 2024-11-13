@@ -23,13 +23,19 @@
                 [descriptor]="submitActionButton()"
                 [loading]="submitting()"
                 (onClick)="dynForm.ngSubmit()"
-                [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
+                [disabled]="
+                    this.submitting() ||
+                    (dynForm.invalid && (dynForm.dirty || dynForm.touched))
+                "
             >
             </mat-btn>
         }
 
         @for (descriptor of actions(); track descriptor.name) {
-            <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
+            <mat-btn
+                [descriptor]="descriptor"
+                (onClick)="onAction($event)"
+            ></mat-btn>
         }
     </div>
 }

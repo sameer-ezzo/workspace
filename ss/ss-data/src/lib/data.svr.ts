@@ -3,7 +3,13 @@ import { Model, Document } from 'mongoose';
 
 import mongooseUniqueValidator from 'mongoose-unique-validator';
 import { PathInfo } from '@noah-ark/path-matcher';
-import { HttpException, HttpStatus, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import {
+    HttpException,
+    HttpStatus,
+    Injectable,
+    OnApplicationShutdown,
+    OnModuleInit,
+} from '@nestjs/common';
 import { JsonPointer } from '@noah-ark/json-patch';
 
 import { Patch } from './model';
@@ -44,7 +50,6 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         public readonly name: string,
         public readonly connection: Connection,
         public readonly options: DbConnectionOptions,
-        protected readonly broker: Broker,
         protected readonly broker: Broker,
     ) {
         this.queryParser = new QueryParser();
@@ -157,7 +162,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const typeOfId = typeof existingCollection._id;
             if (typeOfId === 'string') _idType = String;
             else if (typeOfId === 'number') _idType = Number;
-            else if (typeOfId === 'object') _idType = mongoose.SchemaTypes.ObjectId;
+            else if (typeOfId === 'object')
+                _idType = mongoose.SchemaTypes.ObjectId;
         }
 
         if (!_idType) {
@@ -205,7 +211,9 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             if (!result) return undefined as T;
 
             try {
-                return (pointer ? JsonPointer.get(result, `/${pointer}`) : result) as T;
+                return (
+                    pointer ? JsonPointer.get(result, `/${pointer}`) : result
+                ) as T;
             } catch (error) {
                 return null;
             }
@@ -221,7 +229,10 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
     }
 
-    async get<T = any>(path: string | PathInfo, ...q: { [key: string]: string }[]): Promise<T> {
+    async get<T = any>(
+        path: string | PathInfo,
+        ...q: { [key: string]: string }[]
+    ): Promise<T> {
         let segments;
         try {
             segments = typeof path === 'string' ? PathInfo.parse(path) : path;
@@ -255,7 +266,10 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         ) as Promise<T>;
     }
 
-    async count(path: string, ...q: { [key: string]: string }[]): Promise<number> {
+    async count(
+        path: string,
+        ...q: { [key: string]: string }[]
+    ): Promise<number> {
         const result = await this.func(path, 'count', ...q);
         return result || 0;
     }
@@ -288,7 +302,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
     }
 
-    async agg<T>(path: string, million = false, ...q: { [key: string]: string }[]): Promise<T[]> {
+    async agg<T>(
+        path: string,
+        million = false,
+        ...q: { [key: string]: string }[]
+    ): Promise<T[]> {
         const Q: any = q;
         if (Q != null && !Array.isArray(Q))
             q = Object.keys(Q).map((key) => {
@@ -319,7 +337,9 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         } else {
             const page = query.page || 1;
             const max_page_number = 100;
-            const per_page = million ? 1000000 : Math.min(query.per_page || max_page_number, max_page_number);
+            const per_page = million
+                ? 1000000
+                : Math.min(query.per_page || max_page_number, max_page_number);
 
             if (query.fields1) pipeline.push({ $addFields: query.fields1 });
             if (query.fields2) pipeline.push({ $addFields: query.fields2 });
@@ -358,11 +378,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     });
                 });
             }
-            if (query.filter && query.filter.$and && query.filter.$and.length) pipeline.push({ $match: query.filter });
+            if (query.filter && query.filter.$and && query.filter.$and.length)
+                pipeline.push({ $match: query.filter });
             if (query.sort) pipeline.push({ $sort: query.sort });
             if (query.select) pipeline.push({ $project: query.select });
 
-            const setLimitsBeforeGrouping = query.group === null || query.group?.items !== null; //limit before if document is included
+            const setLimitsBeforeGrouping =
+                query.group === null || query.group?.items !== null; //limit before if document is included
 
             if (setLimitsBeforeGrouping) {
                 pipeline.push({ $skip: (page - 1) * per_page });
@@ -397,11 +419,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             //push to array field
             //if (!Array.isArray(oldData)) { throw { status: 400, body: "INVALID_POST" }; }
             const update = { $push: {} };
-            if (segments.projectionPath) update.$push[segments.projectionPath] = newData;
+            if (segments.projectionPath)
+                update.$push[segments.projectionPath] = newData;
             else update.$push = newData;
 
             const document = await model.findById(segments.id);
-            if (!document) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+            if (!document)
+                throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 
             const result: any = await model.findByIdAndUpdate(
                 segments.id,
@@ -533,12 +557,14 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                         .filter((x) => x)
                         .join('.'),
                     model,
-                    model,
                 ),
             }));
 
             const update = toMongodb(patches);
-            result = await model.findOneAndUpdate({ _id: id }, update, { upsert: true, new: true });
+            result = await model.findOneAndUpdate({ _id: id }, update, {
+                upsert: true,
+                new: true,
+            });
         }
 
         if (result)
@@ -557,7 +583,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         value: any,
     ): { path: string; patches: Patch[] } {
         const segments = path.split('/').filter((s) => s);
-        if (segments.length < 2) throw { status: 400, body: 'INVALID_DOCUMENT_PATH' };
+        if (segments.length < 2)
+            throw { status: 400, body: 'INVALID_DOCUMENT_PATH' };
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
@@ -586,8 +613,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
         const model = await this.getModel(segments.collection);
         if (!model) throw { status: 400, body: 'INVALID_PATH' };
-        if(!segments.id) return this.post(path, value, user);
-        
+        if (!segments.id) return this.post(path, value, user);
+
         const doc = await model.findById(segments.id).lean();
         if (!doc) return this.post(path, value, user);
 
@@ -643,7 +670,6 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         requiredFields: (keyof T)[],
         optionalFields: (keyof T)[] = [],
         inflateBy: (keyof T)[] = ['_id'],
-        inflateBy: (keyof T)[] = ['_id'],
     ): Promise<{ inflated: T[]; notInflated: T[] }> {
         const result: { inflated: T[]; notInflated: T[] } = {
             inflated: [],
@@ -653,7 +679,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const fields = [...new Set([...requiredFields, ...optionalFields])];
 
         for (const deflated of deflatedItems) {
-            if (fields.every((f) => f in deflated)) result.inflated.push(deflated as T);
+            if (fields.every((f) => f in deflated))
+                result.inflated.push(deflated as T);
             else {
                 for (const by of inflateBy) {
                     if (deflated[by]) {
@@ -677,9 +704,12 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             }
 
             for (const inflated of inflatedItems) {
-                if (requiredFields.every((f) => f in inflated)) result.inflated.push(inflated);
+                if (requiredFields.every((f) => f in inflated))
+                    result.inflated.push(inflated);
                 else result.notInflated.push(inflated);
-                for (const optionalField of optionalFields) if (!(optionalField in inflated)) inflated[optionalField] = undefined; //introduce the optional field to the obj to prevent future re-inflation attempt
+                for (const optionalField of optionalFields)
+                    if (!(optionalField in inflated))
+                        inflated[optionalField] = undefined; //introduce the optional field to the obj to prevent future re-inflation attempt
             }
         }
 
