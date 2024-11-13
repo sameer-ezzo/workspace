@@ -42,12 +42,12 @@ export class ClientDataSource<T = any> extends TableDataSource<T> {
     ); //everytime the src is changed switch to the new one
 
     //
-    constructor(_all: T[] | Promise<T[]> | Observable<T[]>, options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
+    constructor(_all: readonly T[] | T[] | Promise<T[]> | Observable<T[]>, options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
         super();
         this.init(options);
-        if (Array.isArray(_all)) this.src$.next(of(_all));
+        if (_all instanceof Observable) this.src$.next(_all);
         else if (_all instanceof Promise) this.src$.next(from(_all));
-        else this.src$.next(_all);
+        else this.src$.next(of(_all as T[]));
     }
 
     refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Observable<T[]> {

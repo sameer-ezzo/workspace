@@ -9,7 +9,7 @@ import { AuthService } from "@upupa/auth";
 import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import { CommonModule } from "@angular/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { EditorConfig } from "ckeditor5";
+import { EditorConfig } from "@ckeditor/ckeditor5-core";
 
 // https://ckeditor.com/docs/ckeditor5/latest/installation/integrations/angular.html
 @Component({

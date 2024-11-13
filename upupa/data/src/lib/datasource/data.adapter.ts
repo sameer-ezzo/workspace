@@ -17,7 +17,7 @@ export type DataAdapterDescriptor<TData = any> = {
     options?: ProviderOptions<TData>;
 } & (
     | ({ type: "server"; path: string; select?: string[] } | { type: "api"; path: string; select?: string[] })
-    | { type: "client"; data: TData[] | Promise<TData[]> }
+    | { type: "client"; data: TData[] | Promise<TData[]> | readonly TData[] }
     | { type: "http"; url: string; httpOptions?: HttpServerDataSourceOptions }
 );
 

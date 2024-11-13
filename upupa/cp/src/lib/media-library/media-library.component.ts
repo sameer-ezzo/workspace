@@ -6,7 +6,6 @@ import { DataService } from "@upupa/data";
 import { BehaviorSubject, Subject } from "rxjs";
 import { ActivatedRoute } from "@angular/router";
 import { EventBus } from "@upupa/common";
-import { ScaffoldingService } from "../scaffolding.service";
 import { FileInfo } from "@noah-ark/common";
 import { SnackBarService } from "@upupa/dialog";
 import { CommonModule } from "@angular/common";
@@ -37,7 +36,6 @@ export class MediaLibraryComponent implements OnDestroy {
         public auth: AuthService,
         public http: HttpClient,
         public languageService: LanguageService,
-        public scaffolder: ScaffoldingService,
         public ds: DataService,
         public route: ActivatedRoute,
         public snack: SnackBarService,

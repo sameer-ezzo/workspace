@@ -17,7 +17,7 @@ export function createDataAdapter(descriptor: DataAdapterDescriptor<DataAdapterT
             break;
         case "server":
         case "api":
-            dataSource = new ServerDataSource(injector.get(DataService), descriptor.path, []);
+            dataSource = new ServerDataSource(injector.get(DataService), descriptor.path, descriptor.select ?? []);
             break;
         case "http":
             const http = injector.get(HttpClient);

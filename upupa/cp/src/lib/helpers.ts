@@ -1,22 +1,22 @@
-import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputEmitterRef, runInInjectionContext, output, effect, InjectionToken, Signal } from '@angular/core';
-import { ActionDescriptor, ActionEvent, DynamicComponent } from '@upupa/common';
-import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService } from '@upupa/dialog';
-import { MatBtnComponent } from '@upupa/mat-btn';
-import { DataTableComponent, injectRowItem } from '@upupa/table';
-import { firstValueFrom } from 'rxjs';
-import { DataFormWithViewModelComponent } from './data-form-with-view-model/data-form-with-view-model.component';
-import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from '@upupa/data';
-import { Class } from '@noah-ark/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIconModule } from '@angular/material/icon';
-import { run } from 'node:test';
+import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputEmitterRef, runInInjectionContext, output, effect, InjectionToken, Signal } from "@angular/core";
+import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
+import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService } from "@upupa/dialog";
+import { MatBtnComponent } from "@upupa/mat-btn";
+import { DataTableComponent, injectRowItem } from "@upupa/table";
+import { firstValueFrom } from "rxjs";
+import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
+import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from "@upupa/data";
+import { Class } from "@noah-ark/common";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatIconModule } from "@angular/material/icon";
+import { run } from "node:test";
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
 }
 
 @Component({
-    selector: 'create-button',
+    selector: "create-button",
     imports: [MatBtnComponent],
     standalone: true,
     template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
@@ -53,7 +53,7 @@ export class CreateButtonComponent {
 }
 
 @Component({
-    selector: 'inline-button',
+    selector: "inline-button",
     imports: [MatBtnComponent],
     standalone: true,
     template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
@@ -85,20 +85,23 @@ export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; 
     return template;
 }
 
-export function createButton(formViewModel: Class, options?: { descriptor?: Partial<ActionDescriptor> }): Type<any> | DynamicComponent {
-    if (!formViewModel) throw new Error('formViewModel is required');
+export function createButton(
+    formViewModel: Class,
+    options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogServiceConfig> },
+): Type<any> | DynamicComponent {
+    if (!formViewModel) throw new Error("formViewModel is required");
     options ??= {};
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
-        text: 'Create',
-        icon: 'add',
-        color: 'primary',
-        variant: 'raised',
+        text: "Create",
+        icon: "add",
+        color: "primary",
+        variant: "raised",
     };
     options.descriptor = merge(defaultCreateDescriptor, options.descriptor);
 
     return inlineButton({
         descriptor: options.descriptor,
-        handler: (source) => editFormDialog.call(source, formViewModel),
+        handler: (source) => editFormDialog.call(source, formViewModel, readInput("item", source), { dialogOptions: options.dialogOptions }),
         item: null,
     });
 }
@@ -112,36 +115,37 @@ export function editButton(
     value?: () => any | Promise<any>,
     options?: {
         descriptor?: Partial<ActionDescriptor>;
+        dialogOptions?: Partial<DialogServiceConfig>;
     },
 ): Type<any> | DynamicComponent {
-    if (!formViewModel) throw new Error('formViewModel is required');
+    if (!formViewModel) throw new Error("formViewModel is required");
     options ??= {};
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
-        text: 'Edit',
-        icon: 'edit',
-        variant: 'icon',
-        color: 'accent',
+        text: "Edit",
+        icon: "edit",
+        variant: "icon",
+        color: "accent",
     };
     options.descriptor = merge(defaultEditDescriptor, options.descriptor);
 
     return inlineButton({
         descriptor: options.descriptor,
         handler: (source) => {
-            const item = readInput('item', source);
+            const item = readInput("item", source);
             const v = value ? value() : item;
-            editFormDialog.call(source, formViewModel, v);
+            editFormDialog.call(source, formViewModel, v, { dialogOptions: options.dialogOptions });
         },
         item: null,
     });
 }
 
-async function editFormDialog<T>(vm: Class, value = readInput('item', this)) {
+async function editFormDialog<T>(vm: Class, value = readInput("item", this), context?: { dialogOptions?: DialogServiceConfig }) {
     const snack = inject(SnackBarService);
     const injector = inject(Injector);
     const v = await value;
-    const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector });
-    const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent['submitted']>('submitted', componentRef.instance);
-    if (error) snack.openFailed('', error);
+    const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions });
+    const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
+    if (error) snack.openFailed("", error);
     else dialogRef.close(submitResult);
 }
 
@@ -152,7 +156,7 @@ async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: I
         ...opts,
         inputs: { ...opts.inputs, viewModel: vm, value },
     });
-    const component: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dRef['afterAttached']());
+    const component: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dRef["afterAttached"]());
 
     return { dialogRef: dRef, componentRef: component };
 }
@@ -172,7 +176,7 @@ async function waitForOutput<T extends OutputEmitterRef<R>, R = ExtractEventType
 function readInput(input: string, instance = this) {
     if (!(input in instance)) throw new Error(`Input ${input} not found in ${instance.constructor.name}`);
     const inputRef = instance[input];
-    if (typeof inputRef === 'function') return inputRef();
+    if (typeof inputRef === "function") return inputRef();
     return inputRef;
 }
 
@@ -180,9 +184,6 @@ export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean
     const confirm = inject(ConfirmService);
     return confirm.openWarning(options);
 }
-
-
-
 
 async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any | Promise<any> = null) {
     const snack = inject(SnackBarService);
@@ -193,14 +194,14 @@ async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any
             return await deleteFn?.();
         });
     } catch (error) {
-        snack.openFailed('', error);
+        snack.openFailed("", error);
     }
 }
 
 export function deleteValueFromAdapter(item: any) {
     const adapter = inject(DataAdapter);
-    if (!adapter) throw new Error('DataAdapter not found');
-    if (!(adapter.dataSource instanceof ClientDataSource)) throw new Error('DataAdapter is not a ClientDataSource');
+    if (!adapter) throw new Error("DataAdapter not found");
+    if (!(adapter.dataSource instanceof ClientDataSource)) throw new Error("DataAdapter is not a ClientDataSource");
     adapter.dataSource.all = adapter.dataSource.all.filter((i) => i !== item);
 }
 
@@ -218,14 +219,14 @@ export function deleteButton(
 ): Type<any> | DynamicComponent {
     options ??= {};
     const defaultDeleteDescriptor: Partial<ActionDescriptor> = {
-        text: 'Delete',
-        icon: 'delete',
-        variant: 'icon',
-        color: 'warn',
+        text: "Delete",
+        icon: "delete",
+        variant: "icon",
+        color: "warn",
     };
     options.descriptor = merge(defaultDeleteDescriptor, options.descriptor);
 
-    const confirmOptions = merge({ title: 'Delete', confirmText: 'Are you sure you want to delete this item?', no: 'Keep it', yes: 'Delete' }, options?.confirm ?? {});
+    const confirmOptions = merge({ title: "Delete", confirmText: "Are you sure you want to delete this item?", no: "Keep it", yes: "Delete" }, options?.confirm ?? {});
     return inlineButton({
         descriptor: options.descriptor,
         handler: (source) => {
@@ -237,7 +238,7 @@ export function deleteButton(
 }
 
 @Component({
-    selector: 'delete-button',
+    selector: "delete-button",
     imports: [MatBtnComponent, MatProgressSpinnerModule, MatIconModule],
     standalone: true,
     template: `
@@ -255,10 +256,10 @@ export class DeleteButtonComponent<T = any> {
     options = input<(selected: any) => { path?: string } & ConfirmOptions, (selected: any) => Partial<{ path: string } & ConfirmOptions>>(undefined, {
         transform: (fn) => {
             return (selected: any) => ({
-                title: 'Delete',
-                confirmText: 'Are you sure you want to delete this item?',
-                no: 'Keep it',
-                yes: 'Delete',
+                title: "Delete",
+                confirmText: "Are you sure you want to delete this item?",
+                no: "Keep it",
+                yes: "Delete",
                 ...fn?.(selected),
             });
         },
@@ -285,7 +286,7 @@ export class DeleteButtonComponent<T = any> {
                 adapter.dataSource.all = adapter.dataSource.all.filter((i) => i !== item);
             } else {
                 const path = options.path;
-                if (!path || path.trim().length === 0) throw new Error('Path is required');
+                if (!path || path.trim().length === 0) throw new Error("Path is required");
                 await ds.delete(path);
             }
         } catch (e) {
