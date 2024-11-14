@@ -3,6 +3,7 @@ import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor } fro
 import { filter } from "./filter.fun";
 
 import { debounceTime, switchMap, map, tap, shareReplay } from "rxjs/operators";
+import { JsonPatch, Patch } from "@noah-ark/json-patch";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -62,6 +63,31 @@ export class ClientDataSource<T = any> extends TableDataSource<T> {
         //const data = filter(this.all, this.filter, this.sort, this.page, this.terms)
         this._all$.next(this._all);
         return this.data$;
+    }
+
+    override create(value: Partial<T>): Promise<unknown> {
+        this.all = [...this.all, value as T];
+        return Promise.resolve(value);
+    }
+
+    override put(item: T, value: Partial<T>): Promise<unknown> {
+        const key = this.all.indexOf(item);
+        this.all[key] = value as T;
+        return Promise.resolve(value);
+    }
+
+    override patch(item: T, patches: Patch[]): Promise<unknown> {
+        const key = this.all.indexOf(item);
+        let _item = this.all[key];
+        if (typeof _item !== "object") _item = {} as T;
+        JsonPatch.patch(_item, patches);
+        this.all[key] = _item as T;
+        return Promise.resolve(_item);
+    }
+
+    override delete(item: T): Promise<unknown> {
+        const key = this.all.indexOf(item);
+        return Promise.resolve(this.all.splice(key, 1));
     }
 
     destroy?() {}

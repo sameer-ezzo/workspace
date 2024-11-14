@@ -17,7 +17,7 @@ import {
 } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { BehaviorSubject, firstValueFrom, map, Subscription } from "rxjs";
+import { BehaviorSubject, firstValueFrom } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 
@@ -30,15 +30,17 @@ import { delay } from "@noah-ark/common";
     styles: [],
 })
 export class DataComponentBase<T = any> {
-    protected readonly selectionModel = new SelectionModel<Partial<T>>(
-        true,
-        [],
-        true,
-    );
-    readonly selectedNormalized = new BehaviorSubject<NormalizedItem<T>[]>([]);
+    readonly selectedNormalized = signal<NormalizedItem<T>[]>([]);
+
+    value = model<Partial<T> | Partial<T>[]>(undefined);
+
+    // this property is used to store the value items in array format always
+    selected = computed<Partial<T>[]>(() => {
+        return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
+    });
 
     add = output();
-
+    lazyLoadData = input(true);
     loading = signal(false);
     dataLoaded = signal(false);
 
@@ -59,10 +61,33 @@ export class DataComponentBase<T = any> {
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
+    readonly itemsSource = signal<"adapter" | "selected">(this.lazyLoadData() ? "selected" : "adapter");
+
+    readonly items = computed<NormalizedItem<T>[]>(() => {
+        return this.itemsSource() === "adapter" ? this.adapter().normalized() : this.selectedNormalized();
+    });
+
     constructor() {
-        this.selectionModel.changed.pipe(takeUntilDestroyed()).subscribe((s) => {
-            this.updateSelection(s.source.selected);
-        });
+        effect(
+            () => {
+                const lazy = this.lazyLoadData();
+                const loaded = this.dataLoaded();
+                if (!loaded && lazy && this.itemsSource() !== "selected") this.itemsSource.set("selected");
+            },
+            { allowSignalWrites: true },
+        );
+
+        effect(
+            () => {
+                const keys = this.adapter().getKeysFromValue(this.selected());
+                this.adapter()
+                    .getItems(keys)
+                    .then((items) => {
+                        this.selectedNormalized.set(items);
+                    });
+            },
+            { allowSignalWrites: true },
+        );
     }
 
     async loadData() {
@@ -74,10 +99,10 @@ export class DataComponentBase<T = any> {
             this.loading.set(false);
         }
         this.dataLoaded.set(true);
+        this.itemsSource.set("adapter");
+        console.log("Data loaded", this.itemsSource(), this.items());
     }
 
-    items!: Signal<NormalizedItem<T>[]>;
-    lazyLoadData = input(false);
     compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
 
     ngOnChanges(changes: SimpleChanges) {
@@ -96,24 +121,10 @@ export class DataComponentBase<T = any> {
                 : (optVal: any, selectVal: any) => optVal === selectVal;
 
             if (adapter.dataSource.allDataLoaded || !this.lazyLoadData()) this.loadData();
-
-            runInInjectionContext(this.injector, () => {
-                this.items = toSignal(this.adapter().normalized$);
-            });
         }
     }
 
     injector = inject(Injector);
-
-    private updateSelection(selection: Partial<T>[]) {
-        const keys = this.adapter().getKeysFromValue(selection);
-        if (keys == undefined) return this.selectedNormalized.next([]);
-        this.adapter()
-            .getItems(keys)
-            .then((items) => {
-                this.selectedNormalized.next(items);
-            });
-    }
 
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() pageChange = new EventEmitter<PageEvent>();
@@ -130,6 +141,7 @@ export class DataComponentBase<T = any> {
     }
 
     //selection
+    readonly selectionModel = new SelectionModel<Partial<T>>(true, []);
     toggleSelectAll() {
         //selection can have items from data from other pages or filtered data so:
         //if selected items n from this adapter data < adapter data -> select the rest
@@ -139,33 +151,52 @@ export class DataComponentBase<T = any> {
         const selected = this.selectionModel.selected;
         if (this.maxAllowed() === 1) {
             if (selected.length > 0) this.selectionModel.clear();
+            this.value.set(selected[0]);
             return;
         }
 
-        if (adapter.normalized.length === selected.length)
-            this.selectionModel.deselect(...selected);
-        else
-            this.selectionModel.select(
-                ...adapter.normalized.map((x) => x.value),
-            );
+        if (adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
+        else this.selectionModel.select(...adapter.normalized().map((x) => x.value));
+
+        this.value.set(this.selectionModel.selected);
     }
 
     select(value: Partial<T> | Partial<T>[]) {
         const v = Array.isArray(value) ? value : [value];
         this.selectionModel.select(...v);
+        this.value.set(this.selectionModel.selected);
     }
 
     selectAll() {
+        if (this.maxAllowed() === 1) {
+            this.selectionModel.clear();
+            this.value.set(null);
+            return;
+        }
         this.selectionModel.select(
-            ...this.adapter().normalized.map((x) => x.value),
+            ...this.adapter()
+                .normalized()
+                .map((x) => x.value),
         );
+
+        this.value.set(this.selectionModel.selected);
     }
     deselectAll() {
         this.selectionModel.clear();
+        if (this.maxAllowed() === 1) {
+            this.value.set(null);
+            return;
+        }
+        this.value.set(this.selectionModel.selected);
     }
 
     deselect(value: Partial<T>) {
         this.selectionModel.deselect(value);
+        if (this.maxAllowed() === 1) {
+            this.value.set(null);
+            return;
+        }
+        this.value.set(this.selectionModel.selected);
     }
 
     toggle(value: Partial<T>) {
@@ -178,17 +209,16 @@ export class DataComponentBase<T = any> {
         this.focusedItemChange.emit(this.focusedItem());
     }
     nextFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : -1;
-        this.focusedItem.set(this.adapter().normalized[i + 1]);
+        const normalized = this.adapter().normalized();
+        const i = this.focusedItem() ? normalized.indexOf(this.focusedItem()) : -1;
+        this.focusedItem.set(normalized[i + 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
     prevFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : this.adapter().normalized.length;
-        this.focusedItem.set(this.adapter().normalized[i - 1]);
+        const normalized = this.adapter().normalized();
+
+        const i = this.focusedItem() ? normalized.indexOf(this.focusedItem()) : normalized.length;
+        this.focusedItem.set(normalized[i - 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
 
@@ -204,8 +234,7 @@ export class DataComponentBase<T = any> {
 
         if (this.longPressed) this.select(row.key);
         else {
-            if (this.selectionModel.selected.length > 0)
-                this.selectionModel.toggle(row.key);
+            if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
             else this.itemClick.emit(this.focusedItem());
         }
 

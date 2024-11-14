@@ -2,7 +2,7 @@ import { Component, input, inject, Type, Injector, signal, ComponentRef, OutputE
 import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { DataTableComponent, injectRowItem } from "@upupa/table";
+import { DataTableComponent, injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from "@upupa/data";
@@ -185,7 +185,7 @@ export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean
     return confirm.openWarning(options);
 }
 
-async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any | Promise<any> = null) {
+async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any | Promise<any>) {
     const snack = inject(SnackBarService);
     const injector = inject(Injector);
     if (!(await openConfirmationDialog(confirmOptions))) return;
@@ -211,7 +211,7 @@ export function deleteValueFromApi(path: string) {
 }
 
 export function deleteButton(
-    deleteFn: () => any | Promise<any>,
+    deleteFn: () => any | Promise<any> = (adapter = injectDataAdapter()) => adapter.delete(injectRowItem()),
     options?: {
         confirm?: ConfirmOptions;
         descriptor?: Partial<ActionDescriptor>;

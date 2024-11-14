@@ -3,7 +3,7 @@ import { Component, Input, SimpleChanges, ViewChild, signal } from '@angular/cor
 import { AuthService } from '@upupa/auth';
 
 import { firstValueFrom, map } from 'rxjs';
-import { DataAdapter, DataService, ObjectId, ServerDataSource } from '@upupa/data';
+import { DataAdapter, DataService, ObjectId, ApiDataSource } from '@upupa/data';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
 import { HttpClient } from '@angular/common/http';
@@ -35,7 +35,7 @@ export class EditUserRolesComponent implements UpupaDialogPortal<EditUserRolesCo
             roles: selectField(
                 'roles',
                 'Roles',
-                new DataAdapter(new ServerDataSource(this.data, 'role', ['_id', 'name']), '_id', 'name', undefined, undefined),
+                new DataAdapter(new ApiDataSource(this.data, 'role', ['_id', 'name']), '_id', 'name', undefined, undefined),
                 'User roles',
                 undefined,
                 'outline',

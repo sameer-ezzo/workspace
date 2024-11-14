@@ -1,17 +1,16 @@
-import { Component, forwardRef, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, input, output } from '@angular/core';
-import { UploadClient } from '../upload.client';
-import { NormalizedItem } from '@upupa/data';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { MatDialog } from '@angular/material/dialog';
-import { ValueDataComponentBase } from '@upupa/table';
-import { FileInfo } from '../model';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, forwardRef, ElementRef, OnChanges, input, output } from "@angular/core";
+import { UploadClient } from "../upload.client";
+import { NormalizedItem } from "@upupa/data";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { BreakpointObserver } from "@angular/cdk/layout";
+import { MatDialog } from "@angular/material/dialog";
+import { ValueDataComponentBase } from "@upupa/table";
+import { FileInfo } from "../model";
 
 @Component({
-    selector: 'thumbs-grid',
-    templateUrl: './thumbs-grid.component.html',
-    styleUrls: ['./thumbs-grid.component.css'],
+    selector: "thumbs-grid",
+    templateUrl: "./thumbs-grid.component.html",
+    styleUrls: ["./thumbs-grid.component.css"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -48,10 +47,10 @@ export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implem
 
     async remove(t: NormalizedItem<FileInfo>) {
         this.loading.set(true);
-        if (this.selectionModel.isSelected(t.key)) this.selectionModel.deselect(t.key);
+        // if (this.isSelected(t.key)) this.selectionModel.deselect(t.key);
 
         try {
-            await this.client.delete('/' + t.item.path, new URL(this.base).origin);
+            await this.client.delete("/" + t.item.path, new URL(this.base).origin);
             this.adapter().refresh();
             this.loading.set(false);
         } catch (error) {

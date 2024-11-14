@@ -1,10 +1,10 @@
 import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed } from "@angular/core";
-import { FormControl, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
 import { MatSelect } from "@angular/material/select";
 import { ActionDescriptor } from "@upupa/common";
 import { ValueDataComponentBase } from "@upupa/table";
 
-import { firstValueFrom } from "rxjs";
+import { debounceTime, firstValueFrom } from "rxjs";
 import { InputDefaults } from "../defaults";
 
 @Component({
@@ -16,13 +16,54 @@ import { InputDefaults } from "../defaults";
             useExisting: forwardRef(() => SelectComponent),
             multi: true,
         },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => SelectComponent),
+            multi: true,
+        },
     ],
 })
-export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
+export class SelectComponent<T = any> extends ValueDataComponentBase<T> implements Validator {
+    selectInput = viewChild<MatSelect>(MatSelect);
+    _flag = false;
+    validate(control: AbstractControl): ValidationErrors | null {
+        if (this._flag && control.value && this.noOption() && this.dataLoaded()) {
+            control.markAsTouched();
+            const value = control.value._id ?? control.value;
+            return {
+                select: {
+                    message: `No option found matching value "${value}"`,
+                },
+            };
+        }
+        return null;
+    }
+
+    ngAfterViewInit() {
+        this.selectInput().selectionChange.subscribe((e) => {
+            this.value.set(this.control().value);
+            this.control().updateValueAndValidity();
+        });
+
+        setTimeout(() => {
+            this._flag = true;
+            this.control().updateValueAndValidity();
+        }, 200);
+
+        this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
+            const filter = this.adapter().filter;
+            const _filter = { ...filter, ...(this.adapter().normalizeFilter(v) || {}) };
+            this.adapter().filter = _filter;
+        });
+    }
+
+    noOption() {
+        const select = this.selectInput();
+        return Array.isArray(select.selected) ? !select.selected.length : !select.selected;
+    }
+
     inlineError = true;
     showSearch = input(false);
-
-    showOnlySelected = model(false);
 
     appearance = input(InputDefaults.appearance);
     floatLabel = input(InputDefaults.floatLabel);
@@ -48,15 +89,19 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> {
     }
 
     keyDown(e: KeyboardEvent, input?: { open: () => void; panelOpen: boolean }) {
-        if (!input || input.panelOpen === true) return;
-        const shouldOpen = e.key === "ArrowDown" || (e.key.length === 1 && /[a-z0-9 ]/i.test(e.key));
-        if (shouldOpen) this.openedChange(true);
+        // if (!input || input.panelOpen === true) return;
+        // const shouldOpen = e.key === "ArrowDown" || (e.key.length === 1 && /[a-z0-9 ]/i.test(e.key));
+        // if (shouldOpen) this.openedChange(true);
     }
 
     isPanelOpened = false;
 
     async openedChange(open: boolean, input?: { open: () => void }) {
-        this.isPanelOpened = open;
+        // this.isPanelOpened = open;
+        // console.log("openedChange", open, this.dataLoaded());
+        // if (open && !this.dataLoaded()) {
+        //     this.loadData();
+        // }
     }
 
     @Output() action = new EventEmitter<ActionDescriptor>();

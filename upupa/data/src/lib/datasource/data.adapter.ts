@@ -1,10 +1,11 @@
-import { JsonPointer } from "@noah-ark/json-patch";
+import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Subscription, Observable, ReplaySubject, firstValueFrom, BehaviorSubject } from "rxjs";
 import { ClientDataSource } from "./client.data.source";
 import { filterNormalized } from "./filter.fun";
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
 import { map } from "rxjs/operators";
 import { HttpServerDataSourceOptions } from "./http-server-data-source";
+import { signal } from "@angular/core";
 
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
@@ -24,15 +25,8 @@ export type DataAdapterDescriptor<TData = any> = {
 export class Normalizer<S = any, N = any> {
     private _normalized$ = new BehaviorSubject<N[]>([]);
     normalized$ = this._normalized$.asObservable();
-    private _normalized: N[];
 
-    get normalized(): N[] {
-        return this._normalized;
-    }
-    set normalized(v: N[]) {
-        this._normalized = v;
-        this._normalized$.next(v);
-    }
+    readonly normalized = signal<N[]>([]);
 
     private _src: S[];
     get src(): S[] {
@@ -46,7 +40,7 @@ export class Normalizer<S = any, N = any> {
         this.normalize = normalize;
         this._sub = this.data$.subscribe((data) => {
             this._src = data;
-            this.normalized = this._normalize(data);
+            this.normalized.set(this._normalize(data));
         });
     }
 
@@ -93,6 +87,22 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         this._sub2 = dataSource.data$.subscribe(() => (this._allNormalized = null));
     }
 
+    create(value: Partial<T>): Promise<unknown> {
+        return this.dataSource.create(value);
+    }
+
+    put(item: T, value: Partial<T>): Promise<unknown> {
+        return this.dataSource.put(item, value);
+    }
+
+    patch(item: T, patches: Patch[]): Promise<unknown> {
+        return this.dataSource.patch(item, patches);
+    }
+
+    delete(item: T): Promise<unknown> {
+        return this.dataSource.delete(item);
+    }
+
     getKeysFromValue(value: Partial<T> | Partial<T>[]): (keyof T)[] {
         if (!value) return [];
         const v = Array.isArray(value) ? value : [value];
@@ -104,7 +114,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         if (!keys || !keys.length) return Promise.resolve([]);
 
         const KEYS = Array.isArray(keys) ? keys : [keys];
-        const normalized = this.normalized ?? [];
+        const normalized = this.normalized() ?? [];
         const itemsInAdapter: NormalizedItem<T>[] = [];
         const itemsNotInAdapter: Key<T> = [];
         for (const key of KEYS) {
@@ -213,14 +223,16 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     _allNormalized: NormalizedItem<T>[];
     refresh() {
         if (this.dataSource.allDataLoaded) {
-            if (!this._allNormalized) this._allNormalized = this.normalized;
+            if (!this._allNormalized) this._allNormalized = this.normalized();
             const terms = this.options?.terms ?? [];
-            this.normalized = filterNormalized(
-                this._allNormalized,
-                this.filter,
-                this.sort,
-                this.page,
-                terms.map((t) => t.field),
+            this.normalized.set(
+                filterNormalized(
+                    this._allNormalized,
+                    this.filter,
+                    this.sort,
+                    this.page,
+                    terms.map((t) => t.field),
+                ),
             );
         } else {
             this.dataSource.init({

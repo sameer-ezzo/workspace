@@ -4,7 +4,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@upupa/auth';
 import { EventBus } from '@upupa/common';
-import { DataAdapter, DataService, ServerDataSource } from '@upupa/data';
+import { DataAdapter, DataService, ApiDataSource } from '@upupa/data';
 import { LanguageService } from '@upupa/language';
 import { FileInfo } from '@upupa/upload';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -51,7 +51,7 @@ export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> {
                 .join('/'),
     });
     override adapter = model(
-        new DataAdapter<FileInfo>(new ServerDataSource(this.data, '/storage', this.valueProperty), this.keyProperty, undefined, this.valueProperty, undefined, {
+        new DataAdapter<FileInfo>(new ApiDataSource(this.data, '/storage', this.valueProperty), this.keyProperty, undefined, this.valueProperty, undefined, {
             filter: {
                 destination: ['storage', this.path()].join('/'),
             },

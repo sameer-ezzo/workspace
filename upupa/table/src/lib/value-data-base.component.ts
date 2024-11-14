@@ -1,5 +1,4 @@
-import { Component, computed, effect, inject, Injector, input, model, output, runInInjectionContext, Signal, signal, SimpleChanges } from "@angular/core";
-import { BehaviorSubject, distinctUntilChanged, of, switchMap } from "rxjs";
+import { Component, inject, input, model, output } from "@angular/core";
 import { DataComponentBase } from "./data-base.component";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
 import { ControlValueAccessor } from "@angular/forms";
@@ -20,16 +19,13 @@ import { OnChanges } from "@angular/core";
 })
 export class ValueDataComponentBase<T = any> extends DataComponentBase<T> implements ControlValueAccessor, OnChanges {
     name = input<string, string>(`field_${Date.now()}`, {
-        alias: 'fieldName',
+        alias: "fieldName",
         transform: (v) => (v ? v : `field_${Date.now()}`),
     });
 
     valueChange = output<Partial<T> | Partial<T>[]>();
     required = input<boolean>(false);
     disabled = model(false);
-    value = model<Partial<T> | Partial<T>[]>(undefined);
-
-
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
