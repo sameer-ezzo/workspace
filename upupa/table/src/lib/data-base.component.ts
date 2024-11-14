@@ -30,11 +30,7 @@ import { delay } from "@noah-ark/common";
     styles: [],
 })
 export class DataComponentBase<T = any> {
-    protected readonly selectionModel = new SelectionModel<Partial<T>>(
-        true,
-        [],
-        true,
-    );
+    protected readonly selectionModel = new SelectionModel<Partial<T>>(true, [], true);
     readonly selectedNormalized = new BehaviorSubject<NormalizedItem<T>[]>([]);
 
     add = output();
@@ -58,6 +54,10 @@ export class DataComponentBase<T = any> {
     focusedItem = model<NormalizedItem<T>>(null);
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
+
+    itemAdded = output<NormalizedItem<T>>();
+    itemRemoved = output<NormalizedItem<T>>();
+    itemUpdated = output<NormalizedItem<T>>();
 
     constructor() {
         this.selectionModel.changed.pipe(takeUntilDestroyed()).subscribe((s) => {
@@ -97,9 +97,7 @@ export class DataComponentBase<T = any> {
 
             if (adapter.dataSource.allDataLoaded || !this.lazyLoadData()) this.loadData();
 
-            runInInjectionContext(this.injector, () => {
-                this.items = toSignal(this.adapter().normalized$);
-            });
+            this.adapter().
         }
     }
 
@@ -142,12 +140,8 @@ export class DataComponentBase<T = any> {
             return;
         }
 
-        if (adapter.normalized.length === selected.length)
-            this.selectionModel.deselect(...selected);
-        else
-            this.selectionModel.select(
-                ...adapter.normalized.map((x) => x.value),
-            );
+        if (adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
+        else this.selectionModel.select(...adapter.normalized.map((x) => x.value));
     }
 
     select(value: Partial<T> | Partial<T>[]) {
@@ -156,9 +150,7 @@ export class DataComponentBase<T = any> {
     }
 
     selectAll() {
-        this.selectionModel.select(
-            ...this.adapter().normalized.map((x) => x.value),
-        );
+        this.selectionModel.select(...this.adapter().normalized.map((x) => x.value));
     }
     deselectAll() {
         this.selectionModel.clear();
@@ -178,16 +170,12 @@ export class DataComponentBase<T = any> {
         this.focusedItemChange.emit(this.focusedItem());
     }
     nextFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : -1;
+        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : -1;
         this.focusedItem.set(this.adapter().normalized[i + 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
     prevFocusedItem() {
-        const i = this.focusedItem()
-            ? this.adapter().normalized.indexOf(this.focusedItem())
-            : this.adapter().normalized.length;
+        const i = this.focusedItem() ? this.adapter().normalized.indexOf(this.focusedItem()) : this.adapter().normalized.length;
         this.focusedItem.set(this.adapter().normalized[i - 1]);
         this.focusedItemChange.emit(this.focusedItem());
     }
@@ -204,8 +192,7 @@ export class DataComponentBase<T = any> {
 
         if (this.longPressed) this.select(row.key);
         else {
-            if (this.selectionModel.selected.length > 0)
-                this.selectionModel.toggle(row.key);
+            if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
             else this.itemClick.emit(this.focusedItem());
         }
 

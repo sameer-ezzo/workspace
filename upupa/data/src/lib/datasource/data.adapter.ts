@@ -5,6 +5,7 @@ import { filterNormalized } from "./filter.fun";
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
 import { map } from "rxjs/operators";
 import { HttpServerDataSourceOptions } from "./http-server-data-source";
+import { EventEmitter } from "@angular/core";
 
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
@@ -71,6 +72,10 @@ export class Normalizer<S = any, N = any> {
 }
 
 export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
+    itemAdded = new EventEmitter<NormalizedItem<T>>();
+    itemRemoved = new EventEmitter<NormalizedItem<T>>();
+    itemUpdated = new EventEmitter<NormalizedItem<T>>();
+
     constructor(
         readonly dataSource: ITableDataSource<T>,
         readonly keyProperty?: keyof T, // what if ['item1','item2',...] then no need for key, display,value and img

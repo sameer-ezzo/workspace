@@ -3,13 +3,13 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <!-- (openedChange)="openedChange($event, selectInput)" -->
-    <!-- (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" -->
     <!-- (keydown)="keyDown($event, selectInput)" -->
     @if (maxAllowed() !== 1) {
         <mat-select
             #selectInput
             multiple
+            (openedChange)="openedChange($event, selectInput)"
+            (click)="onClicked($event)"
             [formControl]="control()"
             [compareWith]="compareWithFn"
             [panelClass]="panelClass()"
@@ -54,6 +54,8 @@
         <!-- (openedChange)="openedChange($event, selectInput)" -->
         <mat-select
             #selectInput
+            (openedChange)="openedChange($event, selectInput)"
+            (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
             [formControl]="control()"
             [compareWith]="compareWithFn"
             [placeholder]="(loading() ? 'Loading ...' : placeholder()) || (items().length ? '' : 'No items found')"

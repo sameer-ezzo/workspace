@@ -35,23 +35,11 @@ export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> {
         return {};
     });
 
-    dataSource = new ClientDataSource([]);
-    dataChangedSub$: Subscription;
-
-    ngOnInit() {
-        this.dataChangedSub$ = this.adapter()
-            .normalized$.pipe(skip(1))
-            .subscribe((all) => {
-                const v = all.map((x) => x.item);
-                if (this.value() === v) return;
-                // this.control().setValue(v);
-            });
-    }
-
-    ngOnDestroy(): void {
-        this.dataChangedSub$?.unsubscribe();
-    }
-
+    dataSource = computed(() => {
+        const s = this.adapter().dataSource;
+        if (s instanceof ClientDataSource) return s;
+        return undefined;
+    });
     override writeValue(value: T[]): void {
         // check if the value is an array and if it is not, throw an error
         if (value && !Array.isArray(value)) {
@@ -59,6 +47,6 @@ export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> {
         }
         this.value.set(value);
 
-        this.dataSource.all = value ?? [];
+        if (this.dataSource()) this.dataSource().all = value ?? [];
     }
 }

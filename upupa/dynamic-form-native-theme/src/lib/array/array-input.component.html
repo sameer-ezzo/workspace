@@ -1,23 +1,23 @@
 @if (label()) {
     <mat-label>{{ label() }}</mat-label>
-    <mat-label>{{ label() }}</mat-label>
 }
-
-<!-- (selectionChange)="onSelectionChange($event)"
+@if (adapter()) {
+    <!-- (selectionChange)="onSelectionChange($event)"
 (sortChange)="onSortChange($event)"
 (focusedItem)="onFocusedItemChanged($event)" -->
-<!-- [tableName]="name()" -->
-<data-table #dataTable [adapter]="adapter()" [columns]="columns()" (pageChange)="onPageChange($event)">
-    @if (tableHeaderComponent(); as template) {
-        <portal
-            class="table-header"
-            [component]="template.component"
-            [inputs]="template.inputs"
-            [outputs]="template.outputs"
-            [content]="template.content"
-            [className]="template.class"
-        ></portal>
-    } @else {
-        <ng-content class="table-header"></ng-content>
-    }
-</data-table>
+    <!-- [tableName]="name()" -->
+    <data-table #dataTable [adapter]="adapter()" [columns]="columns()" (sortChange)="control().setValue(dataSource().all)" (pageChange)="onPageChange($event)">
+        @if (tableHeaderComponent(); as template) {
+            <portal
+                class="table-header"
+                [component]="template.component"
+                [inputs]="template.inputs"
+                [outputs]="template.outputs"
+                [content]="template.content"
+                [className]="template.class"
+            ></portal>
+        } @else {
+            <ng-content class="table-header"></ng-content>
+        }
+    </data-table>
+}
