@@ -87,6 +87,7 @@ export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; 
 
 export function createButton(
     formViewModel: Class,
+    value?: () => any | Promise<any>,
     options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogServiceConfig> },
 ): Type<any> | DynamicComponent {
     if (!formViewModel) throw new Error("formViewModel is required");
@@ -101,7 +102,11 @@ export function createButton(
 
     return inlineButton({
         descriptor: options.descriptor,
-        handler: (source) => editFormDialog.call(source, formViewModel, readInput("item", source), { dialogOptions: options.dialogOptions }),
+        handler: (source) => {
+            const item = readInput("item", source);
+            const v = value ? value() : item;
+            editFormDialog.call(source, formViewModel, v, { dialogOptions: options.dialogOptions });
+        },
         item: null,
     });
 }
@@ -145,8 +150,14 @@ async function editFormDialog<T>(vm: Class, value = readInput("item", this), con
     const v = await value;
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions });
     const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
-    if (error) snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
-    else dialogRef.close(submitResult);
+
+    if (error) {
+        snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
+        return;
+    }
+    const adapter = injector.get(DataAdapter);
+    adapter?.refresh(true);
+    dialogRef.close(submitResult);
 }
 
 async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: Injector; dialogOptions?: DialogServiceConfig }) {

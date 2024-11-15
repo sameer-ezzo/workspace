@@ -1,6 +1,6 @@
 import { ReplaySubject, Observable, of } from "rxjs";
 import { catchError, debounceTime, map, switchMap, tap } from "rxjs/operators";
-import { TableDataSource, Term } from "./model";
+import { FilterDescriptor, PageDescriptor, SortDescriptor, TableDataSource, Term } from "./model";
 import { PageEvent } from "@angular/material/paginator";
 import { DataService } from "../data.service";
 import { QueryDescriptor } from "../di.token";
@@ -12,7 +12,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
     data: T[];
     readonly src$ = new ReplaySubject<Observable<T[]>>(1);
     readonly data$ = this.src$.pipe(
-        debounceTime(200),
+        // debounceTime(200),
         switchMap((src) => src),
     );
 
@@ -76,6 +76,11 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         this.src$.next(src);
         return this.data$;
+    }
+
+    override async init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Promise<void> {
+        await this.dataService.refreshCache(this.path); // refresh api cache to get the latest data
+        super.init(options);
     }
 
     getData(page: Partial<PageEvent>, query: QueryDescriptor): Observable<T[]> {

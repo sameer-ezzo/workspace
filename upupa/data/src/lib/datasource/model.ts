@@ -47,18 +47,10 @@ export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "da
 
 export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
     // todo: implement all CRUD operations
-    create(value: Partial<T>): Promise<unknown> {
-        return Promise.resolve(value);
-    }
-    put(item: T, value: Partial<T>): Promise<unknown> {
-        return Promise.resolve(value);
-    }
-    patch(item: T, patches: Patch[]): Promise<unknown> {
-        return Promise.resolve(item);
-    }
-    delete(item: T): Promise<unknown> {
-        return Promise.resolve(item);
-    }
+    abstract create(value: Partial<T>): Promise<unknown>;
+    abstract put(item: T, value: Partial<T>): Promise<unknown>;
+    abstract patch(item: T, patches: Patch[]): Promise<unknown>;
+    abstract delete(item: T): Promise<unknown>;
 
     abstract readonly data: T[];
     abstract readonly data$: Observable<T[]>;

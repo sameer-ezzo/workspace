@@ -111,7 +111,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         if (!handlerName && e.action.type === "submit") handlerName = "onSubmit";
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-        // if (handlerName === "onSubmit") return this.dynamicFormEl().ngForm().ngSubmit.emit();
+        if (handlerName === "onSubmit") return this.onSubmit();
         return runInInjectionContext(this.injector, async () => {
             await vm[handlerName]();
         });

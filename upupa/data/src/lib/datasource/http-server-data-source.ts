@@ -2,6 +2,7 @@ import { ReplaySubject, Observable, of, Subject } from "rxjs";
 import { debounceTime, map, shareReplay, switchMap, takeUntil } from "rxjs/operators";
 import { FilterDescriptor, TableDataSource, Term } from "./model";
 import { HttpClient, HttpContext, HttpHeaders, HttpParams } from "@angular/common/http";
+import { Patch } from "@noah-ark/json-patch";
 
 export type HttpServerDataSourceOptions = {
     headers?:
@@ -22,6 +23,18 @@ export type HttpServerDataSourceOptions = {
 };
 
 export class HttpServerDataSource<T = any> extends TableDataSource<T> {
+    create(value: Partial<T>): Promise<unknown> {
+        throw new Error("Method not implemented.");
+    }
+    put(item: T, value: Partial<T>): Promise<unknown> {
+        throw new Error("Method not implemented.");
+    }
+    patch(item: T, patches: Patch[]): Promise<unknown> {
+        throw new Error("Method not implemented.");
+    }
+    delete(item: T): Promise<unknown> {
+        throw new Error("Method not implemented.");
+    }
     data: T[];
 
     readonly allDataLoaded = false;
