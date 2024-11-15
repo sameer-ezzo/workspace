@@ -2,7 +2,7 @@
 <mat-progress-bar color="accent" mode="query"></mat-progress-bar>
 }
 <div class="grid">
-    @for (t of adapter().normalized$ | async; track t) {
+    @for (t of adapter().normalized(); track t) {
     <div class="upload-task-box" [class.selected]="chkBox.checked">
         <mat-checkbox
             #chkBox

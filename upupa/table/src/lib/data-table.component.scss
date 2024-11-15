@@ -156,8 +156,6 @@ td.mat-footer-cell {
     padding: 0 8px;
 }
 
-
-
 tr {
     .mat-column-select {
         min-width: 45px;
@@ -212,15 +210,13 @@ mat-paginator {
     display: flex;
 }
 
-
 tr .visible-on-hover > * {
-    visibility: hidden
+    visibility: hidden;
 }
 
 tr:hover > .visible-on-hover > * {
-    visibility: visible
+    visibility: visible;
 }
-
 
 tr .visible-on-focus > * {
     visibility: hidden;
@@ -237,3 +233,4 @@ tr .visible-on-select > * {
 tr.selected .visible-on-select > * {
     visibility: visible;
 }
+

@@ -1,11 +1,10 @@
-import { Component, forwardRef, OnDestroy, input, computed, Type, effect, signal } from "@angular/core";
+import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-import { DataTableModule, resolveDataListInputsFor, ValueDataComponentBase } from "@upupa/table";
+import { DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 import { DynamicComponent, InputBaseComponent, PortalComponent } from "@upupa/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { Class } from "@noah-ark/common";
-import { skip, Subscription } from "rxjs";
 
 @Component({
     selector: "array-input",
@@ -20,8 +19,12 @@ import { skip, Subscription } from "rxjs";
         },
     ],
 })
-export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> {
+export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
+    dataTableEl = viewChild(DataTableComponent);
     label = input("");
+    readonly dataSource = new ClientDataSource<T>([]);
+    readonly adapter = signal(new DataAdapter<T>(this.dataSource));
+
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             if (c instanceof Type) return { component: c };
@@ -35,18 +38,25 @@ export class ArrayInputComponent<T = any> extends ValueDataComponentBase<T> {
         return {};
     });
 
-    dataSource = computed(() => {
-        const s = this.adapter().dataSource;
-        if (s instanceof ClientDataSource) return s;
-        return undefined;
-    });
+    updateValueFromDataSource() {
+        const v = this.dataSource.all;
+        this.control().setValue(v);
+        this.value.set(v);
+        this.markAsTouched();
+        this.propagateChange();
+    }
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes["value"]) {
+            this.dataSource.all = this.value();
+        }
+    }
     override writeValue(value: T[]): void {
+        super.writeValue(value);
         // check if the value is an array and if it is not, throw an error
         if (value && !Array.isArray(value)) {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
-        this.value.set(value);
-
-        if (this.dataSource()) this.dataSource().all = value ?? [];
+        this.dataSource.all = value;
+        console.log(this.name(), "ArrayInputComponent -> writeValue -> value", this.adapter().normalized(), this.control().value);
     }
 }

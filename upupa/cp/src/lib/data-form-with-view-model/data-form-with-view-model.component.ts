@@ -1,21 +1,21 @@
-import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef, output } from '@angular/core';
-import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from '@upupa/dynamic-form';
-import { MatDialogRef } from '@angular/material/dialog';
-import { Subscription } from 'rxjs';
-import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
-import { MatBtnComponent } from '@upupa/mat-btn';
-import { CommonModule } from '@angular/common';
-import { ActionEvent, deepAssign } from '@upupa/common';
-import { Class, delay } from '@noah-ark/common';
-import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef, output } from "@angular/core";
+import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { MatDialogRef } from "@angular/material/dialog";
+import { Subscription } from "rxjs";
+import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
+import { MatBtnComponent } from "@upupa/mat-btn";
+import { CommonModule } from "@angular/common";
+import { ActionEvent, deepAssign } from "@upupa/common";
+import { Class, delay } from "@noah-ark/common";
+import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
-    selector: 'cp-data-form-with-view-model',
+    selector: "cp-data-form-with-view-model",
     standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule, MatProgressSpinnerModule],
-    templateUrl: './data-form-with-view-model.component.html',
-    styleUrls: ['./data-form-with-view-model.component.scss'],
+    templateUrl: "./data-form-with-view-model.component.html",
+    styleUrls: ["./data-form-with-view-model.component.scss"],
     providers: [
         {
             provide: DynamicFormComponent,
@@ -45,7 +45,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
 
     viewModel = input.required<FormViewModelMirror, Class | FormViewModelMirror>({
         transform: (v) => {
-            if (typeof v === 'function') return reflectFormViewModelType(v);
+            if (typeof v === "function") return reflectFormViewModelType(v);
             return v;
         },
     });
@@ -84,7 +84,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     onValueChange(e: any) {
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
-            await vm['onValueChange']?.(e);
+            await vm["onValueChange"]?.(e);
         });
     }
 
@@ -95,9 +95,8 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         runInInjectionContext(this.injector, async () => {
             try {
                 this.submitting.set(true);
-                const submitResult = await vm['onSubmit']();
+                const submitResult = (await vm["onSubmit"]?.()) ?? this.value();
                 this.submitted.emit({ submitResult });
-                this.dialogRef?.close(this.value());
             } catch (error) {
                 this.submitted.emit({ error });
             } finally {
@@ -109,7 +108,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
         let { handlerName } = e.action as any;
-        if (!handlerName && e.action.type === 'submit') handlerName = 'onSubmit';
+        if (!handlerName && e.action.type === "submit") handlerName = "onSubmit";
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
         // if (handlerName === "onSubmit") return this.dynamicFormEl().ngForm().ngSubmit.emit();

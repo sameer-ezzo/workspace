@@ -3,7 +3,18 @@
         <legend>{{ label() }}</legend>
     }
 
-    <data-table #dataTable [tableName]="name()" [adapter]="adapter()" [columns]="columns()">
+    <data-table
+        #dataTable
+        [lazyLoadData]="false"
+        [tableName]="name()"
+        [columns]="columns()"
+        [adapter]="adapter()"
+        (itemAdded)="updateValueFromDataSource()"
+        (itemRemoved)="updateValueFromDataSource()"
+        (itemUpdated)="updateValueFromDataSource()"
+        (sortChange)="updateValueFromDataSource()"
+        (sortChange)="updateValueFromDataSource()"
+    >
         @if (tableHeaderComponent(); as template) {
             <portal
                 class="table-header"
@@ -13,6 +24,8 @@
                 [content]="template.content"
                 [className]="template.class"
             ></portal>
+        } @else {
+            <ng-content class="table-header"></ng-content>
         }
     </data-table>
 </fieldset>

@@ -69,30 +69,17 @@ export class DataComponentBase<T = any> {
     readonly items = computed<NormalizedItem<T>[]>(() => {
         return this.itemsSource() === "adapter" ? this.adapter().normalized() : this.selectedNormalized();
     });
-
     constructor() {
-        effect(
-            () => {
-                const lazy = this.lazyLoadData();
-                const loaded = this.dataLoaded();
-                if (!loaded && lazy && this.itemsSource() !== "selected") this.itemsSource.set("selected");
-            },
-            { allowSignalWrites: true },
-        );
-
-        effect(
-            () => {
-                const keys = this.adapter().getKeysFromValue(this.selected());
-                this.adapter()
-                    .getItems(keys)
-                    .then((items) => {
-                        this.selectedNormalized.set(items);
-                    });
-            },
-            { allowSignalWrites: true },
-        );
+        effect(() => {
+            // update selectedNormalized when selected/value changes
+            const keys = this.adapter().getKeysFromValue(this.selected());
+            this.adapter()
+                .getItems(keys)
+                .then((items) => {
+                    this.selectedNormalized.set(items);
+                });
+        });
     }
-
     async loadData() {
         if (this.dataLoaded()) return;
         if (!this.adapter().dataSource.allDataLoaded) {
@@ -103,7 +90,6 @@ export class DataComponentBase<T = any> {
         }
         this.dataLoaded.set(true);
         this.itemsSource.set("adapter");
-        console.log("Data loaded", this.itemsSource(), this.items());
     }
 
     compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
@@ -124,6 +110,20 @@ export class DataComponentBase<T = any> {
                 : (optVal: any, selectVal: any) => optVal === selectVal;
 
             if (adapter.dataSource.allDataLoaded || !this.lazyLoadData()) this.loadData();
+
+            this.adapter().itemAdded.subscribe((item) => {
+                this.itemAdded.emit(item);
+            });
+            this.adapter().itemRemoved.subscribe((item) => {
+                this.itemRemoved.emit(item);
+            });
+            this.adapter().itemUpdated.subscribe((item) => {
+                this.itemUpdated.emit(item);
+            });
+        }
+
+        if (changes["lazyLoadData"]) {
+            if (!this.lazyLoadData()) this.loadData();
         }
     }
 

@@ -145,7 +145,7 @@ async function editFormDialog<T>(vm: Class, value = readInput("item", this), con
     const v = await value;
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions });
     const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
-    if (error) snack.openFailed("", error);
+    if (error) snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
     else dialogRef.close(submitResult);
 }
 

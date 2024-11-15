@@ -318,14 +318,6 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
         case "select":
             break;
         case "array":
-            // todo: implement array field
-
-            options["adapter"] = {
-                type: "client",
-                data: [],
-            } as DataAdapterDescriptor;
-            fixAdapterOptions(field, options);
-
             break;
         case "checks":
         case "radios":

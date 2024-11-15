@@ -66,7 +66,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
-
     stickyHeader = input(false);
 
     name = input<string, string>(`table_${Date.now()}`, {
@@ -147,7 +146,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     override async ngOnChanges(changes: SimpleChanges) {
         await super.ngOnChanges(changes);
 
-        if (changes["adapter"]) this.adapter().refresh();
+        if (changes["adapter"]) {
+            this.loadData();
+        }
         if (changes["columns"]) this.generateColumns();
     }
 
