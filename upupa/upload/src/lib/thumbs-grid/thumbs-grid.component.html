@@ -6,8 +6,8 @@
     <div class="upload-task-box" [class.selected]="chkBox.checked">
         <mat-checkbox
             #chkBox
-            [checked]="selectionModel.isSelected(t.key)"
-            (change)="toggle(t.key)"
+            [checked]="selectionModel.isSelected(t.value)"
+            (change)="toggle(t.value)"
         ></mat-checkbox>
         @if (t.item.mimetype.startsWith('image/')) {
         <image

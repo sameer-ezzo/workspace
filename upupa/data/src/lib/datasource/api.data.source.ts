@@ -4,8 +4,9 @@ import { TableDataSource, Term } from "./model";
 import { PageEvent } from "@angular/material/paginator";
 import { DataService } from "../data.service";
 import { QueryDescriptor } from "../di.token";
+import { Patch } from "@noah-ark/json-patch";
 
-export class ServerDataSource<T = any> extends TableDataSource<T> {
+export class ApiDataSource<T = any> extends TableDataSource<T> {
     readonly allDataLoaded = false;
 
     data: T[];
@@ -71,14 +72,14 @@ export class ServerDataSource<T = any> extends TableDataSource<T> {
 
         if (this.selectedColumns?.length > 0) query.select = this.selectedColumns.join(",");
 
-        const src = this.getData(this.path, page, query);
+        const src = this.getData(page, query);
 
         this.src$.next(src);
         return this.data$;
     }
 
-    getData(path: string, page: Partial<PageEvent>, query: QueryDescriptor): Observable<T[]> {
-        return this.dataService.get<T[]>(path, query).pipe(
+    getData(page: Partial<PageEvent>, query: QueryDescriptor): Observable<T[]> {
+        return this.dataService.get<T[]>(this.path, query).pipe(
             catchError((error) =>
                 of({
                     data: [],
@@ -94,9 +95,30 @@ export class ServerDataSource<T = any> extends TableDataSource<T> {
         );
     }
 
+    override create(value: Partial<T>): Promise<unknown> {
+        return this.dataService.post(this.path, value);
+    }
+
+    override put(item: T, value: Partial<T>): Promise<unknown> {
+        const key = item?.["_id"];
+        if (key == undefined) throw new Error("Item has no _id key");
+        return this.dataService.put(`${this.path}/${key}`, value);
+    }
+
+    override patch(item: T, patches: Patch[]): Promise<unknown> {
+        const key = item?.["_id"];
+        if (key == undefined) throw new Error("Item has no _id key");
+        return this.dataService.patch(`${this.path}/${key}`, patches);
+    }
+    override delete(item: T): Promise<void> {
+        const key = item?.["_id"];
+        if (key == undefined) throw new Error("Item has no _id key");
+        return this.dataService.delete(`${this.path}/${key}`);
+    }
+
     destroy?() {}
 
     override getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
-        return value?.length > 0 ? this.getData(this.path, {}, { [key]: `{in}${value.join(",")}` }) : of([]);
+        return value?.length > 0 ? this.getData({}, { [key]: `{in}${value.join(",")}` }) : of([]);
     }
 }

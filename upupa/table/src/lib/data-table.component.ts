@@ -40,6 +40,9 @@ export const ROW_ITEM = new InjectionToken<any>("ITEM");
 export function injectRowItem() {
     return inject(ROW_ITEM);
 }
+export function injectDataAdapter() {
+    return inject(DataAdapter);
+}
 
 @Component({
     selector: "data-table",
@@ -119,6 +122,13 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     destroyRef = inject(DestroyRef);
 
+    constructor() {
+        super();
+        effect(() => {
+            const s = this.selectedNormalized();
+            this.selectionChange.emit(s);
+        });
+    }
     ngOnInit() {
         // this.dataChangeListeners.push((data) => {
         this._rowInjectors.clear(); //clear row injectors on data change
@@ -132,10 +142,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             .subscribe((result) => {
                 this.handset = result.matches;
             });
-
-        this.selectedNormalized.subscribe((sns) => {
-            this.selectionChange.emit(sns);
-        });
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
@@ -148,11 +154,12 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     private generateColumns() {
         const columns = this.columns();
         const adapter = this.adapter();
+        const normalized = adapter.normalized();
         if (columns === "auto") {
             this._properties = {};
-            if (adapter.normalized && adapter.normalized.length) {
+            if (normalized.length) {
                 const cols: any = {};
-                adapter.normalized.forEach((x) => Object.keys(x.item).forEach((k) => (cols[k] = 1)));
+                normalized.forEach((x) => Object.keys(x.item).forEach((k) => (cols[k] = 1)));
                 Object.keys(cols).forEach((k) => {
                     if (!k.startsWith("_")) this._properties[k] = {};
                 });
@@ -237,7 +244,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         let rows = [row];
         if (this.shiftKeyPressed === true) selectInBetween = true;
         if (selectInBetween) {
-            const all = this.adapter().normalized;
+            const all = this.adapter().normalized();
             const i1 = all.indexOf(row);
             const i2 = all.indexOf(this.focusedItem());
 

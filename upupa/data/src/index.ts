@@ -12,7 +12,7 @@ export * from './lib/local.service';
 export * from './lib/model';
 
 export * from './lib/datasource/model';
-export * from './lib/datasource/server.data.source';
+export * from './lib/datasource/api.data.source';
 export * from './lib/datasource/http-server-data-source';
 export * from './lib/datasource/client.data.source';
 export * from './lib/datasource/url.data.source';

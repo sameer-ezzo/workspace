@@ -1,15 +1,16 @@
 @let selectInput = undefined;
+
 <mat-form-field [appearance]="appearance()" (keydown)="keyDown($event)" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
+    <!-- (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)" -->
     <!-- (keydown)="keyDown($event, selectInput)" -->
     @if (maxAllowed() !== 1) {
         <mat-select
             #selectInput
             multiple
-            (openedChange)="openedChange($event, selectInput)"
-            (click)="onClicked($event)"
+            (openedChange)="loadData()"
             [formControl]="control()"
             [compareWith]="compareWithFn"
             [panelClass]="panelClass()"
@@ -18,16 +19,18 @@
             [attr.name]="name()"
         >
             @if (loading()) {
-                <mat-option disabled> Loading ... </mat-option>
+                <span disabled> Loading ... </span>
             }
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
 
             <div class="selected-wrapper">
-                <span>{{ (selectedNormalized | async).length }} Selected</span>
+                <span>{{ selected().length }} Selected</span>
                 <span style="flex: 1 1 auto"></span>
-                <mat-checkbox [checked]="showOnlySelected()" (change)="showOnlySelected.set($event.checked)" [disabled]="!!items().length">Show only selected</mat-checkbox>
+                <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
+                    >Show only selected</mat-checkbox
+                >
             </div>
 
             @for (item of items(); track $index) {
@@ -54,8 +57,7 @@
         <!-- (openedChange)="openedChange($event, selectInput)" -->
         <mat-select
             #selectInput
-            (openedChange)="openedChange($event, selectInput)"
-            (click)="$event.stopPropagation(); openedChange(!selectInput.panelOpen, selectInput)"
+            (openedChange)="loadData()"
             [formControl]="control()"
             [compareWith]="compareWithFn"
             [placeholder]="(loading() ? 'Loading ...' : placeholder()) || (items().length ? '' : 'No items found')"
@@ -64,7 +66,7 @@
             [attr.name]="name()"
         >
             @if (loading()) {
-                <mat-option disabled> Loading ... </mat-option>
+                <span disabled> Loading ... </span>
             } @else {
                 @if (showSearch()) {
                     <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
@@ -109,15 +111,15 @@
 <ng-template #searchBoxTemplate>
     <div class="select-filter-wrapper">
         <mat-icon>search</mat-icon>
+        <!-- (input)="$event.stopPropagation()" prevent closing the select -->
         <input
+            (input)="$event.preventDefault(); $event.stopPropagation()"
             #filterInput
             [focus]="true"
             [placeholder]="placeholder() ?? ''"
             focusType="select"
             style="flex: 1; border: none; outline: none"
-            [value]="filterModel() ?? ''"
-            (input)="filterModel.set($event.target?.['value'])"
-            (keydown.enter)="$event.stopPropagation(); updateFilter()"
+            [formControl]="filterControl"
         />
         @if (filterInput.value.length > 0) {
             <button mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">

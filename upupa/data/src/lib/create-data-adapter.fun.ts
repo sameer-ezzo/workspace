@@ -6,7 +6,7 @@ import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
 import { ClientDataSource } from "./datasource/client.data.source";
 import { HttpServerDataSource } from "./datasource/http-server-data-source";
-import { ServerDataSource } from "./datasource/server.data.source";
+import { ApiDataSource } from "./datasource/api.data.source";
 
 export function createDataAdapter(descriptor: DataAdapterDescriptor<DataAdapterType>, injector: Injector): DataAdapter {
     let dataSource: ITableDataSource;
@@ -17,7 +17,7 @@ export function createDataAdapter(descriptor: DataAdapterDescriptor<DataAdapterT
             break;
         case "server":
         case "api":
-            dataSource = new ServerDataSource(injector.get(DataService), descriptor.path, descriptor.select ?? []);
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.select ?? []);
             break;
         case "http":
             const http = injector.get(HttpClient);

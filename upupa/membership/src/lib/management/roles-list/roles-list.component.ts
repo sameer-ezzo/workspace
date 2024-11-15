@@ -8,7 +8,7 @@ import {
   Optional,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ServerDataSource, DataAdapter, DataService } from '@upupa/data';
+import { ApiDataSource, DataAdapter, DataService } from '@upupa/data';
 import { AuthService } from '@upupa/auth';
 import { ActionDescriptor, ActionEvent, toTitleCase } from '@upupa/common';
 import { ColumnsDescriptor } from '@upupa/table';
@@ -62,7 +62,7 @@ export class RolesListComponent implements OnInit {
       defaultRolesListActions) as ActionDescriptor[];
 
     const select = [...new Set(['name'].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
-    const dataSource = new ServerDataSource<any>(this.data, '/role', select);
+    const dataSource = new ApiDataSource<any>(this.data, '/role', select);
 
     this.adapter = new DataAdapter(dataSource, '_id', 'email', '_id', null, {
       page: { pageIndex: 0, pageSize: 15 },

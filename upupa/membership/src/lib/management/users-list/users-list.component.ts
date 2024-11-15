@@ -13,7 +13,7 @@ import {
   signal,
 } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { DataService, ServerDataSource, DataAdapter } from "@upupa/data";
+import { DataService, ApiDataSource, DataAdapter } from "@upupa/data";
 import { AuthService, User } from "@upupa/auth";
 import {
   ActionDescriptor,
@@ -47,7 +47,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
   focusedUser: any;
 
   private _options: UsersManagementOptions;
-  usersDataSource: ServerDataSource<ModelType>;
+  usersDataSource: ApiDataSource<ModelType>;
 
 
   @Input()
@@ -102,7 +102,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
       ]),
     ];
 
-    this.usersDataSource = new ServerDataSource<ModelType>(this.data, "/user", this.userSelect);
+    this.usersDataSource = new ApiDataSource<ModelType>(this.data, "/user", this.userSelect);
     if (this.adapter) {
       this.adapter.destroy();
       this.adapter = null;
