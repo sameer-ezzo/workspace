@@ -86,20 +86,19 @@ export class ClientDataSource<T = any> extends TableDataSource<T> {
     }
 
     override delete(item: T): Promise<unknown> {
-        const key = this.all.indexOf(item);
-        return Promise.resolve(this.all.splice(key, 1));
+        this.all = this.all.filter((x) => x !== item);
+        return Promise.resolve(item);
     }
 
     destroy?() {}
 
-    override getItems(keys: (string | number | symbol)[], keyProperty: string): Observable<T[]> {
-        return keys?.length > 0
-            ? this._all$.pipe(
-                  map((all) => {
-                      if (!all || all.length === 0) return keys;
-                      else return keys.map((k) => all.find((item) => k === item?.[keyProperty]));
-                  }),
-              )
-            : of([]);
+    override getItems(keys: (string | number | symbol)[], keyProperty: string | undefined): Observable<T[]> {
+        if (keys == null || keys.length === 0) return of([]);
+        return this._all$.pipe(
+            map((all) => {
+                if ((all ?? []).length === 0) return [];
+                return keyProperty ? keys.map((k) => all.find((item) => k === item?.[keyProperty])) : keys.map((k) => all.find((item) => k === item));
+            }),
+        );
     }
 }

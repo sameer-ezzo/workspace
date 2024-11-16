@@ -10,7 +10,7 @@ export default {
             tsconfig: '<rootDir>/tsconfig.spec.json',
         },
     },
-    coverageDirectory: '../../../coverage/libs/workspace/upupa/html-editor',
+    coverageDirectory: '../../../../coverage/libs/workspace/upupa/html-editor',
     snapshotSerializers: [
         'jest-preset-angular/build/serializers/no-ng-attributes',
         'jest-preset-angular/build/serializers/ng-snapshot',

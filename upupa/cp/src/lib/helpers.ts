@@ -163,10 +163,13 @@ async function editFormDialog<T>(vm: Class, value = readInput("item", this), con
 async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: Injector; dialogOptions?: DialogServiceConfig }) {
     const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
     const opts = { ...context?.dialogOptions };
-    const dRef = dialog.openDialog(DataFormWithViewModelComponent, {
-        ...opts,
-        inputs: { ...opts.inputs, viewModel: vm, value },
-    });
+    const dRef = dialog.openDialog(
+        { component: DataFormWithViewModelComponent, injector: context?.injector },
+        {
+            ...opts,
+            inputs: { ...opts.inputs, viewModel: vm, value },
+        },
+    );
     const component: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dRef["afterAttached"]());
 
     return { dialogRef: dRef, componentRef: component };
@@ -211,9 +214,8 @@ async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any
 
 export function deleteValueFromAdapter(item: any) {
     const adapter = inject(DataAdapter);
-    if (!adapter) throw new Error("DataAdapter not found");
-    if (!(adapter.dataSource instanceof ClientDataSource)) throw new Error("DataAdapter is not a ClientDataSource");
-    adapter.dataSource.all = adapter.dataSource.all.filter((i) => i !== item);
+    if (!adapter) throw new Error("DataAdapter is required");
+    adapter.delete(item);
 }
 
 export function deleteValueFromApi(path: string) {

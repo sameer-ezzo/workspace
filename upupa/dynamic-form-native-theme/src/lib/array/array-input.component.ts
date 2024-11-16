@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges } from "@angular/core";
+import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges, inject, Injector } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
@@ -17,6 +17,11 @@ import { Class } from "@noah-ark/common";
             useExisting: forwardRef(() => ArrayInputComponent),
             multi: true,
         },
+        {
+            provide: DataAdapter,
+            useFactory: (self: ArrayInputComponent) => self.adapter(),
+            deps: [ArrayInputComponent],
+        },
     ],
 })
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
@@ -27,8 +32,11 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
-            if (c instanceof Type) return { component: c };
-            return c;
+            let template = null;
+            if (c instanceof Type) template = { component: c };
+            else template = c;
+            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter() }] });
+            return template;
         },
     });
     viewModel = input<Class>();
@@ -39,11 +47,7 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     });
 
     updateValueFromDataSource() {
-        const v = this.dataSource.all;
-        this.control().setValue(v);
-        this.value.set(v);
-        this.markAsTouched();
-        this.propagateChange();
+        this.handleUserInput(this.dataSource.all);
     }
     ngOnChanges(changes: SimpleChanges) {
         if (changes["value"]) {

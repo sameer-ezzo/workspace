@@ -91,20 +91,28 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         this._sub2 = dataSource.data$.subscribe(() => (this._allNormalized = null));
     }
 
-    create(value: Partial<T>): Promise<unknown> {
-        return this.dataSource.create(value);
+    async create(value: Partial<T>): Promise<unknown> {
+        const res = await this.dataSource.create(value);
+        this.itemAdded.emit(this.normalize(res as T));
+        return res;
     }
 
-    put(item: T, value: Partial<T>): Promise<unknown> {
-        return this.dataSource.put(item, value);
+    async put(item: T, value: Partial<T>): Promise<unknown> {
+        const res = await this.dataSource.put(item, value);
+        this.itemUpdated.emit(this.normalize(res as T));
+        return res;
     }
 
-    patch(item: T, patches: Patch[]): Promise<unknown> {
-        return this.dataSource.patch(item, patches);
+    async patch(item: T, patches: Patch[]): Promise<unknown> {
+        const res = await this.dataSource.patch(item, patches);
+        this.itemUpdated.emit(this.normalize(res as T));
+        return res;
     }
 
-    delete(item: T): Promise<unknown> {
-        return this.dataSource.delete(item);
+    async delete(item: T): Promise<unknown> {
+        const res = await this.dataSource.delete(item);
+        this.itemRemoved.emit(this.normalize(item));
+        return res;
     }
 
     getKeysFromValue(value: Partial<T> | Partial<T>[]): (keyof T)[] {
@@ -115,7 +123,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
 
     getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
         //todo: What if keyProperty is undefined?
-        if (!keys || !keys.length) return Promise.resolve([]);
+        if (keys == null || !keys.length) return Promise.resolve([]);
 
         const KEYS = Array.isArray(keys) ? keys : [keys];
         const normalized = this.normalized() ?? [];
