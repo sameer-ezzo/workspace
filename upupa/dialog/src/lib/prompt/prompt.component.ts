@@ -9,7 +9,7 @@ import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators } from
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { startWith } from "rxjs";
-import { UpupaDialogComponent } from "../upupa-dialog.component";
+import { UpupaDialogComponent } from "../dialog-wrapper.component";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { UpupaDialogPortal } from "../dialog.service";
 
