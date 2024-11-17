@@ -1,85 +1,89 @@
-import { DynamicModule, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AuthOptions } from './auth-options';
-import { AuthenticationInterceptor } from './auth.middleware';
+import { DynamicModule, Inject, OnModuleInit, Provider } from "@nestjs/common";
+import { APP_INTERCEPTOR } from "@nestjs/core";
+import { AuthOptions } from "./auth-options";
+import { AuthenticationInterceptor } from "./auth.middleware";
 
-import { Broker, CommonModule, __secret } from '@ss/common';
-import { randomString } from '@noah-ark/common';
-import { logger } from './logger';
+import { CommonModule, __secret } from "@ss/common";
+import { randomString } from "@noah-ark/common";
+import { logger } from "./logger";
 
-import { PassportModule } from '@nestjs/passport';
-import { FacebookStrategy } from './external/facebook.strategy';
-import { GoogleStrategy } from './external/google.strategy';
-import { DatabaseInfo, DataModule, DataService, DbConnectionOptions, getDataServiceToken } from '@ss/data';
-import { AuthService } from './auth.svr';
-import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
-import userSchema from './user.schema';
-import { roleSchema } from './role.schema';
-import { Connection } from 'mongoose';
+import { PassportModule } from "@nestjs/passport";
+import { FacebookStrategy } from "./external/facebook.strategy";
+import { GoogleStrategy } from "./external/google.strategy";
+import { DataModule, DataService, getDataServiceToken } from "@ss/data";
+import { AuthService } from "./auth.svr";
+import { MongooseModule } from "@nestjs/mongoose";
+import { userSchemaFactory } from "./user.schema";
+import { roleSchema } from "./role.schema";
+import { Schema } from "mongoose";
 
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
     secret: __secret(),
     accessTokenExpiry: process.env.accessTokenExpiry || defaultAuthOptions.accessTokenExpiry,
     refreshTokenExpiry: process.env.refreshTokenExpiry || defaultAuthOptions.refreshTokenExpiry,
-    forceEmailVerification: process.env.forceEmailVerification === 'true',
-    forcePhoneVerification: process.env.forcePhoneVerification === 'true',
+    forceEmailVerification: process.env.forceEmailVerification === "true",
+    forcePhoneVerification: process.env.forcePhoneVerification === "true",
     issuer: process.env.issuer || defaultAuthOptions.issuer,
     maximumAllowedLoginAttempts: process.env.maximumAllowedLoginAttempts ? +process.env.maximumAllowedLoginAttempts : defaultAuthOptions.maximumAllowedLoginAttempts,
     maximumAllowedLoginAttemptsExpiry: process.env.maximumAllowedLoginAttemptsExpiry
         ? +process.env.maximumAllowedLoginAttemptsExpiry
         : defaultAuthOptions.maximumAllowedLoginAttemptsExpiry,
     resetTokenExpiry: process.env.resetTokenExpiry || defaultAuthOptions.resetTokenExpiry,
-    sendWelcomeEmail: process.env.sendWelcomeEmail === 'true',
+    sendWelcomeEmail: process.env.sendWelcomeEmail === "true",
 } as AuthOptions;
 
 if (process.env.GOOGLE_CLIENT_ID) {
     _authOptions.externalAuth ??= {};
     _authOptions.externalAuth.google ??= {
-        client_id: process.env.GOOGLE_CLIENT_ID || '',
-        client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
-        client_url: process.env.CLIENT_URL || '',
-        callback_base: process.env.CALLBACK_BASE || '',
+        client_id: process.env.GOOGLE_CLIENT_ID || "",
+        client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+        client_url: process.env.CLIENT_URL || "",
+        callback_base: process.env.CALLBACK_BASE || "",
     };
 }
 
 if (process.env.FACEBOOK_APP_ID) {
     _authOptions.externalAuth ??= {};
     _authOptions.externalAuth.facebook ??= {
-        app_id: process.env.FACEBOOK_APP_ID || '',
-        app_secret: process.env.FACEBOOK_APP_SECRET || '',
-        client_url: process.env.CLIENT_URL || '',
-        callback_base: process.env.CALLBACK_BASE || '',
+        app_id: process.env.FACEBOOK_APP_ID || "",
+        app_secret: process.env.FACEBOOK_APP_SECRET || "",
+        client_url: process.env.CLIENT_URL || "",
+        callback_base: process.env.CALLBACK_BASE || "",
     };
 }
 
 // @Module({})
 export class AuthModule implements OnModuleInit {
-    constructor(@Inject('DB_AUTH') public readonly data: DataService) {}
-    async onModuleInit() {
-    }
+    constructor(@Inject("DB_AUTH") public readonly data: DataService) {}
+    async onModuleInit() {}
 
-    static register(dbName = 'DB_DEFAULT', authOptions: Partial<AuthOptions> = {}): DynamicModule {
+    static register(
+        options: { dbName: string; userSchema: Schema } = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
+        authOptions: Partial<AuthOptions> = {},
+    ): DynamicModule {
+        if (!options || !options.userSchema || !options.dbName) throw new Error("Invalid options passed to AuthModule.register");
         authOptions = { ..._authOptions, ...authOptions } as AuthOptions;
         if (authOptions.secret !== __secret()) {
-            logger.warn('Auth secret has been overridden (the one passed in env is used)');
+            logger.warn("Auth secret has been overridden (the one passed in env is used)");
             authOptions.secret = __secret();
         }
         if (!authOptions.secret) {
-            logger.error('Auth secret is not set');
+            logger.error("Auth secret is not set");
 
-            const prod = process.env.NODE_PROD === 'production';
-            authOptions.secret = prod ? randomString(10) : 'dev-secret-PLEASE-CHANGE!';
+            const prod = process.env.NODE_PROD === "production";
+            authOptions.secret = prod ? randomString(10) : "dev-secret-PLEASE-CHANGE!";
             process.env.secret = authOptions.secret;
             process.env.SECRET = authOptions.secret;
         }
 
         const providers: Provider[] = [
             AuthService,
-            { provide: 'AUTH_OPTIONS', useValue: authOptions },
+            { provide: "UserSchema", useValue: options.userSchema },
+            { provide: "AUTH_OPTIONS", useValue: authOptions },
             {
-                provide: 'DB_AUTH',
-                useExisting: getDataServiceToken(dbName),
+                provide: "DB_AUTH",
+                useExisting: getDataServiceToken(options.dbName),
             },
         ];
 
@@ -97,10 +101,10 @@ export class AuthModule implements OnModuleInit {
                 PassportModule,
                 MongooseModule.forFeature(
                     [
-                        { name: 'user', schema: userSchema },
-                        { name: 'role', schema: roleSchema },
+                        { name: "user", schema: options.userSchema },
+                        { name: "role", schema: roleSchema },
                     ],
-                    dbName,
+                    options.dbName,
                 ),
             ],
             controllers: [],

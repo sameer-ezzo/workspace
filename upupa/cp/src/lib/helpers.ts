@@ -9,48 +9,12 @@ import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from "@upu
 import { Class } from "@noah-ark/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
-import { run } from "node:test";
+
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
 }
 
-@Component({
-    selector: "create-button",
-    imports: [MatBtnComponent],
-    standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
-    styles: [],
-})
-export class CreateButtonComponent {
-    viewModel = input.required<Class>();
-    value = input<any>(null);
-    buttonDescriptor = input.required<ActionDescriptor>();
-    options = input.required<{
-        handler: () => Promise<any>;
-    }>();
-    dialog = inject(DialogService);
-
-    readonly injector = inject(Injector);
-    private readonly table = inject(DataTableComponent);
-    async onClick(e: ActionEvent) {
-        const callable = editFormDialog.bind(this);
-        runInInjectionContext(this.injector, () => callable(this.viewModel()));
-
-        // const vm = this.viewModel();
-
-        // const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
-        //     title: 'Create',
-        //     inputs: { viewModel: vm },
-        // });
-
-        // const result = await firstValueFrom(ref.afterClosed());
-        // const adapter = this.table.adapter();
-        // if (adapter.dataSource instanceof ClientDataSource) {
-        //     adapter.dataSource.all = [...adapter.dataSource.all, result];
-        // } else this.table.adapter().refresh();
-    }
-}
 
 @Component({
     selector: "inline-button",
