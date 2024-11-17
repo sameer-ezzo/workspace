@@ -4,7 +4,7 @@ import { ComponentType } from '@angular/cdk/portal';
 import { DOCUMENT } from '@angular/common';
 import { firstValueFrom, Subject, Observable } from 'rxjs';
 import { ActionDescriptor, ActionEvent, DynamicComponent } from '@upupa/common';
-import { UpupaDialogComponent } from './upupa-dialog.component';
+import { UpupaDialogComponent } from './dialog-wrapper.component';
 
 export type UpupaDialogActionContext<C = any> = {
     host: UpupaDialogComponent<C>;

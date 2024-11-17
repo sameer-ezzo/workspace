@@ -18,6 +18,10 @@ export type LayoutConfig = {
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
 };
 
+export function provideLayoutRoute(config: Route & LayoutConfig): Route {
+    return provideRoute(config, withLayoutComponent(config));
+}
+
 export function withLayoutComponent(config: LayoutConfig): RouteFeature {
     return {
         name: "withLayoutComponent",

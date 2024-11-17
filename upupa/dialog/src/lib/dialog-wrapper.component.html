@@ -31,7 +31,7 @@
 </div>
 @if (dialogActions(); as actions) {
     <div class="toolbar footer">
-        @for (descriptor of actions; track descriptor.name; let i = $index) {
+        @for (descriptor of actions; track descriptor; let i = $index) {
             <mat-btn class="action {{ descriptor.name }}" [tabIndex]="actions.length - i - 1" (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
             <!-- [context]="{ source: component }" -->
         }

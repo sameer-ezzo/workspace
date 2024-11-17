@@ -6,6 +6,6 @@ export * from './lib/dialog.service';
 export * from './lib/prompt/prompt.component';
 export * from './lib/prompt/prompt.directive';
 export * from './lib/prompt/prompt.service';
-export * from './lib/upupa-dialog.component';
+export * from './lib/dialog-wrapper.component';
 
 export * from './lib/snack-bar.service';
