@@ -1,10 +1,9 @@
-import { Component, Input, Output, EventEmitter, inject, signal, ViewChild, output, viewChild, model } from '@angular/core';
+import { Component, Input, EventEmitter, inject, signal, output, viewChild, model } from '@angular/core';
 import { AuthService, Credentials } from '@upupa/auth';
 import { CollectorComponent, FormScheme } from '@upupa/dynamic-form';
 import { ActionDescriptor } from '@upupa/common';
-import { defaultLoginFormFields } from '../default-values';
 import { Condition } from '@noah-ark/expression-engine';
-import { ActivatedRoute, Router } from '@angular/router';
+
 import { FormControl } from '@angular/forms';
 import { Principle } from '@noah-ark/common';
 
@@ -33,7 +32,7 @@ export class LoginFormComponent {
         color: 'primary',
         variant: 'raised',
     };
-    @Input() fields: FormScheme = defaultLoginFormFields;
+    @Input() fields: FormScheme;
     @Input() conditions: Condition[] = [];
 
     async signin() {

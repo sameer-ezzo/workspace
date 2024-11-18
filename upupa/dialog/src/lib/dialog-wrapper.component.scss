@@ -7,7 +7,7 @@
     flex-wrap: nowrap;
     height: 100%;
 }
-.upupa-dialog-container {
+.dialog-wrapper-container {
     display: grid;
     // grid-template-rows: auto 1fr auto;
     grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);

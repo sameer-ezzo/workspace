@@ -59,7 +59,7 @@ export class AuthModule implements OnModuleInit {
     async onModuleInit() {}
 
     static register(
-        options: { dbName: string; userSchema: Schema } = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
+        options: { dbName: string; userSchema: Schema; prefix?: string } = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
         authOptions: Partial<AuthOptions> = {},
     ): DynamicModule {
         if (!options || !options.userSchema || !options.dbName) throw new Error("Invalid options passed to AuthModule.register");
@@ -101,8 +101,8 @@ export class AuthModule implements OnModuleInit {
                 PassportModule,
                 MongooseModule.forFeature(
                     [
-                        { name: "user", schema: options.userSchema },
-                        { name: "role", schema: roleSchema },
+                        { name: "user", collection: `${options.prefix ?? ""}user`, schema: options.userSchema },
+                        { name: "role", collection: `${options.prefix ?? ""}role`, schema: roleSchema },
                     ],
                     options.dbName,
                 ),

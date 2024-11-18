@@ -208,8 +208,8 @@ export class DataComponentBase<T = any> {
     }
 
     setFocusedItem(row) {
-        this.focusedItem = row;
-        this.focusedItemChange.emit(this.focusedItem());
+        this.focusedItem.set(row);
+        this.focusedItemChange.emit(row);
     }
     nextFocusedItem() {
         const normalized = this.adapter().normalized();
