@@ -1,5 +1,5 @@
 import { Component, ViewChild, Input, ChangeDetectionStrategy, Output, EventEmitter } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, FieldItem, Fieldset, FormScheme } from "@upupa/dynamic-form";
+import { DynamicFormComponent, DynamicFormModule, Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
 import { InputBaseComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
 import { ReplaySubject, debounceTime } from "rxjs";
@@ -58,9 +58,9 @@ export class DataFilterFormComponent extends InputBaseComponent<Record<string, a
 export function formSchemeToDynamicFormFilter(scheme: FormScheme): ToFilterDescriptor {
     const toPath = (...seg: string[]) => seg.filter((p) => p?.trim().length > 0).join(".");
 
-    function fromFieldItem(field: FieldItem, value: any, path: string): { [path: string]: string } {
+    function fromField(field: Field, value: any, path: string): { [path: string]: string } {
         if (value === null || value === undefined) return { [path]: undefined };
-        const { _adapter, adapter } = field.ui.inputs;
+        const { _adapter, adapter } = field.inputs;
         let p = path;
         let v = value;
         const res = { [p]: v };
@@ -89,7 +89,7 @@ export function formSchemeToDynamicFormFilter(scheme: FormScheme): ToFilterDescr
             const v = getNestedValue(value, [name]);
             if (field.type === "fieldset" || field.type === "array") {
                 fd = { ...fd, ...fromFieldSet(field.items, v, toPath(path, name)) };
-            } else fd = { ...fd, ...fromFieldItem(field, v, toPath(path, name)) };
+            } else fd = { ...fd, ...fromField(field, v, toPath(path, name)) };
         }
         return fd;
     }

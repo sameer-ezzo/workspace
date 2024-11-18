@@ -1,117 +1,7 @@
 import { languagesList } from "@upupa/language";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 
-import { Field, FieldItem, Fieldset, FormScheme, Validator } from "./types";
-
-export class SchemeBuilder {
-    private fields = new Map<string, Field>();
-
-    build() {
-        return this.fields;
-    }
-
-    addFieldSet(set: SchemeBuilder, collection: string) {
-        this.fields.set(collection, { type: "fieldset", items: set.fields } as Fieldset);
-        return this;
-    }
-    addCustomField(name: string, field: Field) {
-        this.fields.set(name, field);
-        return this;
-    }
-    addHiddenField(name: string) {
-        this.fields.set(name, hiddenField(name));
-        return this;
-    }
-
-    addTextField(name: string, label: string = name, placeholder?: string, hint?: string, appearance?: "fill" | "outline", validators: Validator[] = []) {
-        this.fields.set(name, textField(name, label, placeholder, hint, appearance, validators));
-        return this;
-    }
-
-    addTextAreaField(
-        name: string,
-        label: string = name,
-        placeholder?: string,
-        hint?: string,
-        appearance?: "fill" | "outline",
-        minRows?: number,
-        maxRows?: number,
-        validators: Validator[] = [],
-    ) {
-        this.fields.set(name, textAreaField(name, label, placeholder, hint, appearance, minRows, maxRows, validators));
-        return this;
-    }
-
-    addNumberField(name: string, label: string = name, placeholder?: string, hint?: string, appearance?: "fill" | "outline", validators: Validator[] = []) {
-        this.fields.set(name, numberField(name, label, placeholder, hint, appearance, validators));
-        return this;
-    }
-
-    addSelectField(
-        name: string,
-        label: string = name,
-        adapter: DataAdapter,
-        placeholder?: string,
-        hint?: string,
-        appearance?: "fill" | "outline",
-        maxAllowed?: number,
-        validators: Validator[] = [],
-    ) {
-        this.fields.set(name, selectField(name, label, adapter, placeholder, hint, appearance, maxAllowed, validators));
-        return this;
-    }
-    addAutoCompleteField(
-        name: string,
-        label: string = name,
-        adapter: DataAdapter,
-        placeholder?: string,
-        hint?: string,
-        appearance?: "fill" | "outline",
-        maxAllowed?: number,
-        validators: Validator[] = [],
-    ) {
-        this.fields.set(name, autoCompleteField(name, label, adapter, placeholder, hint, appearance, maxAllowed, validators));
-        return this;
-    }
-
-    addDateField(name: string, label: string = name, placeholder?: string, hint?: string, appearance?: "fill" | "outline", validators: Validator[] = []) {
-        this.fields.set(name, dateField(name, label, placeholder, hint, appearance, validators));
-        return this;
-    }
-
-    addFileField(
-        name: string,
-        label: string = name,
-        path: string,
-        placeholder?: string,
-        hint?: string,
-        minAllowedFiles = 0,
-        maxAllowedFiles = 1,
-        showExplorer: boolean = true,
-        accept?: string,
-        view: "grid" | "list" = "grid",
-        validators: Validator[] = [],
-    ) {
-        this.fields.set(name, fileField(name, label, path, placeholder, hint, minAllowedFiles, maxAllowedFiles, showExplorer, accept, view, validators));
-        return this;
-    }
-
-    addHtmlField(name: string, label: string = name, storage: string, placeholder?: string, hint?: string, validators: Validator[] = []) {
-        this.fields.set(name, htmlField(name, label, storage, placeholder, hint, validators));
-        return this;
-    }
-
-    addSwitchField(name: string, label: string = name, hint?: string, validators: Validator[] = []) {
-        this.fields.set(name, switchField(name, label, hint, validators));
-        return this;
-    }
-
-    removeField(name: string): SchemeBuilder {
-        if (!this || !this.fields) return this;
-        delete this.fields[name];
-        return this;
-    }
-}
+import { FieldItem, Validator } from "./types";
 
 export type Appearance = "fill" | "outline";
 function field(
@@ -128,21 +18,18 @@ function field(
     if (indexOfRequired > -1) validators.splice(indexOfRequired, 1);
 
     const f = {
-        type: "field",
         input: input,
         name: name,
         validations: validators,
-        ui: {
+        placeholder: placeholder,
+        inputs: {
+            required: indexOfRequired > -1,
+            label: label,
             placeholder: placeholder,
-            inputs: {
-                required: indexOfRequired > -1,
-                label: label,
-                placeholder: placeholder,
-                appearance: appearance || "outline",
-                hint: hint,
-            },
-            hidden,
+            appearance: appearance || "outline",
+            hint: hint,
         },
+        hidden,
     } as FieldItem;
     return f;
 }
@@ -199,7 +86,7 @@ export function languageField(
         terms,
     });
 
-    tf.ui.inputs["adapter"] = languagesAdapter;
+    tf.inputs["adapter"] = languagesAdapter;
     return tf;
 }
 export function textAreaField(
@@ -216,8 +103,8 @@ export function textAreaField(
     minRows = minRows || 3;
     maxRows = maxRows || minRows + 3;
     const ta = field("textarea", name, label, placeholder, hint, appearance, validators, hidden);
-    ta.ui.inputs["rows"] = minRows;
-    ta.ui.inputs["maxRows"] = maxRows;
+    ta.inputs["rows"] = minRows;
+    ta.inputs["maxRows"] = maxRows;
     return ta;
 }
 
@@ -244,10 +131,10 @@ export function selectField(
     maxAllowed?: number,
     validators: Validator[] = [],
     hidden = false,
-): Field {
+): FieldItem {
     const sf = field("select", name, label, placeholder, hint, appearance, validators, hidden);
-    sf.ui.inputs["adapter"] = adapter;
-    sf.ui.inputs["maxAllowed"] = maxAllowed;
+    sf.inputs["adapter"] = adapter;
+    sf.inputs["maxAllowed"] = maxAllowed;
     return sf;
 }
 
@@ -263,8 +150,8 @@ export function autoCompleteField(
     hidden = false,
 ) {
     const sf = field("autocomplete-text", name, label, placeholder, hint, appearance, validators, hidden);
-    sf.ui.inputs["adapter"] = adapter;
-    sf.ui.inputs["maxAllowed"] = maxAllowed;
+    sf.inputs["adapter"] = adapter;
+    sf.inputs["maxAllowed"] = maxAllowed;
     return sf;
 }
 
@@ -288,28 +175,28 @@ export function fileField(
     hidden = false,
 ) {
     const ff = field("file", name, label, placeholder, hint, null, validators, hidden);
-    ff.ui.inputs["minAllowedFiles"] = minAllowedFiles;
-    ff.ui.inputs["maxAllowedFiles"] = maxAllowedFiles;
-    ff.ui.inputs["path"] = path ?? "/";
-    ff.ui.inputs["accept"] = accept ?? "*.*";
-    ff.ui.inputs["view"] = view ?? "grid";
+    ff.inputs["minAllowedFiles"] = minAllowedFiles;
+    ff.inputs["maxAllowedFiles"] = maxAllowedFiles;
+    ff.inputs["path"] = path ?? "/";
+    ff.inputs["accept"] = accept ?? "*.*";
+    ff.inputs["view"] = view ?? "grid";
     return ff;
 }
 
 export function htmlField(name: string, label: string = name, uploadPath?: string, placeholder?: string, hint?: string, validators: Validator[] = [], hidden = false) {
     const hf = field("html", name, label, placeholder, hint, null, validators, hidden);
-    hf.ui.inputs["uploadPath"] = uploadPath ?? `/${name}`;
+    hf.inputs["uploadPath"] = uploadPath ?? `/${name}`;
     return hf;
 }
 
 export function checkboxField(name: string, label: string = name, hint?: string, validators: Validator[] = [], hidden = false) {
     const hf = field("switch", name, label, label, hint, null, validators, hidden);
-    hf.ui.inputs["template"] = "checkbox";
+    hf.inputs["template"] = "checkbox";
     return hf;
 }
 export function switchField(name: string, label: string = name, hint?: string, validators: Validator[] = [], hidden = false) {
     const hf = field("switch", name, label, label, hint, null, validators, hidden);
-    hf.ui.inputs["template"] = "toggle";
+    hf.inputs["template"] = "toggle";
 
     return hf;
 }
@@ -323,9 +210,9 @@ export function checksField(
     appearance?: "fill" | "outline",
     validators: Validator[] = [],
     hidden = false,
-): Field {
+): FieldItem {
     const sf = field("checks", name, label, placeholder, hint, appearance, validators, hidden);
-    sf.ui.inputs["adapter"] = adapter;
+    sf.inputs["adapter"] = adapter;
     return sf;
 }
 
@@ -338,8 +225,8 @@ export function radiosField(
     appearance?: "fill" | "outline",
     validators: Validator[] = [],
     hidden = false,
-): Field {
+): FieldItem {
     const sf = field("radios", name, label, placeholder, hint, appearance, validators, hidden);
-    sf.ui.inputs["adapter"] = adapter;
+    sf.inputs["adapter"] = adapter;
     return sf;
 }

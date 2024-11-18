@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { User } from '@upupa/auth';
 import { ActionEvent } from '@upupa/common';
-import { FieldItem, FormScheme, checkboxField, hiddenField, switchField } from '@upupa/dynamic-form';
+import { Field, FormScheme, checkboxField, hiddenField, switchField } from '@upupa/dynamic-form';
 import { UsersService } from '../users.service';
 import { passwordField } from '../../default-values';
 import { UpupaDialogComponent } from '@upupa/dialog';
@@ -16,7 +16,7 @@ export class AdminUserPasswordRestComponent {
 
     formScheme: FormScheme = {
         email: hiddenField("email"),
-        new_password: { ...passwordField, name: 'new_password', ui: { inputs: { label: 'New Password' } } } as FieldItem,
+        new_password: { ...passwordField, inputs: { label: 'New Password' } } as Field,
         forceChangePwd: checkboxField('forceChangePwd', 'Force user to change password')
     }
 

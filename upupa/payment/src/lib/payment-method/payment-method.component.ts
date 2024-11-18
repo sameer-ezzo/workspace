@@ -1,51 +1,51 @@
-import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, TemplateRef } from '@angular/core';
-import { currencies } from '../currencies';
-import { PaymentService } from '../payment.service';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgForm, ValidationErrors } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { MatStepper } from '@angular/material/stepper';
-import { TranslateService } from '@upupa/language';
-import { SnackBarService } from '@upupa/dialog';
-import { DynamicFormCommands, DynamicFormEvents, FormScheme } from '@upupa/dynamic-form';
-import { ClientDataSource, DataAdapter } from '@upupa/data';
-import { Condition } from '@noah-ark/expression-engine';
+import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, TemplateRef } from "@angular/core";
+import { currencies } from "../currencies";
+import { PaymentService } from "../payment.service";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgForm, ValidationErrors } from "@angular/forms";
+import { Subscription } from "rxjs";
+import { MatStepper } from "@angular/material/stepper";
+import { TranslateService } from "@upupa/language";
+import { SnackBarService } from "@upupa/dialog";
+import { DynamicFormCommands, DynamicFormEvents, FormScheme } from "@upupa/dynamic-form";
+import { ClientDataSource, DataAdapter } from "@upupa/data";
+import { Condition } from "@noah-ark/expression-engine";
 
-const strgKey = 'pref_paymentM';
+const strgKey = "pref_paymentM";
 
 @Component({
-    selector: 'payment-method',
-    templateUrl: './payment-method.component.html',
-    styleUrls: ['./payment-method.component.scss'],
+    selector: "payment-method",
+    templateUrl: "./payment-method.component.html",
+    styleUrls: ["./payment-method.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => PaymentMethodComponent), multi: true }],
     encapsulation: ViewEncapsulation.None,
 })
 export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, AfterViewInit {
-    @ViewChild('skrillIcon') skrill: TemplateRef<any>;
-    @ViewChild('netellerIcon') neteller: TemplateRef<any>;
-    @ViewChild('paypalIcon') paypal: TemplateRef<any>;
-    @ViewChild('bankTransferIcon') bankTransfer: TemplateRef<any>;
-    @ViewChild('masterCardIcon') masterCard: TemplateRef<any>;
-    @ViewChild('visaCardIcon') visaCard: TemplateRef<any>;
-    @ViewChild('paymentCardIcon') paymentCard: TemplateRef<any>;
-    @ViewChild('paymentCardIcon') card: TemplateRef<any>;
-    @ViewChild('localTransferIcon') localTransfer: TemplateRef<any>;
+    @ViewChild("skrillIcon") skrill: TemplateRef<any>;
+    @ViewChild("netellerIcon") neteller: TemplateRef<any>;
+    @ViewChild("paypalIcon") paypal: TemplateRef<any>;
+    @ViewChild("bankTransferIcon") bankTransfer: TemplateRef<any>;
+    @ViewChild("masterCardIcon") masterCard: TemplateRef<any>;
+    @ViewChild("visaCardIcon") visaCard: TemplateRef<any>;
+    @ViewChild("paymentCardIcon") paymentCard: TemplateRef<any>;
+    @ViewChild("paymentCardIcon") card: TemplateRef<any>;
+    @ViewChild("localTransferIcon") localTransfer: TemplateRef<any>;
 
     subs: Subscription[] = [];
     model: any = {};
-    @ViewChild('stepper') stepper: MatStepper;
+    @ViewChild("stepper") stepper: MatStepper;
 
     amountCurrencyNotDefined = true;
     addressEditor = false;
 
     //form
     @Input() disabled: boolean;
-    @Input() appearance: 'fill' | 'outline' = 'outline';
-    @ViewChild('detailsForm') detailsForm: NgForm;
-    @ViewChild('mainForm') mainForm: NgForm;
+    @Input() appearance: "fill" | "outline" = "outline";
+    @ViewChild("detailsForm") detailsForm: NgForm;
+    @ViewChild("mainForm") mainForm: NgForm;
 
     //main
-    @Input() type = 'transferin';
-    @Output('pay') payEvent = new EventEmitter<any>();
+    @Input() type = "transferin";
+    @Output("pay") payEvent = new EventEmitter<any>();
 
     //additional steps
     @Input() steps: any[] = [];
@@ -62,10 +62,10 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         this.triggerChange();
     }
     @Output() amountChange = new EventEmitter<number>();
-    @Input('min-amount') minAmount: number;
-    @Input('max-amount') maxAmount: number;
-    @Input('min-amount-method') minAmountMethod: { [method: string]: number } = {};
-    @Input('max-amount-method') maxAmountMethod: { [method: string]: number } = {};
+    @Input("min-amount") minAmount: number;
+    @Input("max-amount") maxAmount: number;
+    @Input("min-amount-method") minAmountMethod: { [method: string]: number } = {};
+    @Input("max-amount-method") maxAmountMethod: { [method: string]: number } = {};
     @Input() customAmount = false;
 
     @Input() currencies = currencies; //supported currencies
@@ -103,18 +103,22 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
 
     @Input() transfers = [];
 
-    constructor(public paymentService: PaymentService, public translator: TranslateService, public snack: SnackBarService) {}
+    constructor(
+        public paymentService: PaymentService,
+        public translator: TranslateService,
+        public snack: SnackBarService,
+    ) {}
 
     ngOnChanges(changes) {
-        if (changes['amount']) this.amount = parseFloat(this.amount + '');
-        if (changes['customAmount']) this.customAmount = <any>this.customAmount === 'true' || <any>this.customAmount === '' || this.customAmount === true;
-        if (changes['customCurrency']) this.customCurrency = <any>this.customCurrency === 'true' || <any>this.customCurrency === '' || this.customCurrency === true;
+        if (changes["amount"]) this.amount = parseFloat(this.amount + "");
+        if (changes["customAmount"]) this.customAmount = <any>this.customAmount === "true" || <any>this.customAmount === "" || this.customAmount === true;
+        if (changes["customCurrency"]) this.customCurrency = <any>this.customCurrency === "true" || <any>this.customCurrency === "" || this.customCurrency === true;
 
-        if (changes['banks'] && this.model.method === 'bank') this.model.paymentInfo = {};
-        if (changes['method']) this.model.paymentInfo = {};
+        if (changes["banks"] && this.model.method === "bank") this.model.paymentInfo = {};
+        if (changes["method"]) this.model.paymentInfo = {};
 
         //reset currency if no in currencies list
-        if (changes['currencies'] || changes['currency']) {
+        if (changes["currencies"] || changes["currency"]) {
             if (!this.currencies || this.currencies.find((c) => c.code === this.currency) === undefined) this.currency = null;
         }
 
@@ -153,11 +157,11 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     }
 
     copyToClipboard(copyText: HTMLSpanElement) {
-        var textArea = document.createElement('textarea');
+        var textArea = document.createElement("textarea");
         textArea.value = copyText.textContent;
         document.body.appendChild(textArea);
         textArea.select();
-        document.execCommand('Copy');
+        document.execCommand("Copy");
         textArea.remove();
     }
 
@@ -192,20 +196,20 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         let errors: any = {};
         if (this.amount === null) {
             valid = false;
-            errors.amount = 'MISSING_AMOUNT';
+            errors.amount = "MISSING_AMOUNT";
         }
         if (this.currency === null) {
             valid = false;
-            errors.currency = 'MISSINGN_CURRENCY';
+            errors.currency = "MISSINGN_CURRENCY";
         }
         if (this.method === null) {
             valid = false;
-            errors.method = 'MISSINGN_METHOD';
+            errors.method = "MISSINGN_METHOD";
         }
 
         if (this.detailsForm.invalid) {
             valid = false;
-            errors.method = 'INVALID_DETAILS';
+            errors.method = "INVALID_DETAILS";
             const controls = this.detailsForm.controls;
             Object.keys(controls).forEach((k) => {
                 const c = controls[k];
@@ -215,7 +219,7 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
 
         if (this.mainForm.invalid) {
             valid = false;
-            errors.method = 'INVALID_MAIN';
+            errors.method = "INVALID_MAIN";
             const controls = this.mainForm.controls;
             Object.keys(controls).forEach((k) => {
                 const c = controls[k];
@@ -242,64 +246,64 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
     localTransferRequest() {}
 
     crypto_networks = [
-        { key: 'BSC', value: 'Binance BSC' },
-        { key: 'ETH', value: 'Etherium' },
+        { key: "BSC", value: "Binance BSC" },
+        { key: "ETH", value: "Etherium" },
     ];
     crypto_networks_source = new ClientDataSource(this.crypto_networks);
-    crypto_networks_adapter = new DataAdapter(this.crypto_networks_source, 'key', 'value', 'key', null);
+    crypto_networks_adapter = new DataAdapter(this.crypto_networks_source, "key", "value", "key", null);
 
     crypto_currencies_bsc = [
-        { key: 'BUSD', value: 'Binance USD' },
-        { key: 'USDC', value: 'USDC' },
-        { key: 'USDT', value: 'USD Tether' },
+        { key: "BUSD", value: "Binance USD" },
+        { key: "USDC", value: "USDC" },
+        { key: "USDT", value: "USD Tether" },
     ];
     crypto_currencies_eth = [
-        { key: 'USDC', value: 'USDC' },
-        { key: 'USDT', value: 'USD Tether' },
+        { key: "USDC", value: "USDC" },
+        { key: "USDT", value: "USD Tether" },
     ];
 
     cryptoForm: FormScheme = {
-        network: { type: 'field', name: 'network', input: 'select', ui: { inputs: { label: 'Network', adapter: this.crypto_networks_adapter } } },
-        currency: { type: 'field', name: 'currency', input: 'select', ui: { inputs: { label: 'Currency' } } },
-        sender: { type: 'field', name: 'sender', input: 'text', ui: { inputs: { label: 'Sender' } } },
-        wallet: { type: 'field', name: 'wallet', input: 'text', ui: { inputs: { label: 'Wallet', readonly: true } } },
+        network: { input: "select", inputs: { label: "Network", adapter: this.crypto_networks_adapter } },
+        currency: { input: "select", inputs: { label: "Currency" } },
+        sender: { input: "text", inputs: { label: "Sender" } },
+        wallet: { input: "text", inputs: { label: "Wallet", readonly: true } },
     };
 
     wallets = {
-        BSC_BUSD: 'bsc_BUSD_0xe1200731Ba14bb72Ed',
-        BSC_USDC: 'bsc_USDC_0xe1200731Ba14bb72Ed',
-        BSC_USDT: 'bsc_USDT_0xe1200731Ba14bb72Ed',
-        ETH_USDC: 'eth_USDC_0xe1200731Ba14bb72Ed',
-        ETH_USDT: 'eth_USDT_0xe1200731Ba14bb72Ed',
+        BSC_BUSD: "bsc_BUSD_0xe1200731Ba14bb72Ed",
+        BSC_USDC: "bsc_USDC_0xe1200731Ba14bb72Ed",
+        BSC_USDT: "bsc_USDT_0xe1200731Ba14bb72Ed",
+        ETH_USDC: "eth_USDC_0xe1200731Ba14bb72Ed",
+        ETH_USDT: "eth_USDT_0xe1200731Ba14bb72Ed",
     };
 
     cryptoConditions: Condition[] = [
         {
             on: DynamicFormEvents.valueChanged,
-            when: (e) => e.payload.fields === '/network',
+            when: (e) => e.payload.fields === "/network",
             do: [
                 (e) => {
                     let currencies = [];
                     const value = e.payload.value;
                     switch (value) {
-                        case 'ETH':
+                        case "ETH":
                             currencies = this.crypto_currencies_eth;
                             break;
-                        case 'BSC':
+                        case "BSC":
                             currencies = this.crypto_currencies_bsc;
                             break;
                     }
-                    return new DynamicFormCommands.ChangeInputs('currency', { adapter: new DataAdapter(new ClientDataSource(currencies), 'key', 'value') });
+                    return new DynamicFormCommands.ChangeInputs("currency", { adapter: new DataAdapter(new ClientDataSource(currencies), "key", "value") });
                 },
             ],
         },
         {
             on: DynamicFormEvents.valueChanged,
-            when: (e) => e.payload.fields === '/network' || e.payload.fields === '/currency',
+            when: (e) => e.payload.fields === "/network" || e.payload.fields === "/currency",
             do: [
                 (e) => {
                     const formValue = e.source.value;
-                    if (formValue?.network && formValue?.currency) return new DynamicFormCommands.ChangeValue('wallet', this.wallets[`${formValue.network}_${formValue.currency}`]);
+                    if (formValue?.network && formValue?.currency) return new DynamicFormCommands.ChangeValue("wallet", this.wallets[`${formValue.network}_${formValue.currency}`]);
                 },
             ],
         },

@@ -26,7 +26,6 @@ export class FormViewModelComponent<T = unknown> implements OnChanges {
     // FormScheme: FormScheme = {
     //     contactorName: textField('contactor-name', 'your name')
     //     // {
-    //     //     type: 'field',
     //     //     name: 'contactor-name',
     //     //     input: 'text',
     //     //     text: 'Your name',
@@ -34,14 +33,12 @@ export class FormViewModelComponent<T = unknown> implements OnChanges {
     //     // },
     //     ,
     //     'contactor-email': {
-    //         type: 'field',
     //         name: 'contactor-email',
     //         input: 'email',
     //         text: 'Your email',
     //         validations: [{ name: 'email' }, { name: 'required' }]
     //     },
     //     'your-msg': {
-    //         type: 'field',
     //         name: 'contactor-msg',
     //         input: 'textarea',
     //         text: 'Your Message',

@@ -1,5 +1,5 @@
 import { PasswordStrength } from "@upupa/auth";
-import { Validator } from "../types";
+import { Field, Validator } from "../types";
 import { DataAdapterDescriptor } from "@upupa/data";
 
 export interface IDynamicFormFieldOptions {}
@@ -12,9 +12,9 @@ export class AdapterFieldOptions {
     adapter: DataAdapterDescriptor = { type: "client", data: [] };
 }
 
-export type BaseFormFieldOptions = {
+export type BaseFormFieldOptions = Field & {
     required?: boolean;
-    validations?: Validator[];
+    group?: string;
 };
 export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     name?: string;
@@ -60,11 +60,12 @@ export type TableInputOptions = {
         headerActions: [];
     };
 };
-export type DynamicFormFieldOptions =
+export type FieldOptions =
     | ({ input: "hidden" } & BaseFormFieldOptions)
     | (VisibleFormFieldOptions &
           (
               | ({ input: "fieldset" } & BaseFormFieldOptions)
+              | ({ input: "object" } & BaseFormFieldOptions)
               | ({ input: "text" } & TextFieldOptions)
               | ({ input: "textarea" } & TextFieldOptions & {
                         rows?: number;
@@ -101,5 +102,4 @@ export type DynamicFormFieldOptions =
                     separatorKeysCodes?: string[];
                 })
           ));
-export type DynamicFormFieldInputType = DynamicFormFieldOptions["input"];
-export type FormFieldOptions = DynamicFormFieldOptions | ({ input: string } & Partial<AdapterFieldOptions & { inputs: Record<string, any> }>);
+export type FieldInputType = FieldOptions["input"];

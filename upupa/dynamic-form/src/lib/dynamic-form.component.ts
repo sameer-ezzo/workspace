@@ -286,7 +286,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.graph()).find(([c, f]) => f.invalid && f.field().ui?.hidden !== true);
+        const c = Array.from(this.graph()).find(([c, f]) => f.invalid && f.field().hidden !== true);
         if (!c) return;
         const control = c[1] as FieldFormControl;
         control.markAsTouched();

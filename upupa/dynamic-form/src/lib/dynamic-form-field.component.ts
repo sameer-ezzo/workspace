@@ -2,7 +2,7 @@ import { Component, forwardRef, inject, input, computed, model, ComponentRef, Si
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from '@angular/forms';
 import { PortalComponent, DynamicComponent } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
-import { FieldItem } from './types';
+import { Field } from './types';
 import { DynamicFormService } from './dynamic-form.service';
 import { AdapterInputResolverService } from './adapter-input-resolver.service';
 
@@ -24,7 +24,7 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (field().text) {
-            <paragraph [class.hidden]="field().ui?.hidden === true" [text]="field().text" [renderer]="field().ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
+            <paragraph [class.hidden]="field().hidden === true" [text]="field().text" [renderer]="field().inputs?.['renderer'] || 'markdown'"></paragraph>
         }
         @if (template()) {
             <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)">
@@ -41,14 +41,14 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
 export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
     formService = inject(DynamicFormService);
 
-    field = input.required<FieldItem>();
+    field = input.required<Field>();
     control = input.required<UntypedFormGroup>();
 
     name = input.required<string>();
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [`${this.name()}-field`, `${field.input}-input`, 'field', template?.class, field.ui?.class, field.ui?.hidden === true ? 'hidden' : '']
+        return [`${this.name()}-field`, `${field.input}-input`, 'field', template?.class, field.class, field.hidden === true ? 'hidden' : '']
             .filter((c) => c)
             .join(' ')
             .trim();
@@ -61,18 +61,17 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     async ngOnChanges(changes: SimpleChanges) {
         if (changes['field']) {
             const field = this.field();
-            field.ui ??= {};
-            field.ui.inputs ??= {};
+            field.inputs ??= {};
 
-            let inputs = { ...(field.ui?.inputs ?? {}) };
+            let inputs = { ...(field.inputs ?? {}) };
             await this.adapterResolver.resolve(inputs);
-            field.ui.inputs = inputs;
+            field.inputs = inputs;
 
             this.template.set({
                 component: this.formService.getControl(field.input, this.theme()).component,
                 inputs: inputs,
-                outputs: field.ui.outputs,
-                class: field.ui.class,
+                outputs: field.outputs,
+                class: field.class,
             });
         }
     }

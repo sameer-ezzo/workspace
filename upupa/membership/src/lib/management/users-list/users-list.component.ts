@@ -266,7 +266,7 @@ function extractKeysFromFormScheme(scheme: FormScheme): string[] {
   const keys = Object.getOwnPropertyNames(scheme ?? {})
   for (const key of keys) {
     const item = scheme[key] as Field
-    if (item.type === 'fieldset') {
+    if (item.input === 'fieldset') {
       keys.push(...extractKeysFromFormScheme((item as Fieldset).items).map(k => `${key}.${k}`))
     }
   }

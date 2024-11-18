@@ -26,7 +26,7 @@ export function loadFontFromUri(family: string, fontUri?: string) {
 export type FormPage = { from: number; to: number; fields: FormGraph };
 
 function _isNaturallyHidden(f: Field): boolean {
-    return f.type === 'page-breaker' || (f.type === 'field' && f.input === 'hidden');
+    return f.input === 'page-breaker' ||  f.input === 'hidden';
 }
 
 export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGraph): FormPage[] {
@@ -40,7 +40,7 @@ export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGraph
                 return { from: i, to: i, fields: new Map([[f[0], f[1]]]) };
             });
     else if (collectStyle === 'linear') {
-        const _fs = fs.filter(([name, f]) => f.field().type !== 'page-breaker');
+        const _fs = fs.filter(([name, f]) => f.field().input !== 'page-breaker');
         pages = [{ from: 0, to: fs.length, fields: new Map(_fs) }];
     } else {
         // const pageBreakerIndexes = fs.filter(([name, f]) => f.type === 'page-breaker').map(([name, f]) => fs.indexOf(f));

@@ -10,19 +10,19 @@ import { FocusLeaveDirective } from './focusleave.dir';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CollectorComponent } from './collector/collector.component';
 import { PortalComponent, UtilsModule } from '@upupa/common';
-import { TaskValidationComponent } from './task.validation.component/task.validation.component';
 import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
 import { DynamicFormThemes } from './dynamic-form-themes.type';
 import { DF_NATIVE_THEME_INPUTS, DynamicFormNativeThemeModule, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme';
 import { DynamicFormModuleOptions } from './dynamic-form.options';
 import { MatBtnComponent } from '@upupa/mat-btn';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 
 const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
 } as unknown as DynamicFormThemes;
 
-const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirective, TaskValidationComponent, OrderedKeyValuePipe];
+const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirective, OrderedKeyValuePipe];
 
 @NgModule({
     declarations: [...declarations],
@@ -38,6 +38,7 @@ const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirect
         MatBtnComponent,
         PortalComponent,
         DynamicFormFieldComponent,
+        MatExpansionModule
     ],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },

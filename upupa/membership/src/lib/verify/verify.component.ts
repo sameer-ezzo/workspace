@@ -51,9 +51,8 @@ export class VerifyComponent {
 
     editValueForm: FormScheme = {
         value: {
-            type: 'field',
             input: 'text',
-            ui: { inputs: { label: '', placeholder: '' } },
+            inputs: { label: '', placeholder: '' },
             validations: [{ name: 'required' }],
         },
     };

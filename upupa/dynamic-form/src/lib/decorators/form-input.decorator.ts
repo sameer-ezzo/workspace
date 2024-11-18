@@ -1,59 +1,95 @@
-// make a property decorator that creates a FormFieldItem from a property
+// make a property decorator that creates a FormField from a property
 // export * from './lib/decorators/form-field.decorator';
 import "reflect-metadata";
-import { Field, Fieldset } from "../types";
-import { ActionDescriptor, toTitleCase } from "@upupa/common";
+import { Field, Fieldset, FormScheme, SET_INPUTS } from "../types";
+import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
-import { DynamicFormFieldInputType, FormFieldOptions, VisibleFormFieldOptions } from "./decorators.types";
+import { FieldInputType, FieldOptions, VisibleFormFieldOptions } from "./decorators.types";
 import { getLanguageInfo } from "@upupa/language";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { cloneDeep } from "lodash";
+import { TableHeaderComponent } from "@upupa/table";
 
-const formSchemeMetadataKey = Symbol("custom:form_scheme_options");
+const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
+
+function reflectFormMetadata(targetClass: any): DynamicFormOptionsMetaData {
+    return Reflect.getMetadata(FORM_METADATA_KEY, targetClass) as DynamicFormOptionsMetaData;
+}
+
+function defineFormMetadata(targetClass: any, value: DynamicFormOptionsMetaData) {
+    let targetOptions = reflectFormMetadata(targetClass);
+    const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
+
+    if (parent && parent.constructor)
+        targetOptions = {
+            ...reflectFormMetadata(parent),
+            ...targetOptions,
+        };
+
+    Reflect.defineMetadata(FORM_METADATA_KEY, { ...targetOptions, ...value }, targetClass);
+}
+
+function createFormMetadata(): DynamicFormOptionsMetaData {
+    return {
+        fields: {},
+        targets: {},
+        groups: {},
+    };
+}
 
 export type DynamicFormOptionsMetaData = DynamicFormOptions & {
-    fields: Record<
-        string,
-        {
-            options: Partial<FormFieldOptions>;
-            localize: boolean | undefined;
-            target: any;
-        }
-    >;
+    fields: Record<string, Field>;
+    targets: Record<string, any>;
+    groups: Record<string, string>;
+
     onSubmitAction?: Omit<ActionDescriptor, "name"> & {
         name: "onSubmit";
         handlerName: string;
     };
-    actions: (ActionDescriptor & {
+    actions?: (ActionDescriptor & {
         handlerName: string;
     })[];
 };
 
-const setDynamicFormOptionsMetadataFor = (target: any, value: DynamicFormOptionsMetaData) => {
-    let targetOptions = resolveDynamicFormOptionsFor(target);
-    const parent = target.prototype ? Object.getPrototypeOf(target.prototype)?.constructor : null;
+function inferFieldInputType(property: any, propertyKey: string, field: Partial<FieldOptions>): FieldOptions["input"] {
+    let input = field?.["input"];
+    if (input) return input;
 
-    if (parent && parent.constructor)
-        targetOptions = {
-            ...resolveDynamicFormOptionsFor(parent),
-            ...targetOptions,
-        };
+    const type = Reflect.getMetadata("design:type", property, propertyKey);
+    if (type === Number) return "number";
+    else if (type === Boolean) return "switch";
+    else if (type === Array) return "array";
+    else if (type === Date) return "date";
+    else if (type === Object) return "object";
+    else if (typeof type === "function") return "object";
+    else return "text";
+}
 
-    Reflect.defineMetadata(formSchemeMetadataKey, { ...targetOptions, ...value }, target);
-};
+export function formInput(opt?: Partial<FieldOptions>) {
+    return (property: any, propertyKey: string) => {
+        const metadata = reflectFormMetadata(property.constructor) ?? createFormMetadata();
 
-const resolveDynamicFormOptionsFor = (target: any): DynamicFormOptionsMetaData => (Reflect.getMetadata(formSchemeMetadataKey, target) ?? {}) as DynamicFormOptionsMetaData;
+        opt ??= { input: inferFieldInputType(property, propertyKey, opt) };
+        opt.input ??= inferFieldInputType(property, propertyKey, opt);
+        const f = fillFieldInputs(propertyKey, opt);
 
-export const resolveFormSchemeOf = (target: any) => resolveDynamicFormOptionsFor(target)?.fields;
+        metadata.fields[propertyKey] = f;
+        metadata.targets[propertyKey] = property;
+        metadata.groups[propertyKey] = opt.group;
+
+        defineFormMetadata(property.constructor, metadata);
+    };
+}
+
 export type DynamicFormOptions<T = any> = Omit<DynamicFormInputs<T>, "fields"> & {
     locales?: { defaultLocale: string; translations: string[] };
 };
 
 export function formScheme(options?: DynamicFormOptions) {
     return function (target: any) {
-        const formOptions = resolveDynamicFormOptionsFor(target);
+        const formOptions = reflectFormMetadata(target);
 
         // const currentFields = formOptions?.['fields'] ?? {};
 
@@ -74,12 +110,13 @@ export function formScheme(options?: DynamicFormOptions) {
         //     opts.fields['translations'] = translations;
         // }
 
-        setDynamicFormOptionsMetadataFor(target, opts);
+        defineFormMetadata(target, opts);
     };
 }
+
 export function submitAction(action?: Partial<Omit<ActionDescriptor, "name">>) {
     return function (target: any, propertyKey: string) {
-        const inputs = resolveDynamicFormOptionsFor(target.constructor) ?? ({} as DynamicFormOptionsMetaData);
+        const inputs = reflectFormMetadata(target.constructor) ?? ({} as DynamicFormOptionsMetaData);
 
         const submitAction = {
             text: "Submit",
@@ -91,13 +128,13 @@ export function submitAction(action?: Partial<Omit<ActionDescriptor, "name">>) {
             handlerName: propertyKey,
         };
         inputs.onSubmitAction = submitAction as any;
-        setDynamicFormOptionsMetadataFor(target.constructor, inputs);
+        defineFormMetadata(target.constructor, inputs);
     };
 }
 
 export function formAction(action: Partial<ActionDescriptor> & { order?: number }) {
     return function (target: any, propertyKey: string) {
-        const inputs = resolveDynamicFormOptionsFor(target) ?? ({} as DynamicFormOptionsMetaData);
+        const inputs = reflectFormMetadata(target) ?? ({} as DynamicFormOptionsMetaData);
         inputs.actions ??= [];
 
         const _action = {
@@ -107,39 +144,7 @@ export function formAction(action: Partial<ActionDescriptor> & { order?: number 
             order: action.order ?? inputs.actions.length,
         };
         inputs.actions.push(_action);
-        setDynamicFormOptionsMetadataFor(target, inputs);
-    };
-}
-
-export function localizedInput(options: FormFieldOptions) {
-    return function (target: any, propertyKey: string) {
-        const fieldOpts = { ...options };
-        fieldOpts["localize"] = true;
-        formInput(fieldOpts)(target, propertyKey);
-    };
-}
-function guessFieldInputType(target, propertyKey, options): string {
-    let input = options["input"];
-    if (input) return input;
-    // get the type of the property
-    const type = Reflect.getMetadata("design:type", target, propertyKey);
-    if (type === Number) return "number";
-    else if (type === Boolean) return "switch";
-    else if (type === Array) return "select";
-    else if (type === Date) return "date";
-    else if (type === Object) return "fieldset";
-    else if (typeof type === "function") return "fieldset";
-    else return "text";
-}
-
-export function formInput(options: Pick<FormFieldOptions, "input"> & Partial<FormFieldOptions> = { input: "text" }) {
-    return function (target: any, propertyKey: string) {
-        const opts = resolveDynamicFormOptionsFor(target.constructor);
-        opts.fields ??= {};
-        const localize = options["localize"];
-        delete options["localize"];
-        opts.fields[propertyKey] = { options, localize, target };
-        setDynamicFormOptionsMetadataFor(target.constructor, opts);
+        defineFormMetadata(target, inputs);
     };
 }
 
@@ -149,171 +154,234 @@ export type FormViewModelMirror = {
     Pick<DynamicFormOptionsMetaData, "actions" | "onSubmitAction">;
 
 export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror {
-    const formOptions = resolveDynamicFormOptionsFor(viewModel);
+    const formMetadata = reflectFormMetadata(viewModel);
     const inputs = {
-        conditions: formOptions.conditions,
-        name: formOptions.name ?? viewModel.name,
-        preventDirtyUnload: formOptions.preventDirtyUnload,
-        recaptcha: formOptions.recaptcha,
-        theme: formOptions.theme,
-        actions: formOptions.actions,
-        onSubmitAction: formOptions.onSubmitAction,
+        conditions: formMetadata.conditions,
+        name: formMetadata.name ?? viewModel.name,
+        preventDirtyUnload: formMetadata.preventDirtyUnload,
+        recaptcha: formMetadata.recaptcha,
+        theme: formMetadata.theme,
+        actions: formMetadata.actions,
+        onSubmitAction: formMetadata.onSubmitAction,
     };
 
-    const fields = new Map<string, Field>();
-    buildFormScheme(formOptions as Pick<DynamicFormOptionsMetaData, "fields" | "locales">, fields);
+    const fields = {} as FormScheme;
+
+    const _currentFields = Object.entries(formMetadata.fields);
+    while (_currentFields.length) {
+        const [fieldName, field] = _currentFields.shift();
+        const groupName = formMetadata.groups[fieldName];
+        if (groupName || field.input === "group") {
+            const group = (fields[groupName] as Fieldset) ?? {
+                input: "group",
+                items: {},
+                inputs: { label: groupName },
+            };
+
+            group.items[fieldName] = field;
+            fields[groupName] = group;
+        } else if (field.input === "object" || field.input === "fieldset") {
+            const type = Reflect.getMetadata("design:type", formMetadata.targets[fieldName], fieldName);
+            const childMirror = reflectFormViewModelType(type);
+            fields[fieldName] = { ...field, input: "object", items: childMirror.fields };
+        } else {
+            fields[fieldName] = field;
+        }
+    }
 
     return { viewModelType: viewModel, ...inputs, fields };
 }
 
-function sortFields(fields: [string, { options: Partial<FormFieldOptions>; localize: boolean; target: any }][]) {
-    return fields.sort((a, b) => a[1].options["order"] - b[1].options["order"]);
-}
+// function sortFields(fields: [string, { options: Partial<FormFieldOptions>; localize: boolean; target: any }][]) {
+//     return fields.sort((a, b) => a[1].options["order"] - b[1].options["order"]);
+// }
 
-function sortFieldsByOrder(fields: DynamicFormOptionsMetaData["fields"]) {
-    const entries = Object.entries(fields ?? {});
-    const orderedEntries = sortFields(entries.filter(([k, v]) => v.options["order"] !== undefined));
-    const minOrder = orderedEntries[0]?.[1]["options"]["order"] ?? 0;
-    for (let idx = 0; idx < entries.length; idx++) {
-        const [key, fieldInfo] = entries[idx];
-        if (fieldInfo.options["order"] === undefined) {
-            fieldInfo.options["order"] = minOrder + idx;
-        }
-    }
-    return sortFields(entries);
-}
-function buildFormScheme(info: Pick<DynamicFormOptionsMetaData, "fields" | "locales">, parentFormScheme: Map<string, Field>): void {
-    const { fields, locales } = info;
-    const fieldNamesSorted = sortFieldsByOrder(fields);
+// function sortFieldsByOrder(fields: DynamicFormOptionsMetaData["fields"]) {
+//     const entries = Object.entries(fields ?? {});
+//     const orderedEntries = sortFields(entries.filter(([k, v]) => v.options["order"] !== undefined));
+//     const minOrder = orderedEntries[0]?.[1]["options"]["order"] ?? 0;
+//     for (let idx = 0; idx < entries.length; idx++) {
+//         const [key, fieldInfo] = entries[idx];
+//         if (fieldInfo.options["order"] === undefined) {
+//             fieldInfo.options["order"] = minOrder + idx;
+//         }
+//     }
+//     const sortedFields = sortFields(entries);
 
-    for (const [key, fieldInfo] of fieldNamesSorted) {
-        const { options, localize, target } = fieldInfo;
-        const input = guessFieldInputType(target, key, options);
-        //todo: introduce array field type instead of using fieldset
+//     const result: DynamicFormOptionsMetaData["fields"] = {};
 
-        if (input === "fieldset") makeFieldset(key, options, target, localize, locales, parentFormScheme);
-        else makeFieldItem(key, options, target, localize, locales, parentFormScheme);
-    }
+//     for (const [fieldName, f] of sortedFields) {
+//         if (f.options["group"]) {
+//             const groupInfo = f.options["group"];
+//             const groupName = groupInfo.name;
+//             result[groupName] ??= { localize: f.localize, options: { ...groupInfo, input: "group", items: new Map<string, any>() } as any, target: f.target };
+//             (result[groupName].options as any).items.set(fieldName, f.options);
+//         } else {
+//             result[fieldName] = f;
+//         }
+//     }
 
-    const translationsFieldset = parentFormScheme.get("translations");
-    parentFormScheme.delete("translations");
-    if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme.set("translations", translationsFieldset);
-}
+//     console.log(result);
+//     return Object.entries(result);
+// }
 
-function makeFormFieldOptions(fieldName: string, options: Partial<FormFieldOptions>) {
-    const opts = options ?? {};
-    const label = opts["label"] ?? toTitleCase(fieldName);
+// function buildFormScheme(info: Pick<DynamicFormOptionsMetaData, "fields" | "locales">, parentFormScheme: Map<string, Field>): void {
+//     const { fields, locales } = info;
+//     const fieldNamesSorted = sortFieldsByOrder(fields);
 
-    const inputs = {
-        required: opts["required"] === true,
-        text: opts["text"],
-        hidden: opts["hidden"] === true,
-        label,
-        placeholder: opts["placeholder"],
-        appearance: opts["appearance"],
-        fieldName,
-        hint: opts["hint"],
-        ...(opts["inputs"] || {}),
-    } as VisibleFormFieldOptions;
+//     for (const [key, fieldInfo] of fieldNamesSorted) {
+//         const { options, localize, target } = fieldInfo;
+//         const input = guessFieldInputType(target, key, options);
+//         //todo: introduce array field type instead of using fieldset
 
-    if (opts["floatLabel"] && !inputs.floatLabel) inputs.floatLabel = opts["floatLabel"];
-    if ("readonly" in inputs) inputs["readonly"] = inputs["readonly"] === true;
-    if ("disabled" in inputs) inputs["disabled"] = inputs["disabled"] === true;
+//         if (input === "fieldset") makeFieldset(key, options, target, localize, locales, parentFormScheme);
+//         else if (input === "group") makeFieldset(key, options, target, localize, locales, parentFormScheme);
+//         else makeField(key, options, target, localize, locales, parentFormScheme);
+//     }
 
-    return {
-        name: fieldName,
-        validations: options["validations"] || [],
-        ui: { inputs },
-    } as unknown as Field;
-}
+//     const translationsFieldset = parentFormScheme.get("translations");
+//     parentFormScheme.delete("translations");
+//     if (translationsFieldset && Object.keys(translationsFieldset)) parentFormScheme.set("translations", translationsFieldset);
+// }
 
-function makeFieldItem(
-    fieldName: string,
-    options: Partial<FormFieldOptions>,
-    target: any,
-    localize: boolean,
-    locales: DynamicFormOptionsMetaData["locales"],
-    parentFormScheme: Map<string, Field>,
-) {
-    const fieldBase = makeFormFieldOptions(fieldName, options);
-    const input = guessFieldInputType(target, fieldName, options);
+// function makeFormFieldOptions(fieldName: string, options: Partial<FormFieldOptions>) {
+//     const opts = options ?? {};
+//     const label = opts["label"] ?? toTitleCase(fieldName);
 
-    const field = fillFieldInputs(fieldName, fieldBase, input as any, options);
-    if (localize) _localizeField(fieldName, field, locales, parentFormScheme, options);
-    parentFormScheme[fieldName] = field;
-}
+//     const inputs = {
+//         required: opts["required"] === true,
+//         text: opts["text"],
+//         hidden: opts["hidden"] === true,
+//         label,
+//         placeholder: opts["placeholder"],
+//         appearance: opts["appearance"],
+//         fieldName,
+//         hint: opts["hint"],
+//         ...(opts["inputs"] || {}),
+//     } as VisibleFormFieldOptions;
 
-function makeFieldset(
-    name: string,
-    options: Partial<FormFieldOptions>,
-    target: any,
-    localize: boolean,
-    locales: DynamicFormOptionsMetaData["locales"],
-    parentFormScheme: Map<string, Field>,
-) {
-    const fieldset = { ...makeFormFieldOptions(name, options), type: "fieldset", items: new Map<string, Field>() } as Fieldset;
+//     if (opts["floatLabel"] && !inputs.floatLabel) inputs.floatLabel = opts["floatLabel"];
+//     if ("readonly" in inputs) inputs["readonly"] = inputs["readonly"] === true;
+//     if ("disabled" in inputs) inputs["disabled"] = inputs["disabled"] === true;
 
-    const propType = options.input?.["viewModel"] ?? Reflect.getMetadata("design:type", target, name);
-    const mirror: FormViewModelMirror = typeof propType === "function" ? reflectFormViewModelType(propType) : ({} as FormViewModelMirror);
-    fieldset.items = mirror.fields;
-    parentFormScheme.set(name, fieldset);
-}
+//     return {
+//         name: fieldName,
+//         validations: options["validations"] || [],
+//         ui: { inputs },
+//     } as unknown as Field;
+// }
 
-const makeTranslationFieldset = (name, label): Fieldset => {
-    return {
-        type: "fieldset",
-        input: "fieldset",
-        items: {},
-        ui: {
-            inputs: {
-                label,
-            },
-        },
-    } as Fieldset;
-};
+// function makeField(
+//     fieldName: string,
+//     options: Partial<FormFieldOptions>,
+//     target: any,
+//     localize: boolean,
+//     locales: DynamicFormOptionsMetaData["locales"],
+//     parentFormScheme: Map<string, Field>,
+// ) {
+//     const fieldBase = makeFormFieldOptions(fieldName, options);
+//     const input = guessFieldInputType(target, fieldName, options);
 
-const _localizeField = (
-    name: string,
-    field: Field,
-    locales: DynamicFormOptionsMetaData["locales"],
-    parentFormScheme: Map<string, Field>,
-    options: Partial<FormFieldOptions>,
-): void => {
-    if (field.type === "fieldset") return;
+//     const field = fillFieldInputs(fieldName, fieldBase, input as any, options);
+//     if (localize) _localizeField(fieldName, field, locales, parentFormScheme, options);
+//     parentFormScheme[fieldName] = field;
+// }
 
-    if (!locales) return;
-    const defaultLocale = (locales.defaultLocale ?? "").trim();
-    const translations = (locales.translations ?? []).filter((x) => (x ?? "").trim());
-    if (!defaultLocale.length || !translations.length) return;
+// function makeFieldset(
+//     name: string,
+//     options: Partial<FormFieldOptions>,
+//     target: any,
+//     localize: boolean,
+//     locales: DynamicFormOptionsMetaData["locales"],
+//     parentFormScheme: Map<string, Field>,
+// ) {
+//     const fieldset = { ...makeFormFieldOptions(name, options), input: "object", items: new Map<string, Field>() } as Fieldset;
 
-    parentFormScheme["translations"] ??= makeTranslationFieldset("translations", "Translations");
-    const translationFieldset = parentFormScheme["translations"] as Fieldset;
+//     const propType = options.input?.["viewModel"] ?? Reflect.getMetadata("design:type", target, name);
+//     const mirror: FormViewModelMirror = typeof propType === "function" ? reflectFormViewModelType(propType) : ({} as FormViewModelMirror);
+//     fieldset.items = mirror.fields;
+//     parentFormScheme.set(name, fieldset);
+// }
 
-    for (const locale of translations) {
-        let localeFieldset = (translationFieldset.items[locale] as Fieldset) ?? makeTranslationFieldset(locale, getLanguageInfo(locale).nativeName);
-        const translationField = cloneDeep(field);
-        localeFieldset.items[name] = translationField;
-        translationFieldset.items[locale] = localeFieldset;
-    }
-};
+// const makeTranslationFieldset = (name, label): Fieldset => {
+//     return {
+//         input: "object",
+//         items: {},
+//         ui: {
+//             inputs: {
+//                 label,
+//             },
+//         },
+//     } as Fieldset;
+// };
 
-function fixAdapterOptions(field: Field, options: Partial<FormFieldOptions>) {
-    if (options["adapter"]) {
-        const descriptor: DataAdapterDescriptor = options["adapter"] ?? { type: "client", data: [] };
-        field.ui.inputs["_adapter"] = descriptor;
-        delete field.ui.inputs["adapter"];
-        field.ui.inputs["minAllowed"] = options["minAllowed"];
-        field.ui.inputs["maxAllowed"] = options["maxAllowed"];
-    }
-}
-function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInputType, options: Partial<FormFieldOptions>): Field {
-    const field = {
-        ...base,
+// const _localizeField = (
+//     name: string,
+//     field: Field,
+//     locales: DynamicFormOptionsMetaData["locales"],
+//     parentFormScheme: Map<string, Field>,
+//     options: Partial<FormFieldOptions>,
+// ): void => {
+//     if ("items" in field) return;
+
+//     if (!locales) return;
+//     const defaultLocale = (locales.defaultLocale ?? "").trim();
+//     const translations = (locales.translations ?? []).filter((x) => (x ?? "").trim());
+//     if (!defaultLocale.length || !translations.length) return;
+
+//     parentFormScheme["translations"] ??= makeTranslationFieldset("translations", "Translations");
+//     const translationFieldset = parentFormScheme["translations"] as Fieldset;
+
+//     for (const locale of translations) {
+//         let localeFieldset = (translationFieldset.items[locale] as Fieldset) ?? makeTranslationFieldset(locale, getLanguageInfo(locale).nativeName);
+//         const translationField = cloneDeep(field);
+//         localeFieldset.items[name] = translationField;
+//         translationFieldset.items[locale] = localeFieldset;
+//     }
+// };
+
+// export function formInputArray(tableViewModel: Class, config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false }) {
+//     return formInput({
+//         input: "array",
+//         inputs: {
+//             viewModel: tableViewModel,
+//             tableHeaderComponent: {
+//                 component: TableHeaderComponent,
+//                 inputs: {
+//                     showSearch: config?.showSearch ?? false,
+//                     inlineEndSlot: config?.inlineEndSlot ?? [],
+//                 },
+//             },
+//         },
+//     });
+// }
+
+function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>): Field {
+    const input = fieldOptions.input;
+
+    const field: Field = {
         input,
-    } as Field;
-    field.type = input === "fieldset" ? "fieldset" : "field";
+        inputs: { ...fieldOptions.inputs },
+        validations: [],
+    };
 
-    fixAdapterOptions(field, options);
+    if (fieldOptions["adapter"]) {
+        const descriptor: DataAdapterDescriptor = fieldOptions["adapter"] ?? { type: "client", data: [] };
+        field.inputs["_adapter"] = descriptor;
+        field.inputs["minAllowed"] = fieldOptions["minAllowed"];
+        field.inputs["maxAllowed"] = fieldOptions["maxAllowed"];
+    }
+
+    if (fieldOptions["required"]) {
+        field.inputs["required"] = fieldOptions["required"];
+    }
+
+    if (fieldOptions.validations?.length) {
+        field.validations = fieldOptions.validations;
+    }
+
+    field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
+
     switch (input) {
         case "select":
             break;
@@ -321,47 +389,44 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
             break;
         case "checks":
         case "radios":
-            const choicesOptions = options as any;
-            field.ui.inputs["direction"] = choicesOptions.direction ?? "vertical";
-            field.ui.inputs["template"] = choicesOptions.template ?? "normal";
-            field.ui.inputs["thumbSize"] = choicesOptions.thumbSize ?? 50;
-            field.ui.inputs["renderer"] = choicesOptions.renderer ?? "none";
+            field.inputs["direction"] = fieldOptions.direction ?? "vertical";
+            field.inputs["template"] = fieldOptions.template ?? "normal";
+            field.inputs["thumbSize"] = fieldOptions.thumbSize ?? 50;
+            field.inputs["renderer"] = fieldOptions.renderer ?? "none";
             break;
+        case "object":
         case "fieldset":
-            const fieldsetOptions = options as any;
-            field.ui.inputs["label"] = fieldsetOptions.label ?? field.ui.inputs["label"];
             break;
-
         case "switch":
-            const switchOptions = options as any;
-            field.ui.inputs["template"] = switchOptions.template ?? "toggle";
-            field.ui.inputs["renderer"] = switchOptions.renderer ?? "none";
+            const switchOptions = fieldOptions as any;
+            field.inputs["template"] = switchOptions.template ?? "toggle";
+            field.inputs["renderer"] = switchOptions.renderer ?? "none";
             break;
         case "password":
-            const pwdOptions = options as any;
-            field.ui.inputs["showConfirmPasswordInput"] = pwdOptions.showConfirmPasswordInput ?? false;
-            field.ui.inputs["showPassword"] = pwdOptions.showPassword ?? false;
-            field.ui.inputs["canGenerateRandomPassword"] = pwdOptions.canGenerateRandomPassword ?? false;
-            field.ui.inputs["passwordStrength"] = pwdOptions.passwordStrength ?? new PasswordStrength();
-            field.ui.inputs["autocomplete"] = pwdOptions.autocomplete ?? "new-password";
+            const pwdOptions = fieldOptions as any;
+            field.inputs["showConfirmPasswordInput"] = pwdOptions.showConfirmPasswordInput ?? false;
+            field.inputs["showPassword"] = pwdOptions.showPassword ?? false;
+            field.inputs["canGenerateRandomPassword"] = pwdOptions.canGenerateRandomPassword ?? false;
+            field.inputs["passwordStrength"] = pwdOptions.passwordStrength ?? new PasswordStrength();
+            field.inputs["autocomplete"] = pwdOptions.autocomplete ?? "new-password";
             break;
         case "file":
-            const fileOptions = options as any;
-            field.ui.inputs["minAllowedFiles"] = fileOptions.minAllowedFiles;
-            field.ui.inputs["maxAllowedFiles"] = fileOptions.maxAllowedFiles;
-            field.ui.inputs["path"] = fileOptions.path || name;
-            field.ui.inputs["accept"] = fileOptions.accept || "*.*";
-            field.ui.inputs["view"] = fileOptions.view || "list";
-            field.ui.inputs["fileSelector"] = fileOptions.fileSelector || "system";
-            field.ui.inputs["color"] = fileOptions.color || "accent";
-            field.ui.inputs["dateFormat"] = fileOptions.dateFormat || "dd MMM yyyy";
-            field.ui.inputs["includeAccess"] = fileOptions.includeAccess || false;
-            field.ui.inputs["minSize"] = fileOptions.minSize || 0;
-            field.ui.inputs["maxSize"] = fileOptions.maxSize || 1024 * 1024 * 10;
+            const fileOptions = fieldOptions as any;
+            field.inputs["minAllowedFiles"] = fileOptions.minAllowedFiles;
+            field.inputs["maxAllowedFiles"] = fileOptions.maxAllowedFiles;
+            field.inputs["path"] = fileOptions.path || fieldName;
+            field.inputs["accept"] = fileOptions.accept || "*.*";
+            field.inputs["view"] = fileOptions.view || "list";
+            field.inputs["fileSelector"] = fileOptions.fileSelector || "system";
+            field.inputs["color"] = fileOptions.color || "accent";
+            field.inputs["dateFormat"] = fileOptions.dateFormat || "dd MMM yyyy";
+            field.inputs["includeAccess"] = fileOptions.includeAccess || false;
+            field.inputs["minSize"] = fileOptions.minSize || 0;
+            field.inputs["maxSize"] = fileOptions.maxSize || 1024 * 1024 * 10;
             break;
         case "html":
-            const htmlOptions = options as any;
-            field.ui.inputs["uploadPath"] = htmlOptions.uploadPath || name;
+            const htmlOptions = fieldOptions as any;
+            field.inputs["uploadPath"] = htmlOptions.uploadPath || fieldName;
             break;
         case "date":
             break;
@@ -374,15 +439,14 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
         case "chips":
             break;
         case "textarea":
-            if (options["rows"]) field.ui.inputs["rows"] = options["rows"];
-            if (options["maxRows"]) field.ui.inputs["maxRows"] = options["maxRows"];
-            if (options["minSize"]) field.ui.inputs["minSize"] = options["minSize"];
+            if (field["rows"]) field.inputs["rows"] = field["rows"];
+            if (field["maxRows"]) field.inputs["maxRows"] = field["maxRows"];
+            if (field["minSize"]) field.inputs["minSize"] = field["minSize"];
 
             break;
 
         default:
-            fixAdapterOptions(field, options);
-            field.ui.inputs = { ...field.ui.inputs, ...options };
+            field.inputs = { ...field.inputs, ...field };
     }
 
     // return make(field, options);
@@ -393,37 +457,37 @@ function fillFieldInputs(name: string, base: Field, input: DynamicFormFieldInput
 
     // if (input === 'switch') {
     //     const switchOptions = options as any;
-    //     field.ui.inputs['template'] = switchOptions.template ?? 'toggle';
-    //     field.ui.inputs['renderer'] = switchOptions.renderer ?? 'none';
+    //     field.inputs['template'] = switchOptions.template ?? 'toggle';
+    //     field.inputs['renderer'] = switchOptions.renderer ?? 'none';
     // }
     // if (input === 'password') {
     //     const pwdOptions = options as any;
-    //     field.ui.inputs['showConfirmPasswordInput'] = pwdOptions.showConfirmPasswordInput ?? false;
-    //     field.ui.inputs['showPassword'] = pwdOptions.showPassword ?? false;
-    //     field.ui.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
-    //     field.ui.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
-    //     field.ui.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
+    //     field.inputs['showConfirmPasswordInput'] = pwdOptions.showConfirmPasswordInput ?? false;
+    //     field.inputs['showPassword'] = pwdOptions.showPassword ?? false;
+    //     field.inputs['canGenerateRandomPassword'] = pwdOptions.canGenerateRandomPassword ?? false;
+    //     field.inputs['passwordStrength'] = pwdOptions.passwordStrength ?? new PasswordStrength();
+    //     field.inputs['autocomplete'] = pwdOptions.autocomplete ?? 'new-password';
     //     return make(field, options);
     // }
 
     // if (input === 'file') {
     //     const fileOptions = options as any;
-    //     field.ui.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
-    //     field.ui.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
-    //     field.ui.inputs['path'] = fileOptions.path || field.path || field.name;
-    //     field.ui.inputs['accept'] = fileOptions.accept || '*.*';
-    //     field.ui.inputs['view'] = fileOptions.view || 'list';
-    //     field.ui.inputs['fileSelector'] = fileOptions.fileSelector || 'system';
-    //     field.ui.inputs['color'] = fileOptions.color || 'accent';
-    //     field.ui.inputs['dateFormat'] = fileOptions.dateFormat || 'dd MMM yyyy';
-    //     field.ui.inputs['includeAccess'] = fileOptions.includeAccess || false;
-    //     field.ui.inputs['minSize'] = fileOptions.minSize || 0;
-    //     field.ui.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
+    //     field.inputs['minAllowedFiles'] = fileOptions.minAllowedFiles;
+    //     field.inputs['maxAllowedFiles'] = fileOptions.maxAllowedFiles;
+    //     field.inputs['path'] = fileOptions.path || field.path || field.name;
+    //     field.inputs['accept'] = fileOptions.accept || '*.*';
+    //     field.inputs['view'] = fileOptions.view || 'list';
+    //     field.inputs['fileSelector'] = fileOptions.fileSelector || 'system';
+    //     field.inputs['color'] = fileOptions.color || 'accent';
+    //     field.inputs['dateFormat'] = fileOptions.dateFormat || 'dd MMM yyyy';
+    //     field.inputs['includeAccess'] = fileOptions.includeAccess || false;
+    //     field.inputs['minSize'] = fileOptions.minSize || 0;
+    //     field.inputs['maxSize'] = fileOptions.maxSize || 1024 * 1024 * 10;
     //     return make(field, options);
     // }
     // if (input === 'html') {
     //     const htmlOptions = options as any;
-    //     field.ui.inputs['uploadPath'] = htmlOptions.path || field.path || field.name;
+    //     field.inputs['uploadPath'] = htmlOptions.path || field.path || field.name;
     //     return make(field, options);
     // }
 

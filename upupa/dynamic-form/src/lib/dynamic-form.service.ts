@@ -1,7 +1,7 @@
 import { Inject, Injectable, Type, inject } from '@angular/core';
 import { ValidatorFn } from '@angular/forms';
 
-import { FieldItem, Validator } from './types';
+import { Field, Validator } from './types';
 import { _mergeFields } from './dynamic-form.helper';
 import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
 import { DynamicComponentMapper, DynamicComponentMapping } from './types/types';
@@ -26,7 +26,7 @@ export class DynamicFormService {
         throw new Error(`Dynamic Service: UnrecognizedType: ${type} in theme: ${theme}`);
     }
 
-    addControlType(type: string, component: Type<any>, theme: string, field?: FieldItem) {
+    addControlType(type: string, component: Type<any>, theme: string, field?: Field) {
         this.componentMapper[theme][type] = { component, field };
     }
     getValidatorFactory(name: Validator['name']): (control) => ValidatorFn {

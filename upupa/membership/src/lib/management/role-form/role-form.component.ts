@@ -38,7 +38,7 @@ export class RoleFormComponent {
         }
 
         this.fields = { ...this._fields };
-        this.fields["_id"].ui.inputs["readonly"] = this._readonly;
+        this.fields["_id"].inputs["readonly"] = this._readonly;
     }
 
     async onAction(e: ActionEvent) {
