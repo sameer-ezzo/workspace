@@ -72,6 +72,7 @@ export type FieldOptions =
                         maxRows?: number;
                     })
               | ({ input: "phone" } & TextFieldOptions)
+              | ({ input: "email" } & TextFieldOptions)
               | ({ input: "password" } & TextFieldOptions & {
                         showConfirmPasswordInput?: boolean;
                         showPassword?: boolean;

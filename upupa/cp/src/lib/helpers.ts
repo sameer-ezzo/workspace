@@ -136,10 +136,13 @@ async function editFormDialog<T>(vm: Class, value = readInput("item", this), con
 async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: Injector; dialogOptions?: DialogServiceConfig }) {
     const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
     const opts: DialogServiceConfig = {
-        dialogActions: [{ text: "Submit", type: "submit", color: "primary" } as ActionDescriptor],
         ...context?.dialogOptions,
     };
     const mirror = reflectFormViewModelType(vm);
+    let hasSubmit = mirror.onSubmitAction || (mirror.actions ?? []).find((a) => a.type === "submit");
+
+    if (!hasSubmit) opts.dialogActions = [{ text: "Submit", type: "submit", color: "primary" } as ActionDescriptor];
+
     const dialogRef = dialog.openDialog(
         { component: DataFormWithViewModelComponent, injector: context?.injector },
         {
@@ -148,6 +151,8 @@ async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: I
         },
     );
     const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef["afterAttached"]());
+    if (hasSubmit) return { dialogRef, componentRef };
+
     const dialogWrapper = dialogRef.componentInstance as UpupaDialogComponent;
     const actions = dialogWrapper.dialogActions;
     const submitAction = actions().find((a) => a.type === "submit");
@@ -201,12 +206,6 @@ async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any
     } catch (error) {
         snack.openFailed("", error);
     }
-}
-
-export function deleteValueFromAdapter(item: any) {
-    const adapter = inject(DataAdapter);
-    if (!adapter) throw new Error("DataAdapter is required");
-    adapter.delete(item);
 }
 
 export function deleteValueFromApi(path: string) {

@@ -15,6 +15,7 @@ import { AuthService } from "./auth.svr";
 import { MongooseModule } from "@nestjs/mongoose";
 import { userSchemaFactory } from "./user.schema";
 import { roleSchema } from "./role.schema";
+import { Schema } from "mongoose";
 
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
@@ -58,10 +59,11 @@ export class AuthModule implements OnModuleInit {
     async onModuleInit() {}
 
     static register(
-        options: Partial<AuthOptions> = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
+        modelOptions: { dbName: string; userSchema: Schema; prefix?: string } = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
+        authOptions: Partial<AuthOptions> = {},
     ): DynamicModule {
-        if (!options || !options.userSchema || !options.dbName) throw new Error("Invalid options passed to AuthModule.register");
-        options = { ..._authOptions, ...options } as AuthOptions;
+        if (!modelOptions || !modelOptions.userSchema || !modelOptions.dbName) throw new Error("Invalid options passed to AuthModule.register");
+        const options = { ..._authOptions, ...authOptions } as AuthOptions;
         if (options.secret !== __secret()) {
             logger.warn("Auth secret has been overridden (the one passed in env is used)");
             options.secret = __secret();
@@ -77,11 +79,11 @@ export class AuthModule implements OnModuleInit {
 
         const providers: Provider[] = [
             AuthService,
-            { provide: "UserSchema", useValue: options.userSchema },
+            { provide: "UserSchema", useValue: modelOptions.userSchema },
             { provide: "AUTH_OPTIONS", useValue: options },
             {
                 provide: "DB_AUTH",
-                useExisting: getDataServiceToken(options.dbName),
+                useExisting: getDataServiceToken(modelOptions.dbName),
             },
         ];
 
@@ -99,10 +101,10 @@ export class AuthModule implements OnModuleInit {
                 PassportModule,
                 MongooseModule.forFeature(
                     [
-                        { name: "user", schema: options.userSchema },
-                        { name: "role", schema: roleSchema },
+                        { name: "user", collection: `${modelOptions.prefix ?? ""}user`, schema: modelOptions.userSchema },
+                        { name: "role", collection: `${modelOptions.prefix ?? ""}role`, schema: roleSchema },
                     ],
-                    options.dbName,
+                    modelOptions.dbName,
                 ),
             ],
             controllers: [],
