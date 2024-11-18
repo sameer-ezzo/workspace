@@ -95,7 +95,8 @@ export type FieldOptions =
                     editorType: "decoupled" | "classic";
                 })
               | ({ input: "array" } & TableInputOptions)
-              | ({ input: "chips" } & {
+              | ({ input: "table" } & TableInputOptions)
+              | ({ input: "chips" } & AdapterFieldOptions & {
                     parentPath?: string;
                     visible?: boolean;
                     selectable?: boolean;

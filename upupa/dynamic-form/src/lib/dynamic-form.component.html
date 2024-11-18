@@ -23,41 +23,34 @@
     @let ui = field.ui;
     @let input = field.input;
 
-    @switch (field.input) {
-        @case ("fieldset") {
-            <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="control" [class.hidden]="ui?.hidden === true">
-                @if (field.inputs?.label) {
-                    <legend>{{ field.inputs.label }}</legend>
-                }
-                <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control, fieldName }"></ng-container>
-            </fieldset>
-        }
-        @case ("group") {
-            <mat-expansion-panel [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
-                <mat-expansion-panel-header>
-                    <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
-                </mat-expansion-panel-header>
-                <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
-            </mat-expansion-panel>
-        }
-        @case ("array") {
-            <p>Array Field Not Supported</p>
-        }
-        @case ("page-breaker") {
-            <p style="display: none"></p>
-        }
-        @case ("paragraph") {
-            <paragraph
-                [attr.name]="fieldName + '-text'"
-                class="{{ input }}-input-text {{ fieldName }}-container-text"
-                [class.hidden]="ui?.hidden === true"
-                [text]="field.text"
-                [renderer]="field.inputs?.['renderer'] || 'markdown'"
-            ></paragraph>
-        }
-        @default {
-            <field [name]="fieldName" [field]="field" [formControl]="control" [control]="control"></field>
-        }
+    @if (field.input === "fieldset" || field.input === "object") {
+        <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="control" [class.hidden]="ui?.hidden === true">
+            @if (field.inputs?.label) {
+                <legend>{{ field.inputs.label }}</legend>
+            }
+            <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control, fieldName }"></ng-container>
+        </fieldset>
+    } @else if (field.input === "group") {
+        <mat-expansion-panel [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
+            <mat-expansion-panel-header>
+                <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
+            </mat-expansion-panel-header>
+            <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+        </mat-expansion-panel>
+    } @else if (field.input === "array") {
+        <p>Array Field Not Supported</p>
+    } @else if (field.input === "page-breaker") {
+        <p style="display: none"></p>
+    } @else if (field.input === "paragraph") {
+        <paragraph
+            [attr.name]="fieldName + '-text'"
+            class="{{ input }}-input-text {{ fieldName }}-container-text"
+            [class.hidden]="ui?.hidden === true"
+            [text]="field.text"
+            [renderer]="field.inputs?.['renderer'] || 'markdown'"
+        ></paragraph>
+    } @else {
+        <field [name]="fieldName" [field]="field" [formControl]="control" [control]="control"></field>
     }
 </ng-template>
 

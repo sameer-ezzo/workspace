@@ -24,7 +24,11 @@ import { InputDefaults } from "../defaults";
     ],
 })
 export class SelectComponent<T = any> extends ValueDataComponentBase<T> implements Validator {
-    selectInput = viewChild<MatSelect>(MatSelect);
+    noOption() {
+        console.log("NOT IMPLEMENTED");
+        return false;
+    }
+
     _flag = false;
     validate(control: AbstractControl): ValidationErrors | null {
         if (this._flag && control.value && this.noOption() && this.dataLoaded()) {
@@ -40,11 +44,6 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> implemen
     }
 
     ngAfterViewInit() {
-        this.selectInput().selectionChange.subscribe((e) => {
-            this.value.set(this.control().value);
-            this.control().updateValueAndValidity();
-        });
-
         setTimeout(() => {
             this._flag = true;
             this.control().updateValueAndValidity();
@@ -55,11 +54,6 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> implemen
             const _filter = { ...filter, ...(this.adapter().normalizeFilter(v) || {}) };
             this.adapter().filter = _filter;
         });
-    }
-
-    noOption() {
-        const select = this.selectInput();
-        return Array.isArray(select.selected) ? !select.selected.length : !select.selected;
     }
 
     inlineError = true;

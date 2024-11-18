@@ -157,6 +157,7 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
 
         const display = this.extract(item, this.displayProperty, item, true);
         let valueProperty = Array.isArray(this.valueProperty) ? [this.keyProperty, ...this.valueProperty] : [this.keyProperty, this.valueProperty];
+        valueProperty = Array.from(new Set(valueProperty));
 
         // if item is primitive type like string then no need to extract.
         let value = item as any;

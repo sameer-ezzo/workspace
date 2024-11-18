@@ -85,6 +85,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             await vm["onValueChange"]?.(e);
+            this.form().patchValue(vm, { emitEvent: false });
         });
     }
 
