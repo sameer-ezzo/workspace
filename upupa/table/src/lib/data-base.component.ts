@@ -17,7 +17,6 @@ import { Sort } from "@angular/material/sort";
 import { firstValueFrom } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-import { delay } from "@noah-ark/common";
 
 
 @Component({
@@ -36,7 +35,7 @@ export class DataComponentBase<T = any> {
     });
 
     add = output();
-    lazyLoadData = input(true);
+    lazyLoadData = input(false);
     loading = signal(false);
     dataLoaded = signal(false);
 
@@ -80,7 +79,6 @@ export class DataComponentBase<T = any> {
         if (this.dataLoaded()) return;
         if (!this.adapter().dataSource.allDataLoaded) {
             this.loading.set(true);
-            await delay(5000)
             this.adapter().refresh();
             await firstValueFrom(this.adapter().normalized$);
             this.loading.set(false);
