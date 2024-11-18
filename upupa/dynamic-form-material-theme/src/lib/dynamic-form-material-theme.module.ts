@@ -66,6 +66,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
         },
     },
     array: { component: MatArrayInputComponent },
+    table: { component: MatArrayInputComponent },
     checks: {
         component: MatChoicesComponent,
         field: {

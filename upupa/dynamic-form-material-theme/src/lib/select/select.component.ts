@@ -26,5 +26,18 @@ import { isEmpty, set } from "lodash";
     ],
 })
 export class MatSelectComponent<T = any> extends SelectComponent<T> implements Validator {
-    override selectInput = viewChild<MatSelect>(MatSelect);
+    selectInput = viewChild<MatSelect>(MatSelect);
+
+    override ngAfterViewInit() {
+        super.ngAfterViewInit();
+        this.selectInput().selectionChange.subscribe((e) => {
+            this.value.set(this.control().value);
+            this.control().updateValueAndValidity();
+        });
+    }
+
+    override noOption() {
+        const select = this.selectInput();
+        return Array.isArray(select.selected) ? !select.selected.length : !select.selected;
+    }
 }

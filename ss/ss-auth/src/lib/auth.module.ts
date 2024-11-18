@@ -15,7 +15,6 @@ import { AuthService } from "./auth.svr";
 import { MongooseModule } from "@nestjs/mongoose";
 import { userSchemaFactory } from "./user.schema";
 import { roleSchema } from "./role.schema";
-import { Schema } from "mongoose";
 
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
@@ -59,28 +58,27 @@ export class AuthModule implements OnModuleInit {
     async onModuleInit() {}
 
     static register(
-        options: { dbName: string; userSchema: Schema } = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
-        authOptions: Partial<AuthOptions> = {},
+        options: Partial<AuthOptions> = { dbName: "DB_DEFAULT", userSchema: userSchemaFactory("ObjectId") },
     ): DynamicModule {
         if (!options || !options.userSchema || !options.dbName) throw new Error("Invalid options passed to AuthModule.register");
-        authOptions = { ..._authOptions, ...authOptions } as AuthOptions;
-        if (authOptions.secret !== __secret()) {
+        options = { ..._authOptions, ...options } as AuthOptions;
+        if (options.secret !== __secret()) {
             logger.warn("Auth secret has been overridden (the one passed in env is used)");
-            authOptions.secret = __secret();
+            options.secret = __secret();
         }
-        if (!authOptions.secret) {
+        if (!options.secret) {
             logger.error("Auth secret is not set");
 
             const prod = process.env.NODE_PROD === "production";
-            authOptions.secret = prod ? randomString(10) : "dev-secret-PLEASE-CHANGE!";
-            process.env.secret = authOptions.secret;
-            process.env.SECRET = authOptions.secret;
+            options.secret = prod ? randomString(10) : "dev-secret-PLEASE-CHANGE!";
+            process.env.secret = options.secret;
+            process.env.SECRET = options.secret;
         }
 
         const providers: Provider[] = [
             AuthService,
             { provide: "UserSchema", useValue: options.userSchema },
-            { provide: "AUTH_OPTIONS", useValue: authOptions },
+            { provide: "AUTH_OPTIONS", useValue: options },
             {
                 provide: "DB_AUTH",
                 useExisting: getDataServiceToken(options.dbName),
@@ -88,8 +86,8 @@ export class AuthModule implements OnModuleInit {
         ];
 
         //EXTERNAL AUTH
-        if (authOptions.externalAuth?.google) providers.push(GoogleStrategy);
-        if (authOptions.externalAuth?.facebook) providers.push(FacebookStrategy);
+        if (options.externalAuth?.google) providers.push(GoogleStrategy);
+        if (options.externalAuth?.facebook) providers.push(FacebookStrategy);
 
         return {
             global: true,

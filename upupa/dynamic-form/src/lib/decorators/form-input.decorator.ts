@@ -175,7 +175,7 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
             const group = (fields[groupName] as Fieldset) ?? {
                 input: "group",
                 items: {},
-                inputs: { label: groupName },
+                inputs: { label: toTitleCase(groupName) },
             };
 
             group.items[fieldName] = field;
@@ -340,21 +340,22 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
 //     }
 // };
 
-// export function formInputArray(tableViewModel: Class, config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false }) {
-//     return formInput({
-//         input: "array",
-//         inputs: {
-//             viewModel: tableViewModel,
-//             tableHeaderComponent: {
-//                 component: TableHeaderComponent,
-//                 inputs: {
-//                     showSearch: config?.showSearch ?? false,
-//                     inlineEndSlot: config?.inlineEndSlot ?? [],
-//                 },
-//             },
-//         },
-//     });
-// }
+export function formInputArray(tableViewModel: Class, config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false }, options?: Partial<FieldOptions>) {
+    return formInput({
+        ...options,
+        input: "table",
+        inputs: {
+            viewModel: tableViewModel,
+            tableHeaderComponent: {
+                component: TableHeaderComponent,
+                inputs: {
+                    showSearch: config?.showSearch ?? false,
+                    inlineEndSlot: config?.inlineEndSlot ?? [],
+                },
+            },
+        },
+    });
+}
 
 function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>): Field {
     const input = fieldOptions.input;

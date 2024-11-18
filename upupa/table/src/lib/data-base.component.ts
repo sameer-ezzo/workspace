@@ -1,10 +1,8 @@
 import {
     Component,
-    DestroyRef,
     EventEmitter,
     Injector,
     Output,
-    Signal,
     SimpleChanges,
     computed,
     effect,
@@ -12,17 +10,15 @@ import {
     input,
     model,
     output,
-    runInInjectionContext,
     signal,
 } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { BehaviorSubject, firstValueFrom } from "rxjs";
+import { firstValueFrom } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-
-import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
 import { delay } from "@noah-ark/common";
+
 
 @Component({
     selector: "data-base",
@@ -84,6 +80,7 @@ export class DataComponentBase<T = any> {
         if (this.dataLoaded()) return;
         if (!this.adapter().dataSource.allDataLoaded) {
             this.loading.set(true);
+            await delay(5000)
             this.adapter().refresh();
             await firstValueFrom(this.adapter().normalized$);
             this.loading.set(false);
