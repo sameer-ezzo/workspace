@@ -78,6 +78,8 @@
             } @empty {
                 @if (dataLoaded()) {
                     <mat-option disabled> No items found </mat-option>
+                } @else if(!loading()) {
+                    <mat-option disabled> Loading ... </mat-option>
                 }
             }
 
