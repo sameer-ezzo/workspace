@@ -32,7 +32,7 @@ export class InlineButtonComponent {
     }
 }
 
-export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; item: any; handler: (instance) => void }): Type<any> | DynamicComponent {
+export function inlineButton(options: { descriptor?: Partial<ActionDescriptor>; item: any; handler: (instance) => void }): DynamicComponent {
     const template = {
         component: InlineButtonComponent,
         inputs: {
@@ -52,7 +52,7 @@ export function createButton(
     formViewModel: Class,
     value?: () => any | Promise<any>,
     options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogServiceConfig> },
-): Type<any> | DynamicComponent {
+): DynamicComponent {
     if (!formViewModel) throw new Error("formViewModel is required");
     const btnDescriptor: Partial<ActionDescriptor> = {
         text: "Create",

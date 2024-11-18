@@ -1,5 +1,6 @@
 <form #ngFormRef="ngForm" [formGroup]="form()" [name]="name()" [attr.id]="name()" (ngSubmit)="onSubmit($event)">
     @for (record of fields() | orderedKeyValue; track $index) {
+        @let field = record.value;
         @let fieldName = record.key;
 
         <ng-container
@@ -8,6 +9,7 @@
                 context: {
                     fieldName,
                     group: form(),
+                    field: record.value,
                 }
             "
         ></ng-container>
@@ -16,54 +18,70 @@
     <input type="submit" style="display: none" />
 </form>
 
-<!-- <ng-template #fieldTemplate let-field="field" let-template="template" let-formGroup="form" > -->
-<ng-template #fieldTemplate let-fieldName="fieldName" let-group="group">
+<ng-template #fieldTemplate let-fieldName="fieldName" let-group="group" let-field="field">
     @let control = group.get(fieldName);
-    @let field = control['field']();
     @let ui = field.ui;
     @let input = field.input;
-    @if (field.type === 'fieldset' || field.type === 'array') {
-        <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="group" [class.hidden]="ui?.hidden === true">
-            @if (input === 'paragraph' || field.text) {
-                <paragraph [text]="field.text" [renderer]="ui?.inputs?.['renderer'] || 'markdown'"></paragraph>
-            }
-            @if (ui?.inputs?.label) {
-                <legend>{{ ui.inputs.label }}</legend>
-            }
-            @for (record of field.items | orderedKeyValue; track $index) {
-                @let _fieldName = record.key;
-                <ng-container
-                    *ngTemplateOutlet="
-                        fieldTemplate;
-                        context: {
-                            fieldName: _fieldName,
-                            group: control,
-                        }
-                    "
-                ></ng-container>
-            }
-        </fieldset>
-    } @else {
-        @switch (input) {
-            @case ('page-breaker') {
-                <p style="display: none"></p>
-            }
-            @case ('paragraph') {
-                <paragraph
-                    [attr.name]="fieldName + '-text'"
-                    class="{{ input }}-input-text {{ fieldName }}-container-text"
-                    [class.hidden]="ui?.hidden === true"
-                    [text]="field.text"
-                    [renderer]="ui?.inputs?.['renderer'] || 'markdown'"
-                ></paragraph>
-            }
-            @default {
-                <field [name]="fieldName" [field]="field" [formControl]="control" [control]="control"></field>
-            }
+
+    @switch (field.input) {
+        @case ("fieldset") {
+            <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="control" [class.hidden]="ui?.hidden === true">
+                @if (field.inputs?.label) {
+                    <legend>{{ field.inputs.label }}</legend>
+                }
+                <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control, fieldName }"></ng-container>
+            </fieldset>
+        }
+        @case ("group") {
+            <mat-expansion-panel [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
+                <mat-expansion-panel-header>
+                    <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
+                </mat-expansion-panel-header>
+                <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+            </mat-expansion-panel>
+        }
+        @case ("array") {
+            <p>Array Field Not Supported</p>
+        }
+        @case ("page-breaker") {
+            <p style="display: none"></p>
+        }
+        @case ("paragraph") {
+            <paragraph
+                [attr.name]="fieldName + '-text'"
+                class="{{ input }}-input-text {{ fieldName }}-container-text"
+                [class.hidden]="ui?.hidden === true"
+                [text]="field.text"
+                [renderer]="field.inputs?.['renderer'] || 'markdown'"
+            ></paragraph>
+        }
+        @default {
+            <field [name]="fieldName" [field]="field" [formControl]="control" [control]="control"></field>
         }
     }
 </ng-template>
 
 <ng-template #icon>
     <mat-icon mat-list-icon color="error">error</mat-icon>
+</ng-template>
+
+<ng-template #fieldsetTemplate let-fieldName="fieldName" let-field="field" let-control="control">
+    @let input = field.input;
+
+    @if (input === "paragraph" || field.text) {
+        <paragraph [text]="field.text" [renderer]="field.inputs?.['renderer'] || 'markdown'"></paragraph>
+    }
+    @for (record of field.items | orderedKeyValue; track $index) {
+        @let _fieldName = record.key;
+        <ng-container
+            *ngTemplateOutlet="
+                fieldTemplate;
+                context: {
+                    fieldName: _fieldName,
+                    group: control,
+                    field: record.value,
+                }
+            "
+        ></ng-container>
+    }
 </ng-template>

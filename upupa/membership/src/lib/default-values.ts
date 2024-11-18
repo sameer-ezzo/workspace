@@ -1,13 +1,10 @@
 import { PasswordStrength } from "@upupa/auth";
-import { FieldItem, formInput, formScheme, FormScheme, switchField } from "@upupa/dynamic-form";
+import { Field, FieldItem, formInput, formScheme, FormScheme, switchField } from "@upupa/dynamic-form";
 
 export const defaultVerifyCodeField: FormScheme = {
     code: {
-        type: "field",
         input: "text",
-        ui: {
-            inputs: { label: "Code", placeholder: "Enter the 6-digit code" },
-        },
+        inputs: { label: "Code", placeholder: "Enter the 6-digit code" },
         validations: [
             { name: "required" },
             { name: "length", arguments: 6, message: "Code must be 6 digits" },
@@ -17,15 +14,10 @@ export const defaultVerifyCodeField: FormScheme = {
                 message: "Code must be 6 digits",
             },
         ],
-    } as FieldItem,
+    } as Field,
 };
 
-export const defaultEmailField: FieldItem = {
-    type: "field",
-    input: "email",
-    ui: { inputs: { label: "Email", placeholder: "Use a valid email" } },
-    validations: [{ name: "required" }, { name: "email" }],
-};
+
 
 @formScheme()
 export class LoginFormViewModel {
@@ -36,6 +28,26 @@ export class LoginFormViewModel {
     @formInput({ input: "switch" })
     rememberMe = true;
 }
+export const defaultEmailField: Field = {
+    input: "email",
+    inputs: { label: "Email", placeholder: "Use a valid email" },
+    validations: [{ name: "required" }, { name: "email" }],
+};
+
+export const defaultLoginFormFields: FormScheme = {
+    email: defaultEmailField,
+    password: {
+        input: "text",
+        inputs: {
+            label: "Password",
+            type: "password",
+            placeholder: "Password",
+            PasswordStrength: null,
+        },
+        validations: [{ name: "required" }],
+    },
+    rememberMe: switchField("rememberMe", "Remember Me"),
+};
 
 export const defaultForgotPasswordFormFields: FormScheme = {
     email: defaultEmailField,
@@ -43,24 +55,19 @@ export const defaultForgotPasswordFormFields: FormScheme = {
 
 export const defaultVerifyFormFields: FormScheme = {
     token: {
-        type: "field",
         input: "hidden",
-        ui: { validations: [{ name: "required" }] },
+        validations: [{ name: "required" }],
     },
 };
 
-export const userFullNameField: FieldItem = {
-    type: "field",
+export const userFullNameField: Field = {
     input: "text",
-    ui: {
-        inputs: { label: "Full Name", placeholder: "Ex: John Doe" },
-    },
+    inputs: { label: "Full Name", placeholder: "Ex: John Doe" },
 };
 
-export const userNameField: FieldItem = {
-    type: "field",
+export const userNameField: Field = {
     input: "text",
-    ui: { inputs: { label: "Username", placeholder: "Ex: x_man" } },
+    inputs: { label: "Username", placeholder: "Ex: x_man" },
     validations: [
         { name: "required" },
         { name: "minLength", arguments: 3 },
@@ -74,7 +81,6 @@ export const userNameField: FieldItem = {
 };
 
 export const passwordField = {
-    type: "field",
     input: "password",
     name: "password",
 
@@ -82,7 +88,7 @@ export const passwordField = {
     canGenerateRandomPassword: true,
     showConfirmPasswordInput: true,
     validations: [{ name: "required" }],
-} as FieldItem;
+} as Field;
 
 export const defaultSignupFormFields: FormScheme = {
     email: defaultEmailField,

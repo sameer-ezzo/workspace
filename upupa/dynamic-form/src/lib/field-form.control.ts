@@ -1,6 +1,6 @@
 import { WritableSignal } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Fieldset, FieldItem } from './types';
+import { Fieldset, Field } from './types';
 
 export class FieldFormGroup extends FormGroup {
     path: `/${string}`;
@@ -10,14 +10,13 @@ export class FieldFormGroup extends FormGroup {
 }
 export class FieldFormControl extends FormControl {
     path: `/${string}`;
-    field: WritableSignal<FieldItem>;
+    field: WritableSignal<Field>;
     name: string;
     form: FormGroup;
 
     setVisibility(visible: boolean) {
         const f = this.field();
-        f.ui ??= {};
-        f.ui.hidden = !visible;
+        f.hidden = !visible;
         this.field.set({ ...f });
     }
 }

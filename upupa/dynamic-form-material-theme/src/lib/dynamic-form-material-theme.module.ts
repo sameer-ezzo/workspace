@@ -5,7 +5,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UtilsModule } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
-import { TranslationModule } from '@upupa/language';
 import { DataTableModule } from '@upupa/table';
 import { UploadModule } from '@upupa/upload';
 import { MatAddressComponent } from './address-edit/address.component';
@@ -30,17 +29,18 @@ import { MatTextAreaComponent } from './text-area/text-area.component';
 import { MatTreeComponent } from './tree/tree.component';
 import { EmailValidator } from '@upupa/dynamic-form';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+
 export const DF_MATERIAL_THEME_INPUTS = {
     text: { component: MatInputComponent },
     hidden: { component: HiddenInputComponent },
     phone: {
         component: MatPhoneInputComponent,
-        field: { ui: { inputs: { placeholder: '(xxx) xxx xx xx' } } },
+        field: { inputs: { placeholder: '(xxx) xxx xx xx' } },
     },
     password: { component: MatPasswordInputComponent },
     number: {
         component: MatNumberComponent,
-        field: { ui: { inputs: { type: 'number' } } },
+        field: { inputs: { type: 'number' } },
     },
     'number-range': { component: MatNumbersRangeComponent },
     slider: { component: MatSliderComponent },
@@ -48,7 +48,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
     email: {
         component: MatInputComponent,
         field: {
-            ui: { inputs: { type: 'email' } },
+            inputs: { type: 'email' },
             validations: [{ name: 'email' } as EmailValidator],
         },
     },
@@ -62,14 +62,14 @@ export const DF_MATERIAL_THEME_INPUTS = {
     radios: {
         component: MatChoicesComponent,
         field: {
-            ui: { inputs: { maxAllowed: 1 } },
+            inputs: { maxAllowed: 1 },
         },
     },
     array: { component: MatArrayInputComponent },
     checks: {
         component: MatChoicesComponent,
         field: {
-            ui: { inputs: { maxAllowed: 1000 } },
+            inputs: { maxAllowed: 1000 },
         },
     },
     switch: { component: MatSwitchComponent },
@@ -90,7 +90,6 @@ const declarations = [
     MatPasswordInputComponent,
     MatInputComponent,
     MatChoicesComponent,
-
     MatColorInputComponent,
     MatAutoCompleteTextComponent,
     MatAddressComponent,

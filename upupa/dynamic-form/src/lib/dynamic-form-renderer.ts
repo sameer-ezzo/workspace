@@ -1,25 +1,25 @@
-import { ValidatorFn, FormGroup, UntypedFormGroup, AbstractControl } from '@angular/forms';
-import { _mergeFields } from './dynamic-form.helper';
-import { DynamicFormService } from './dynamic-form.service';
-import { Field, FieldItem, Validator, FormScheme, Fieldset } from './types';
-import { JsonPointer } from '@noah-ark/json-patch';
-import { cloneDeep } from 'lodash';
-import { Signal, signal } from '@angular/core';
-import { name } from 'platform';
-import { FieldFormControl, FieldFormGroup } from './field-form.control';
-import { FormGraph } from './dynamic-form.component';
+import { ValidatorFn, FormGroup, UntypedFormGroup, AbstractControl } from "@angular/forms";
+import { _mergeFields } from "./dynamic-form.helper";
+import { DynamicFormService } from "./dynamic-form.service";
+import { Field, Validator, FormScheme, Fieldset } from "./types";
+import { JsonPointer } from "@noah-ark/json-patch";
+import { cloneDeep } from "lodash";
+import { Signal, signal } from "@angular/core";
+import { name } from "platform";
+import { FieldFormControl, FieldFormGroup } from "./field-form.control";
+import { FormGraph } from "./dynamic-form.component";
 
 export class DynamicFormBuilder {
     constructor(private readonly formService: DynamicFormService) {}
 
-    build(form: FormGroup, scheme: FormScheme, value: any, path = '/', rootForm: FormGroup = form): FormGraph {
+    build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGraph {
         const graph = new Map<string, FieldFormControl | FieldFormGroup>();
         // this.removeControls(form);
         for (const fieldName in scheme) {
             const field = scheme[fieldName];
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
-            if (field.type === 'fieldset') {
+            if (field.input === "fieldset") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });
@@ -28,7 +28,12 @@ export class DynamicFormBuilder {
                 for (const [key, value] of subControls) {
                     graph.set(key, value);
                 }
-            } else if (field.type == 'array') {
+            } else if (field.input == "group") {
+                const subControls = this.build(form, field.items, fieldValue, path, rootForm);
+                for (const [key, value] of subControls) {
+                    graph.set(key, value);
+                }
+            } else if (field.input == "array") {
                 // const array = new FormArray([], { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
                 // array["name"] = field.name;
                 // form.addControl(fieldName, array);
@@ -58,7 +63,7 @@ export class DynamicFormBuilder {
         group.form = rootForm;
         return group;
     }
-    getControl(name: string, field: FieldItem, value: any, path: `/${string}`) {
+    getControl(name: string, field: Field, value: any, path: `/${string}`) {
         const control = new FieldFormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
         control.name = name;
         control.path = path;
@@ -72,7 +77,7 @@ export class DynamicFormBuilder {
     //         const field = fields[i];
     //         field.name = `${i}`;
     //         const fieldValue = value[i];
-    //         if (field.type === "fieldset") {
+    //         if (field.input === "fieldset") {
     //             const group = new FormGroup(
     //                 {},
     //                 {
@@ -82,7 +87,7 @@ export class DynamicFormBuilder {
     //             );
     //             array.push(group);
     //             this.build(group, field.items, fieldValue);
-    //         } else if (field.type == "array") {
+    //         } else if (field.input == "array") {
     //             const nestedArray = new FormArray([], {
     //                 validators: this.getValidators(field),
     //                 asyncValidators: this.getAsyncValidators(field),
@@ -103,17 +108,16 @@ export class DynamicFormBuilder {
     }
     getValidators(field: Field) {
         const validations = field.validations ?? [];
-        const isRequired = field.ui?.inputs?.['required'] ?? false;
-        const requiredValidators = validations.filter((v) => v.name === 'required' || v.name === 'requiredTrue');
+        const isRequired = field.inputs?.["required"] ?? false;
+        const requiredValidators = validations.filter((v) => v.name === "required" || v.name === "requiredTrue");
 
         if (isRequired && requiredValidators.length === 0) {
-            validations.push({ name: 'required' });
+            validations.push({ name: "required" });
         }
 
         if (isRequired || requiredValidators.length > 0) {
-            field.ui ??= {};
-            field.ui.inputs ??= {};
-            field.ui.inputs['required'] = true;
+            field.inputs ??= {};
+            field.inputs["required"] = true;
         }
 
         return validations.map((v) => this.getValidator(v, name, field));
