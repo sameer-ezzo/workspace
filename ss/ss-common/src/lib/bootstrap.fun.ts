@@ -99,6 +99,7 @@ export async function bootstrap(
     } else {
         logger.info(`Starting application ${applicationName}`);
         const app = await _bootstrap(applicationName, module, port, options);
+        logger.info(`application ${applicationName} started`);
         return app;
     }
 }

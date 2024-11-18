@@ -81,7 +81,7 @@ export class AuthService {
 
     private setupBeforeUnloadListener(): void {
         console.warn('CREDS WILL BE REMOVED ON UNLOAD');
-
+        
         window.addEventListener('beforeunload', (event) => {
             this.setTokens(null)
         });

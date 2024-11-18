@@ -9,48 +9,10 @@ import { ClientDataSource, DataAdapter, DataService, NormalizedItem } from "@upu
 import { Class } from "@noah-ark/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
-import { run } from "node:test";
 import { reflectFormViewModelType } from "@upupa/dynamic-form";
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
-}
-
-@Component({
-    selector: "create-button",
-    imports: [MatBtnComponent],
-    standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
-    styles: [],
-})
-export class CreateButtonComponent {
-    viewModel = input.required<Class>();
-    value = input<any>(null);
-    buttonDescriptor = input.required<ActionDescriptor>();
-    options = input.required<{
-        handler: () => Promise<any>;
-    }>();
-    dialog = inject(DialogService);
-
-    readonly injector = inject(Injector);
-    private readonly table = inject(DataTableComponent);
-    async onClick(e: ActionEvent) {
-        const callable = editFormDialog.bind(this);
-        runInInjectionContext(this.injector, () => callable(this.viewModel()));
-
-        // const vm = this.viewModel();
-
-        // const ref = this.dialog.openDialog(DataFormWithViewModelComponent, {
-        //     title: 'Create',
-        //     inputs: { viewModel: vm },
-        // });
-
-        // const result = await firstValueFrom(ref.afterClosed());
-        // const adapter = this.table.adapter();
-        // if (adapter.dataSource instanceof ClientDataSource) {
-        //     adapter.dataSource.all = [...adapter.dataSource.all, result];
-        // } else this.table.adapter().refresh();
-    }
 }
 
 @Component({
@@ -148,7 +110,7 @@ export function editButton(
             const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions });
 
             const adapter = injector.get(DataAdapter);
-            adapter?.create(result.submitResult);
+            adapter?.put(item, result.submitResult);
             adapter?.refresh(true);
         },
         item: null,
@@ -277,64 +239,4 @@ export function deleteButton(
         },
         item: null,
     });
-}
-
-@Component({
-    selector: "delete-button",
-    imports: [MatBtnComponent, MatProgressSpinnerModule, MatIconModule],
-    standalone: true,
-    template: `
-        <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)">
-            @if (deleting()) {
-                <mat-spinner class="spinner" mode="indeterminate" [diameter]="20" [color]="buttonDescriptor().color"></mat-spinner>
-            }
-        </mat-btn>
-    `,
-    styles: [],
-})
-export class DeleteButtonComponent<T = any> {
-    deleting = signal(false);
-    buttonDescriptor = input.required<ActionDescriptor>();
-    options = input<(selected: any) => { path?: string } & ConfirmOptions, (selected: any) => Partial<{ path: string } & ConfirmOptions>>(undefined, {
-        transform: (fn) => {
-            return (selected: any) => ({
-                title: "Delete",
-                confirmText: "Are you sure you want to delete this item?",
-                no: "Keep it",
-                yes: "Delete",
-                ...fn?.(selected),
-            });
-        },
-    });
-    element = input<NormalizedItem<T>>(null);
-
-    private readonly confirm = inject(ConfirmService);
-    private readonly table = inject(DataTableComponent);
-    private readonly injector = inject(Injector);
-    async onClick(e: ActionEvent) {
-        const options = this.options()(this.element().item);
-
-        const confirmed = await this.confirm.openWarning(options);
-
-        if (!confirmed) return;
-        this.deleting.set(true);
-
-        const ds = this.injector.get(DataService);
-
-        try {
-            const adapter = this.table.adapter();
-            if (adapter.dataSource instanceof ClientDataSource) {
-                const item = this.element().item;
-                adapter.dataSource.all = adapter.dataSource.all.filter((i) => i !== item);
-            } else {
-                const path = options.path;
-                if (!path || path.trim().length === 0) throw new Error("Path is required");
-                await ds.delete(path);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            this.deleting.set(false);
-        }
-    }
 }

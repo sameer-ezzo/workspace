@@ -59,7 +59,7 @@ export function completeEndpointsInfo() {
     for (const x of EndpointsInfo.httpEndpoints) {
         x.prefix = _controllerPrefix(x.controller);
 
-        //check if enpoints have any undefined property
+        //check if endpoints have any undefined property
         if (x.prefix === undefined)
             logger.warn(
                 `Undefined prefix for ${x.controller.constructor.name} ${x.method} ${x.path}`,
@@ -75,10 +75,11 @@ export function completeEndpointsInfo() {
             continue;
         }
 
-        if (x.path?.startsWith('/'))
-            logger.warn(
-                `Path should not start with / for ${x.controller.constructor.name} ${x.path} (METHOD: ${x.method})`,
-            );
+        // EndPoint is adding the / to the path if it is not there
+        // if (x.path?.startsWith('/'))
+        //     logger.warn(
+        //         `Path should not start with / for ${x.controller.constructor.name} ${x.path} (METHOD: ${x.method})`,
+        //     );
 
         const p = join(x.prefix, x.path);
         const route = p.startsWith('/') ? p.substring(1) : p;
