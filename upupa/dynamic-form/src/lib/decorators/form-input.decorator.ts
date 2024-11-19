@@ -1,15 +1,13 @@
 // make a property decorator that creates a FormField from a property
 // export * from './lib/decorators/form-field.decorator';
 import "reflect-metadata";
-import { Field, Fieldset, FormScheme, SET_INPUTS } from "../types";
+import { Field, Fieldset, FormScheme } from "../types";
 import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
-import { FieldInputType, FieldOptions, VisibleFormFieldOptions } from "./decorators.types";
-import { getLanguageInfo } from "@upupa/language";
+import { FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { cloneDeep } from "lodash";
 import { TableHeaderComponent } from "@upupa/table";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
@@ -89,34 +87,19 @@ export type DynamicFormOptions<T = any> = Omit<DynamicFormInputs<T>, "fields"> &
 
 export function formScheme(options?: DynamicFormOptions) {
     return function (target: any) {
-        const formOptions = reflectFormMetadata(target);
-
-        // const currentFields = formOptions?.['fields'] ?? {};
-
+        const formOptions = reflectFormMetadata(target) ?? createFormMetadata();
         const opts = {
             ...formOptions,
             ...options,
         };
-        // opts.fields = {
-        //     ...currentFields,
-        //     ...(options?.['fields'] ?? {}),
-        // } as FormScheme;
         opts.name = (opts.name ?? target.name).trim().toLowerCase().replace(/\//g, "-");
-
-        // append translations fieldset to the end of the form fields
-        // const translations = opts.fields['translations'];
-        // if (translations) {
-        //     delete opts.fields['translations'];
-        //     opts.fields['translations'] = translations;
-        // }
-
         defineFormMetadata(target, opts);
     };
 }
 
 export function submitAction(action?: Partial<Omit<ActionDescriptor, "name">>) {
     return function (target: any, propertyKey: string) {
-        const inputs = reflectFormMetadata(target.constructor) ?? ({} as DynamicFormOptionsMetaData);
+        const inputs = reflectFormMetadata(target.constructor) ?? createFormMetadata();
 
         const submitAction = {
             text: "Submit",
@@ -134,7 +117,7 @@ export function submitAction(action?: Partial<Omit<ActionDescriptor, "name">>) {
 
 export function formAction(action: Partial<ActionDescriptor> & { order?: number }) {
     return function (target: any, propertyKey: string) {
-        const inputs = reflectFormMetadata(target) ?? ({} as DynamicFormOptionsMetaData);
+        const inputs = reflectFormMetadata(target) ?? createFormMetadata();
         inputs.actions ??= [];
 
         const _action = {
@@ -154,7 +137,7 @@ export type FormViewModelMirror = {
     Pick<DynamicFormOptionsMetaData, "actions" | "onSubmitAction">;
 
 export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror {
-    const formMetadata = reflectFormMetadata(viewModel);
+    const formMetadata = reflectFormMetadata(viewModel) ?? createFormMetadata();
     const inputs = {
         conditions: formMetadata.conditions,
         name: formMetadata.name ?? viewModel.name,
@@ -340,7 +323,11 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
 //     }
 // };
 
-export function formInputArray(tableViewModel: Class, config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false }, options?: Partial<FieldOptions>) {
+export function formInputArray(
+    tableViewModel: Class,
+    config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false },
+    options?: Partial<FieldOptions>,
+) {
     return formInput({
         ...options,
         input: "table",
