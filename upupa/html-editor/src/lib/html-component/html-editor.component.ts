@@ -2,7 +2,7 @@ import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, Af
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { HtmlUploadAdapter } from "../html-upload-adapter";
-import { InputBaseComponent, UtilsModule } from "@upupa/common";
+import { ErrorsDirective, InputBaseComponent, UtilsModule } from "@upupa/common";
 import { UploadClient, UploadModule, UploadService } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
 
@@ -18,7 +18,7 @@ import { EditorConfig } from "@ckeditor/ckeditor5-core";
     styleUrls: ["./html-editor.component.scss"],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
-    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule],
+    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule,ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

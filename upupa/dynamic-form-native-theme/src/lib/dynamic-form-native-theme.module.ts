@@ -135,6 +135,7 @@ const imports = [
     DataTableModule,
     ScrollingModule,
     MatBtnComponent,
+    ErrorsDirective
 ];
 
 @NgModule({

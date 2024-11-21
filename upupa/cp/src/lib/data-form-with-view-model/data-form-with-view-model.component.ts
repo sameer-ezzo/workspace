@@ -53,15 +53,11 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     value = model<T>();
 
     // form actions
-
-    submitActionButton = computed(() => {
-        const { onSubmitAction } = this.viewModel();
-        return onSubmitAction;
-    });
     canSubmit = signal(false);
     actions = computed(() => {
         const { actions } = this.viewModel();
         const formActions = actions ?? [];
+        console.log('actions', formActions);
 
         return [...formActions].filter((x) => x);
     });

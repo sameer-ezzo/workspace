@@ -23,7 +23,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { ErrorsDirective } from './directives/errors.directive';
 import { PortalComponent } from './portal.component';
 
-const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe, ErrorsDirective];
+const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe];
 
 const imports = [
     MatFormFieldModule,

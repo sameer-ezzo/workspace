@@ -46,8 +46,8 @@ export async function apiSubmit<TSelf>(self: TSelf, collection: string, patch = 
     }
 }
 
-export interface OnSubmit<T = void> {
-    onSubmit(): Promise<T> | T;
+export interface OnSubmit<SubmitResult = unknown> {
+    onSubmit(): Promise<SubmitResult> | SubmitResult;
 }
 export interface OnValidate {
     validate?: () => Promise<Promise<ValidationErrors>>;

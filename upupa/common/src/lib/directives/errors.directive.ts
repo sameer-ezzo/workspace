@@ -2,6 +2,7 @@ import { Directive, TemplateRef, ViewContainerRef, input } from '@angular/core';
 import { ValidationErrors, FormControl } from '@angular/forms';
 
 @Directive({
+    standalone: true,
     selector: '[errors]',
 })
 export class ErrorsDirective {

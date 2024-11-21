@@ -135,13 +135,13 @@ async function editFormDialog<T>(vm: Class, value = readInput("item", this), con
 
 async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: Injector; dialogOptions?: DialogServiceConfig }) {
     const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
+    const _mirror = reflectFormViewModelType(vm);
+    const mirror = { ..._mirror, actions: [] };
     const opts: DialogServiceConfig = {
         ...context?.dialogOptions,
+        dialogActions: _mirror.actions,
     };
-    const mirror = reflectFormViewModelType(vm);
-    let hasSubmit = mirror.onSubmitAction || (mirror.actions ?? []).find((a) => a.type === "submit");
 
-    if (!hasSubmit) opts.dialogActions = [{ text: "Submit", type: "submit", color: "primary" } as ActionDescriptor];
 
     const dialogRef = dialog.openDialog(
         { component: DataFormWithViewModelComponent, injector: context?.injector },
@@ -150,9 +150,8 @@ async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: I
             inputs: { ...opts.inputs, viewModel: mirror, value },
         },
     );
-    const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef["afterAttached"]());
-    if (hasSubmit) return { dialogRef, componentRef };
 
+    const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef["afterAttached"]());
     const dialogWrapper = dialogRef.componentInstance as UpupaDialogComponent;
     const actions = dialogWrapper.dialogActions;
     const submitAction = actions().find((a) => a.type === "submit");
