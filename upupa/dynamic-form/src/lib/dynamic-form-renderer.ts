@@ -1,10 +1,10 @@
-import { ValidatorFn, FormGroup, UntypedFormGroup, AbstractControl } from "@angular/forms";
+import { ValidatorFn, FormGroup } from "@angular/forms";
 import { _mergeFields } from "./dynamic-form.helper";
 import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Validator, FormScheme, Fieldset } from "./types";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { cloneDeep } from "lodash";
-import { Signal, signal } from "@angular/core";
+import { signal } from "@angular/core";
 import { name } from "platform";
 import { FieldFormControl, FieldFormGroup } from "./field-form.control";
 import { FormGraph } from "./dynamic-form.component";
@@ -19,7 +19,7 @@ export class DynamicFormBuilder {
             const field = scheme[fieldName];
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
-            if (field.input === "fieldset") {
+            if (field.input === "object") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });

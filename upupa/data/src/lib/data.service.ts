@@ -138,7 +138,6 @@ export class DataService {
         for (let i = 0; i < subjects.length; i++) {
             const mapItem = subjects[i];
             const key = prefixPath(mapItem.key.split("?")[0]);
-            console.log("refreshing for ", path, key, path.startsWith(key));
 
             if (path.startsWith(key)) {
                 const subject = mapItem.value.subject;

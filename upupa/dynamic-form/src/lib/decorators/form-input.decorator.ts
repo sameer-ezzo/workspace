@@ -1,15 +1,13 @@
 // make a property decorator that creates a FormField from a property
 // export * from './lib/decorators/form-field.decorator';
 import "reflect-metadata";
-import { Field, Fieldset, FormScheme, SET_INPUTS } from "../types";
+import { Field, Fieldset, FormScheme } from "../types";
 import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
-import { FieldGroup, FieldInputType, FieldOptions, VisibleFormFieldOptions } from "./decorators.types";
-import { getLanguageInfo } from "@upupa/language";
+import { FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { cloneDeep } from "lodash";
 import { TableHeaderComponent } from "@upupa/table";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
@@ -93,27 +91,12 @@ export type DynamicFormOptions<T = any> = Omit<DynamicFormInputs<T>, "fields"> &
 
 export function formScheme(options?: DynamicFormOptions) {
     return function (target: any) {
-        const formOptions = reflectFormMetadata(target);
-
-        // const currentFields = formOptions?.['fields'] ?? {};
-
+        const formOptions = reflectFormMetadata(target) ?? createFormMetadata();
         const opts = {
             ...formOptions,
             ...options,
         };
-        // opts.fields = {
-        //     ...currentFields,
-        //     ...(options?.['fields'] ?? {}),
-        // } as FormScheme;
         opts.name = (opts.name ?? target.name).trim().toLowerCase().replace(/\//g, "-");
-
-        // append translations fieldset to the end of the form fields
-        // const translations = opts.fields['translations'];
-        // if (translations) {
-        //     delete opts.fields['translations'];
-        //     opts.fields['translations'] = translations;
-        // }
-
         defineFormMetadata(target, opts);
     };
 }
@@ -140,7 +123,7 @@ export type FormViewModelMirror = {
     Pick<DynamicFormOptionsMetaData, "actions">;
 
 export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror {
-    const formMetadata = reflectFormMetadata(viewModel);
+    const formMetadata = reflectFormMetadata(viewModel) ?? createFormMetadata();
     const inputs = {
         conditions: formMetadata.conditions,
         name: formMetadata.name ?? viewModel.name,
