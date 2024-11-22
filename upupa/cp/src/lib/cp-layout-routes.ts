@@ -11,6 +11,7 @@ import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "@upupa/dynamic-form";
 import { FormGroup } from "@angular/forms";
+import { TableHeaderComponent } from "@upupa/table";
 
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
@@ -61,6 +62,14 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
 export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>): Route {
     return provideRoute(config, withTableComponent(config));
 }
+
+export function withTableHeader(showSearch: boolean, ...inlineEndSlot: DynamicComponent[]): DynamicComponent {
+    return {
+        component: TableHeaderComponent,
+        inputs: { showSearch, inlineEndSlot: inlineEndSlot },
+    };
+}
+
 
 export type DynamicFormConfig = { viewModel: Class | FormViewModelMirror; value?: any; form?: FormGroup };
 

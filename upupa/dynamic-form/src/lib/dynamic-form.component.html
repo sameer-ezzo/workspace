@@ -1,19 +1,21 @@
 <form #ngFormRef="ngForm" [formGroup]="form()" [name]="name()" [attr.id]="name()" (ngSubmit)="onSubmit($event)">
-    @for (record of fields() | orderedKeyValue; track $index) {
-        @let field = record.value;
-        @let fieldName = record.key;
+    <mat-accordion>
+        @for (record of fields() | orderedKeyValue; track $index) {
+            @let field = record.value;
+            @let fieldName = record.key;
 
-        <ng-container
-            *ngTemplateOutlet="
-                fieldTemplate;
-                context: {
-                    fieldName,
-                    group: form(),
-                    field: record.value,
-                }
-            "
-        ></ng-container>
-    }
+            <ng-container
+                *ngTemplateOutlet="
+                    fieldTemplate;
+                    context: {
+                        fieldName,
+                        group: form(),
+                        field,
+                    }
+                "
+            ></ng-container>
+        }
+    </mat-accordion>
 
     <input type="submit" style="display: none" />
 </form>
@@ -31,12 +33,26 @@
             <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control, fieldName }"></ng-container>
         </fieldset>
     } @else if (field.input === "group") {
-        <mat-expansion-panel [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
-            <mat-expansion-panel-header>
-                <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
-            </mat-expansion-panel-header>
-            <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
-        </mat-expansion-panel>
+        @switch (field.template) {
+            @case ("expansion-panel") {
+                <mat-expansion-panel
+                    [attr.name]="fieldName"
+                    class="{{ input }}-input {{ fieldName }}-container field"
+                    [class.hidden]="ui?.hidden === true"
+                    [expanded]="field.inputs.expanded"
+                >
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+                </mat-expansion-panel>
+            }
+            @default {
+                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
+                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+                </div>
+            }
+        }
     } @else if (field.input === "array") {
         <p>Array Field Not Supported</p>
     } @else if (field.input === "page-breaker") {

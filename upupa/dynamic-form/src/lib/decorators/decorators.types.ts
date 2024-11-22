@@ -11,10 +11,10 @@ export class AdapterFieldOptions {
     maxAllowed?: number = 1;
     adapter: DataAdapterDescriptor = { type: "client", data: [] };
 }
-
+export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any> };
 export type BaseFormFieldOptions = Field & {
     required?: boolean;
-    group?: string;
+    group?: string | FieldGroup;
 };
 export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     name?: string;
@@ -97,11 +97,11 @@ export type FieldOptions =
               | ({ input: "array" } & TableInputOptions)
               | ({ input: "table" } & TableInputOptions)
               | ({ input: "chips" } & AdapterFieldOptions & {
-                    parentPath?: string;
-                    visible?: boolean;
-                    selectable?: boolean;
-                    removable?: boolean;
-                    separatorKeysCodes?: string[];
-                })
+                        parentPath?: string;
+                        visible?: boolean;
+                        selectable?: boolean;
+                        removable?: boolean;
+                        separatorKeysCodes?: string[];
+                    })
           ));
 export type FieldInputType = FieldOptions["input"];
