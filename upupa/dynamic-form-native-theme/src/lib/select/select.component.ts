@@ -47,7 +47,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> implemen
         setTimeout(() => {
             this._flag = true;
             this.control().updateValueAndValidity();
-        }, 200);
+        }, 500); //todo: wait for adapter data change 
 
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;

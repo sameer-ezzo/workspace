@@ -10,6 +10,7 @@ import { Class } from "@noah-ark/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
 import { reflectFormViewModelType } from "@upupa/dynamic-form";
+import { isEmpty } from "lodash";
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
@@ -110,6 +111,7 @@ export function editButton(
             const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions });
 
             const adapter = injector.get(DataAdapter);
+            debugger
             adapter?.put(item, result.submitResult);
             adapter?.refresh(true);
         },
@@ -117,9 +119,16 @@ export function editButton(
     });
 }
 
-async function editFormDialog<T>(vm: Class, value = readInput("item", this), context?: { dialogOptions?: DialogServiceConfig }) {
-    const snack = inject(SnackBarService);
-    const injector = inject(Injector);
+async function editFormDialog<T>(
+    vm: Class,
+    value = readInput("item", this),
+    context?: {
+        injector?: Injector;
+        dialogOptions?: DialogServiceConfig;
+    },
+) {
+    const injector = context?.injector ? context.injector : inject(Injector);
+    const snack = injector.get(SnackBarService);
     const v = await value;
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions });
     const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
@@ -169,6 +178,45 @@ async function openFormDialog<T>(vm: Class, value: any, context?: { injector?: I
     });
 
     return { dialogRef, componentRef };
+}
+
+export function translationButtons(
+    formViewModel: Class,
+    value?: () => any | Promise<any>,
+    options?: {
+        locales: { nativeName: string; code: string }[];
+        dialogOptions?: Partial<DialogServiceConfig>;
+    },
+): DynamicComponent[] {
+    if (!formViewModel) throw new Error("formViewModel is required");
+
+    return (options?.locales ?? []).map((locale) => {
+        const descriptor = {
+            name: locale.code,
+            text: locale.nativeName ?? locale.code,
+            icon: "translate",
+        };
+        return inlineButton({
+            descriptor: descriptor,
+            handler: async (source) => {
+                const dialogOptions = { title: `${locale.nativeName}`, ...options?.dialogOptions };
+                const adapter = injectDataAdapter();
+                const injector = inject(Injector);
+                const item = readInput("item", source);
+                const v = await (value ? value() : item);
+
+                const translations = v.translations ?? {};
+                delete v.translations;
+                const _value = { ...v, ...translations[locale.code] };
+                const result = await editFormDialog.call(source, formViewModel, _value, { dialogOptions, injector });
+                v.translations = translations;
+                v.translations[locale.code] = result.submitResult;
+                adapter?.put(item, v);
+                adapter?.refresh(true);
+            },
+            item: null,
+        });
+    });
 }
 
 type ExtractEventType<T> = T extends OutputEmitterRef<infer R> ? R : never;

@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, forwardRef, viewChild } from "@angular/core";
-import { AbstractControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, forwardRef, viewChild } from "@angular/core";
+import { NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator } from "@angular/forms";
 import { MatSelect } from "@angular/material/select";
-import { NormalizedItem } from "@upupa/data";
-
 import { SelectComponent } from "@upupa/dynamic-form-native-theme";
-import { isEmpty, set } from "lodash";
 
 @Component({
     selector: "mat-form-select-input",
