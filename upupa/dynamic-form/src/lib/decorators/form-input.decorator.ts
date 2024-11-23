@@ -253,6 +253,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     }
 
     field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
+    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"]
+    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"]
 
     switch (input) {
         case "select":

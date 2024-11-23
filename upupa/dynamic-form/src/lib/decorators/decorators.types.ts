@@ -67,6 +67,7 @@ export type FieldOptions =
               | ({ input: "fieldset" } & BaseFormFieldOptions)
               | ({ input: "object" } & BaseFormFieldOptions)
               | ({ input: "text" } & TextFieldOptions)
+              | ({ input: "color" } & TextFieldOptions)
               | ({ input: "textarea" } & TextFieldOptions & {
                         rows?: number;
                         maxRows?: number;

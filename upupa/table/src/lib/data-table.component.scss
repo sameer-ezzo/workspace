@@ -234,3 +234,14 @@ tr.selected .visible-on-select > * {
     visibility: visible;
 }
 
+tr div.actions {
+    visibility: hidden;
+    display: flex;
+    justify-content: end;
+    padding: 0.2rem;
+    gap: 0.2rem;
+    width: 100%;
+}
+tr:hover div.actions, tr.focus div.actions,tr.selected div.actions {
+    visibility: visible;
+}
