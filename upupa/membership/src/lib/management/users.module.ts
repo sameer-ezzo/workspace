@@ -15,7 +15,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { UtilsModule } from "@upupa/common";
 import { AuthModule } from "@upupa/auth";
-import { DataTableModule } from "@upupa/table";
+import { DataTableModule, TableHeaderComponent } from "@upupa/table";
 import { MatSelectModule } from "@angular/material/select";
 import { USERS_MANAGEMENT_OPTIONS } from "./di.token";
 import { UsersManagementOptions } from "./types";
@@ -30,10 +30,8 @@ import { AdminUserPasswordRestComponent } from "./admin-userpwd-reset/admin-user
 import { EditUserRolesComponent } from "./edit-user-roles/edit-user-roles.component";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { TableHeaderComponent } from "../../../../table/src/lib/table-header.component";
-import { DynamicFormMaterialThemeModule } from "../../../../dynamic-form-material-theme/src/lib/dynamic-form-material-theme.module";
-import { DynamicFormNativeThemeModule } from "../../../../dynamic-form-native-theme/src/lib/dynamic-form-native-theme.module";
-import { MatBtnComponent } from "../../../../mat-btn/src/lib/mat-btn.component";
+import { MatBtnComponent } from "@upupa/mat-btn";
+
 
 const defaultOptions = new UsersManagementOptions();
 

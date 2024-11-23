@@ -121,7 +121,7 @@ async function editFormDialog<T>(
     context?: { dialogOptions?: DialogServiceConfig; injector?: Injector; defaultAction?: ActionDescriptor | boolean },
 ) {
     const injector = context?.injector ? context.injector : inject(Injector);
-    const snack = inject(SnackBarService);
+    const snack = injector.get(SnackBarService);
 
     const v = await value;
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions, defaultAction: context?.defaultAction });
@@ -206,7 +206,7 @@ export function translationButtons(
                 const translations = v.translations ?? {};
                 delete v.translations;
                 const _value = { ...v, ...translations[locale.code] };
-                const result = await editFormDialog.call(source, formViewModel, _value, { dialogOptions, injector });
+                const result = await editFormDialog.call(source, formViewModel, _value, { dialogOptions, injector, defaultAction: true });
                 v.translations = translations;
                 v.translations[locale.code] = result.submitResult;
                 adapter?.put(item, v);
