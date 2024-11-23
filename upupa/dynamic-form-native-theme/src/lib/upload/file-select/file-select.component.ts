@@ -61,7 +61,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     });
 
     view = input("list", {
-        transform: (v: ViewType) => v ?? "list",
+        transform: (v: ViewType) => (v === "list" ? "list" : "grid"),
     });
 
     fileSelector = input<"browser" | "system">("system");

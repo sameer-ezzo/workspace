@@ -44,21 +44,18 @@ export class FileBrowserComponent {
     public data = inject(DataService);
     public route = inject(ActivatedRoute);
     public snack = inject(SnackBarService);
-    public bus = inject(EventBus);
-    normalizedChangeSub: Subscription | undefined;
-
-    files = [];
-    view = model<"list" | "grid">("list");
-
-    focused = undefined as FileInfo | undefined;
 
     path = model("/");
+    view = model<"list" | "grid">("grid");
+
+    focused = model<FileInfo | undefined>(undefined);
+
     segments = computed(() => (this.path() ?? "").split("/"));
 
     dataSource = new ApiDataSource<FileInfo>(this.data, "/storage", valueProperty);
     adapter = new DataAdapter<FileInfo>(this.dataSource, "_id", undefined, valueProperty, undefined, {
         filter: {
-            destination: ["storage", this.path()].join("/"),
+            destination: `storage${this.path() == "/" ? "" : this.path()}*`,
         },
         terms: [
             { field: "originalname" as keyof FileInfo, type: "like" },
@@ -66,18 +63,16 @@ export class FileBrowserComponent {
         ],
         page: { pageSize: 50 },
     });
+    files = computed(() => this.adapter.normalized().map((x) => x.item));
 
-    files$ = new BehaviorSubject<FileInfo[]>([]);
     value = model<FileInfo[]>([]);
     disabled = model(false);
 
     constructor() {
         effect(() => {
-            this.normalizedChangeSub?.unsubscribe();
             const _path = this.path() ?? "/";
             const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
             this.adapter.filter = filter;
-            this.normalizedChangeSub = this.adapter.normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
             this.adapter.refresh();
         });
     }
@@ -100,6 +95,7 @@ export class FileBrowserComponent {
 
     writeValue(v: FileInfo[]): void {
         this.value.set(v);
+        this.adapter.getItems(this.adapter.getKeysFromValue(v));
     }
 
     registerOnChange(fn: (value: FileInfo[]) => void): void {

@@ -40,7 +40,7 @@ const actions = [
     selector: 'file-template',
     templateUrl: './file-template.component.html',
     styleUrls: ['./file-template.component.scss'],
-    encapsulation: ViewEncapsulation.None,
+    // encapsulation: ViewEncapsulation.None,
     host: {
         '[class]': 'class()',
     },

@@ -1,6 +1,12 @@
 <input type="hidden" [value]="value()" [formControl]="control()" [required]="required()" />
 
-@if (viewFiles()) {
+@if (enableDragDrop() === true) {
+    @if (label()) {
+        <mat-label class="mbe-1">{{ label() }}</mat-label>
+    }
+    <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
+    <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
+} @else {
     @if (label()) {
         <fieldset>
             <legend class="mbe-1">{{ label() }}</legend>
@@ -11,12 +17,6 @@
         <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
         <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
     }
-} @else if (enableDragDrop() === true) {
-    @if (label()) {
-        <mat-label class="mbe-1">{{ label() }}</mat-label>
-    }
-    <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
-    <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
 }
 @if (placeholder() && viewModel()?.length === 0) {
     <div class="mt-16" style="display: flex; flex-flow: column">

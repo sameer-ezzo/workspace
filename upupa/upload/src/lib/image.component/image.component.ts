@@ -1,35 +1,35 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, Optional, ElementRef, signal, input, computed, inject } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { AuthService } from '@upupa/auth';
-import { takeUntil } from 'rxjs/operators';
+import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, Optional, ElementRef, signal, input, computed, inject } from "@angular/core";
+import { Subject, Subscription } from "rxjs";
+import { AuthService } from "@upupa/auth";
+import { takeUntil } from "rxjs/operators";
 
 @Component({
-    selector: 'image',
-    templateUrl: './image.component.html',
-    styleUrls: ['./image.component.scss'],
+    selector: "image",
+    templateUrl: "./image.component.html",
+    styleUrls: ["./image.component.scss"],
     host: {
-        '[attr.width]': 'width()',
-        '[attr.height]': 'height()',
+        "[attr.width]": "width()",
+        "[attr.height]": "height()",
     },
 })
 export class ImageComponent implements OnDestroy, OnChanges {
-    source = '';
+    source = "";
     sourceSub: Subscription;
     hasError = signal(false);
 
-    @Input() alt = '';
+    @Input() alt = "";
 
-    src = input<string | File>('');
-    loading = input<'eager' | 'lazy'>('lazy');
+    src = input<string | File>("");
+    loading = input<"eager" | "lazy">("lazy");
 
-    width = input<number | 'auto'>('auto');
-    height = input<number | 'auto'>('auto');
+    width = input<number | "auto" | "unset">("unset");
+    height = input<number | "auto" | "unset">("unset");
 
     @Input() includeAccess = false;
     @Output() errorEvent = new EventEmitter<any>();
 
-    @ViewChild('renderer') renderer: ElementRef<HTMLImageElement>;
-    @ViewChild('defaultErrorTemplate') defaultErrorTemplate: any;
+    @ViewChild("renderer") renderer: ElementRef<HTMLImageElement>;
+    @ViewChild("defaultErrorTemplate") defaultErrorTemplate: any;
     @Input() errorTemplate: any = null;
 
     destroyed = new Subject<void>();
@@ -41,13 +41,13 @@ export class ImageComponent implements OnDestroy, OnChanges {
     public readonly auth = inject(AuthService, { optional: true });
 
     styles = computed(() => ({
-        width: this.width() === 'auto' ? 'auto' : `${this.width()}px`,
-        height: this.height() === 'auto' ? 'auto' : `${this.height()}px`,
+        width: this.width() === "auto" ? "auto" : `${this.width()}px`,
+        height: this.height() === "auto" ? "auto" : `${this.height()}px`,
     }));
 
-    _src = '';
+    _src = "";
     ngOnChanges(changes) {
-        if (changes['src'] || changes['includeAccess']) {
+        if (changes["src"] || changes["includeAccess"]) {
             if (this.src() instanceof File) {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -74,19 +74,19 @@ export class ImageComponent implements OnDestroy, OnChanges {
         const q: any = { view: 1 };
         const w = this.width();
         const h = this.height();
-        if (w !== 'auto') q.w = w;
-        if (h !== 'auto') q.h = h;
+        if (w !== "auto") q.w = w;
+        if (h !== "auto") q.h = h;
         if (this.includeAccess) q.access_token = this.auth.get_token();
         const queryString = Object.keys(q)
             .map((n) => `${n}=${q[n]}`)
-            .join('&');
+            .join("&");
         this.source = queryString.length > 0 ? `${src}?${queryString}` : src;
     }
 
     errorHandler(event, el) {
         this.hasError.set(true);
         this.errorEvent.emit(event);
-        el.src = '';
+        el.src = "";
         el.onerror = null;
         if (!this.errorTemplate) this.errorTemplate = this.defaultErrorTemplate;
     }
