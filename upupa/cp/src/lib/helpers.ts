@@ -105,7 +105,7 @@ export function editButton(
             const item = readInput("item", source);
             const v = value ? value() : item;
             const dialogOptions = { title: "Edit", ...options?.dialogOptions };
-            const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions });
+            const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions, defaultAction: true });
 
             const adapter = injector.get(DataAdapter);
             adapter?.put(item, result.submitResult);
@@ -168,15 +168,7 @@ export async function openFormDialog<T>(
     const dialogWrapper = dialogRef.componentInstance as UpupaDialogComponent;
 
     componentRef.instance.form().statusChanges.subscribe((status) => {
-        const submitActionStatus = status === "INVALID";
-        dialogWrapper.dialogActions.update((actions) => {
-            return actions.map((a) => {
-                if (a.type === "submit") {
-                    return { ...a, disabled: submitActionStatus };
-                }
-                return a;
-            });
-        });
+        dialogWrapper.dialogActions.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
     });
 
     dialogWrapper.actionClick.subscribe((e) => {

@@ -9,6 +9,7 @@ import { ActionEvent, deepAssign } from "@upupa/common";
 import { Class, delay } from "@noah-ark/common";
 import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { OnSubmit } from "./viewmodels/form.viewmodel";
 
 @Component({
     selector: "cp-data-form-with-view-model",
@@ -103,10 +104,10 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
         let { handlerName } = e.action as any;
-        if (!handlerName && e.action.type === "submit") handlerName = "onSubmit";
+
+        if (e.action.type == "submit" || handlerName === "onSubmit") return this.onSubmit();
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-        if (handlerName === "onSubmit") return this.onSubmit();
         return runInInjectionContext(this.injector, async () => {
             await vm[handlerName]();
         });

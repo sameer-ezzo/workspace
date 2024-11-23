@@ -1,4 +1,4 @@
-import { Component, inject, input, model, Type } from "@angular/core";
+import { Component, inject, Injector, input, model, Type } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
 import { FormsModule } from "@angular/forms";
@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
     templateUrl: "./table-header.component.html",
 })
 export class TableHeaderComponent {
-    adapter = inject(DataAdapter);
+    injector = inject(Injector);
     showSearch = input(true);
     // table = inject(DataTableComponent);
 
@@ -34,8 +34,9 @@ export class TableHeaderComponent {
     }
 
     _doFilter(q) {
-        this.adapter.dataSource.terms = [{ field: "title", type: "like" }];
-        const f = { ...this.adapter.filter, ...(this.adapter.normalizeFilter(q) || {}) };
-        this.adapter.filter = f;
+        const adapter = this.injector.get(DataAdapter); // lazy injected because adaptor is provided to input signal not during construction
+        adapter.dataSource.terms = [{ field: "title", type: "like" }];
+        const f = { ...adapter.filter, ...(adapter.normalizeFilter(q) || {}) };
+        adapter.filter = f;
     }
 }

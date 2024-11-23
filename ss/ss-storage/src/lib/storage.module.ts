@@ -23,7 +23,7 @@ export class StorageModule implements OnModuleInit {
         },
     ): DynamicModule {
         options ?? { dbName: "DB_DEFAULT", storageSchema: fileSchema };
-        options.prefix ?? "";
+        options.prefix ??= "";
         const storageSchema = options.storageSchema;
 
         return {

@@ -31,6 +31,15 @@ export class StorageController {
         private readonly imageService: ImageService,
     ) {}
 
+
+    @EndPoint({ http: { method: 'POST',path:'/' }, operation: 'Upload New' })
+    async post_(
+        @MessageStream(_uploadToTmp)
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
+    ) {
+        return this.post(msg$);
+    }
+
     @EndPoint({ http: { method: 'POST', path: '**' }, operation: 'Upload New' })
     async post(
         @MessageStream(_uploadToTmp)

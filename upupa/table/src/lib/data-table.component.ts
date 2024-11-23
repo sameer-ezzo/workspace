@@ -1,18 +1,13 @@
 import {
     Component,
-    EventEmitter,
     OnChanges,
-    Input,
-    Output,
     SimpleChanges,
     Type,
     ElementRef,
-    forwardRef,
     ViewChild,
     ChangeDetectionStrategy,
     WritableSignal,
     signal,
-    HostBinding,
     HostListener,
     inject,
     input,
@@ -20,8 +15,8 @@ import {
     effect,
     Injector,
     InjectionToken,
-    Signal,
     DestroyRef,
+    forwardRef,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -61,6 +56,13 @@ export function injectDataAdapter() {
         "[attr.tabindex]": "tabindex",
         "[attr.id]": "name()",
     },
+    providers: [
+        {
+            provide: DataAdapter,
+            useFactory: (self) => self.adapter(),
+            deps: [forwardRef(() => DataTableComponent)],
+        },
+    ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
     tabindex = input(-1);
@@ -98,10 +100,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                     {
                         provide: ROW_ITEM,
                         useValue: row.item,
-                    },
-                    {
-                        provide: DataAdapter,
-                        useValue: this.adapter(),
                     },
                 ],
                 name: "RowInjector",

@@ -1,17 +1,30 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, Input, forwardRef, OnInit, Injector, signal, inject, model, SimpleChanges, input, computed } from "@angular/core";
+import { Component, forwardRef, inject, model, computed, effect } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@upupa/auth";
 import { EventBus } from "@upupa/common";
 import { DataAdapter, DataService, ApiDataSource } from "@upupa/data";
-import { LanguageService } from "@upupa/language";
 import { FileInfo } from "@upupa/upload";
 import { BehaviorSubject, Subscription } from "rxjs";
 import { FileSelectComponent } from "../file-select/file-select.component";
-import { ValueDataComponentBase } from "@upupa/table";
 import { SnackBarService } from "@upupa/dialog";
-import { transform } from "lodash";
+
+const valueProperty = [
+    "_id",
+    "fieldname",
+    "originalname",
+    "filename",
+    "size",
+    "encoding",
+    "mimetype",
+    "destination",
+    "path",
+    "date",
+    "status",
+    "user",
+    "meta",
+] as (keyof FileInfo)[];
 
 @Component({
     selector: "file-browser",
@@ -25,11 +38,10 @@ import { transform } from "lodash";
         },
     ],
 })
-export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> {
-    private readonly data = inject(DataService);
+export class FileBrowserComponent {
     public auth = inject(AuthService);
     public http = inject(HttpClient);
-    public ds = inject(DataService);
+    public data = inject(DataService);
     public route = inject(ActivatedRoute);
     public snack = inject(SnackBarService);
     public bus = inject(EventBus);
@@ -40,49 +52,63 @@ export class FileBrowserComponent extends ValueDataComponentBase<FileInfo> {
 
     focused = undefined as FileInfo | undefined;
 
-    keyProperty = "_id" as keyof FileInfo;
-    valueProperty = ["_id", "fieldname", "originalname", "filename", "size", "encoding", "mimetype", "destination", "path", "date", "status", "user", "meta"] as (keyof FileInfo)[];
+    path = model("/");
+    segments = computed(() => (this.path() ?? "").split("/"));
 
-    path = input<string, string>("/", {
-        transform: (v) =>
-            (v ?? "")
-                .replace(/\/$/, "")
-                .split("/")
-                .filter((v) => v)
-                .join("/"),
-    });
-    segments = computed(() => this.path().split("/"));
-
-    override adapter = input<DataAdapter, DataAdapter>(null, {
-        transform: (v) =>
-            new DataAdapter<FileInfo>(new ApiDataSource(this.data, "/storage", this.valueProperty), this.keyProperty, undefined, this.valueProperty, undefined, {
-                filter: {
-                    destination: ["storage", this.path()].join("/"),
-                },
-                terms: [
-                    { field: "originalname" as keyof FileInfo, type: "like" },
-                    { field: "fieldname" as keyof FileInfo, type: "like" },
-                ],
-                page: { pageSize: 50 },
-            }),
+    dataSource = new ApiDataSource<FileInfo>(this.data, "/storage", valueProperty);
+    adapter = new DataAdapter<FileInfo>(this.dataSource, "_id", undefined, valueProperty, undefined, {
+        filter: {
+            destination: ["storage", this.path()].join("/"),
+        },
+        terms: [
+            { field: "originalname" as keyof FileInfo, type: "like" },
+            { field: "fieldname" as keyof FileInfo, type: "like" },
+        ],
+        page: { pageSize: 50 },
     });
 
     files$ = new BehaviorSubject<FileInfo[]>([]);
+    value = model<FileInfo[]>([]);
+    disabled = model(false);
 
-    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        super.ngOnChanges(changes);
-        if (changes["path"]) {
+    constructor() {
+        effect(() => {
             this.normalizedChangeSub?.unsubscribe();
-            const filter = {
-                destination: ["storage", this.path().split("/")].filter((v) => v).join("/"),
-            };
-            this.adapter().filter = filter;
-            this.normalizedChangeSub = this.adapter().normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
-            this.adapter().refresh();
-        }
+            const _path = this.path() ?? "/";
+            const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
+            this.adapter.filter = filter;
+            this.normalizedChangeSub = this.adapter.normalized$.subscribe((f) => this.files$.next(f.map((c) => c.item)));
+            this.adapter.refresh();
+        });
     }
 
     selectFile(fileSelect: FileSelectComponent) {
         fileSelect.selectFile();
+    }
+
+    // >>>>> ControlValueAccessor ----------------------------------------
+    _onChange: (value: FileInfo[]) => void;
+    _onTouch: () => void;
+
+    propagateChange() {
+        this._onChange?.(this.value()); //ngModel/ngControl notify (value accessor)
+    }
+
+    markAsTouched() {
+        if (this._onTouch) this._onTouch();
+    }
+
+    writeValue(v: FileInfo[]): void {
+        this.value.set(v);
+    }
+
+    registerOnChange(fn: (value: FileInfo[]) => void): void {
+        this._onChange = fn;
+    }
+    registerOnTouched(fn: () => void): void {
+        this._onTouch = fn;
+    }
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled.set(isDisabled);
     }
 }

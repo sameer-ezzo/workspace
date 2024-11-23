@@ -31,9 +31,9 @@
             }
         </mat-toolbar>
 
-        <file-select #fileSelect [hideSelectButton]="true" [value]="this.files$ | async" [view]="view()" [path]="path()"></file-select>
+        <file-select #fileSelect [hideSelectButton]="true" [value]="adapter.dataSource.data" [view]="view()" [path]="path()"></file-select>
 
-        <mat-paginator [pageIndex]="adapter().page.pageIndex" [length]="adapter().page.length" [pageSize]="adapter().page.pageSize" showFirstLastButtons></mat-paginator>
+        <mat-paginator [pageIndex]="adapter.page.pageIndex" [length]="adapter.page.length" [pageSize]="adapter.page.pageSize" showFirstLastButtons></mat-paginator>
 
         <!-- [disabled]="(loading$ | async) === true"
     [pageSizeOptions]="pageSizeOptions"
