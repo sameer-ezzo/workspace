@@ -204,7 +204,7 @@ export function translationButtons(
         };
         return inlineButton({
             descriptor: descriptor,
-            handler: async (source) => {
+            clickHandler: async (source) => {
                 const dialogOptions = { title: `${locale.nativeName}`, ...options?.dialogOptions };
                 const adapter = injectDataAdapter();
                 const injector = inject(Injector);
@@ -220,7 +220,7 @@ export function translationButtons(
                 adapter?.put(item, v);
                 adapter?.refresh(true);
             },
-            item: null,
+            inputItem: null,
         });
     });
 }
