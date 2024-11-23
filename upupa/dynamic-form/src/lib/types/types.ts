@@ -37,6 +37,7 @@ const INPUTS = [
     "number",
     "date",
     "phone",
+    "color",
     "password",
     "slider",
     "reviews",

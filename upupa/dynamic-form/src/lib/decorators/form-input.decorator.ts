@@ -5,7 +5,7 @@ import { Field, Fieldset, FormScheme } from "../types";
 import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
-import { FieldOptions } from "./decorators.types";
+import { FieldGroup, FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { TableHeaderComponent } from "@upupa/table";
@@ -208,6 +208,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     }
 
     field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
+    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"]
+    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"]
 
     switch (input) {
         case "select":

@@ -55,7 +55,7 @@
                     [ngStyle]="{ width: descriptor.value?.width + 'px' }"
                     [ngClass]="descriptor.value.class"
                 >
-                    <div>
+                    <div [ngClass]="descriptor.value.class">
                         @for (template of descriptor.value.template ?? []; track $index) {
                             <portal
                                 [component]="template['component']"
