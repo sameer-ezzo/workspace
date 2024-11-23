@@ -115,9 +115,14 @@ export function editButton(
     });
 }
 
-async function editFormDialog<T>(vm: Class, value = readInput("item", this), context?: { dialogOptions?: DialogServiceConfig; defaultAction?: ActionDescriptor | boolean }) {
+async function editFormDialog<T>(
+    vm: Class,
+    value = readInput("item", this),
+    context?: { dialogOptions?: DialogServiceConfig; injector?: Injector; defaultAction?: ActionDescriptor | boolean },
+) {
+    const injector = context?.injector ? context.injector : inject(Injector);
     const snack = inject(SnackBarService);
-    const injector = inject(Injector);
+
     const v = await value;
     const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions, defaultAction: context?.defaultAction });
     const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
@@ -179,6 +184,45 @@ export async function openFormDialog<T>(
     });
 
     return { dialogRef, componentRef };
+}
+
+export function translationButtons(
+    formViewModel: Class,
+    value?: () => any | Promise<any>,
+    options?: {
+        locales: { nativeName: string; code: string }[];
+        dialogOptions?: Partial<DialogServiceConfig>;
+    },
+): DynamicComponent[] {
+    if (!formViewModel) throw new Error("formViewModel is required");
+
+    return (options?.locales ?? []).map((locale) => {
+        const descriptor = {
+            name: locale.code,
+            text: locale.nativeName ?? locale.code,
+            icon: "translate",
+        };
+        return inlineButton({
+            descriptor: descriptor,
+            handler: async (source) => {
+                const dialogOptions = { title: `${locale.nativeName}`, ...options?.dialogOptions };
+                const adapter = injectDataAdapter();
+                const injector = inject(Injector);
+                const item = readInput("item", source);
+                const v = await (value ? value() : item);
+
+                const translations = v.translations ?? {};
+                delete v.translations;
+                const _value = { ...v, ...translations[locale.code] };
+                const result = await editFormDialog.call(source, formViewModel, _value, { dialogOptions, injector });
+                v.translations = translations;
+                v.translations[locale.code] = result.submitResult;
+                adapter?.put(item, v);
+                adapter?.refresh(true);
+            },
+            item: null,
+        });
+    });
 }
 
 type ExtractEventType<T> = T extends OutputEmitterRef<infer R> ? R : never;

@@ -1,14 +1,16 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from '@angular/forms';
-import { PortalComponent, DynamicComponent } from '@upupa/common';
-import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
-import { Field } from './types';
-import { DynamicFormService } from './dynamic-form.service';
-import { AdapterInputResolverService } from './adapter-input-resolver.service';
+import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal, Injector } from "@angular/core";
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from "@angular/forms";
+import { PortalComponent, DynamicComponent } from "@upupa/common";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+import { Field } from "./types";
+import { DynamicFormService } from "./dynamic-form.service";
+import { AdapterInputResolverService } from "./adapter-input-resolver.service";
+import { DataAdapter } from "@upupa/data";
+import { FieldFormControl, FieldFormGroup } from "./field-form.control";
 
 @Component({
     standalone: true,
-    selector: 'field',
+    selector: "field",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -27,7 +29,14 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
             <paragraph [class.hidden]="field().hidden === true" [text]="field().text" [renderer]="field().inputs?.['renderer'] || 'markdown'"></paragraph>
         }
         @if (template()) {
-            <portal [component]="template().component" [class]="template().class" [inputs]="template().inputs" [outputs]="template().outputs" (attached)="onAttached($event)">
+            <portal
+                [component]="template().component"
+                [class]="template().class"
+                [inputs]="template().inputs"
+                [outputs]="template().outputs"
+                (attached)="onAttached($event)"
+                [injector]="template().injector"
+            >
             </portal>
         } @else {
             <div class="error">Template not found for {{ name() }}</div>
@@ -35,31 +44,32 @@ import { AdapterInputResolverService } from './adapter-input-resolver.service';
     `,
 
     host: {
-        '[class]': 'classList()',
+        "[class]": "classList()",
     },
 })
 export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
+    private readonly injector = inject(Injector);
     formService = inject(DynamicFormService);
 
+    control = input.required<FieldFormControl | FieldFormGroup>();
     field = input.required<Field>();
-    control = input.required<UntypedFormGroup>();
 
     name = input.required<string>();
     classList = computed(() => {
         const field = this.field();
         const template = this.template();
-        return [`${this.name()}-field`, `${field.input}-input`, 'field', template?.class, field.class, field.hidden === true ? 'hidden' : '']
+        return [`${this.name()}-field`, `${field.input}-input`, "field", template?.class, field.class, field.hidden === true ? "hidden" : ""]
             .filter((c) => c)
-            .join(' ')
+            .join(" ")
             .trim();
     });
 
     template = signal<DynamicComponent>(undefined);
-    theme = input('material');
+    theme = input("material");
 
     private readonly adapterResolver = inject(AdapterInputResolverService);
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes['field']) {
+        if (changes["field"]) {
             const field = this.field();
             field.inputs ??= {};
 
@@ -69,9 +79,10 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
 
             this.template.set({
                 component: this.formService.getControl(field.input, this.theme()).component,
-                inputs: inputs,
+                inputs: field.inputs,
                 outputs: field.outputs,
                 class: field.class,
+                injector: this.injector,
             });
         }
     }

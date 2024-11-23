@@ -59,6 +59,7 @@ import { ForgotPasswordFormComponent } from "./forgot-password-form/forgot-passw
 import { ResetPasswordFormComponent } from "./reset-password-form/reset-password-form.component";
 import { IdpButtonDirective } from "./idp-button.directive";
 import { DF_MATERIAL_THEME_INPUTS, DynamicFormMaterialThemeModule } from "@upupa/dynamic-form-material-theme";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 
 const optionsProviders = <T extends BaseMembershipFormOptions>(form: "LOG_IN" | "SIGNUP" | "FORGOT_PASSWORD" | "VERIFY", options: T): Provider[] => {
     const providers = {
@@ -164,6 +165,7 @@ const components = [
         TranslationModule,
         MembershipRoutingModule,
         UtilsModule,
+        DynamicFormNativeThemeModule,
         DynamicFormModule,
     ],
     declarations: [...components],

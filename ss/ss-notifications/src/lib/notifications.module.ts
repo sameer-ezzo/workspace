@@ -1,13 +1,14 @@
-import { DynamicModule, Inject, Module, OnModuleInit, Provider } from '@nestjs/common';
-import { DataModule, DataService, getDataServiceToken } from '@ss/data';
-import { ModuleRef } from '@nestjs/core';
-import { NotificationService } from './notification.svr';
-import { NotificationController } from './notification.controller';
-import { NotificationChannel } from './notification-channel';
-import { NotificationOptions } from './notification';
-import { CommonModule } from '@ss/common';
-import { Schema } from 'mongoose';
-import { MongooseModule } from '@nestjs/mongoose';
+import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
+import { DataModule, DataService, getDataServiceToken } from "@ss/data";
+import { ModuleRef } from "@nestjs/core";
+import { NotificationService } from "./notification.svr";
+import { NotificationController } from "./notification.controller";
+import { NotificationChannel } from "./notification-channel";
+import { NotificationOptions } from "./notification";
+import { CommonModule } from "@ss/common";
+import { Schema } from "mongoose";
+import { MongooseModule } from "@nestjs/mongoose";
+import { options } from "marked";
 
 export type Topics = {
     [topic: string]: { channels: string[]; options?: NotificationOptions };
@@ -21,15 +22,25 @@ export class NotificationsModule implements OnModuleInit {
         //     new Schema({}, { strict: false })
         // );
     }
-    static register(channels: (NotificationChannel | Provider)[], topics: Topics = {}, config = { dbName: 'DB_DEFAULT', readNotificationSettings: true }): DynamicModule {
+    static register(
+        channels: (NotificationChannel | Provider)[],
+        topics: Topics = {},
+        config: { dbName: string; notificationSchema: Schema; prefix?: string; readNotificationSettings: boolean } = {
+            dbName: "DB_DEFAULT",
+            notificationSchema: new Schema({}, { strict: false }),
+            readNotificationSettings: true,
+        },
+    ): DynamicModule {
+        config ??= { dbName: "DB_DEFAULT", notificationSchema: new Schema({}, { strict: false }), readNotificationSettings: true };
+        config.prefix ??= "";
         const _providers: Provider[] = [];
         for (const channel of channels) {
-            if ('name' in channel) _providers.push({ provide: channel.name, useValue: channel });
+            if ("name" in channel) _providers.push({ provide: channel.name, useValue: channel });
             else _providers.push(channel);
         }
 
         _providers.push({
-            provide: 'DB_NOTIFICATION',
+            provide: "DB_NOTIFICATION",
             useExisting: getDataServiceToken(config.dbName),
         });
         topics ??= {};
@@ -41,7 +52,7 @@ export class NotificationsModule implements OnModuleInit {
                         store: false,
                         additionalFields: [],
                     };
-                    topics[topic].options.additionalFields.push('notificationSettings'); //load user's notificationSettings objects
+                    topics[topic].options.additionalFields.push("notificationSettings"); //load user's notificationSettings objects
                 }
             }
 
@@ -54,10 +65,10 @@ export class NotificationsModule implements OnModuleInit {
                     }
                     return svr;
                 },
-                inject: [ModuleRef, 'DB_NOTIFICATION'],
+                inject: [ModuleRef, "DB_NOTIFICATION"],
             });
         } else _providers.push(NotificationService);
-
+        _providers.push({ provide: "NOTIFICATION_SCHEMA", useValue: config.notificationSchema });
         return {
             global: true,
             module: NotificationsModule,
@@ -67,8 +78,9 @@ export class NotificationsModule implements OnModuleInit {
                 MongooseModule.forFeature(
                     [
                         {
-                            name: 'notification',
-                            schema: new Schema({}, { strict: false }),
+                            name: "notification",
+                            collection: `${config.prefix}notification`,
+                            schema: config.notificationSchema,
                         },
                     ],
                     config.dbName,

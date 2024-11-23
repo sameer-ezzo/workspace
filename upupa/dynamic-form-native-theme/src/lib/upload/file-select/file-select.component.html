@@ -7,10 +7,6 @@
         }
         <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
         <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
-
-        @if (control().touched && control().errors) {
-            <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-        }
     </fieldset>
 } @else if (enableDragDrop() === true) {
     @if (label()) {
@@ -18,14 +14,18 @@
     }
     <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
     <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
-    @if (control().touched && control().errors) {
-        <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-    }
 }
 @if (placeholder() && viewModel()?.length === 0) {
     <div class="mt-16" style="display: flex; flex-flow: column">
         {{ placeholder() }}
     </div>
+}
+
+@if (hint()) {
+    <span>{{ hint() }}</span>
+}
+@if (control().touched && control().errors) {
+    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 }
 <ng-template #uploadBtnTemplate>
     @if (canUpload() && !hideSelectButton()) {

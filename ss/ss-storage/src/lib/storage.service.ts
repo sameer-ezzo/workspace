@@ -1,7 +1,7 @@
-import { DataService } from '@ss/data';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as Path from 'path';
-import * as os from 'os';
+import { DataService } from "@ss/data";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import * as Path from "path";
+import * as os from "os";
 
 //file should be reachable by id (path independent)
 //logs (save hostory)
@@ -13,17 +13,17 @@ import * as os from 'os';
 // import mongoose from "mongoose"
 // import { rejects } from "assert"
 
-import { execSync } from 'child_process';
-import { PostedFile, File } from '@noah-ark/common';
-import fileSchema from './schema';
-import mongoose from 'mongoose';
-import { join } from 'path';
-import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from 'fs';
-import { logger } from '@ss/common';
+import { execSync } from "child_process";
+import { PostedFile, File } from "@noah-ark/common";
+import fileSchema from "./schema";
+import mongoose from "mongoose";
+import { join } from "path";
+import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from "fs";
+import { logger } from "@ss/common";
 
-const separator = '/';
+const separator = "/";
 export function makeDir(dir: string) {
-    dir = dir.replace(/\\/g, '/');
+    dir = dir.replace(/\\/g, "/");
     if (existsSync(join(__dirname, dir))) return;
 
     const segments = dir.split(separator);
@@ -32,7 +32,7 @@ export function makeDir(dir: string) {
     }
     for (let i = 0; i < segments.length; i++) {
         const dir = join(__dirname, segments[i]);
-        if (!dir || dir === '.' || dir === '..') continue;
+        if (!dir || dir === "." || dir === "..") continue;
         if (!existsSync(dir)) mkdirSync(dir);
     }
 }
@@ -64,13 +64,13 @@ export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
 export async function saveStreamToTmp(path: string, file: PostedFile): Promise<File> {
     return new Promise<File>((resolve, reject) => {
         const segments = path
-            .replace(/\\/g, '/')
+            .replace(/\\/g, "/")
             .split(separator)
             .filter((s) => s);
         if (segments.length === 0) reject(`Invalid path ${path}`);
         let filename = segments.pop()!;
 
-        let ext = Path.extname(filename!) ?? '';
+        let ext = Path.extname(filename!) ?? "";
         let _id: string;
 
         if (ext.length > 0) _id = filename.substring(0, filename.length - ext.length);
@@ -87,18 +87,18 @@ export async function saveStreamToTmp(path: string, file: PostedFile): Promise<F
         const fileStream = file.stream as any;
         const ws = createWriteStream(tmp);
 
-        fileStream.on('error', (err: any) => reject({ msg: 'FileStreamError', error: err }));
-        fileStream.on('end', () => {
+        fileStream.on("error", (err: any) => reject({ msg: "FileStreamError", error: err }));
+        fileStream.on("end", () => {
             ws.close();
         });
-        ws.on('finish', () => {
+        ws.on("finish", () => {
             const stats = statSync(tmp);
 
             const destination = segments.join(separator);
             try {
                 makeDir(destination);
             } catch (err) {
-                reject({ msg: 'InvalidOperation:CreateDirectory', error: err });
+                reject({ msg: "InvalidOperation:CreateDirectory", error: err });
             }
 
             const { stream, ...filebase } = file;
@@ -126,28 +126,35 @@ export class StorageService {
     }
 
     async saveToDb(f: File, principle: any) {
-        const { path, patches } = this.data.toPatches(`/storage/${f._id}`, f);
-        await this.data.patch(path, patches, principle);
+        const id = f._id;
+        const s = await this.data.find<File>(`storage`, id);
+        if (s) {
+            const { path, patches } = this.data.toPatches(`/storage/${f._id}`, f);
+            await this.data.patch(`/storage/${f._id}`, patches, principle);
+        } else {
+            const model = await this.data.getModel("storage");
+            await model.create([f]);
+        }
     }
 
     async delete(path: string, principle: any) {
-        const segments = path.replace(/\\/g, '/').split(separator);
+        const segments = path.replace(/\\/g, "/").split(separator);
         const filename = segments[segments.length - 1];
         const ext = Path.extname(filename);
-        if (!ext) throw new HttpException('InvalidPath', HttpStatus.BAD_REQUEST);
+        if (!ext) throw new HttpException("InvalidPath", HttpStatus.BAD_REQUEST);
         const _id = filename.substring(0, filename.length - ext.length);
 
         const doc = await this.data.get<File>(`storage/${_id}`);
-        if (!doc) throw new HttpException('No file found', HttpStatus.NOT_FOUND);
+        if (!doc) throw new HttpException("No file found", HttpStatus.NOT_FOUND);
 
         await this.data.delete(`storage/${_id}`, principle);
         const fPath = join(__dirname, doc.path);
         if (!existsSync(fPath)) return;
-        const trashedDir = join(__dirname, 'storage/_trashed');
+        const trashedDir = join(__dirname, "storage/_trashed");
         if (!existsSync(trashedDir)) mkdirSync(trashedDir, { recursive: true });
 
         try {
-            renameSync(fPath, join(__dirname, 'storage/_trashed', filename)); //TODO clean-up job
+            renameSync(fPath, join(__dirname, "storage/_trashed", filename)); //TODO clean-up job
         } catch (err) {
             console.error(err);
         }

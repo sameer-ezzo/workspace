@@ -79,7 +79,7 @@ export class AuthModule implements OnModuleInit {
 
         const providers: Provider[] = [
             AuthService,
-            { provide: "UserSchema", useValue: modelOptions.userSchema },
+            { provide: "USER_SCHEMA", useValue: modelOptions.userSchema },
             { provide: "AUTH_OPTIONS", useValue: options },
             {
                 provide: "DB_AUTH",
