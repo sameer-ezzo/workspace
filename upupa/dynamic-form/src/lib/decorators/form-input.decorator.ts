@@ -5,7 +5,7 @@ import { Field, Fieldset, FormScheme } from "../types";
 import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
-import { FieldOptions } from "./decorators.types";
+import { FieldGroup, FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { TableHeaderComponent } from "@upupa/table";
