@@ -9,9 +9,9 @@ import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators } from
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { startWith } from "rxjs";
-import { UpupaDialogComponent } from "../dialog-wrapper.component";
+import { DialogWrapperComponent } from "../dialog-wrapper.component";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
-import { UpupaDialogPortal } from "../dialog.service";
+import { DialogPortal } from "../dialog.service";
 
 @Component({
     selector: "prompt",
@@ -30,7 +30,7 @@ import { UpupaDialogPortal } from "../dialog.service";
     standalone: true,
     imports: [MatDialogModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
-export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnInit {
+export class PromptComponent implements DialogPortal<PromptComponent>, OnInit {
     promptText = "Please enter value";
     promptTitle = "Prompt";
     promptNoButton = "No";
@@ -39,7 +39,7 @@ export class PromptComponent implements UpupaDialogPortal<PromptComponent>, OnIn
 
     type = "text";
     required = false;
-    dialogRef?: MatDialogRef<UpupaDialogComponent<PromptComponent>>;
+    dialogRef?: MatDialogRef<DialogWrapperComponent<PromptComponent>>;
     dialogActions?: WritableSignal<ActionDescriptor[]>;
 
     appearance: MatFormFieldAppearance = "outline";

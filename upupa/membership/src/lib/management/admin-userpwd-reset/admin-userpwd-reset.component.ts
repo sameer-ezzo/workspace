@@ -5,7 +5,7 @@ import { ActionEvent } from '@upupa/common';
 import { Field, FormScheme, checkboxField, hiddenField, switchField } from '@upupa/dynamic-form';
 import { UsersService } from '../users.service';
 import { passwordField } from '../../default-values';
-import { UpupaDialogComponent } from '@upupa/dialog';
+import { DialogWrapperComponent } from '@upupa/dialog';
 
 @Component({
     selector: 'admin-userpwd-reset',
@@ -36,8 +36,8 @@ export class AdminUserPasswordRestComponent {
     constructor(public users: UsersService) { }
 
 
-    dialogRef: MatDialogRef<UpupaDialogComponent>
-    async onAction(e: ActionEvent, dialogRef: MatDialogRef<UpupaDialogComponent>) {
+    dialogRef: MatDialogRef<DialogWrapperComponent>
+    async onAction(e: ActionEvent, dialogRef: MatDialogRef<DialogWrapperComponent>) {
         if (e.action.name === 'reset') {
             const res = await this.reset()
             dialogRef.close(res)

@@ -28,10 +28,10 @@ export const defaultCreateUserFromScheme: FormScheme = {
     username: userNameField,
     name: userFullNameField,
     password: {
-        input: "text",
+        input: "password",
         name: "password",
-        validations: [{ name: "required" }],
-        inputs: { label: "Password" },
+        required: true,
+        label: "Password",
     } as Field,
     forceChangePwd: {
         input: "switch",

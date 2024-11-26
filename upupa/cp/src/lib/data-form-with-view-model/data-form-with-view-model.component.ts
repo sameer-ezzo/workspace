@@ -2,7 +2,7 @@ import { Component, inject, DestroyRef, signal, computed, input, Injector, runIn
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { MatDialogRef } from "@angular/material/dialog";
 import { Subscription } from "rxjs";
-import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
+import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { ActionEvent, deepAssign } from "@upupa/common";
@@ -35,12 +35,12 @@ import { OnSubmit } from "./viewmodels/form.viewmodel";
         },
     ],
 })
-export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
+export class DataFormWithViewModelComponent<T = any> implements DialogPortal<DataFormWithViewModelComponent<T>> {
     private readonly injector = inject(Injector);
 
     dynamicFormEl = viewChild(DynamicFormComponent);
     form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-    dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>> = inject(MatDialogRef, { optional: true });
+    dialogRef?: MatDialogRef<DialogWrapperComponent<DataFormWithViewModelComponent>> = inject(MatDialogRef, { optional: true });
 
     loading = signal(false);
 

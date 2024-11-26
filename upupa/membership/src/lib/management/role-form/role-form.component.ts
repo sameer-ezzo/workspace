@@ -2,7 +2,7 @@ import { Component, Input, SimpleChanges } from "@angular/core";
 
 import { AuthService } from "@upupa/auth";
 import { DataService, ObjectId } from "@upupa/data";
-import { FormDesign, FormScheme, textField } from "@upupa/dynamic-form";
+import { FormDesign, FormScheme, hiddenField, textField } from "@upupa/dynamic-form";
 import { ActionEvent } from "@upupa/common";
 import { DialogRef } from "@angular/cdk/dialog";
 
@@ -19,7 +19,7 @@ export class RoleFormComponent {
     design: FormDesign = {} as FormDesign;
 
     private readonly _fields = {
-        _id: textField("_id", "Name", "Role name or code", undefined, "outline", [{ name: "required" }]),
+        _id: hiddenField("_id"),
         name: textField("name", "Display", "Role name", undefined, "outline", [{ name: "required" }]),
     };
     fields: FormScheme;
@@ -61,5 +61,6 @@ export class RoleFormComponent {
         const _role = Object.assign({}, this.role);
         delete _role._id;
         await this.data.put(`/role/${this.role._id}`, _role);
+        this.dialogRef?.close();
     }
 }

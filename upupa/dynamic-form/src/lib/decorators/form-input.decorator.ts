@@ -130,8 +130,9 @@ export function formAction(action: Partial<ActionDescriptor> & { order?: number 
             name: action.name || propertyKey,
             handlerName: propertyKey,
             order: action.order ?? formMetadata.actions.length,
+            type: (action.type ?? propertyKey == "onSubmit") ? "submit" : "button",
         };
-        formMetadata.actions.push(_action);
+        formMetadata.actions.push(_action as any);
         defineFormMetadata(property.constructor, formMetadata);
     };
 }
@@ -253,8 +254,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     }
 
     field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
-    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"]
-    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"]
+    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"];
+    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"];
 
     switch (input) {
         case "select":

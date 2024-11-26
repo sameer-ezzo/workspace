@@ -59,7 +59,7 @@ export function injectDataAdapter() {
     providers: [
         {
             provide: DataAdapter,
-            useFactory: (self) => self.adapter(),
+            useFactory: (self: DataTableComponent) => self.adapter(),
             deps: [forwardRef(() => DataTableComponent)],
         },
     ],
@@ -275,9 +275,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     //     // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
     //     // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
     // }
-    onAdd() {
-        this.add.emit();
-    }
 
     isPurePipe(pipe: Type<any>): boolean {
         return !!pipe.prototype.constructor.ɵpipe.pure;
