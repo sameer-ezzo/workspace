@@ -12,27 +12,23 @@ import { TableHeaderComponent } from "@upupa/table";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
 
-function reflectFormMetadata(targetClass: any): DynamicFormOptionsMetaData {
-    return Reflect.getMetadata(FORM_METADATA_KEY, targetClass) as DynamicFormOptionsMetaData;
+function reflectFormMetadata(targetClass: Class): DynamicFormOptionsMetaData {
+    // const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
+
+    const options = createFormMetadata();
+    // if (parent && parent.constructor) Object.assign(options, reflectFormMetadata(parent));
+
+    return Object.assign(options, Reflect.getMetadata(FORM_METADATA_KEY, targetClass) ?? {});
 }
 
 function defineFormMetadata(targetClass: any, value: DynamicFormOptionsMetaData) {
     let targetOptions = reflectFormMetadata(targetClass);
-    const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
-
-    if (parent && parent.constructor)
-        targetOptions = {
-            ...reflectFormMetadata(parent),
-            ...targetOptions,
-        };
-
     Reflect.defineMetadata(FORM_METADATA_KEY, { ...targetOptions, ...value }, targetClass);
 }
 
 function createFormMetadata(): DynamicFormOptionsMetaData {
     return {
         fields: {},
-        // translations: {},
         targets: {},
         groups: {},
     };
@@ -40,7 +36,6 @@ function createFormMetadata(): DynamicFormOptionsMetaData {
 
 export type DynamicFormOptionsMetaData = DynamicFormOptions & {
     fields: Record<string, Field>;
-    // translations: Record<string, Field>;
     targets: Record<string, any>;
     groups: Record<string, FieldGroup>;
 
@@ -62,23 +57,6 @@ function inferFieldInputType(property: any, propertyKey: string, field: Partial<
     else if (typeof type === "function") return "object";
     else return "text";
 }
-
-// export function localize(opt?: Partial<FieldOptions>) {
-//     return (property: any, propertyKey: string) => {
-//         const metadata = reflectFormMetadata(property.constructor) ?? createFormMetadata();
-
-//         let f = metadata.fields[propertyKey];
-//         if (opt) {
-//             opt.input ??= inferFieldInputType(property, propertyKey, opt);
-//             f = { ...f, ...fillFieldInputs(propertyKey, opt) };
-//         }
-//         metadata.translations[propertyKey] = f;
-//         metadata.targets[propertyKey] = property;
-//         metadata.groups[propertyKey] = opt?.group;
-
-//         defineFormMetadata(property.constructor, metadata);
-//     };
-// }
 
 export function formInput(opt?: Partial<FieldOptions>) {
     return (property: any, propertyKey: string) => {
@@ -152,28 +130,6 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
         actions: formMetadata.actions,
     };
 
-    // append translation fieldset to the fields
-    // const translations = formMetadata.translations;
-    // const locales = formMetadata.locales?.translations ?? [];
-    // if (locales.length && Object.keys(translations).length) {
-    //     const translationFieldset = {
-    //         input: "object",
-    //         items: new Map<string, Field>(),
-    //         inputs: { label: "Translations" },
-    //     } as Fieldset;
-    //     formMetadata.fields["translations"] = translationFieldset;
-
-    //     for (const locale of locales) {
-    //         const localeFieldset = {
-    //             input: "object",
-    //             items: new Map<string, Field>(),
-    //             inputs: { label: toTitleCase(locale.label) },
-    //         } as Fieldset;
-    //         translationFieldset.items[locale.key] = localeFieldset;
-    //         for (const [fieldName, field] of Object.entries(translations)) localeFieldset.items[fieldName] = field;
-    //     }
-    // }
-
     const fields = {} as FormScheme;
 
     const _currentFields = Object.entries(formMetadata.fields);
@@ -193,8 +149,9 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
             fields[groupName] = group;
         } else if (field.input === "object" || field.input === "fieldset") {
             let items = field["items"];
-            if (formMetadata.targets[fieldName]) {
-                const type = Reflect.getMetadata("design:type", formMetadata.targets[fieldName], fieldName);
+            const target = formMetadata.targets[fieldName];
+            if (target) {
+                const type = Reflect.getMetadata("design:type", target, fieldName);
                 const childMirror = reflectFormViewModelType(type);
                 items = childMirror.fields;
             }
@@ -253,8 +210,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     }
 
     field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
-    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"]
-    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"]
+    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"];
+    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"];
 
     switch (input) {
         case "select":

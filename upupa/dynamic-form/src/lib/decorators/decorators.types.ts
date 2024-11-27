@@ -1,6 +1,8 @@
 import { PasswordStrength } from "@upupa/auth";
 import { Field, Validator } from "../types";
 import { DataAdapterDescriptor } from "@upupa/data";
+import { Class } from "@noah-ark/common";
+import { FormViewModelMirror } from "./form-input.decorator";
 
 export interface IDynamicFormFieldOptions {}
 export class TextFieldOptions {}
@@ -104,5 +106,7 @@ export type FieldOptions =
                         removable?: boolean;
                         separatorKeysCodes?: string[];
                     })
+              | ({ input: "group" } & BaseFormFieldOptions)
+              | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));
 export type FieldInputType = FieldOptions["input"];

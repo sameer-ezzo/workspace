@@ -1,19 +1,21 @@
-import { ValidatorFn, FormGroup } from "@angular/forms";
+import { ValidatorFn, FormGroup, FormControl } from "@angular/forms";
 import { _mergeFields } from "./dynamic-form.helper";
 import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Validator, FormScheme, Fieldset } from "./types";
 import { JsonPointer } from "@noah-ark/json-patch";
-import { cloneDeep } from "lodash";
-import { signal } from "@angular/core";
+import { Injector } from "@angular/core";
 import { name } from "platform";
-import { FieldFormControl, FieldFormGroup } from "./field-form.control";
 import { FormGraph } from "./dynamic-form.component";
+import { FieldRef } from "./field-form.control";
 
 export class DynamicFormBuilder {
-    constructor(private readonly formService: DynamicFormService) {}
+    constructor(
+        private readonly injector: Injector,
+        private readonly formService: DynamicFormService,
+    ) {}
 
     build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGraph {
-        const graph = new Map<string, FieldFormControl | FieldFormGroup>();
+        const graph = new Map<string, FieldRef>();
         // this.removeControls(form);
         for (const fieldName in scheme) {
             const field = scheme[fieldName];
@@ -23,13 +25,15 @@ export class DynamicFormBuilder {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });
-                graph.set(_path, group);
+                graph.set(_path, group["fieldRef"]);
                 const subControls = this.build(group, field.items, fieldValue, `${path}${fieldName}/`, rootForm);
                 for (const [key, value] of subControls) {
                     graph.set(key, value);
                 }
             } else if (field.input == "group") {
                 const subControls = this.build(form, field.items, fieldValue, path, rootForm);
+                graph.set(`group:${fieldName}`, new FieldRef(this.injector, fieldName, `group:${fieldName}`, field, rootForm));
+
                 for (const [key, value] of subControls) {
                     graph.set(key, value);
                 }
@@ -39,10 +43,9 @@ export class DynamicFormBuilder {
                 // form.addControl(fieldName, array);
                 // this.buildArray(array, field.items, fieldValue);
             } else {
-                const control = this.getControl(fieldName, field, fieldValue, _path);
-                control.form = rootForm;
+                const control = this.getControl(fieldName, field, fieldValue, _path, rootForm);
                 form.addControl(fieldName, control, { emitEvent: false });
-                graph.set(_path, control);
+                graph.set(_path, control["fieldRef"]);
             }
         }
 
@@ -50,24 +53,21 @@ export class DynamicFormBuilder {
     }
 
     private getFieldset(name: string, field: Fieldset, _path: `/${string}`, rootForm: FormGroup) {
-        const group = new FieldFormGroup(
+        const group = new FormGroup(
             {},
             {
                 validators: this.getValidators(field),
                 asyncValidators: this.getAsyncValidators(field),
             },
         );
-        group.name = name;
-        group.path = _path;
-        group.field = signal(cloneDeep(field));
-        group.form = rootForm;
+        const fieldRef = new FieldRef(this.injector, name, _path, field, rootForm, group);
+        group["fieldRef"] = fieldRef;
         return group;
     }
-    getControl(name: string, field: Field, value: any, path: `/${string}`) {
-        const control = new FieldFormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
-        control.name = name;
-        control.path = path;
-        control.field = signal(cloneDeep(field));
+    getControl(name: string, field: Field, value: any, path: `/${string}`, form: FormGroup) {
+        const control = new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+        const fieldRef = new FieldRef(this.injector, name, path, field, form, control);
+        control["fieldRef"] = fieldRef;
         return control;
     }
     // buildArray(array: FormArray, items: FormScheme, value: any) {

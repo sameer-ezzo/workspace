@@ -7,7 +7,7 @@ import { firstValueFrom } from "rxjs";
 import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { reflectFormViewModelType } from "@upupa/dynamic-form";
+import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
@@ -116,7 +116,7 @@ export function editButton(
 }
 
 async function editFormDialog<T>(
-    vm: Class,
+    vm: Class | FormViewModelMirror,
     value = readInput("item", this),
     context?: { dialogOptions?: DialogServiceConfig; injector?: Injector; defaultAction?: ActionDescriptor | boolean },
 ) {
@@ -137,12 +137,12 @@ async function editFormDialog<T>(
 }
 
 export async function openFormDialog<T>(
-    vm: Class,
+    vm: Class | FormViewModelMirror,
     value: any,
     context: { injector?: Injector; dialogOptions?: DialogServiceConfig; defaultAction?: ActionDescriptor | boolean } = {},
 ) {
     const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
-    const _mirror = reflectFormViewModelType(vm);
+    const _mirror = "viewModelType" in vm ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
     let formActions = [...(_mirror.actions ?? []), ...(context.dialogOptions?.dialogActions ?? [])];
@@ -204,13 +204,28 @@ export function translationButtons(
                 const v = await (value ? value() : item);
 
                 const translations = v.translations ?? {};
-                delete v.translations;
                 const _value = { ...v, ...translations[locale.code] };
-                const result = await editFormDialog.call(source, formViewModel, _value, { dialogOptions, injector, defaultAction: true });
+                delete _value.translations; // to prevent json circular reference
+                const mirror = reflectFormViewModelType(formViewModel);
+                mirror.viewModelType = Object; // to prevent view model submit handler
+                mirror.actions = [];
+                const { submitResult, error } = await editFormDialog.call(source, mirror, _value, {
+                    dialogOptions,
+                    injector,
+                    defaultAction: {
+                        text: "Translate",
+                        icon: "translate",
+                        color: "primary",
+                        type: "submit",
+                    },
+                });
+                if (error) return;
+                translations[locale.code] = submitResult;
                 v.translations = translations;
-                v.translations[locale.code] = result.submitResult;
-                adapter?.put(item, v);
-                adapter?.refresh(true);
+                console.log("TRANSLATIONS", translations);
+
+                await adapter.put(item, v);
+                adapter.refresh(true);
             },
             inputItem: null,
         });

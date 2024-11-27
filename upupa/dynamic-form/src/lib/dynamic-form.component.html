@@ -1,7 +1,6 @@
 <form #ngFormRef="ngForm" [formGroup]="form()" [name]="name()" [attr.id]="name()" (ngSubmit)="onSubmit($event)">
     <mat-accordion>
         @for (record of fields() | orderedKeyValue; track $index) {
-            @let field = record.value;
             @let fieldName = record.key;
 
             <ng-container
@@ -9,8 +8,7 @@
                     fieldTemplate;
                     context: {
                         fieldName,
-                        group: form(),
-                        field,
+                        formGroup: form(),
                     }
                 "
             ></ng-container>
@@ -20,36 +18,38 @@
     <input type="submit" style="display: none" />
 </form>
 
-<ng-template #fieldTemplate let-fieldName="fieldName" let-group="group" let-field="field">
-    @let control = group.get(fieldName);
-    @let ui = field.ui;
+<ng-template #fieldTemplate let-fieldName="fieldName" let-formGroup="formGroup">
+    @let name = fieldName;
+    @let control = formGroup.get(fieldName);
+    @let fieldRef = control?.fieldRef ?? graph.get("group:" + fieldName);
+    @let field = fieldRef.field;
     @let input = field.input;
 
-    @if (field.input === "fieldset" || field.input === "object") {
-        <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="control" [class.hidden]="ui?.hidden === true">
-            @if (field.inputs?.label) {
-                <legend>{{ field.inputs.label }}</legend>
+    @if (input === "fieldset" || input === "object") {
+        <fieldset [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [formGroup]="control" [class.hidden]="fieldRef.hidden() === true">
+            @if (fieldRef.inputs()?.label) {
+                <legend>{{ fieldRef.inputs().label }}</legend>
             }
-            <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control, fieldName }"></ng-container>
+            <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
         </fieldset>
-    } @else if (field.input === "group") {
+    } @else if (input === "group") {
         @switch (field.template) {
             @case ("expansion-panel") {
                 <mat-expansion-panel
                     [attr.name]="fieldName"
                     class="{{ input }}-input {{ fieldName }}-container field"
-                    [class.hidden]="ui?.hidden === true"
-                    [expanded]="field.inputs.expanded"
+                    [class.hidden]="fieldRef.hidden() === true"
+                    [expanded]="fieldRef.inputs().expanded"
                 >
                     <mat-expansion-panel-header>
-                        <mat-panel-title> {{ field.inputs.label }} </mat-panel-title>
+                        <mat-panel-title> {{ fieldRef.inputs().label }} </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
                 </mat-expansion-panel>
             }
             @default {
-                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="ui?.hidden === true">
-                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { field, control: group, fieldName }"></ng-container>
+                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="fieldRef.hidden() === true">
+                    <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
                 </div>
             }
         }
@@ -61,12 +61,12 @@
         <paragraph
             [attr.name]="fieldName + '-text'"
             class="{{ input }}-input-text {{ fieldName }}-container-text"
-            [class.hidden]="ui?.hidden === true"
-            [text]="field.text"
-            [renderer]="field.inputs?.['renderer'] || 'markdown'"
+            [class.hidden]="fieldRef.hidden() === true"
+            [text]="fieldRef.text()"
+            [renderer]="fieldRef.inputs()?.['renderer'] || 'markdown'"
         ></paragraph>
     } @else {
-        <field [name]="fieldName" [field]="control.field()" [formControl]="control" [control]="control"></field>
+        <field [fieldRef]="fieldRef" [formControl]="control"></field>
     }
 </ng-template>
 
@@ -74,11 +74,13 @@
     <mat-icon mat-list-icon color="error">error</mat-icon>
 </ng-template>
 
-<ng-template #fieldsetTemplate let-fieldName="fieldName" let-field="field" let-control="control">
+<ng-template #fieldsetTemplate let-fieldRef="fieldRef" let-formGroup="formGroup">
+    @let control = formGroup.get(fieldRef.name) ?? formGroup;
+    @let field = fieldRef.field;
     @let input = field.input;
 
-    @if (input === "paragraph" || field.text) {
-        <paragraph [text]="field.text" [renderer]="field.inputs?.['renderer'] || 'markdown'"></paragraph>
+    @if (input === "paragraph" || fieldRef.text()) {
+        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer'] || 'markdown'"></paragraph>
     }
     @for (record of field.items | orderedKeyValue; track $index) {
         @let _fieldName = record.key;
@@ -87,8 +89,7 @@
                 fieldTemplate;
                 context: {
                     fieldName: _fieldName,
-                    group: control,
-                    field: record.value,
+                    formGroup: control,
                 }
             "
         ></ng-container>

@@ -25,12 +25,13 @@ import { OnSubmit } from "./viewmodels/form.viewmodel";
         },
         {
             provide: FORM_GRAPH,
-            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl().graph(),
+            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl().graph,
             deps: [DataFormWithViewModelComponent],
         },
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DataFormWithViewModelComponent),
+            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
+            deps: [DataFormWithViewModelComponent],
             multi: true,
         },
     ],

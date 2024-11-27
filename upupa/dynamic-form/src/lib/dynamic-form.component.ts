@@ -30,12 +30,12 @@ import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormModuleOptions } from "./dynamic-form.options";
 import { DYNAMIC_FORM_OPTIONS } from "./di.token";
 import { DynamicFormBuilder } from "./dynamic-form-renderer";
-import { FieldFormControl, FieldFormGroup } from "./field-form.control";
 import { DynamicFormService } from "./dynamic-form.service";
 import { ConditionalLogicService } from "./conditional-logic.service";
 import { KeyValuePipe } from "@angular/common";
+import { FieldRef } from "./field-form.control";
 
-export type FormGraph = Map<string, FieldFormControl | FieldFormGroup>;
+export type FormGraph = Map<string, FieldRef>;
 export const FORM_GRAPH = new InjectionToken<FormGraph>("FormControls");
 export class ExtendedValueChangeEvent<T = any> {
     get path() {
@@ -44,13 +44,13 @@ export class ExtendedValueChangeEvent<T = any> {
     constructor(
         public readonly value: T,
         public readonly graph: FormGraph,
-        public readonly source?: FieldFormControl | FieldFormGroup,
+        public readonly source?: FieldRef,
         public readonly patch?: Record<`/${string}`, unknown>,
         public readonly changes?: SimpleChanges,
     ) {}
 }
 
-export function injectField(path: string): FieldFormControl | FieldFormGroup {
+export function fieldRef(path: string): FieldRef {
     return inject(FORM_GRAPH, { optional: true })?.get(path);
 }
 @Component({
@@ -67,13 +67,8 @@ export function injectField(path: string): FieldFormControl | FieldFormGroup {
             multi: true,
         },
         {
-            provide: DynamicFormBuilder,
-            useFactory: (formService: DynamicFormService) => new DynamicFormBuilder(formService),
-            deps: [UntypedFormBuilder, DynamicFormService, EventBus],
-        },
-        {
             provide: FORM_GRAPH,
-            useFactory: (form: DynamicFormComponent) => form.graph(),
+            useFactory: (form: DynamicFormComponent) => form.graph,
             deps: [DynamicFormComponent],
         },
     ],
@@ -85,7 +80,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     private readonly conditionalService = inject(ConditionalLogicService);
     private readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
     public readonly bus = inject(EventBus);
-    private readonly _patches: Map<`/${string}`, unknown> = new Map();
+    private readonly _patches: Map<`group:${string}` | `/${string}`, unknown> = new Map();
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
@@ -161,30 +156,30 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this._onChange?.(this.value());
     }
 
-    graph = signal<FormGraph>(null);
+    graph: FormGraph = new Map();
 
     formService = inject(DynamicFormService);
-    _builder = new DynamicFormBuilder(this.formService);
+    _builder = new DynamicFormBuilder(inject(Injector), this.formService);
 
     constructor() {
         effect(() => {
             this.form().events.subscribe((e) => {
                 if (e instanceof ValueChangeEvent) {
                     const value = this.value() ?? {};
-                    const source = e.source as FieldFormControl | FieldFormGroup;
-                    const path = source.path ?? "/";
+                    const source = e.source as AbstractControl & { fieldRef: FieldRef };
+                    const path = source.fieldRef?.path ?? "/";
                     const changes = { [path]: new SimpleChange(JsonPointer.get(value, path, "/"), source.value, !this._patches.has(path)) };
                     JsonPointer.set(value, path, source.value);
                     let patch = undefined;
-                    if (source.path) {
-                        patch = { [source.path]: source.value };
-                        this._patches.set(source.path, source.value);
+                    if (path) {
+                        patch = { [path]: source.value };
+                        this._patches.set(path, source.value);
                     }
 
                     this.value.set(value);
                     this.propagateChange();
 
-                    const ee = new ExtendedValueChangeEvent(value, this.graph(), source.path ? source : undefined, patch, changes);
+                    const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
                     this.fieldValueChange.emit(ee);
                     console.log("valueChanges", ee);
                 }
@@ -202,11 +197,13 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
 
             this._patches.clear();
-            this.graph.set(this._builder.build(this.form(), this.fields(), this.value()));
+            this.graph = this._builder.build(this.form(), scheme, this.value(), "/");
+
+            console.log("this.graph", this.graph);
 
             // emit initial value change event
             this.fieldValueChange.emit(
-                new ExtendedValueChangeEvent(this.value(), this.graph(), this.graph().get("/"), undefined, { "/": new SimpleChange(undefined, this.value(), true) }),
+                new ExtendedValueChangeEvent(this.value(), this.graph, this.graph.get("/"), undefined, { "/": new SimpleChange(undefined, this.value(), true) }),
             );
 
             //handlers
@@ -277,25 +274,18 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.graph()).find(([c, f]) => f.invalid && f.field().hidden !== true);
+        const c = Array.from(this.graph).find(([c, f]) => f.control.invalid && f.hidden() !== true);
         if (!c) return;
-        const control = c[1] as FieldFormControl;
+        const fieldRef = c[1] as FieldRef;
+        const control = fieldRef.control;
         control.markAsTouched();
-        const el = this.host.nativeElement.querySelector(`form [name=${control.name}]`) as HTMLElement;
+        const el = this.host.nativeElement.querySelector(`form [name=${fieldRef.name}]`) as HTMLElement;
         if (el) this.scrollToElement(el);
     }
 
+    /// @deprecated use patches instead
     getDirtyPatches(): Patch[] {
-        return Array.from(this.graph())
-            .filter((e) => (e[1] as AbstractControl).dirty)
-            .map((e) => {
-                const path = e[1]?.["path"];
-                return {
-                    path,
-                    op: "replace",
-                    value: JsonPointer.get(this.value(), path),
-                } as Patch;
-            });
+        return this.patches;
     }
 
     @HostListener("window:beforeunload", ["$event"])

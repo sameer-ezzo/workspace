@@ -121,7 +121,7 @@ export function ChangeValueHandler(targetForm: DynamicFormComponent) {
         const path = _path(cmd.payload.fields);
         const field = JsonPointer.get<Field>(form.fields, path);
         if (field) {
-            const control = form.graph().get(path);
+            const control = form.graph.get(path).control;
             if (control) control.setValue(cmd.payload.value);
         }
     });

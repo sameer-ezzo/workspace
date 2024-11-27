@@ -1,12 +1,10 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef, SimpleChanges, signal, Injector } from "@angular/core";
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from "@angular/forms";
-import { PortalComponent, DynamicComponent } from "@upupa/common";
+import { Component, forwardRef, inject, input, computed, model, ComponentRef, Injector } from "@angular/core";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors, NgControl } from "@angular/forms";
+import { PortalComponent } from "@upupa/common";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
-import { Field } from "./types";
 import { DynamicFormService } from "./dynamic-form.service";
-import { AdapterInputResolverService } from "./adapter-input-resolver.service";
-import { DataAdapter } from "@upupa/data";
-import { FieldFormControl, FieldFormGroup } from "./field-form.control";
+import { FieldRef } from "./field-form.control";
+import { ComponentType } from "@angular/cdk/portal";
 
 @Component({
     standalone: true,
@@ -25,21 +23,14 @@ import { FieldFormControl, FieldFormGroup } from "./field-form.control";
     ],
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
-        @if (field().text) {
-            <paragraph [class.hidden]="field().hidden === true" [text]="field().text" [renderer]="field().inputs?.['renderer'] || 'markdown'"></paragraph>
+        @if (fieldRef().text()) {
+            <paragraph [text]="fieldRef().text()" [renderer]="fieldRef().inputs()?.['renderer'] || 'markdown'"></paragraph>
         }
-        @if (template()) {
-            <portal
-                [component]="template().component"
-                [class]="template().class"
-                [inputs]="template().inputs"
-                [outputs]="template().outputs"
-                (attached)="onAttached($event)"
-                [injector]="template().injector"
-            >
+        @if (component()) {
+            <portal [component]="component()" [class]="fieldRef().class()" [inputs]="fieldRef().inputs()" [outputs]="fieldRef().outputs()" (attached)="onAttached($event)">
             </portal>
         } @else {
-            <div class="error">Template not found for {{ name() }}</div>
+            <div class="error">Template not found for {{ fieldRef().name }}</div>
         }
     `,
 
@@ -48,44 +39,21 @@ import { FieldFormControl, FieldFormGroup } from "./field-form.control";
     },
 })
 export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
-    private readonly injector = inject(Injector);
     formService = inject(DynamicFormService);
+    theme = input("material");
 
-    control = input.required<FieldFormControl | FieldFormGroup>();
-    field = input.required<Field>();
+    fieldRef = input.required<FieldRef>();
+    component = computed<ComponentType<any>>(() => this.formService.getControl(this.fieldRef().field.input, this.theme()).component);
 
-    name = input.required<string>();
     classList = computed(() => {
-        const field = this.field();
-        const template = this.template();
-        return [`${this.name()}-field`, `${field.input}-input`, "field", template?.class, field.class, field.hidden === true ? "hidden" : ""]
+        const fieldRef = this.fieldRef();
+        const hidden = fieldRef.hidden() === true;
+        return [`${fieldRef.name}-field`, "field", `${fieldRef.field.input}-input`, fieldRef.class(), hidden ? "hidden" : ""]
             .filter((c) => c)
             .join(" ")
             .trim();
     });
 
-    template = signal<DynamicComponent>(undefined);
-    theme = input("material");
-
-    private readonly adapterResolver = inject(AdapterInputResolverService);
-    async ngOnChanges(changes: SimpleChanges) {
-        if (changes["field"]) {
-            const field = this.field();
-            field.inputs ??= {};
-
-            let inputs = { ...(field.inputs ?? {}) };
-            await this.adapterResolver.resolve(inputs);
-            field.inputs = inputs;
-
-            this.template.set({
-                component: this.formService.getControl(field.input, this.theme()).component,
-                inputs: field.inputs,
-                outputs: field.outputs,
-                class: field.class,
-                injector: this.injector,
-            });
-        }
-    }
     writeValue(obj: any): void {
         for (const childAccessor of this.childAccessors) {
             childAccessor.writeValue(obj);
@@ -132,7 +100,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
             childAccessor.registerOnChange(this._onChange);
             childAccessor.registerOnTouched(this._onTouched);
 
-            childAccessor.writeValue(this.control().value);
+            childAccessor.writeValue(this.fieldRef().control.value);
             childAccessor.setDisabledState?.(this.isDisabled());
         }
     }

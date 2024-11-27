@@ -1,17 +1,17 @@
-import { Component, Input, signal, ViewChild } from '@angular/core';
+import { Component, Input, signal, ViewChild } from "@angular/core";
 
-import { AuthService, User } from '@upupa/auth';
+import { AuthService, User } from "@upupa/auth";
 
-import { firstValueFrom, map } from 'rxjs';
-import { DataResult, DataService } from '@upupa/data';
+import { firstValueFrom, map } from "rxjs";
+import { DataResult, DataService } from "@upupa/data";
 
-import { HttpClient } from '@angular/common/http';
-import { ActionEvent } from '@upupa/common';
-import { MatDialogRef } from '@angular/material/dialog';
+import { HttpClient } from "@angular/common/http";
+import { ActionEvent } from "@upupa/common";
+import { MatDialogRef } from "@angular/material/dialog";
 
-import { DynamicFormComponent, FormScheme } from '@upupa/dynamic-form';
-import { Condition } from '@noah-ark/expression-engine';
-import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
+import { DynamicFormComponent, FormScheme } from "@upupa/dynamic-form";
+import { Condition } from "@noah-ark/expression-engine";
+import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
 
 type UserFormOptions = {
     scheme: FormScheme;
@@ -19,12 +19,12 @@ type UserFormOptions = {
 };
 
 @Component({
-    selector: 'user-form',
-    templateUrl: './user-form.component.html',
-    styleUrls: ['./user-form.component.scss'],
+    selector: "user-form",
+    templateUrl: "./user-form.component.html",
+    styleUrls: ["./user-form.component.scss"],
 })
 export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent> {
-    @ViewChild('userForm') form: any;
+    @ViewChild("userForm") form: any;
     dialogRef: MatDialogRef<UpupaDialogComponent<UpupaDialogComponent<any>>>;
     private _loading = signal<boolean>(false);
     public get loading() {
@@ -37,7 +37,7 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
     scheme = signal<FormScheme>(null);
     conditions = signal<Condition[]>([]);
 
-    private _updateInputs(mode: 'editUser' | 'createUser' = 'createUser') {
+    private _updateInputs(mode: "editUser" | "createUser" = "createUser") {
         this.loading = true;
 
         this.scheme.set(this.options?.scheme);
@@ -58,8 +58,8 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
     }
 
     errors = (form: DynamicFormComponent) =>
-        Array.from(form.graph())
-            .map((c) => c[1].errors)
+        Array.from(form.graph)
+            .map((c) => c[1].control.errors)
             .reduce((a, b) => ({ ...a, ...b }), {});
 
     _options: UserFormOptions = null;
@@ -82,7 +82,11 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
         }
     }
 
-    constructor(public auth: AuthService, public data: DataService, private http: HttpClient) {}
+    constructor(
+        public auth: AuthService,
+        public data: DataService,
+        private http: HttpClient,
+    ) {}
 
     discard() {
         this.dialogRef?.close();
@@ -115,7 +119,7 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
 
     async onAction(e: ActionEvent) {
         const dialogRef = e.context.dialogRef;
-        if (e.action.name === 'save') {
+        if (e.action.name === "save") {
             try {
                 await this.save();
                 dialogRef.close(this.user);

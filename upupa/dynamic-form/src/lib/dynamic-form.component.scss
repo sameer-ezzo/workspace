@@ -24,7 +24,7 @@ dynamic-form > form {
         margin-block-end: 1rem;
     }
 
-    .field.hidden-input ~ .field:not(.hidden-input) {
+    .field.hidden-input ~ field:not(.hidden-input) {
         margin-block-start: 0rem;
     }
 
