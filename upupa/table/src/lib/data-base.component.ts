@@ -1,23 +1,9 @@
-import {
-    Component,
-    EventEmitter,
-    Injector,
-    Output,
-    SimpleChanges,
-    computed,
-    effect,
-    inject,
-    input,
-    model,
-    output,
-    signal,
-} from "@angular/core";
+import { Component, EventEmitter, Injector, Output, SimpleChanges, computed, effect, inject, input, model, output, signal, viewChild, viewChildren } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { firstValueFrom } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-
 
 @Component({
     selector: "data-base",
@@ -34,6 +20,7 @@ export class DataComponentBase<T = any> {
         return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
     });
 
+    headerChildren = viewChildren(".table-header");
 
     lazyLoadData = input(false);
     loading = signal(false);

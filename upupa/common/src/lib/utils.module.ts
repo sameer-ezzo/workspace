@@ -20,7 +20,6 @@ import { MarkdownPipe } from './markdown.pipe';
 import { FocusDirective } from './directives/focus.directive';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
-import { ErrorsDirective } from './directives/errors.directive';
 import { PortalComponent } from './portal.component';
 
 const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe];
