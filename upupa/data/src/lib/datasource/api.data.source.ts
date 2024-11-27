@@ -5,9 +5,10 @@ import { PageEvent } from "@angular/material/paginator";
 import { DataService } from "../data.service";
 import { QueryDescriptor } from "../di.token";
 import { Patch } from "@noah-ark/json-patch";
+import { signal } from "@angular/core";
 
 export class ApiDataSource<T = any> extends TableDataSource<T> {
-    readonly allDataLoaded = false;
+    readonly allDataLoaded = signal(false);
 
     data: T[];
     readonly src$ = new ReplaySubject<Observable<T[]>>(1);
@@ -95,6 +96,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
             tap((res) => {
                 page.length = res.total;
                 this.data = res.data as T[];
+                this.allDataLoaded.set(this.data.length >= res.total);
             }),
             map((res) => res.data),
         );

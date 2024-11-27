@@ -48,7 +48,7 @@ import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
 import { ActionDescriptorComponent, MatBtnComponent } from '@upupa/mat-btn';
 import { TableColumnSelectorPipe } from './table-column-selector.pipe';
 import { DataTableActionsPortalComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
-import { ValueDataComponentBase } from './value-data-base.component';
+
 import { TableHeaderComponent } from './table-header.component';
 
 const pipes = [
@@ -95,7 +95,7 @@ const declarations = [
     JsonPointerPipe,
     TableColumnSelectorPipe,
     DataComponentBase,
-    ValueDataComponentBase,
+    DataComponentBase,
 ];
 
 @NgModule({

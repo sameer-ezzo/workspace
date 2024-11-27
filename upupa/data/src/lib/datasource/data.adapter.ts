@@ -234,8 +234,8 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     }
 
     _allNormalized: NormalizedItem<T>[];
-    refresh(force = false) {
-        if (!force && this.dataSource.allDataLoaded) {
+    refresh(force = true): void {
+        if (!force && this.dataSource.allDataLoaded()) {
             if (!this._allNormalized) this._allNormalized = this.normalized();
             const terms = this.options?.terms ?? [];
             this.normalized.set(

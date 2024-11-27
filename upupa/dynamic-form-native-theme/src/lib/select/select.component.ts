@@ -2,7 +2,7 @@ import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, Elemen
 import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
 import { MatSelect } from "@angular/material/select";
 import { ActionDescriptor } from "@upupa/common";
-import { ValueDataComponentBase } from "@upupa/table";
+import { DataComponentBase } from "@upupa/table";
 
 import { debounceTime } from "rxjs";
 import { InputDefaults } from "../defaults";
@@ -23,31 +23,13 @@ import { InputDefaults } from "../defaults";
         },
     ],
 })
-export class SelectComponent<T = any> extends ValueDataComponentBase<T> implements Validator {
-    noOption() {
-        console.log("NOT IMPLEMENTED");
-        return false;
-    }
-
-    _flag = false;
-    validate(control: AbstractControl): ValidationErrors | null {
-        if (this._flag && control.value && this.noOption() && this.dataLoaded()) {
-            control.markAsTouched();
-            const value = control.value._id ?? control.value;
-            return {
-                select: {
-                    message: `No option found matching value "${value}"`,
-                },
-            };
-        }
-        return null;
-    }
-
+export class SelectComponent<T = any> extends DataComponentBase<T> {
+    name = input("");
     ngAfterViewInit() {
-        setTimeout(() => {
-            this._flag = true;
-            this.control().updateValueAndValidity();
-        }, 500); //todo: wait for adapter data change
+        // setTimeout(() => {
+        //     this._flag = true;
+        //     this.control().updateValueAndValidity();
+        // }, 500); //todo: wait for adapter data change
 
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;

@@ -4,14 +4,6 @@
 
     display: grid;
     grid-template-rows: 1fr auto;
-    overflow: hidden;
-
-    .form-wrapper {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
-        overflow-y: auto;
-    }
 }
 
 .mat-form-field {

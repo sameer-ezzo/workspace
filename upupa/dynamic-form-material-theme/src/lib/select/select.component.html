@@ -27,7 +27,9 @@
             <div class="selected-wrapper">
                 <span>{{ selected().length }} Selected</span>
                 <span style="flex: 1 1 auto"></span>
-                <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length">Show only selected</mat-checkbox>
+                <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
+                    >Show only selected</mat-checkbox
+                >
             </div>
 
             @for (item of items(); track $index) {
@@ -74,10 +76,10 @@
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
-                @if (dataLoaded()) {
-                    <mat-option disabled> No items found </mat-option>
-                } @else if (!loading()) {
+                @if (loading()) {
                     <mat-option disabled> Loading ... </mat-option>
+                } @else {
+                    <mat-option disabled> No items found </mat-option>
                 }
             }
 

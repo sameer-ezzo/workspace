@@ -1,7 +1,7 @@
 import { Component, forwardRef, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { ValueDataComponentBase } from '@upupa/table';
+import { DataComponentBase } from '@upupa/table';
 import { InputDefaults } from '../defaults';
 
 @Component({
@@ -15,7 +15,8 @@ import { InputDefaults } from '../defaults';
         },
     ],
 })
-export class AutoCompleteTextComponent extends ValueDataComponentBase<string> {
+export class AutoCompleteTextComponent extends DataComponentBase<string> {
+    name = input('');
     inlineError = true;
 
     appearance = input(InputDefaults.appearance);

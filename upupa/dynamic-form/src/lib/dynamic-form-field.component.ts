@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG
 import { PortalComponent } from "@upupa/common";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormService } from "./dynamic-form.service";
-import { FieldRef } from "./field-form.control";
+import { FieldRef } from "./field-ref";
 import { ComponentType } from "@angular/cdk/portal";
 
 @Component({

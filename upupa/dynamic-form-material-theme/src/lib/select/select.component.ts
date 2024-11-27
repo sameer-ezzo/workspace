@@ -25,16 +25,11 @@ import { SelectComponent } from "@upupa/dynamic-form-native-theme";
 export class MatSelectComponent<T = any> extends SelectComponent<T> implements Validator {
     selectInput = viewChild<MatSelect>(MatSelect);
 
-    override ngAfterViewInit() {
-        super.ngAfterViewInit();
-        this.selectInput().selectionChange.subscribe((e) => {
-            this.value.set(this.control().value);
-            this.control().updateValueAndValidity();
-        });
-    }
-
-    override noOption() {
-        const select = this.selectInput();
-        return Array.isArray(select.selected) ? !select.selected.length : !select.selected;
-    }
+    // override ngAfterViewInit() {
+    //     super.ngAfterViewInit();
+    //     this.selectInput().selectionChange.subscribe((e) => {
+    //         this.value.set(this.control().value);
+    //         this.control().updateValueAndValidity();
+    //     });
+    // }
 }

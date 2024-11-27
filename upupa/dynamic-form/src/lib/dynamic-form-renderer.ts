@@ -6,7 +6,7 @@ import { JsonPointer } from "@noah-ark/json-patch";
 import { Injector } from "@angular/core";
 import { name } from "platform";
 import { FormGraph } from "./dynamic-form.component";
-import { FieldRef } from "./field-form.control";
+import { FieldRef } from "./field-ref";
 
 export class DynamicFormBuilder {
     constructor(
@@ -21,6 +21,7 @@ export class DynamicFormBuilder {
             const field = scheme[fieldName];
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
+
             if (field.input === "object") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 

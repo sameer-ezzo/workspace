@@ -2,8 +2,9 @@ import { from, merge, Observable, of, ReplaySubject } from "rxjs";
 import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor } from "./model";
 import { filter } from "./filter.fun";
 
-import { debounceTime, switchMap, map, tap, shareReplay } from "rxjs/operators";
+import { switchMap, map, tap, shareReplay } from "rxjs/operators";
 import { JsonPatch, Patch } from "@noah-ark/json-patch";
+import { signal } from "@angular/core";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -23,7 +24,7 @@ export function compare(a, b): number {
 }
 
 export class ClientDataSource<T = any> extends TableDataSource<T> {
-    readonly allDataLoaded = true;
+    readonly allDataLoaded = signal(true);
     private _all: T[];
     public get all(): T[] {
         return this._all;

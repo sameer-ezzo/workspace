@@ -4,7 +4,7 @@ import { NormalizedItem } from "@upupa/data";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { BreakpointObserver } from "@angular/cdk/layout";
 import { MatDialog } from "@angular/material/dialog";
-import { ValueDataComponentBase } from "@upupa/table";
+import { DataComponentBase } from "@upupa/table";
 import { FileInfo } from "../model";
 
 @Component({
@@ -19,7 +19,7 @@ import { FileInfo } from "../model";
         },
     ],
 })
-export class ThumbsGridComponent extends ValueDataComponentBase<FileInfo> implements OnChanges {
+export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements OnChanges {
     thumbs = input<FileInfo[]>([]);
     changed = output<Partial<FileInfo> | Partial<FileInfo>[]>();
 
