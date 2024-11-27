@@ -108,8 +108,9 @@ export function formAction(action: Partial<ActionDescriptor> & { order?: number 
             name: action.name || propertyKey,
             handlerName: propertyKey,
             order: action.order ?? formMetadata.actions.length,
+            type: (action.type ?? propertyKey == "onSubmit") ? "submit" : "button",
         };
-        formMetadata.actions.push(_action);
+        formMetadata.actions.push(_action as any);
         defineFormMetadata(property.constructor, formMetadata);
     };
 }

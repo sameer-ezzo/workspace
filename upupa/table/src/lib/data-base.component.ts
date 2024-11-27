@@ -34,7 +34,7 @@ export class DataComponentBase<T = any> {
         return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
     });
 
-    add = output();
+
     lazyLoadData = input(false);
     loading = signal(false);
     dataLoaded = signal(false);

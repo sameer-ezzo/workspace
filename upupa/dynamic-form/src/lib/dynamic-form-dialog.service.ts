@@ -2,12 +2,12 @@ import { Injectable, inject } from "@angular/core";
 import { FormScheme } from "./types/types";
 import { DynamicFormComponent } from "./dynamic-form.component";
 import { MatDialogRef } from "@angular/material/dialog";
-import { DialogService, DialogServiceConfig, UpupaDialogComponent } from "@upupa/dialog";
+import { DialogService, DialogServiceConfig, DialogWrapperComponent } from "@upupa/dialog";
 
 @Injectable({ providedIn: 'root' })
 export class DynamicFormDialogService {
   private readonly dialog = inject(DialogService);
-  open<D extends Record<string, unknown>, O = any, R = any>(scheme: FormScheme, value?: D, dialogOptions: DialogServiceConfig<O> = {}): MatDialogRef<UpupaDialogComponent, R> {
+  open<D extends Record<string, unknown>, O = any, R = any>(scheme: FormScheme, value?: D, dialogOptions: DialogServiceConfig<O> = {}): MatDialogRef<DialogWrapperComponent, R> {
     const options = {
       width: "100%",
       maxWidth: "450px",

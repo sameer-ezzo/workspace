@@ -123,9 +123,9 @@
             [formControl]="filterControl"
         />
         @if (filterInput.value.length > 0) {
-            <button mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
+            <!-- <button mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
                 <mat-icon>clear</mat-icon>
-            </button>
+            </button> -->
         }
     </div>
 </ng-template>

@@ -1,6 +1,6 @@
 import { Component, input, inject, Type, Injector, ComponentRef, OutputEmitterRef, runInInjectionContext, output } from "@angular/core";
 import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
-import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService, UpupaDialogComponent } from "@upupa/dialog";
+import { ConfirmOptions, ConfirmService, DialogService, DialogServiceConfig, SnackBarService, DialogWrapperComponent } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
@@ -46,6 +46,23 @@ export function inlineButton<T = unknown>(options: { descriptor?: Partial<Action
     return template;
 }
 
+export async function createButtonHandler(
+    sourceComponent: any,
+    formViewModel: Class,
+    value?: () => any | Promise<any>,
+    options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogServiceConfig>; injector?: Injector },
+) {
+    const injector = options?.injector ?? inject(Injector);
+    const v = value ? value() : readInput("item", sourceComponent);
+    const dialogOptions = { title: "Create", ...options?.dialogOptions };
+    const result = await editFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true,  injector  });
+
+    const adapter = injector.get(DataAdapter);
+    adapter?.create(result.submitResult);
+    adapter?.refresh(true);
+    return result;
+}
+
 export function createButton(
     formViewModel: Class,
     value?: () => any | Promise<any>,
@@ -61,17 +78,7 @@ export function createButton(
 
     return inlineButton({
         descriptor: merge(btnDescriptor, options?.descriptor),
-        clickHandler: async (source) => {
-            const injector = inject(Injector);
-            const item = readInput("item", source);
-            const v = value ? value() : item;
-            const dialogOptions = { title: btnDescriptor.text ?? "Create", ...options?.dialogOptions };
-            const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions, defaultAction: true });
-
-            const adapter = injector.get(DataAdapter);
-            adapter?.create(result.submitResult);
-            adapter?.refresh(true);
-        },
+        clickHandler: async (source) => createButtonHandler(source, formViewModel, value, options),
         inputItem: null,
     });
 }
@@ -164,8 +171,8 @@ export async function openFormDialog<T>(
         },
     );
 
-    const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef["afterAttached"]());
-    const dialogWrapper = dialogRef.componentInstance as UpupaDialogComponent;
+    const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef.afterAttached());
+    const dialogWrapper = dialogRef.componentInstance;
 
     componentRef.instance.form().statusChanges.subscribe((status) => {
         dialogWrapper.dialogActions.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
@@ -233,7 +240,7 @@ export function translationButtons(
 }
 
 type ExtractEventType<T> = T extends OutputEmitterRef<infer R> ? R : never;
-async function waitForOutput<T extends OutputEmitterRef<R>, R = ExtractEventType<T>>(output: string, instance = this): Promise<R> {
+export async function waitForOutput<T extends OutputEmitterRef<R>, R = ExtractEventType<T>>(output: string, instance = this): Promise<R> {
     const emitter = instance[output] as T;
     if (!emitter) throw new Error(`Output ${output} not found in ${instance.constructor.name}`);
     return new Promise<R>((resolve) => {

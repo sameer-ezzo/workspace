@@ -4,7 +4,7 @@ import { MatSelect } from "@angular/material/select";
 import { ActionDescriptor } from "@upupa/common";
 import { ValueDataComponentBase } from "@upupa/table";
 
-import { debounceTime, firstValueFrom } from "rxjs";
+import { debounceTime } from "rxjs";
 import { InputDefaults } from "../defaults";
 
 @Component({
@@ -47,7 +47,7 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> implemen
         setTimeout(() => {
             this._flag = true;
             this.control().updateValueAndValidity();
-        }, 500); //todo: wait for adapter data change 
+        }, 500); //todo: wait for adapter data change
 
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;
@@ -72,9 +72,6 @@ export class SelectComponent<T = any> extends ValueDataComponentBase<T> implemen
     filterControl = new FormControl<string>("");
     filterInputRef = viewChild.required<ElementRef>("filterInput");
     filterModel = model<string>();
-    updateFilter() {
-        this.adapter().filter = { terms: [this.filterModel()] };
-    }
 
     clearValue(e) {
         e.stopPropagation();

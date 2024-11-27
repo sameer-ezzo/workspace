@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { ValidationErrors } from "@angular/forms";
 import { Patch } from "@noah-ark/json-patch";
 import { DataService } from "@upupa/data";
-import { SnackBarService, UpupaDialogComponent } from "@upupa/dialog";
+import { SnackBarService, DialogWrapperComponent } from "@upupa/dialog";
 import { ExtendedValueChangeEvent } from "@upupa/dynamic-form";
 import { DataFormWithViewModelComponent } from "../data-form-with-view-model.component";
 
@@ -17,7 +17,7 @@ export async function apiPut(ds: DataService, path: string, value: any) {
 
 export async function apiSubmit<TSelf>(self: TSelf, collection: string, patch = false) {
     const ds = inject(DataService);
-    const dialogContainer = inject(UpupaDialogComponent, { optional: true });
+    const dialogContainer = inject(DialogWrapperComponent, { optional: true });
     const snack = inject(SnackBarService, { optional: true });
     const form = inject(DataFormWithViewModelComponent);
     const patches = patch ? form.dynamicFormEl().patches : undefined;

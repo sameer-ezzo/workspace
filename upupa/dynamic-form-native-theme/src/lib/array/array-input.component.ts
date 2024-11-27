@@ -61,6 +61,5 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
         this.dataSource.all = value;
-        console.log(this.name(), "ArrayInputComponent -> writeValue -> value", this.adapter().normalized(), this.control().value);
     }
 }

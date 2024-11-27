@@ -1,4 +1,4 @@
-import { Component, Input, signal, ViewChild } from "@angular/core";
+import { Component, inject, Input, signal, ViewChild } from "@angular/core";
 
 import { AuthService, User } from "@upupa/auth";
 
@@ -11,7 +11,7 @@ import { MatDialogRef } from "@angular/material/dialog";
 
 import { DynamicFormComponent, FormScheme } from "@upupa/dynamic-form";
 import { Condition } from "@noah-ark/expression-engine";
-import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
+import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
 
 type UserFormOptions = {
     scheme: FormScheme;
@@ -23,9 +23,9 @@ type UserFormOptions = {
     templateUrl: "./user-form.component.html",
     styleUrls: ["./user-form.component.scss"],
 })
-export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent> {
+export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
     @ViewChild("userForm") form: any;
-    dialogRef: MatDialogRef<UpupaDialogComponent<UpupaDialogComponent<any>>>;
+    dialogRef: MatDialogRef<DialogWrapperComponent> = inject(MatDialogRef);
     private _loading = signal<boolean>(false);
     public get loading() {
         return this._loading();
@@ -97,13 +97,13 @@ export class UserFormComponent implements UpupaDialogPortal<UpupaDialogComponent
         if (!form.touched || form.invalid) return;
         try {
             if (!this.user?._id) {
-                const res = await this._createUser(form.value);
+                const res = await this._createUser(form.value());
                 this._userValue.set(res);
             } else {
                 const v = form.getDirtyValue();
                 if (v) await this.data.put(`/user/${this.user._id}`, v);
             }
-            this.dialogRef.close(this.user);
+            this.dialogRef?.close(this.user);
         } catch (error) {
             console.error(error);
             throw error;
