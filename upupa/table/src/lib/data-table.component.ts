@@ -142,11 +142,14 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes);
-
         if (changes["adapter"]) {
+            const adapter = this.adapter();
+            if (!adapter) throw new Error("Adapter is required");
+
             this.loadData();
         }
+        await super.ngOnChanges(changes);
+
         if (changes["columns"]) this.generateColumns();
     }
 

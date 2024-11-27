@@ -1,3 +1,7 @@
+<!-- label -->
+@if (label()) {
+    <label style="margin-block: 0.5rem 1rem">{{ label() }}</label>
+}
 <div class="form-wrapper">
     @let _vm = viewModel();
 
@@ -10,6 +14,7 @@
         [preventDirtyUnload]="_vm.preventDirtyUnload"
         [theme]="_vm.theme"
         [conditions]="_vm.conditions"
+        [formName]="name()"
         (submit)="onSubmit()"
         [form]="form()"
         [formGroup]="form()"
@@ -18,26 +23,17 @@
 
 @if (actions()?.length) {
     <div class="toolbar footer">
-
-
         @for (descriptor of actions(); track descriptor.name) {
-
-            @if (descriptor.type == 'submit') {
+            @if (descriptor.type == "submit") {
                 <mat-btn
                     [descriptor]="descriptor"
                     [loading]="submitting()"
                     (onClick)="dynForm.ngSubmit()"
-                    [disabled]="
-                        this.submitting() ||
-                        (dynForm.invalid && (dynForm.dirty || dynForm.touched))
-                    "
+                    [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
                 >
                 </mat-btn>
             } @else {
-                <mat-btn
-                [descriptor]="descriptor"
-                (onClick)="onAction($event)"
-                ></mat-btn>
+                <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
             }
         }
     </div>

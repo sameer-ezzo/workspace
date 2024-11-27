@@ -26,4 +26,4 @@ export * from './lib/decorators/form-input.decorator';
 export * from './lib/conditional-logic.service';
 export * from './lib/dynamic-form-inputs';
 
-export * from './lib/field-form.control';
+export * from './lib/field-ref';

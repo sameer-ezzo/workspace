@@ -33,7 +33,7 @@ import { DynamicFormBuilder } from "./dynamic-form-renderer";
 import { DynamicFormService } from "./dynamic-form.service";
 import { ConditionalLogicService } from "./conditional-logic.service";
 import { KeyValuePipe } from "@angular/common";
-import { FieldRef } from "./field-form.control";
+import { FieldRef } from "./field-ref";
 
 export type FormGraph = Map<string, FieldRef>;
 export const FORM_GRAPH = new InjectionToken<FormGraph>("FormControls");
@@ -243,7 +243,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     writeValue(val: T): void {
         if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
         this.value.set(val);
-        this.form().patchValue(val);
+        this.form().patchValue(val, { emitEvent: false, onlySelf: true });
     }
 
     registerOnChange(fn: (model: any) => void): void {
@@ -298,7 +298,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     ngOnDestroy(): void {
         this.subs.forEach((s) => s.unsubscribe());
-        this.form().reset();
     }
 }
 

@@ -111,7 +111,7 @@
             <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row" [class.expanded]="expanded[row.key]?.()"></tr>
         }
     </table>
-    @if (dataLoaded() && adapter().normalized().length === 0) {
+    @if (adapter().normalized().length === 0) {
         <div class="no-data" style="text-align: center; padding: 2rem">
             @if (noDataImage()) {
                 <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />

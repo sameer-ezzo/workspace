@@ -1,21 +1,21 @@
-@if (title() || !hideCloseButton()) {
-    <div class="toolbar header" [class.titled]="title().length > 0">
-        @if (title()) {
-            <span style="line-height: 1.25">
-                <h2 style="margin: 0">{{ title() }}</h2>
-                @if (subTitle()) {
-                    <small>{{ subTitle() }}</small>
-                }
-            </span>
-        }
-        @if (!hideCloseButton()) {
-            <span style="flex: 1 1 auto"></span>
-            <button class="close-btn" tabindex="-1" mat-icon-button (click)="close()">
-                <mat-icon>close</mat-icon>
-            </button>
-        }
-    </div>
-}
+<!-- @if (title() || !hideCloseButton()) { -->
+<div class="toolbar header" [class.titled]="title().length > 0">
+    @if (title()) {
+        <span style="line-height: 1.25">
+            <h2 style="margin: 0">{{ title() }}</h2>
+            @if (subTitle()) {
+                <small>{{ subTitle() }}</small>
+            }
+        </span>
+    }
+    @if (!hideCloseButton()) {
+        <span style="flex: 1 1 auto"></span>
+        <button class="close-btn" tabindex="-1" mat-icon-button (click)="close()">
+            <mat-icon>close</mat-icon>
+        </button>
+    }
+</div>
+<!-- } -->
 <div class="body">
     @if (template(); as temp) {
         <portal
@@ -29,10 +29,9 @@
         ></portal>
     }
 </div>
-@if (dialogActions(); as actions) {
-    <div class="toolbar footer">
-        @for (descriptor of actions; track i; let i = $index) {
-            <mat-btn class="action {{ descriptor.name }}" [tabIndex]="actions.length - i - 1" (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
-        }
-    </div>
-}
+
+<div class="toolbar footer">
+    @for (descriptor of dialogActions(); track i; let i = $index) {
+        <mat-btn class="action {{ descriptor.name || '' }}" [tabIndex]="i" (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
+    }
+</div>

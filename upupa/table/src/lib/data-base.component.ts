@@ -1,30 +1,78 @@
-import {
-    Component,
-    EventEmitter,
-    Injector,
-    Output,
-    SimpleChanges,
-    computed,
-    effect,
-    inject,
-    input,
-    model,
-    output,
-    signal,
-} from "@angular/core";
+import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { firstValueFrom } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-
+import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 
 @Component({
     selector: "data-base",
     template: "",
     styles: [],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataComponentBase),
+            multi: true,
+        },
+    ],
 })
-export class DataComponentBase<T = any> {
+export class DataComponentBase<T = any> implements ControlValueAccessor, OnChanges, Validator {
+    validate(control: AbstractControl): ValidationErrors | null {
+        if (control.value) {
+            const keys = this.adapter().getKeysFromValue(control.value);
+            const matches = this.adapter()
+                .normalized()
+                .filter((x) => keys.includes(x.key))
+                .filter((x) => x);
+            if (matches.length !== keys.length)
+                return {
+                    select: {
+                        message: `No option found matching value`,
+                    },
+                };
+        }
+        return null;
+    }
+
+    valueChange = output<Partial<T> | Partial<T>[]>();
+    required = input<boolean>(false);
+    disabled = model(false);
+
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl();
+    control = input<FormControl>(this._control ?? this._defaultControl);
+
+    // >>>>> ControlValueAccessor ----------------------------------------
+    _onChange: (value: Partial<T> | Partial<T>[]) => void;
+    _onTouch: () => void;
+
+    propagateChange() {
+        this._onChange?.(this.value()); //ngModel/ngControl notify (value accessor)
+    }
+
+    markAsTouched() {
+        if (this._onTouch) this._onTouch();
+    }
+
+    writeValue(v: Partial<T> | Partial<T>[]): void {
+        this.value.set(v);
+        this.selectionModel.clear();
+        if (v != null) this.select(v);
+    }
+
+    registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
+        this._onChange = fn;
+    }
+    registerOnTouched(fn: () => void): void {
+        this._onTouch = fn;
+    }
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled.set(isDisabled);
+    }
+
     readonly selectedNormalized = signal<NormalizedItem<T>[]>([]);
 
     value = model<Partial<T> | Partial<T>[]>(undefined);
@@ -34,10 +82,8 @@ export class DataComponentBase<T = any> {
         return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
     });
 
-
     lazyLoadData = input(false);
     loading = signal(false);
-    dataLoaded = signal(false);
 
     noDataImage = input<string>("");
 
@@ -65,26 +111,35 @@ export class DataComponentBase<T = any> {
         return this.itemsSource() === "adapter" ? this.adapter().normalized() : this.selectedNormalized();
     });
     constructor() {
-        effect(() => {
-            // update selectedNormalized when selected/value changes
-            const keys = this.adapter().getKeysFromValue(this.selected());
-            this.adapter()
-                .getItems(keys)
-                .then((items) => {
-                    this.selectedNormalized.set(items);
-                });
-        });
+        effect(
+            () => {
+                // update selectedNormalized when selected/value changes
+                const keys = this.adapter().getKeysFromValue(this.selected());
+                this.adapter()
+                    .getItems(keys)
+                    .then((items) => {
+                        const ValidationErrors = this.validate(this.control());
+                        if (ValidationErrors) {
+                            this.control().markAsTouched();
+                            this.control().setErrors(ValidationErrors);
+                        }
+                        this.selectedNormalized.set(items);
+                    });
+            },
+            { allowSignalWrites: true },
+        );
     }
     async loadData() {
-        if (this.dataLoaded()) return;
-        if (!this.adapter().dataSource.allDataLoaded) {
-            this.loading.set(true);
-            this.adapter().refresh();
-            await firstValueFrom(this.adapter().normalized$);
-            this.loading.set(false);
-        }
-        this.dataLoaded.set(true);
+        this.loading.set(true);
+        this.adapter().refresh();
+        await firstValueFrom(this.adapter().normalized$);
+        this.loading.set(false);
+
         this.itemsSource.set("adapter");
+        if (this.validate(this.control())) {
+            this.control().markAsTouched();
+            this.control().updateValueAndValidity();
+        }
     }
 
     compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
@@ -104,7 +159,7 @@ export class DataComponentBase<T = any> {
                   }
                 : (optVal: any, selectVal: any) => optVal === selectVal;
 
-            if (adapter.dataSource.allDataLoaded || !this.lazyLoadData()) this.loadData();
+            if (adapter.dataSource.allDataLoaded() || !this.lazyLoadData()) this.loadData();
 
             this.adapter().itemAdded.subscribe((item) => {
                 this.itemAdded.emit(item);

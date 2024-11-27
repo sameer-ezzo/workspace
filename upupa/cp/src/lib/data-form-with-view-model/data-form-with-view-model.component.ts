@@ -1,15 +1,12 @@
-import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef, output } from "@angular/core";
+import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, forwardRef } from "@angular/core";
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { MatDialogRef } from "@angular/material/dialog";
-import { Subscription } from "rxjs";
-import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
+import { DialogPortal } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { ActionEvent, deepAssign } from "@upupa/common";
-import { Class, delay } from "@noah-ark/common";
-import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { Class } from "@noah-ark/common";
+import { FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { OnSubmit } from "./viewmodels/form.viewmodel";
 
 @Component({
     selector: "cp-data-form-with-view-model",
@@ -38,10 +35,12 @@ import { OnSubmit } from "./viewmodels/form.viewmodel";
 })
 export class DataFormWithViewModelComponent<T = any> implements DialogPortal<DataFormWithViewModelComponent<T>> {
     private readonly injector = inject(Injector);
-
     dynamicFormEl = viewChild(DynamicFormComponent);
+
+    label = input<string | undefined>();
+    name = input<string | undefined>();
+
     form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-    dialogRef?: MatDialogRef<DialogWrapperComponent<DataFormWithViewModelComponent>> = inject(MatDialogRef, { optional: true });
 
     loading = signal(false);
 

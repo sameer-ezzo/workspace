@@ -3,6 +3,7 @@ import { debounceTime, map, shareReplay, switchMap, takeUntil } from "rxjs/opera
 import { FilterDescriptor, TableDataSource, Term } from "./model";
 import { HttpClient, HttpContext, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Patch } from "@noah-ark/json-patch";
+import { signal } from "@angular/core";
 
 export type HttpServerDataSourceOptions = {
     headers?:
@@ -37,8 +38,7 @@ export class HttpServerDataSource<T = any> extends TableDataSource<T> {
     }
     data: T[];
 
-    readonly allDataLoaded = false;
-
+    readonly allDataLoaded = signal(false);
 
     readonly src$ = new ReplaySubject<Observable<T[]>>(1);
     readonly data$ = this.src$.pipe(switchMap((src) => src));
@@ -112,5 +112,5 @@ export class HttpServerDataSource<T = any> extends TableDataSource<T> {
         return value?.length > 0 ? this.doRequest({ [key]: `{in}${value.join(",")}` }) : of([]);
     }
 
-    destroy?() { }
+    destroy?() {}
 }
