@@ -1,10 +1,26 @@
-import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output, signal } from "@angular/core";
+import {
+    Component,
+    EventEmitter,
+    Injector,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    computed,
+    effect,
+    forwardRef,
+    inject,
+    input,
+    model,
+    output,
+    signal,
+} from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { firstValueFrom, Subscription, take } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+
 
 @Component({
     selector: "data-base",
@@ -115,6 +131,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     selected = computed<Partial<T>[]>(() => {
         return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
     });
+
 
     lazyLoadData = input(false);
     loading = signal(false);
