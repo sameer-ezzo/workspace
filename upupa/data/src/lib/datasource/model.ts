@@ -58,7 +58,7 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
     abstract readonly data$: Observable<T[]>;
     abstract readonly allDataLoaded: Signal<boolean>;
 
-    abstract refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor });
+    abstract refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Observable<T[]>;
     abstract destroy?();
 
     protected _initialized = false;
@@ -102,10 +102,8 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
 
     init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
         this._initialized = true;
-        this.refresh(options);
+        return this.refresh(options);
     }
 
-    getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
-        return of([]);
-    }
+    abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]>;
 }

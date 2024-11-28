@@ -55,7 +55,7 @@ export async function createButtonHandler(
     const injector = options?.injector ?? inject(Injector);
     const v = value ? value() : readInput("item", sourceComponent);
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    const result = await editFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true,  injector  });
+    const result = await editFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true, injector });
 
     const adapter = injector.get(DataAdapter);
     adapter?.create(result.submitResult);
@@ -210,9 +210,10 @@ export function translationButtons(
                 const item = readInput("item", source);
                 const v = await (value ? value() : item);
 
-                const translations = v.translations ?? {};
-                const _value = { ...v, ...translations[locale.code] };
+                const _value = Object.assign({}, v, v.translations?.[locale.code]);
+                const translations = Object.assign({}, _value.translations);
                 delete _value.translations; // to prevent json circular reference
+
                 const mirror = reflectFormViewModelType(formViewModel);
                 mirror.viewModelType = Object; // to prevent view model submit handler
                 mirror.actions = [];
@@ -227,12 +228,12 @@ export function translationButtons(
                     },
                 });
                 if (error) return;
+
                 translations[locale.code] = submitResult;
                 v.translations = translations;
-                console.log("TRANSLATIONS", translations);
-
                 await adapter.put(item, v);
-                adapter.refresh(true);
+
+                await adapter.refresh();
             },
             inputItem: null,
         });

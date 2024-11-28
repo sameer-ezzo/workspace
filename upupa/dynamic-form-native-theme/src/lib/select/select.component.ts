@@ -26,11 +26,6 @@ import { InputDefaults } from "../defaults";
 export class SelectComponent<T = any> extends DataComponentBase<T> {
     name = input("");
     ngAfterViewInit() {
-        // setTimeout(() => {
-        //     this._flag = true;
-        //     this.control().updateValueAndValidity();
-        // }, 500); //todo: wait for adapter data change
-
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;
             const _filter = { ...filter, ...(this.adapter().normalizeFilter(v) || {}) };
@@ -58,23 +53,9 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     clearValue(e) {
         e.stopPropagation();
         this.selectionModel.clear();
-        this.control().setValue(undefined);
-    }
-
-    keyDown(e: KeyboardEvent, input?: { open: () => void; panelOpen: boolean }) {
-        // if (!input || input.panelOpen === true) return;
-        // const shouldOpen = e.key === "ArrowDown" || (e.key.length === 1 && /[a-z0-9 ]/i.test(e.key));
-        // if (shouldOpen) this.openedChange(true);
-    }
-
-    isPanelOpened = false;
-
-    async openedChange(open: boolean, input?: { open: () => void }) {
-        // this.isPanelOpened = open;
-        // console.log("openedChange", open, this.dataLoaded());
-        // if (open && !this.dataLoaded()) {
-        //     this.loadData();
-        // }
+        this.value.set(undefined);
+        this.markAsTouched();
+        this.propagateChange();
     }
 
     @Output() action = new EventEmitter<ActionDescriptor>();

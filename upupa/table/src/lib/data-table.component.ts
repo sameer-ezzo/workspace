@@ -17,6 +17,7 @@ import {
     InjectionToken,
     DestroyRef,
     forwardRef,
+    InputSignalWithTransform,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -69,6 +70,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
     stickyHeader = input(false);
+    override maxAllowed = input<number, number>(Number.MAX_SAFE_INTEGER, { transform: (v) => Number.MAX_SAFE_INTEGER });
 
     name = input<string, string>(`table_${Date.now()}`, {
         alias: "tableName",

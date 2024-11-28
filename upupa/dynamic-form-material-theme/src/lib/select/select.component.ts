@@ -25,6 +25,7 @@ import { SelectComponent } from "@upupa/dynamic-form-native-theme";
 export class MatSelectComponent<T = any> extends SelectComponent<T> implements Validator {
     selectInput = viewChild<MatSelect>(MatSelect);
 
+    
     // override ngAfterViewInit() {
     //     super.ngAfterViewInit();
     //     this.selectInput().selectionChange.subscribe((e) => {

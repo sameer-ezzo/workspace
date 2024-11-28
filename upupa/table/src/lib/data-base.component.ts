@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, Subscription, take } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
@@ -22,10 +22,10 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     validate(control: AbstractControl): ValidationErrors | null {
         if (control.value) {
             const keys = this.adapter().getKeysFromValue(control.value);
-            const matches = this.adapter()
-                .normalized()
-                .filter((x) => keys.includes(x.key))
-                .filter((x) => x);
+            const normalized = this.selectedNormalized();
+
+            const matches = normalized.filter((x) => keys.includes(x.key)).filter((x) => x);
+
             if (matches.length !== keys.length)
                 return {
                     select: {
@@ -57,10 +57,44 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         if (this._onTouch) this._onTouch();
     }
 
-    writeValue(v: Partial<T> | Partial<T>[]): void {
+    setInternalValue(v: Partial<T> | Partial<T>[]) {
+        this.selectionModel.clear(false);
+
+        if (v == null) {
+            this.value.set(null);
+            return;
+        }
+        if (this.maxAllowed() === 1) {
+            if (Array.isArray(v)) throw new Error("Value must be a single item");
+        } else {
+            if (!Array.isArray(v)) throw new Error("Value must be an array");
+        }
+
         this.value.set(v);
-        this.selectionModel.clear();
-        if (v != null) this.select(v);
+        this.selectionModel.select(...(Array.isArray(v) ? v : [v]));
+
+        this._normalizeValue(v);
+    }
+
+    writeValue(v: Partial<T> | Partial<T>[]): void {
+        this.setInternalValue(v);
+    }
+
+    private _vSub: Subscription;
+    private _normalizeValue(v: Partial<T> | Partial<T>[]) {
+        const keys = this.adapter().getKeysFromValue(v);
+        if (!keys.length) return;
+        this._vSub?.unsubscribe();
+        this.selectedNormalized;
+        this._vSub = this.adapter()
+            .getItems(keys)
+            .pipe(take(1))
+            .subscribe((items) => {
+                this.selectedNormalized.set(items);
+                const ValidationErrors = this.validate(this.control());
+                if (ValidationErrors) this.control().markAsTouched();
+                this.control().setErrors(ValidationErrors);
+            });
     }
 
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
@@ -110,36 +144,19 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     readonly items = computed<NormalizedItem<T>[]>(() => {
         return this.itemsSource() === "adapter" ? this.adapter().normalized() : this.selectedNormalized();
     });
-    constructor() {
-        effect(
-            () => {
-                // update selectedNormalized when selected/value changes
-                const keys = this.adapter().getKeysFromValue(this.selected());
-                this.adapter()
-                    .getItems(keys)
-                    .then((items) => {
-                        const ValidationErrors = this.validate(this.control());
-                        if (ValidationErrors) {
-                            this.control().markAsTouched();
-                            this.control().setErrors(ValidationErrors);
-                        }
-                        this.selectedNormalized.set(items);
-                    });
-            },
-            { allowSignalWrites: true },
-        );
-    }
-    async loadData() {
-        this.loading.set(true);
-        this.adapter().refresh();
-        await firstValueFrom(this.adapter().normalized$);
-        this.loading.set(false);
 
-        this.itemsSource.set("adapter");
-        if (this.validate(this.control())) {
-            this.control().markAsTouched();
-            this.control().updateValueAndValidity();
-        }
+    _firstLoad = false;
+    async loadData() {
+        if (this._firstLoad) return;
+        this.loading.set(true);
+        this.adapter()
+            .refresh()
+            .pipe(take(1))
+            .subscribe(() => {
+                this.itemsSource.set("adapter");
+                this.loading.set(false);
+                this._firstLoad = true;
+            });
     }
 
     compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
@@ -151,15 +168,16 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
             const keyProperty = adapter?.keyProperty;
 
-            this.compareWithFn = keyProperty
-                ? (optVal: any, selectVal: any) => {
-                      if (optVal === selectVal) return true;
-                      if (optVal == undefined || selectVal == undefined) return false;
-                      return optVal[keyProperty] === selectVal[keyProperty];
-                  }
-                : (optVal: any, selectVal: any) => optVal === selectVal;
+            this.compareWithFn =
+                keyProperty && Array.isArray(adapter?.valueProperty)
+                    ? (optVal: any, selectVal: any) => {
+                          if (optVal === selectVal) return true;
+                          if (optVal == undefined || selectVal == undefined) return false;
+                          return optVal[keyProperty] === selectVal[keyProperty];
+                      }
+                    : (optVal: any, selectVal: any) => optVal === selectVal;
 
-            if (adapter.dataSource.allDataLoaded() || !this.lazyLoadData()) this.loadData();
+            if (!this.lazyLoadData()) this.loadData();
 
             this.adapter().itemAdded.subscribe((item) => {
                 this.itemAdded.emit(item);
@@ -174,6 +192,10 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
         if (changes["lazyLoadData"]) {
             if (!this.lazyLoadData()) this.loadData();
+        }
+
+        if (changes["value"]) {
+            this.setInternalValue(this.value());
         }
     }
 
@@ -200,56 +222,80 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-        const adapter = this.adapter();
-        const selected = this.selectionModel.selected;
-        if (this.maxAllowed() === 1) {
-            if (selected.length > 0) this.selectionModel.clear();
-            this.value.set(selected[0]);
-            return;
-        }
-
-        if (adapter.normalized.length === selected.length) this.selectionModel.deselect(...selected);
-        else this.selectionModel.select(...adapter.normalized().map((x) => x.value));
-
-        this.value.set(this.selectionModel.selected);
-    }
-
-    select(value: Partial<T> | Partial<T>[]) {
-        const v = Array.isArray(value) ? value : [value];
-        this.selectionModel.select(...v);
-        this.value.set(this.selectionModel.selected);
-    }
-
-    selectAll() {
         if (this.maxAllowed() === 1) {
             this.selectionModel.clear();
             this.value.set(null);
-            return;
+        } else {
+            const all = this.adapter().normalized();
+            const selected = this.selectionModel.selected;
+            if (all.length === selected.length) this.selectionModel.deselect(...selected);
+            else this.selectionModel.select(...all.map((x) => x.value));
+            this.value.set(this.selectionModel.selected);
         }
-        this.selectionModel.select(
-            ...this.adapter()
-                .normalized()
-                .map((x) => x.value),
-        );
 
-        this.value.set(this.selectionModel.selected);
+        this.selectedNormalized.set(
+            this.adapter()
+                .normalized()
+                .filter((x) => this.selected().includes(x.value)),
+        );
+        this.markAsTouched();
+        this.propagateChange();
+    }
+
+    select(...value: Partial<T>[]) {
+        if (this.maxAllowed() === 1) {
+            this.selectionModel.clear();
+            this.value.set(value[0]);
+            this.selectionModel.select(value[0]);
+        } else {
+            this.selectionModel.select(...value);
+            this.value.set(this.selectionModel.selected);
+        }
+
+        this.selectedNormalized.set(
+            this.adapter()
+                .normalized()
+                .filter((x) => this.selected().includes(x.value)),
+        );
+        this.markAsTouched();
+        this.propagateChange();
+    }
+
+    selectAll() {
+        const v =
+            this.maxAllowed() === 1
+                ? null
+                : this.adapter()
+                      .normalized()
+                      .map((x) => x.value);
+        this.select(...v);
     }
     deselectAll() {
-        this.selectionModel.clear();
-        if (this.maxAllowed() === 1) {
-            this.value.set(null);
-            return;
-        }
-        this.value.set(this.selectionModel.selected);
+        this.selectionModel.clear(false);
+        if (this.maxAllowed() === 1) this.value.set(null);
+        else this.value.set([]);
+
+        this.selectedNormalized.set(
+            this.adapter()
+                .normalized()
+                .filter((x) => this.selected().includes(x.value)),
+        );
+        this.markAsTouched();
+        this.propagateChange();
     }
 
-    deselect(value: Partial<T>) {
-        this.selectionModel.deselect(value);
-        if (this.maxAllowed() === 1) {
-            this.value.set(null);
-            return;
-        }
-        this.value.set(this.selectionModel.selected);
+    deselect(...value: Partial<T>[]) {
+        this.selectionModel.deselect(...value);
+        if (this.maxAllowed() === 1) this.value.set(null);
+        else this.value.set(this.selectionModel.selected);
+        this.selectedNormalized.set(
+            this.adapter()
+                .normalized()
+                .filter((x) => this.selected().includes(x.value)),
+        );
+
+        this.markAsTouched();
+        this.propagateChange();
     }
 
     toggle(value: Partial<T>) {
