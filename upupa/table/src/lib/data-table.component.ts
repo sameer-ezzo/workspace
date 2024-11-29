@@ -66,7 +66,6 @@ export function injectDataAdapter() {
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
-    headerChildren = viewChildren(".table-header");
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);

@@ -1,8 +1,7 @@
-<ng-content select=".table-header"></ng-content>
-@if (headerChildren().length === 0) {
-    <!-- a placeholder to prevent layout damage -->
-    <span></span>
-}
+<span class="table-header">
+    <ng-content select=".table-header"></ng-content>
+</span>
+
 <div class="table-container">
     @if (loading()) {
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -137,22 +136,22 @@
 </div>
 
 <!-- Hide paginator when total data is lte page size -->
-@let page = adapter().page;
-@let length = page.length ?? 0;
-@let pageSize = page.pageSize ?? 1;
-@let pageIndex = page.pageIndex ?? 0;
-@let showPaginator = length / pageSize > 1;
-@if (showPaginator) {
-    <mat-paginator
-        [disabled]="loading() === true"
-        [pageIndex]="pageIndex"
-        [length]="length"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="pageSizeOptions()"
-        (page)="onPageChange($event)"
-        showFirstLastButtons
-    ></mat-paginator>
-} @else {
+<div class="mat-paginator">
+    @let page = adapter().page;
+    @let length = page.length ?? 0;
+    @let pageSize = page.pageSize ?? 1;
+    @let pageIndex = page.pageIndex ?? 0;
+    @let showPaginator = length / pageSize > 1;
+    @if (showPaginator) {
+        <mat-paginator
+            [disabled]="loading() === true"
+            [pageIndex]="pageIndex"
+            [length]="length"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="pageSizeOptions()"
+            (page)="onPageChange($event)"
+            showFirstLastButtons
+        ></mat-paginator>
+    }
     <!-- a placeholder to prevent layout damage -->
-    <div class="mat-paginator"></div>
-}
+</div>
