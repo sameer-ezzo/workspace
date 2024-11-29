@@ -5,7 +5,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { ActionEvent, deepAssign } from "@upupa/common";
 import { Class } from "@noah-ark/common";
-import { FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { AbstractControlDirective, ControlContainer, ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
@@ -22,8 +22,8 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         },
         {
             provide: FORM_GRAPH,
-            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl().graph,
-            deps: [DataFormWithViewModelComponent],
+            useFactory: (form: DynamicFormComponent) => form.graph,
+            deps: [DynamicFormComponent],
         },
         {
             provide: NG_VALUE_ACCESSOR,
@@ -33,15 +33,22 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         },
     ],
 })
-export class DataFormWithViewModelComponent<T = any> implements DialogPortal<DataFormWithViewModelComponent<T>> {
+export class DataFormWithViewModelComponent<T = any> {
     private readonly injector = inject(Injector);
     dynamicFormEl = viewChild(DynamicFormComponent);
 
     label = input<string | undefined>();
     name = input<string | undefined>();
+    formName = computed(() => this.name() ?? this.viewModel()?.name ?? new Date().getTime().toString());
 
-    form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl({});
+    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+        transform: (v) => {
+            return v ?? this._control ?? this._defaultControl ?? new FormControl({});
+        },
+    });
     loading = signal(false);
 
     viewModel = input.required<FormViewModelMirror, Class | FormViewModelMirror>({
@@ -73,6 +80,9 @@ export class DataFormWithViewModelComponent<T = any> implements DialogPortal<Dat
             });
             deepAssign(instance, v);
             this.value.set(instance);
+            console.log("control", this.control());
+
+            // this.control().setValue(instance, { emitEvent: false });
         }
     }
 
@@ -80,7 +90,7 @@ export class DataFormWithViewModelComponent<T = any> implements DialogPortal<Dat
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             await vm["onValueChange"]?.(e);
-            this.form().patchValue(vm, { emitEvent: false });
+            this.control().patchValue(vm, { emitEvent: false });
         });
     }
 

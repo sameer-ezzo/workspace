@@ -67,7 +67,6 @@
         class="drop-zone"
         [class.dragging]="dragging()"
         data-role="drag-drop-container"
-        tabindex="0"
         (click)="selectFile()"
         (dragleave)="dragLeave($event)"
         (dragover)="$event.preventDefault(); dragOver($event)"

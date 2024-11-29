@@ -7,18 +7,17 @@
 
     <dynamic-form
         #dynForm
-        [fields]="_vm.fields"
         [(value)]="value"
+        [fields]="_vm.fields"
         (fieldValueChange)="onValueChange($event)"
-        [formName]="_vm.name"
+        [name]="formName()"
         [preventDirtyUnload]="_vm.preventDirtyUnload"
         [theme]="_vm.theme"
         [conditions]="_vm.conditions"
-        [formName]="name()"
         (submit)="onSubmit()"
-        [form]="form()"
-        [formGroup]="form()"
+        [control]="control()"
     ></dynamic-form>
+    <!-- [formGroup]="control()" -->
 </div>
 
 @if (actions()?.length) {

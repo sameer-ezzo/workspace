@@ -23,7 +23,7 @@ import { DynamicFormComponent } from "../dynamic-form.component";
 })
 export class CollectorComponent extends InputBaseComponent<any> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
-    form = computed(() => this.dynamicForm().form());
+    form = computed(() => this.dynamicForm().control());
     @Output() submit = new EventEmitter();
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Output() activePageChange = new EventEmitter<number>();
@@ -185,7 +185,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     next() {
-        this.dynamicForm().form().markAsTouched();
+        this.dynamicForm().control().markAsTouched();
         if (this.canGoNext()) this.activePage++;
     }
 

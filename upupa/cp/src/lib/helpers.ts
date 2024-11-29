@@ -174,7 +174,7 @@ export async function openFormDialog<T>(
     const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef.afterAttached());
     const dialogWrapper = dialogRef.componentInstance;
 
-    componentRef.instance.form().statusChanges.subscribe((status) => {
+    componentRef.instance.control().statusChanges.subscribe((status) => {
         dialogWrapper.dialogActions.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
     });
 

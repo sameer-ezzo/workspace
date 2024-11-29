@@ -5,7 +5,7 @@ import { Field, Validator, FormScheme, Fieldset } from "./types";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { Injector } from "@angular/core";
 import { name } from "platform";
-import { FormGraph } from "./dynamic-form.component";
+import { FORM_GRAPH, FormGraph } from "./dynamic-form.component";
 import { FieldRef } from "./field-ref";
 
 export class DynamicFormBuilder {
@@ -22,7 +22,12 @@ export class DynamicFormBuilder {
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
 
-            if (field.input === "object") {
+            // if (field.input === "form") {
+            //     const subFormGroup = this.getFieldset(fieldName, field, _path, rootForm);
+            //     form.addControl(fieldName, subFormGroup, { emitEvent: false });
+            //     graph.set(_path, subFormGroup["fieldRef"]);
+            // } else
+             if (field.input === "object") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });

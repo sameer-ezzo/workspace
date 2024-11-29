@@ -56,7 +56,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
 
     writeValue(obj: any): void {
         for (const childAccessor of this.childAccessors) {
-            childAccessor.writeValue(obj);
+            childAccessor.writeValue?.(obj);
         }
     }
 
@@ -64,14 +64,14 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
     registerOnChange(fn: (value: any) => void): void {
         this._onChange = fn;
         for (const childAccessor of this.childAccessors) {
-            childAccessor.registerOnChange(this._onChange);
+            childAccessor.registerOnChange?.(this._onChange);
         }
     }
     private _onTouched: () => void;
     registerOnTouched(fn: () => void): void {
         this._onTouched = fn;
         for (const childAccessor of this.childAccessors) {
-            childAccessor.registerOnTouched(this._onTouched);
+            childAccessor.registerOnTouched?.(this._onTouched);
         }
     }
 

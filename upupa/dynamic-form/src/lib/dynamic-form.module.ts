@@ -6,7 +6,6 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormsModule } from "@angular/forms";
 
 // import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { FocusLeaveDirective } from "./focusleave.dir";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { CollectorComponent } from "./collector/collector.component";
 import { PortalComponent, UtilsModule } from "@upupa/common";
@@ -21,7 +20,7 @@ const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
 } as unknown as DynamicFormThemes;
 
-const declarations = [DynamicFormComponent, CollectorComponent, FocusLeaveDirective, OrderedKeyValuePipe];
+const declarations = [DynamicFormComponent, CollectorComponent, OrderedKeyValuePipe];
 
 @NgModule({
     declarations: [...declarations],

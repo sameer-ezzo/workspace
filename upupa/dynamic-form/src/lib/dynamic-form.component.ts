@@ -20,7 +20,20 @@ import {
     signal,
     SimpleChange,
 } from "@angular/core";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, AbstractControl, UntypedFormBuilder, ValueChangeEvent, FormGroup, FormGroupDirective } from "@angular/forms";
+import {
+    NG_VALUE_ACCESSOR,
+    ControlValueAccessor,
+    AbstractControl,
+    UntypedFormBuilder,
+    ValueChangeEvent,
+    FormGroup,
+    FormGroupDirective,
+    NgControl,
+    AbstractControlDirective,
+    ControlContainer,
+    FormControl,
+    StatusChangeEvent,
+} from "@angular/forms";
 import { FormScheme } from "./types";
 import { Condition } from "@noah-ark/expression-engine";
 import { Subscription } from "rxjs";
@@ -84,13 +97,22 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
-    name = input<string>(Date.now().toString(), { alias: "formName" });
+    name = input<string>(Date.now().toString());
     disabled = input(false);
     readonly = input(false);
     class = input("");
     theme = input<string>("material");
 
-    form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
+    form = new FormGroup({});
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl({});
+    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+        transform: (v) => {
+            return v ?? this._control ?? this._defaultControl ?? new FormControl({});
+        },
+    });
+
     readonly formRef = viewChild<FormGroupDirective>("ngFormRef");
     value = model(undefined);
 
@@ -104,27 +126,27 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     get dirty() {
-        return this.form()?.dirty;
+        return this.form?.dirty;
     }
     set dirty(v: boolean) {
-        if (v) this.form().markAsDirty();
-        else this.form().markAsPristine();
+        if (v) this.form.markAsDirty();
+        else this.form.markAsPristine();
     }
     get pristine() {
-        return this.form()?.pristine;
+        return this.form?.pristine;
     }
     set pristine(v: boolean) {
         this.dirty = !v;
     }
     get touched() {
-        return this.form()?.touched;
+        return this.form?.touched;
     }
     set touched(v: boolean) {
-        if (v) this.form().markAsTouched();
-        else this.form().markAsUntouched();
+        if (v) this.form.markAsTouched();
+        else this.form.markAsUntouched();
     }
     get untouched() {
-        return this.form()?.untouched;
+        return this.form?.untouched;
     }
     set untouched(v: boolean) {
         this.touched = !v;
@@ -144,16 +166,26 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     markAsUntouched() {
         this.untouched = true;
     }
-
-    get invalid() {
-        return this.form()?.invalid;
-    }
-    get valid() {
-        return this.form()?.valid;
-    }
-
     propagateChange() {
         this._onChange?.(this.value());
+    }
+
+    handleUserInput(v: T) {
+        this.value.set(v);
+        if (this._ngControl) {
+            // only notify changes if control was provided externally
+            this.markAsTouched();
+            this.propagateChange();
+        } else {
+            this.control().setValue(v);
+        }
+    }
+
+    get invalid() {
+        return this.form?.invalid;
+    }
+    get valid() {
+        return this.form?.valid;
     }
 
     graph: FormGraph = new Map();
@@ -163,7 +195,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     constructor() {
         effect(() => {
-            this.form().events.subscribe((e) => {
+            this.form.events.subscribe((e) => {
                 if (e instanceof ValueChangeEvent) {
                     const value = this.value() ?? {};
                     const source = e.source as AbstractControl & { fieldRef: FieldRef };
@@ -176,12 +208,18 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                         this._patches.set(path, source.value);
                     }
 
-                    this.value.set(value);
-                    this.propagateChange();
+                    this.handleUserInput(value);
 
                     const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
+                    console.log(`${this.name()} valueChanges`, ee);
                     this.fieldValueChange.emit(ee);
-                    console.log("valueChanges", ee);
+                } else if (e instanceof StatusChangeEvent) {
+                    if (e.status === "VALID") this.control().setErrors(null);
+                    else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
+                    else if (e.status === "PENDING") this.control().setErrors({ pending: true });
+
+                    if (this.form.enabled) this.control().enable();
+                    else this.control().disable();
                 }
             });
         });
@@ -197,10 +235,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
 
             this._patches.clear();
-            this.graph = this._builder.build(this.form(), scheme, this.value(), "/");
-
-            console.log("this.graph", this.graph);
-
+            this.graph = this._builder.build(this.form, scheme, this.value(), "/");
             // emit initial value change event
             this.fieldValueChange.emit(
                 new ExtendedValueChangeEvent(this.value(), this.graph, this.graph.get("/"), undefined, { "/": new SimpleChange(undefined, this.value(), true) }),
@@ -212,7 +247,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         }
         if (changes["value"]) {
             this._patches.clear();
-            this.form().patchValue(this.value());
+            this.form.patchValue(this.value());
             this.propagateChange();
         }
 
@@ -224,7 +259,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     injector = inject(Injector);
-    ngOnInit() {}
 
     ngSubmit() {
         this.formRef().ngSubmit.emit();
@@ -232,7 +266,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     onSubmit(e: Event) {
         e?.stopPropagation();
         e?.preventDefault();
-        if (this.form().invalid) {
+        if (this.form.invalid) {
             this.scrollToError();
         } else this.submit.emit(this);
     }
@@ -241,9 +275,9 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     _onTouched: () => void;
 
     writeValue(val: T): void {
-        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
+        console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
         this.value.set(val);
-        this.form().patchValue(val, { emitEvent: false, onlySelf: true });
+        this.form.patchValue(val, { emitEvent: false, onlySelf: true });
     }
 
     registerOnChange(fn: (model: any) => void): void {
@@ -253,8 +287,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this._onTouched = fn;
     }
     setDisabledState?(isDisabled: boolean): void {
-        if (isDisabled) this.form()?.disable();
-        else this.form()?.enable();
+        if (isDisabled) this.form?.disable();
+        else this.form?.enable();
     }
 
     _fieldsChanged() {
@@ -298,6 +332,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     ngOnDestroy(): void {
         this.subs.forEach((s) => s.unsubscribe());
+    }
+
+    isFormGroup(control: AbstractControl): control is FormGroup {
+        return control instanceof FormGroup;
     }
 }
 
