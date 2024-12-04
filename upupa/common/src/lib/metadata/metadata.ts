@@ -1,27 +1,10 @@
-import { DOCUMENT } from "@angular/common";
-import { Provider, EnvironmentProviders, makeEnvironmentProviders, APP_INITIALIZER, InjectionToken } from "@angular/core";
+import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, inject } from "@angular/core";
 import { MetadataService, PAGE_METADATA_STRATEGIES } from "./metadata.service";
-import {
-    DEFAULT_OPEN_GRAPH_CONFIG,
-    OPEN_GRAPH_CONFIG,
-    OpenGraphConfig,
-    OpenGraphData,
-    OpenGraphMetadataStrategy,
-} from "./strategies/open-graph.strategy";
-import {
-    ContentMetadataConfig,
-    DEFAULT_CONTENT_METADATA_CONFIG,
-    PAGE_METADATA_CONFIG,
-    PageMetadataStrategy,
-} from "./strategies/page-metadata.strategy";
-import {
-    DEFAULT_TWITTER_CARD_CONFIG,
-    TWITTER_CARD_CONFIG,
-    TwitterCard,
-    TwitterCardConfig,
-    TwitterMetadataStrategy,
-} from "./strategies/twitter.strategy";
+import { DEFAULT_OPEN_GRAPH_CONFIG, OPEN_GRAPH_CONFIG, OpenGraphConfig, OpenGraphData, OpenGraphMetadataStrategy } from "./strategies/open-graph.strategy";
+import { PAGE_METADATA_CONFIG, PageMetadataStrategy } from "./strategies/page-metadata.strategy";
+import { DEFAULT_TWITTER_CARD_CONFIG, TWITTER_CARD_CONFIG, TwitterCard, TwitterCardConfig, TwitterCardMetadataStrategy } from "./strategies/twitter.strategy";
 import { ActivatedRoute } from "@angular/router";
+
 
 export const CONTENT = new InjectionToken("CONTENT");
 
@@ -47,7 +30,7 @@ export type PageMetadata = MetaContentBaseModel & {
     twitter?: TwitterCard;
 };
 
-function initializeMetData(doc: Document, metaService: MetadataService) {
+export function initializeMetData(metaService: MetadataService) {
     return async () => {
         metaService.listenForRouteChanges();
     };
@@ -61,18 +44,16 @@ type MetadataFeatureProvider = Omit<Provider, "provide" | "multi">;
  * @param features
  * @returns
  */
-export function providePageMetadata(config: Partial<ContentMetadataConfig>, ...features: (Provider | EnvironmentProviders)[]) {
+export function providePageMetadata(config: Omit<Provider, "provide">, ...features: (Provider | EnvironmentProviders)[]) {
     return makeEnvironmentProviders([
-        { provide: PAGE_METADATA_CONFIG, useValue: { ...DEFAULT_CONTENT_METADATA_CONFIG, ...config } },
+        { provide: PAGE_METADATA_CONFIG, ...config } as Provider,
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: PageMetadataStrategy },
         { provide: CONTENT, useFactory: (route: ActivatedRoute) => route.snapshot.data["content"], deps: [ActivatedRoute] },
         ...features,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: (doc: Document, metaService: MetadataService) => initializeMetData(doc, metaService),
-            multi: true,
-            deps: [DOCUMENT, MetadataService],
-        },
+    //     provideAppInitializer(() => {
+    //     const initializerFn = ((metaService: MetadataService) => initializeMetData(metaService))(inject(MetadataService));
+    //     return initializerFn();
+    //   }),
     ]);
 }
 
@@ -95,7 +76,7 @@ export function withMetadataStrategy(feature: MetadataFeatureProvider): Provider
 export function withTwitterCard(config: Partial<TwitterCardConfig> = DEFAULT_TWITTER_CARD_CONFIG) {
     return makeEnvironmentProviders([
         { provide: TWITTER_CARD_CONFIG, useValue: { ...DEFAULT_TWITTER_CARD_CONFIG, ...config } },
-        { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: TwitterMetadataStrategy },
+        { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: TwitterCardMetadataStrategy },
     ]);
 }
 

@@ -6,7 +6,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatSelectModule } from "@angular/material/select";
-import { LanguageModule } from "@upupa/language";
+// import { LanguageModule } from "@upupa/language";
 
 import { ErrorPipe } from "./error.pipe";
 
@@ -32,7 +32,7 @@ const imports = [
     MatSelectModule,
     MatSnackBarModule,
     MatDialogModule,
-    LanguageModule,
+    // LanguageModule,
     MatIconModule,
     ReactiveFormsModule,
     MatBadgeModule,

@@ -1,67 +1,66 @@
-import { Request, Response } from 'express';
-import * as fs from 'fs';
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir } from './storage.service';
-import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from '@nestjs/common';
-import { ImageService } from './image.svr';
+import { Request, Response } from "express";
+import * as fs from "fs";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir } from "./storage.service";
+import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
+import { ImageService } from "./image.svr";
 
-import * as Path from 'path';
-import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from '@noah-ark/common';
-import { Principle } from '@noah-ark/common';
+import * as Path from "path";
+import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
+import { Principle } from "@noah-ark/common";
 
-import mongoose from 'mongoose';
-import { WriteFileOptions } from 'fs';
+import mongoose from "mongoose";
+import { WriteFileOptions } from "fs";
 
-import { DataService } from '@ss/data';
-import { AuthorizeService } from '@ss/rules';
-import { EndPoint, Message, MessageStream } from '@ss/common';
-import { logger } from './logger';
-import { join } from 'path';
+import { DataService } from "@ss/data";
+import { AuthorizeService } from "@ss/rules";
+import { EndPoint, Message, MessageStream } from "@ss/common";
+import { logger } from "./logger";
+import { join } from "path";
 
 async function _uploadToTmp(postedFile: PostedFile, ctx: ExecutionContext): Promise<File> {
     const path = ctx.switchToHttp().getRequest<Request>().path;
     return saveStreamToTmp(path, postedFile);
 }
 
-@Controller('storage')
+@Controller("storage")
 export class StorageController {
     constructor(
         @Inject(DataService) private readonly data: DataService,
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
-        private readonly imageService: ImageService,
+        private readonly imageService: ImageService
     ) {}
 
-
-    @EndPoint({ http: { method: 'POST',path:'/' }, operation: 'Upload New' })
+    @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
     ) {
         return this.post(msg$);
     }
 
-    @EndPoint({ http: { method: 'POST', path: '**' }, operation: 'Upload New' })
+    @EndPoint({ http: { method: "POST", path: "**" }, operation: "Upload New" })
     async post(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
     ) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg$, 'Upload New');
-        if (access === 'deny' || msg$.path.indexOf('.') > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
+        const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload New");
+        if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
 
         //            one file   //multi files
         //path not    create it   create them
         //path dir    create in   create in
         //path file        error (post can not modify)
-        if (isFile(msg$.path)) throw new HttpException('PostCannotOverwriteExistingFile', HttpStatus.CONFLICT); //TODO stop the upload if this is the case
+        if (isFile(msg$.path)) throw new HttpException("PostCannotOverwriteExistingFile", HttpStatus.CONFLICT); //TODO stop the upload if this is the case
 
         if (msg$.payload!.files) {
-            return await this._uploadBase64(msg$.path, msg$.principle!, msg$.payload!.files, msg$.query?.overwrite === 'true');
+            return await this._uploadBase64(msg$.path, msg$.principle!, msg$.payload!.files, msg$.query?.overwrite === "true");
         }
 
         try {
             //wait until req is finished
             const filesP = (await Promise.allSettled(msg$.streams)) ?? [];
-            const files = filesP.filter((v) => v.status === 'fulfilled').map((v: any) => v.value);
+            const files = filesP.filter((v) => v.status === "fulfilled").map((v: any) => v.value);
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
 
@@ -76,14 +75,14 @@ export class StorageController {
                 const tmp = file.path;
                 const path = Path.join(file.destination, file.filename);
 
-                if (fs.existsSync(path)) throw 'CANNOT OVERWRITE'; //TODO error handle
+                if (fs.existsSync(path)) throw "CANNOT OVERWRITE"; //TODO error handle
 
                 //mv file from tmp to path
                 try {
                     mv(tmp, Path.join(__dirname, path));
                     file.path = path;
                 } catch (err) {
-                    console.error('FILE NOT MOVED', err);
+                    console.error("FILE NOT MOVED", err);
                 } //TODO how error should be handled
 
                 //maybe error should be reverted
@@ -101,13 +100,13 @@ export class StorageController {
         }
     }
 
-    @EndPoint({ http: { method: 'PUT', path: '**' }, operation: 'Upload Edit' })
+    @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Upload Edit" })
     async put(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
     ) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg$, 'edit');
-        if (access === 'deny' || msg$.path.indexOf('.') > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
+        const { access, rule, source, action } = this.authorizeService.authorize(msg$, "edit");
+        if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
 
         //          one file   //multi files
         //path not        same as post
@@ -117,7 +116,7 @@ export class StorageController {
         if (isFile(msg$.path)) await this.storageService.delete(msg$.path, msg$.principle);
 
         if (msg$.payload!.files) {
-            return await this._uploadBase64(msg$.path, msg$.principle!, msg$.payload!.files, msg$.query?.overwrite === 'true');
+            return await this._uploadBase64(msg$.path, msg$.principle!, msg$.payload!.files, msg$.query?.overwrite === "true");
         }
         //wait until req is finished
         const files = (await Promise.all(msg$.streams)) ?? [];
@@ -154,12 +153,12 @@ export class StorageController {
     }
 
     private async _uploadBase64(path: string, user: Principle, files: (File & { content?: string })[], overwrite: boolean) {
-        const separator = '/';
+        const separator = "/";
         for (let i = 0; i < files.length; i++) {
             const f = files[i] as any;
 
             const segments = path
-                .replace(/\\/g, '/')
+                .replace(/\\/g, "/")
                 .split(separator)
                 .filter((s) => s);
             const filename = f.filename;
@@ -176,15 +175,15 @@ export class StorageController {
 
             f.path = Path.join(destination, f.filename);
 
-            const buffer = Buffer.from((f.content, 'base64'));
+            const buffer = Buffer.from((f.content, "base64"));
             f.size = buffer.length;
-            f.encoding = 'utf8';
+            f.encoding = "utf8";
             //f.mimetype //TODO
 
             try {
                 await this.writeFile(Path.join(targetPath, f.filename), buffer);
             } catch (error) {
-                throw new HttpException('Error', HttpStatus.BAD_REQUEST);
+                throw new HttpException("Error", HttpStatus.BAD_REQUEST);
             }
 
             delete f.content;
@@ -204,25 +203,25 @@ export class StorageController {
 
     _path(path: string) {
         return decodeURIComponent(path)
-            .split('/')
+            .split("/")
             .filter((s) => s)
-            .join('/');
+            .join("/");
     }
 
-    @EndPoint({ http: { method: 'DELETE', path: '**' }, operation: 'Delete' })
+    @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
     async delete(@Message() msg: IncomingMessage) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg, 'delete');
-        if (access === 'deny') throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
+        const { access, rule, source, action } = this.authorizeService.authorize(msg, "delete");
+        if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
         await this.storageService.delete(msg.path, msg.principle);
     }
 
-    @EndPoint({ http: { method: 'GET', path: '**' }, operation: 'Read' })
+    @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
     async download(@Message() msg: IncomingMessage, @Res() res: Response) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg, 'read');
-        if (access === 'deny') throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
+        const { access, rule, source, action } = this.authorizeService.authorize(msg, "read");
+        if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
-        if (!isFile(msg.path)) throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+        if (!isFile(msg.path)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
 
         const fname = Path.basename(msg.path);
 
@@ -231,23 +230,58 @@ export class StorageController {
 
         const _id = fname.substring(0, fname.length - ext.length);
 
-        const files = await this.data.get<File[]>('storage', {
+        const files = await this.data.get<File[]>("storage", {
             path: decodedPath,
         });
         const file = files.find((f) => f._id === _id);
 
         const fullPath = join(__dirname, file ? file!.path : msg.path);
-        if (!file && !fs.existsSync(fullPath)) throw new HttpException('NOT_FOUND', HttpStatus.NOT_FOUND);
+        if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
-        if (msg.query!.view === '1') {
-            const img = await this.imageService.get(__dirname, msg.path, msg.query!);
-            if (!img) return res.status(404).send('');
-            res.type(`image/${msg.query!.format || 'png'}`);
+        // if (msg.query!.view === '1') {
+        //     const img = await this.imageService.get(__dirname, msg.path, msg.query!);
+        //     if (!img) return res.status(404).send('');
+        //     res.type(`image/${msg.query!.format || '*'}`);
+        //     img.pipe(res);
+        // } else {
+        //     // const stream = fs.createReadStream(Path.join(__dirname, file.path))
+        //     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        //     res.download(fullPath, file ? file!.originalname : _id);
+        // }
+        const { view, attachment, format } = msg.query!;
+        // Handle Content-Disposition based on attachment query parameter
+        // e.g., 'inline' or 'attachment'
+        if (view === "1") {
+            const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
+            if (!img) return res.status(404).send("");
+
+            // Set MIME type for the image
+            res.type(`image/${msg.query!.format || "jpeg"}`); // Default to 'jpeg' if format is not specified
+
+            if (attachment === "inline") {
+                // Serve the image inline (SEO-friendly) without forcing download
+                res.setHeader("Content-Disposition", `inline; filename="${file ? file!.originalname : _id}"`);
+            } else if (attachment === "attachment") {
+                // Serve as downloadable attachment
+                res.setHeader("Content-Disposition", `attachment; filename="${file ? file!.originalname : _id}"`);
+            }
             img.pipe(res);
         } else {
-            // const stream = fs.createReadStream(Path.join(__dirname, file.path))
-            res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
-            res.download(fullPath, file ? file!.originalname : _id);
+            if (attachment === "inline") {
+                // Serve file inline without Content-Disposition: attachment
+                const stream = fs.createReadStream(fullPath);
+
+                // Set inline headers
+                res.setHeader("Content-Type", "application/octet-stream"); // Adjust MIME type as needed
+                res.setHeader("Content-Disposition", `inline; filename="${file ? file!.originalname : _id}"`);
+
+                // Pipe the file stream to the response
+                stream.pipe(res);
+            } else {
+                // Serve file as a downloadable attachment
+                res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+                res.download(fullPath, file ? file!.originalname : _id);
+            }
         }
     }
 }

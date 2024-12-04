@@ -1,13 +1,12 @@
-import { DOCUMENT } from "@angular/common";
-import { Injectable, InjectionToken, inject } from "@angular/core";
-import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
-import { MetaContentBaseModel, PageMetadata } from "../metadata";
+import { inject, Injectable, InjectionToken } from "@angular/core";
+import { MetaContentBaseModel } from "../metadata";
 import { ContentMetadataConfig } from "./page-metadata.strategy";
-
+import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
+import { DOCUMENT } from "@angular/common";
 
 export const TWITTER_CARD_CONFIG = new InjectionToken<TwitterCardConfig>("TWITTER_CARD_CONFIG");
 
-export type TwitterCardConfig = ContentMetadataConfig<TwitterCard>;
+export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCard>, "imageLoading">;
 
 export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
     imageLoading: (config: { src?: string; size?: string }) => {
@@ -17,7 +16,6 @@ export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
         return `${src}?size=${size}`;
     },
 };
-
 
 export type TwitterCard = MetaContentBaseModel & {
     card?: "summary" | "summary_large_image" | "app" | "player"; // Standard Twitter Card types
@@ -41,38 +39,26 @@ export type TwitterCard = MetaContentBaseModel & {
     };
 };
 
-
 @Injectable()
-export class TwitterMetadataStrategy implements MetadataUpdateStrategy<TwitterCardConfig> {
+export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> {
     readonly config = inject(TWITTER_CARD_CONFIG);
+
     private readonly dom = inject(DOCUMENT);
 
-    async update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>) {
-        const _fallback = this.config.fallback ?? metaFallback.fallback;
-        const fallbackFunc = typeof _fallback === "function" ? _fallback : () => _fallback;
-        const fallback = fallbackFunc() ?? {};
+    private metaUpdateFn = (name: string, content: string | undefined) => updateHeaderTag(this.dom, name, content, "meta", "name");
 
-        const twitter = { ...fallback, ...meta, ...(meta.twitter ?? {}) } as TwitterCard;
+    async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
+        const fallback = metaFallback.fallback as any;
 
-        const dom = this.dom;
-        updateHeaderTag(dom, "twitter:title", twitter.title);
-        updateHeaderTag(dom, "twitter:description", twitter.description);
-        updateHeaderTag(dom, "twitter:url", twitter.url);
-        updateHeaderTag(dom, "twitter:card", twitter.card);
-        updateHeaderTag(dom, "twitter:image:alt", twitter.imageAlt);
-        updateHeaderTag(dom, "twitter:site", twitter.site);
-        updateHeaderTag(dom, "twitter:creator", twitter.creator);
-        updateHeaderTag(dom, "twitter:app:name:iphone", twitter.appName?.iphone);
-        updateHeaderTag(dom, "twitter:app:name:ipad", twitter.appName?.ipad);
-        updateHeaderTag(dom, "twitter:app:name:googleplay", twitter.appName?.googleplay);
-        updateHeaderTag(dom, "twitter:app:id:iphone", twitter.appId?.iphone);
-        updateHeaderTag(dom, "twitter:app:id:ipad", twitter.appId?.ipad);
-        updateHeaderTag(dom, "twitter:app:id:googleplay", twitter.appId?.googleplay);
-        updateHeaderTag(dom, "twitter:app:url:iphone", twitter.appUrl?.iphone);
-        updateHeaderTag(dom, "twitter:app:url:ipad", twitter.appUrl?.ipad);
-        updateHeaderTag(dom, "twitter:app:url:googleplay", twitter.appUrl?.googleplay);
+        const twitter = { ...(fallback.twitter ?? {}), ...(meta.twitter ?? {}) }; // as TwitterCardFormViewModel;
 
-        const image = this.config?.imageLoading ? this.config.imageLoading({ src: twitter.image }) : twitter.image;
-        updateHeaderTag(dom, "twitter:image", image);
+        const image = this.config?.imageLoading ? this.config.imageLoading({ src: twitter["twitter:image"] }) : twitter["twitter:image"];
+        this.metaUpdateFn("twitter:image", image);
+        delete twitter["twitter:image"];
+
+        for (const key in twitter) {
+            const k = key; //as keyof TwitterCardFormViewModel;
+            this.metaUpdateFn(key, twitter[k] as string);
+        }
     }
 }

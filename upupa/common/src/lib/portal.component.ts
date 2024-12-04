@@ -21,10 +21,10 @@ import { DynamicComponent } from './dynamic-component';
 
 @Component({
     selector: 'portal',
-    standalone: true,
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
     template: ``,
+    standalone: true,
 })
 export class PortalComponent {
     environmentInjector = inject(EnvironmentInjector);
