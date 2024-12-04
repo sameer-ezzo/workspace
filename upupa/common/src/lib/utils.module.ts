@@ -16,13 +16,12 @@ import { OnlyNumberDirective } from "./directives/only-numbers.directive";
 import { HtmlPipe } from "./html.pipe";
 import { InputBaseComponent } from "./input-base.component";
 import { LazyLoadDirective } from "./directives/lazy-load.directive";
-import { MarkdownPipe } from "./markdown.pipe";
 import { FocusDirective } from "./directives/focus.directive";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatBadgeModule } from "@angular/material/badge";
 import { PortalComponent } from "./portal.component";
 
-const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, MarkdownPipe, LazyLoadDirective, FocusDirective, ErrorPipe];
+const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, LazyLoadDirective, FocusDirective, ErrorPipe];
 
 const imports = [
     MatFormFieldModule,

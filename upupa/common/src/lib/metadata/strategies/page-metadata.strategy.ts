@@ -36,6 +36,7 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
 
         delete meta.twitter;
         delete meta.og;
+        delete meta.schema;
 
         const title = this.config.titleTemplate(meta.title);
         updateHeaderTag(dom, "title", title, "title");

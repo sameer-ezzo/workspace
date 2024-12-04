@@ -36,6 +36,7 @@ export * from "./lib/metadata/route-modifiers";
 export * from "./lib/metadata/strategies/open-graph.strategy";
 export * from "./lib/metadata/strategies/page-metadata.strategy";
 export * from "./lib/metadata/strategies/twitter.strategy";
+export * from "./lib/metadata/strategies/schema-org.strategy";
 
 export * from "./lib/routing/navigate-to.directive";
 export * from "./lib/routing/reuse-all-strategy";
