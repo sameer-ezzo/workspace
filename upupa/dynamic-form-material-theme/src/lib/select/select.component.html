@@ -90,9 +90,9 @@
         </mat-select>
     }
 
-    <div matSuffix style="display: flex; padding: 0.5rem; gap: 0.5rem">
+    <div matSuffix style="display: flex; align-items: center;">
         @if (loading()) {
-            <mat-progress-spinner [diameter]="20" mode="indeterminate"></mat-progress-spinner>
+            <mat-progress-spinner style="margin: 0.5rem;" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {
             <button matSuffix mat-icon-button (click)="clearValue($event)">

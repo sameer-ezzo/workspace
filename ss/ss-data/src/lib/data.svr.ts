@@ -336,7 +336,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
 
         const model = await this.getModel(segments.collection);
-        if (segments.id) {
+        if (segments.projectionPath) {
             //push to array field
             //if (!Array.isArray(oldData)) { throw { status: 400, body: "INVALID_POST" }; }
             const update = { $push: {} };
