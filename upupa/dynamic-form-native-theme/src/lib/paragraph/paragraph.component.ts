@@ -1,28 +1,28 @@
-import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, inject } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { DomSanitizer } from '@angular/platform-browser';
-import { HtmlPipe, MarkdownPipe, UtilsModule } from '@upupa/common';
+import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, inject } from "@angular/core";
+import { UntypedFormControl } from "@angular/forms";
+import { DomSanitizer } from "@angular/platform-browser";
+import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
 
 @Component({
-    selector: 'paragraph',
-    templateUrl: './paragraph.component.html',
-    styleUrls: ['./paragraph.component.scss'],
+    selector: "paragraph",
+    templateUrl: "./paragraph.component.html",
+    styleUrls: ["./paragraph.component.scss"],
     standalone: true,
-    imports: [UtilsModule],
+    imports: [UtilsModule, MarkdownPipe],
 })
 export class ParagraphComponent implements OnChanges {
     @Input() control: UntypedFormControl;
     @Input() text: string;
-    @Input() renderer: 'markdown' | 'html' | 'none' = 'markdown';
+    @Input() renderer: "markdown" | "html" | "none" = "markdown";
     private readonly _sanitizer = inject(DomSanitizer);
     private readonly host = inject(ElementRef);
     private readonly _rendere = inject(Renderer2);
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['text'] || changes['renderer']) {
+        if (changes["text"] || changes["renderer"]) {
             let text = this.text;
-            if (this.renderer === 'markdown') text = new MarkdownPipe(this._sanitizer).transform(this.text).toString();
-            else if (this.renderer === 'html') text = new HtmlPipe(this._sanitizer).transform(this.text).toString();
-            this._rendere.setProperty(this.host.nativeElement, 'innerHTML', text);
+            if (this.renderer === "markdown") text = new MarkdownPipe(this._sanitizer).transform(this.text).toString();
+            else if (this.renderer === "html") text = new HtmlPipe(this._sanitizer).transform(this.text).toString();
+            this._rendere.setProperty(this.host.nativeElement, "innerHTML", text);
         }
     }
 }

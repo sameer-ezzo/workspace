@@ -27,7 +27,7 @@ export class MarkdownPipe {
         markdown ??= "";
         if (!markdown || markdown.trim().length === 0) return of(markdown);
 
-        this.m.pipe(
+        return this.m.pipe(
             switchMap(async (m) => {
                 return this._sanitizer.bypassSecurityTrustHtml(
                     await m.marked(markdown, {
