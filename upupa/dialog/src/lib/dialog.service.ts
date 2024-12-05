@@ -1,10 +1,10 @@
-import { Injectable, TemplateRef, Inject, ElementRef, EventEmitter, SimpleChanges, SimpleChange, Signal, Type, input, inject, signal } from '@angular/core';
-import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
-import { ComponentType } from '@angular/cdk/portal';
-import { DOCUMENT } from '@angular/common';
-import { firstValueFrom, Subject, Observable } from 'rxjs';
-import { ActionDescriptor, ActionEvent, DynamicComponent } from '@upupa/common';
-import { UpupaDialogComponent } from './dialog-wrapper.component';
+import { Injectable, TemplateRef, Inject, ElementRef, EventEmitter, SimpleChanges, SimpleChange, Signal, Type, input, inject, signal } from "@angular/core";
+import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
+import { ComponentType } from "@angular/cdk/portal";
+import { DOCUMENT } from "@angular/common";
+import { firstValueFrom, Subject, Observable } from "rxjs";
+import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
+import { UpupaDialogComponent } from "./dialog-wrapper.component";
 
 export type UpupaDialogActionContext<C = any> = {
     host: UpupaDialogComponent<C>;
@@ -25,7 +25,7 @@ export type UpupaDialogInputs = {
     canEscape?: boolean;
     dialogActions?: ActionDescriptor[];
 };
-export type DialogServiceConfig<T = any> = Omit<MatDialogConfig<T>, 'data'> &
+export type DialogServiceConfig<T = any> = Omit<MatDialogConfig<T>, "data"> &
     UpupaDialogInputs & {
         inputs?: { [input: string]: any };
         outputs?: Record<string, (e: any) => void | Promise<void>>;
@@ -43,12 +43,12 @@ export type DialogRefD<P = any> = DialogServiceConfig<P> & {
     } & Record<string, any>;
 };
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class DialogService {
     readonly defaultConfig: DialogServiceConfig<any> = {
-        width: '100%',
-        maxWidth: '700px',
-        maxHeight: '80vh',
+        width: "100%",
+        maxWidth: "700px",
+        maxHeight: "80vh",
         autoFullScreen: true,
         closeTimeout: 400,
         closingClasses: [],
@@ -75,7 +75,7 @@ export class DialogService {
         template: Type<any> | ComponentType<P> | TemplateRef<P> | DynamicComponent,
         options?: DialogServiceConfig<D>,
     ): MatDialogRef<UpupaDialogComponent, R> {
-        if (!template) throw new Error('ComponentType is not provided!');
+        if (!template) throw new Error("ComponentType is not provided!");
 
         const inputs = options?.inputs ?? {};
         const outputs = options?.outputs ?? {};
@@ -106,20 +106,20 @@ export class DialogService {
         } as DialogRefD<D>;
 
         const _template: DynamicComponent =
-            template && 'component' in template
+            template && "component" in template
                 ? (template as DynamicComponent)
                 : ({
                       component: template,
                       inputs: {},
                       outputs: {},
-                      class: '',
+                      class: "",
                   } as DynamicComponent);
 
         _template.inputs = inputs ?? {};
         _template.outputs = outputs ?? {};
-        dialogOptions.data['component'] = _template;
+        dialogOptions.data["component"] = _template;
 
-        this._dialogOpened$.next(true)
+        this._dialogOpened$.next(true);
 
         const dialogRef = this.dialog.open<UpupaDialogComponent, D, R>(UpupaDialogComponent, dialogOptions);
         return dialogRef;
@@ -127,16 +127,16 @@ export class DialogService {
 
     open<T, D = any, R = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>, config?: DialogServiceConfig<D>): MatDialogRef<T, R> {
         //CONFIG
-        const _config: DialogServiceConfig<D> = Object.assign({}, this.defaultConfig, { direction: this.document.body.dir || 'ltr' }, config);
+        const _config: DialogServiceConfig<D> = Object.assign({}, this.defaultConfig, { direction: this.document.body.dir || "ltr" }, config);
         if (_config.autoFullScreen && this.document.body.clientWidth < 500) {
-            _config.maxHeight = '100vh';
-            _config.height = '100vh';
-            _config.maxWidth = '100vw';
-            _config.width = '100vw';
+            _config.maxHeight = "100vh";
+            _config.height = "100vh";
+            _config.maxWidth = "100vw";
+            _config.width = "100vw";
         }
         if (_config.closingClasses?.length) {
-            _config.exitAnimationDuration = '0ms';
-            _config.enterAnimationDuration = '0ms';
+            _config.exitAnimationDuration = "0ms";
+            _config.enterAnimationDuration = "0ms";
         }
 
         const disableClose = _config.disableClose;
@@ -147,27 +147,22 @@ export class DialogService {
         this.stack++;
         if (!disableClose && _config.closingClasses?.length) {
             const backdrop: HTMLDivElement = this._containerInstance(dialogRef)._overlayRef._backdropElement;
-            backdrop.addEventListener('click', () => {
+            backdrop.addEventListener("click", () => {
                 this.close(dialogRef, _config);
             });
         }
 
         //INPUTS
         if (_config.inputs) {
-            const component = dialogRef.componentInstance as any;
-            const inputs = _config.inputs;
-            const changes = {} as SimpleChanges;
-            for (const input in inputs) {
-                component[input] = inputs[input];
-                changes[input] = new SimpleChange(undefined, component[input], true);
+            for (const inputName in _config.inputs) {
+                dialogRef.componentRef.setInput(inputName, _config.inputs[inputName]);
             }
-            if ('ngOnChanges' in component) component.ngOnChanges(changes);
         }
 
         //OUTPUTS
-        if (dialogRef.componentInstance['closed']) {
+        if (dialogRef.componentInstance["closed"]) {
             //TODO check outputs using component factory
-            const output = dialogRef.componentInstance['closed'] as EventEmitter<R>;
+            const output = dialogRef.componentInstance["closed"] as EventEmitter<R>;
             firstValueFrom(output).then((r) => {
                 this.close(dialogRef, _config, r);
             });
@@ -176,11 +171,11 @@ export class DialogService {
         if (_config.hideCloseButton !== true) {
             const _container: ElementRef<HTMLElement> = this._containerInstance(dialogRef)._elementRef;
             const container = _container.nativeElement;
-            container.style.position = 'relative';
+            container.style.position = "relative";
 
-            const b = this._styleCloseButton(this.document.createElement('button'));
+            const b = this._styleCloseButton(this.document.createElement("button"));
             b.addEventListener(
-                'click',
+                "click",
                 () => {
                     this.close(dialogRef as any, _config);
                 },
@@ -196,22 +191,22 @@ export class DialogService {
     }
 
     private _containerInstance<T>(ref: MatDialogRef<T>): any {
-        return ref['_containerInstance'];
+        return ref["_containerInstance"];
     }
 
     private _styleCloseButton(b: HTMLButtonElement) {
-        b.style.fontSize = '1.5em';
-        b.style.cursor = 'pointer';
-        b.style.background = 'none';
-        b.style.border = 'none';
-        b.style.outline = 'none';
-        b.style.lineHeight = '1';
+        b.style.fontSize = "1.5em";
+        b.style.cursor = "pointer";
+        b.style.background = "none";
+        b.style.border = "none";
+        b.style.outline = "none";
+        b.style.lineHeight = "1";
 
-        b.style['z-index'] = '999';
+        b.style["z-index"] = "999";
         b.tabIndex = -1;
 
         //b.innerHTML = '&#x2716' //✖
-        b.innerHTML = '&#10005'; //✕
+        b.innerHTML = "&#10005"; //✕
 
         return b;
     }
@@ -219,7 +214,7 @@ export class DialogService {
     close<T, R>(ref: MatDialogRef<T>, config: DialogServiceConfig<any>, result?: R) {
         this._dialogClosed$.next(true);
 
-        result ??= ref.componentInstance['model'] as R;
+        result ??= ref.componentInstance["model"] as R;
         if (!config?.closingClasses || !config?.closingClasses.length) return ref.close(result);
 
         const outletElement: HTMLDivElement = this._containerInstance(ref)._overlayRef._portalOutlet.outletElement;
@@ -230,16 +225,16 @@ export class DialogService {
             ref.removePanelClass(config.closingClasses);
         };
 
-        outletElement.addEventListener('transitionend', handler, {
+        outletElement.addEventListener("transitionend", handler, {
             once: true,
         });
-        outletElement.addEventListener('animationend', handler, { once: true });
+        outletElement.addEventListener("animationend", handler, { once: true });
 
         setTimeout(() => {
             if (outletElement.classList.contains(config.closingClasses[0])) {
-                console.log('dialog-closed-after-timeout');
-                outletElement.removeEventListener('transitionend', handler);
-                outletElement.removeEventListener('animationend', handler);
+                console.log("dialog-closed-after-timeout");
+                outletElement.removeEventListener("transitionend", handler);
+                outletElement.removeEventListener("animationend", handler);
                 handler();
             }
         }, this.defaultConfig.closeTimeout);
