@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed } from "@angular/core";
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed, InputSignal } from "@angular/core";
 import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
 import { MatSelect } from "@angular/material/select";
 import { ActionDescriptor } from "@upupa/common";
@@ -49,6 +49,8 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     filterControl = new FormControl<string>("");
     filterInputRef = viewChild.required<ElementRef>("filterInput");
     filterModel = model<string>();
+
+    override singleValueAsArray = input(false);
 
     clearValue(e) {
         e.stopPropagation();

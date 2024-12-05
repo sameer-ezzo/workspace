@@ -1,6 +1,6 @@
 import { Component, effect, inject, input, model } from '@angular/core';
 import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
-import { ChipsComponent } from '@upupa/dynamic-form-native-theme';
+
 import { Tag } from '../tag.model';
 import { TagsService } from '../tags.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';

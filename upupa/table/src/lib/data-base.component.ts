@@ -1,26 +1,10 @@
-import {
-    Component,
-    EventEmitter,
-    Injector,
-    OnChanges,
-    Output,
-    SimpleChanges,
-    computed,
-    effect,
-    forwardRef,
-    inject,
-    input,
-    model,
-    output,
-    signal,
-} from "@angular/core";
+import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { firstValueFrom, Subscription, take } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
-
 
 @Component({
     selector: "data-base",
@@ -55,6 +39,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     valueChange = output<Partial<T> | Partial<T>[]>();
     required = input<boolean>(false);
     disabled = model(false);
+    singleValueAsArray = input<boolean>(true);
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
@@ -79,11 +64,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         if (v == null) {
             this.value.set(null);
             return;
-        }
-        if (this.maxAllowed() === 1) {
-            if (Array.isArray(v)) throw new Error("Value must be a single item");
-        } else {
-            if (!Array.isArray(v)) throw new Error("Value must be an array");
         }
 
         this.value.set(v);
@@ -131,7 +111,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     selected = computed<Partial<T>[]>(() => {
         return (Array.isArray(this.value()) ? this.value() : this.value() != null ? [this.value()] : []) as Partial<T>[];
     });
-
 
     lazyLoadData = input(false);
     loading = signal(false);
@@ -239,7 +218,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-        if (this.maxAllowed() === 1) {
+        if (!this.singleValueAsArray()) {
             this.selectionModel.clear();
             this.value.set(null);
         } else {
@@ -260,13 +239,13 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     }
 
     select(...value: Partial<T>[]) {
-        if (this.maxAllowed() === 1) {
+        if (this.singleValueAsArray()) {
+            this.selectionModel.select(...value);
+            this.value.set(this.selectionModel.selected);
+        } else {
             this.selectionModel.clear();
             this.value.set(value[0]);
             this.selectionModel.select(value[0]);
-        } else {
-            this.selectionModel.select(...value);
-            this.value.set(this.selectionModel.selected);
         }
 
         this.selectedNormalized.set(
@@ -289,8 +268,8 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     }
     deselectAll() {
         this.selectionModel.clear(false);
-        if (this.maxAllowed() === 1) this.value.set(null);
-        else this.value.set([]);
+        if (this.singleValueAsArray()) this.value.set([]);
+        else this.value.set(null);
 
         this.selectedNormalized.set(
             this.adapter()
@@ -303,8 +282,8 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     deselect(...value: Partial<T>[]) {
         this.selectionModel.deselect(...value);
-        if (this.maxAllowed() === 1) this.value.set(null);
-        else this.value.set(this.selectionModel.selected);
+        if (this.singleValueAsArray()) this.value.set(this.selectionModel.selected);
+        else this.value.set(null);
         this.selectedNormalized.set(
             this.adapter()
                 .normalized()
