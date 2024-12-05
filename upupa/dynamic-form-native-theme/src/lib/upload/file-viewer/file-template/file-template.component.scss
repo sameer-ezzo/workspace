@@ -1,0 +1,166 @@
+:host {
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 1fr;
+    &:not(.selectable) {
+        .checkbox {
+            display: none;
+        }
+    }
+
+    &.focused {
+        border-color: rgb(107, 107, 107);
+    }
+
+    &.list {
+        gap: 1rem;
+        grid-template-columns: auto auto 1fr auto auto auto;
+        align-items: center;
+        padding: 0.5rem 0;
+        max-height: calc(65px + 1rem);
+        grid-template-areas: "checkbox thumb name size date actions";
+
+        &:not(:last-child) {
+            border-bottom: 1px solid rgb(219, 219, 219);
+        }
+
+        .thumb,
+        .thumb > image {
+            width: 65px;
+            height: 65px;
+            overflow: hidden;
+        }
+    }
+
+    &.grid {
+        border: 1px solid rgb(184, 184, 184);
+        grid-template-columns: auto 1fr 1fr auto;
+        grid-template-rows: 220px 40px auto;
+        border-radius: 4px;
+        padding: 4px;
+        &:not(.loading) {
+            grid-template-areas:
+                "thumb thumb thumb thumb"
+                "checkbox name name actions"
+                "size size date date";
+
+            .progress {
+                display: none;
+            }
+        }
+        &.loading {
+            grid-template-areas:
+                "thumb thumb thumb thumb"
+                "progress name name actions"
+                "size size date date";
+
+            .checkbox {
+                display: none;
+            }
+        }
+
+        .date {
+            justify-self: end;
+        }
+
+        image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            img {
+                width: auto;
+                height: auto;
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                object-position: center;
+                display: block;
+            }
+        }
+    }
+
+    .progress {
+        grid-area: progress;
+        z-index: 1;
+        margin: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    .checkbox {
+        grid-area: checkbox;
+        z-index: 1;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .thumb {
+        grid-area: thumb;
+        display: flex;
+        align-items: center;
+        justify-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        img {
+            width: 100%;
+            height: 100%;
+        }
+    }
+    .name {
+        grid-area: name;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        overflow: hidden;
+        max-height: 40px;
+        text-overflow: ellipsis;
+        text-wrap: nowrap;
+    }
+    .size {
+        grid-area: size;
+        font-size: smaller;
+    }
+    .date {
+        grid-area: date;
+        font-size: smaller;
+    }
+    .actions {
+        grid-area: actions;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .action:not(:last-child) {
+        margin-inline-end: 0.25rem;
+    }
+
+    .hoverable {
+        transition: all 200ms ease-in;
+
+        &:hover {
+            & > .hover-container {
+                .onhover {
+                    display: block;
+                }
+
+                & :not(.onhover) {
+                    display: none;
+                }
+            }
+        }
+
+        & > .hover-container {
+            & > .onhover {
+                display: none;
+            }
+        }
+    }
+}

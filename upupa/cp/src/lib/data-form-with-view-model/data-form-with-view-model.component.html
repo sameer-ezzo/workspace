@@ -1,41 +1,39 @@
+<!-- label -->
+@if (label()) {
+    <label style="margin-block: 0.5rem 1rem">{{ label() }}</label>
+}
 <div class="form-wrapper">
     @let _vm = viewModel();
 
     <dynamic-form
         #dynForm
-        [fields]="_vm.fields"
         [(value)]="value"
+        [fields]="_vm.fields"
         (fieldValueChange)="onValueChange($event)"
-        [formName]="_vm.name"
+        [name]="formName()"
         [preventDirtyUnload]="_vm.preventDirtyUnload"
         [theme]="_vm.theme"
         [conditions]="_vm.conditions"
         (submit)="onSubmit()"
-        [form]="form()"
-        [formGroup]="form()"
+        [control]="control()"
     ></dynamic-form>
+    <!-- [formGroup]="control()" -->
 </div>
 
-@if (submitActionButton() || actions().length) {
+@if (actions()?.length) {
     <div class="toolbar footer">
-        @if (submitActionButton()) {
-            <mat-btn
-                [descriptor]="submitActionButton()"
-                [loading]="submitting()"
-                (onClick)="dynForm.ngSubmit()"
-                [disabled]="
-                    this.submitting() ||
-                    (dynForm.invalid && (dynForm.dirty || dynForm.touched))
-                "
-            >
-            </mat-btn>
-        }
-
         @for (descriptor of actions(); track descriptor.name) {
-            <mat-btn
-                [descriptor]="descriptor"
-                (onClick)="onAction($event)"
-            ></mat-btn>
+            @if (descriptor.type == "submit") {
+                <mat-btn
+                    [descriptor]="descriptor"
+                    [loading]="submitting()"
+                    (onClick)="dynForm.ngSubmit()"
+                    [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
+                >
+                </mat-btn>
+            } @else {
+                <mat-btn [descriptor]="descriptor" (onClick)="onAction($event)"></mat-btn>
+            }
         }
     </div>
 }

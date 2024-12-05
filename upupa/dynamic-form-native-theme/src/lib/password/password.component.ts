@@ -1,13 +1,13 @@
-import { Component, Input, forwardRef, SimpleChanges, signal, model, input } from '@angular/core';
-import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator } from '@angular/forms';
+import { Component, forwardRef, model, input } from "@angular/core";
+import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator } from "@angular/forms";
 
-import { PasswordStrength, generatePassword, verifyPassword } from '@upupa/auth';
-import { InputComponent } from '../input/input.component';
+import { PasswordStrength, generatePassword, verifyPassword } from "@upupa/auth";
+import { InputComponent } from "../input/input.component";
 
 @Component({
-    selector: 'form-password-field',
-    templateUrl: './password.component.html',
-    styleUrls: ['./password.component.scss'],
+    selector: "form-password-field",
+    templateUrl: "./password.component.html",
+    styleUrls: ["./password.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -22,16 +22,16 @@ import { InputComponent } from '../input/input.component';
     ],
 })
 export class PasswordInputComponent extends InputComponent implements Validator {
-    override type = input('password');
+    override type = input("password");
 
     confirmPwd = null;
-    confirmControl: FormControl<string> = new FormControl<string>('');
+    confirmControl: FormControl<string> = new FormControl<string>("");
 
     showConfirmPasswordInput = input(false);
     showPassword = model(false);
     canGenerateRandomPassword = input(false);
     passwordStrength = input<PasswordStrength>(new PasswordStrength());
-    autocomplete = input<'current-password' | 'new-password'>('new-password');
+    autocomplete = input<"current-password" | "new-password">("new-password");
 
     changeTouchedStatus(ctrl: AbstractControl) {
         if (this.showConfirmPasswordInput() !== true) this.markAsTouched();
@@ -53,26 +53,26 @@ export class PasswordInputComponent extends InputComponent implements Validator 
     validate(control: AbstractControl) {
         if (!this.control() || this.control().untouched) return null;
 
-        if (this.showConfirmPasswordInput() === true && this.confirmControl.touched) if (control.value !== this.confirmControl.value) return { 'not-matched': true };
+        if (this.showConfirmPasswordInput() === true && this.confirmControl.touched) if (control.value !== this.confirmControl.value) return { "not-matched": true };
 
         if (!this.passwordStrength) return null;
         const passwordStrength = this.passwordStrength;
         const validations = [];
         const result = verifyPassword(control.value);
         for (const k in passwordStrength) {
-            const message = 'passwrd-' + k;
+            const message = "passwrd-" + k;
             const current = result[k];
             const required = passwordStrength[k];
             if (Array.isArray(required)) {
                 if (required[0] > current)
                     validations.push({
-                        message: message + '-min',
+                        message: message + "-min",
                         current,
                         required: required[0],
                     });
                 if (required[1] < current)
                     validations.push({
-                        message: message + '-max',
+                        message: message + "-max",
                         current,
                         required: required[1],
                     });

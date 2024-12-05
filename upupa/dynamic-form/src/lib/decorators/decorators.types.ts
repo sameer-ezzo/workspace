@@ -1,6 +1,8 @@
 import { PasswordStrength } from "@upupa/auth";
 import { Field, Validator } from "../types";
 import { DataAdapterDescriptor } from "@upupa/data";
+import { Class } from "@noah-ark/common";
+import { FormViewModelMirror } from "./form-input.decorator";
 
 export interface IDynamicFormFieldOptions {}
 export class TextFieldOptions {}
@@ -11,10 +13,10 @@ export class AdapterFieldOptions {
     maxAllowed?: number = 1;
     adapter: DataAdapterDescriptor = { type: "client", data: [] };
 }
-
+export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any> };
 export type BaseFormFieldOptions = Field & {
     required?: boolean;
-    group?: string;
+    group?: string | FieldGroup;
 };
 export type VisibleFormFieldOptions = BaseFormFieldOptions & {
     name?: string;
@@ -67,11 +69,13 @@ export type FieldOptions =
               | ({ input: "fieldset" } & BaseFormFieldOptions)
               | ({ input: "object" } & BaseFormFieldOptions)
               | ({ input: "text" } & TextFieldOptions)
+              | ({ input: "color" } & TextFieldOptions)
               | ({ input: "textarea" } & TextFieldOptions & {
                         rows?: number;
                         maxRows?: number;
                     })
               | ({ input: "phone" } & TextFieldOptions)
+              | ({ input: "email" } & TextFieldOptions)
               | ({ input: "password" } & TextFieldOptions & {
                         showConfirmPasswordInput?: boolean;
                         showPassword?: boolean;
@@ -94,12 +98,15 @@ export type FieldOptions =
                     editorType: "decoupled" | "classic";
                 })
               | ({ input: "array" } & TableInputOptions)
-              | ({ input: "chips" } & {
-                    parentPath?: string;
-                    visible?: boolean;
-                    selectable?: boolean;
-                    removable?: boolean;
-                    separatorKeysCodes?: string[];
-                })
+              | ({ input: "table" } & TableInputOptions)
+              | ({ input: "chips" } & AdapterFieldOptions & {
+                        parentPath?: string;
+                        visible?: boolean;
+                        selectable?: boolean;
+                        removable?: boolean;
+                        separatorKeysCodes?: string[];
+                    })
+              | ({ input: "group" } & BaseFormFieldOptions)
+              | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));
 export type FieldInputType = FieldOptions["input"];

@@ -1,13 +1,14 @@
-import { ReplaySubject, Observable, of } from "rxjs";
+import { ReplaySubject, Observable, of, from } from "rxjs";
 import { catchError, debounceTime, map, switchMap, tap } from "rxjs/operators";
 import { FilterDescriptor, PageDescriptor, SortDescriptor, TableDataSource, Term } from "./model";
 import { PageEvent } from "@angular/material/paginator";
 import { DataService } from "../data.service";
 import { QueryDescriptor } from "../di.token";
 import { Patch } from "@noah-ark/json-patch";
+import { signal } from "@angular/core";
 
 export class ApiDataSource<T = any> extends TableDataSource<T> {
-    readonly allDataLoaded = false;
+    readonly allDataLoaded = signal(false);
 
     data: T[];
     readonly src$ = new ReplaySubject<Observable<T[]>>(1);
@@ -39,7 +40,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         }
     }
 
-    refresh(): Observable<T[]> {
+    refresh() {
         const filter = this.filter;
         const sort = this.sort;
         const page = this.page;
@@ -78,9 +79,9 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         return this.data$;
     }
 
-    override async init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Promise<void> {
-        await this.dataService.refreshCache(this.path); // refresh api cache to get the latest data
-        super.init(options);
+    override init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
+        const refreshCache$ = from(this.dataService.refreshCache(this.path)); // refresh api cache to get the latest data
+        return refreshCache$.pipe(switchMap(() => super.init(options)));
     }
 
     getData(page: Partial<PageEvent>, query: QueryDescriptor): Observable<T[]> {
@@ -95,6 +96,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
             tap((res) => {
                 page.length = res.total;
                 this.data = res.data as T[];
+                this.allDataLoaded.set(this.data.length >= res.total);
             }),
             map((res) => res.data),
         );

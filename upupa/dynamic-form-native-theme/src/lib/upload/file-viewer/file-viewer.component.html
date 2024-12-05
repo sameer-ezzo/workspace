@@ -1,6 +1,6 @@
 @for (f of value(); track $index) {
     <file-template
-        class="file"
+        class="file {{ view() }}"
         [class.selectable]="selectable() === true"
         [file]="f"
         [path]="path()"

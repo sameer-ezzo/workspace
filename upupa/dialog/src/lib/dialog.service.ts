@@ -1,19 +1,19 @@
-import { Injectable, TemplateRef, Inject, ElementRef, EventEmitter, SimpleChanges, SimpleChange, Signal, Type, input, inject, signal } from "@angular/core";
+import { Injectable, TemplateRef, Inject, ElementRef, EventEmitter, SimpleChanges, SimpleChange, Signal, Type, input, inject, signal, ComponentRef } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
 import { ComponentType } from "@angular/cdk/portal";
 import { DOCUMENT } from "@angular/common";
 import { firstValueFrom, Subject, Observable } from "rxjs";
 import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
-import { UpupaDialogComponent } from "./dialog-wrapper.component";
+import { DialogWrapperComponent } from "./dialog-wrapper.component";
 
 export type UpupaDialogActionContext<C = any> = {
-    host: UpupaDialogComponent<C>;
+    host: DialogWrapperComponent<C>;
     component: C;
-    dialogRef: MatDialogRef<UpupaDialogComponent<C>>;
+    dialogRef: MatDialogRef<DialogWrapperComponent<C>>;
 } & Record<string, unknown>;
 
-export interface UpupaDialogPortal<C = any> {
-    dialogRef?: MatDialogRef<UpupaDialogComponent<C>>;
+export interface DialogPortal<C = any> {
+    dialogRef?: MatDialogRef<DialogWrapperComponent<C>>;
     dialogActions?: Signal<ActionDescriptor[]>;
     onAction?(e: ActionEvent<any, UpupaDialogActionContext<C>>): Promise<void>;
 }
@@ -72,9 +72,9 @@ export class DialogService {
     private readonly document = inject(DOCUMENT);
 
     openDialog<P = any, D = any, R = any>(
-        template: Type<any> | ComponentType<P> | TemplateRef<P> | DynamicComponent,
+        template: ComponentType<P> | TemplateRef<P> | DynamicComponent,
         options?: DialogServiceConfig<D>,
-    ): MatDialogRef<UpupaDialogComponent, R> {
+    ): MatDialogRef<DialogWrapperComponent, R> & { afterAttached: () => Observable<ComponentRef<P>> } & { componentInstance: DialogWrapperComponent } {
         if (!template) throw new Error("ComponentType is not provided!");
 
         const inputs = options?.inputs ?? {};
@@ -121,8 +121,7 @@ export class DialogService {
 
         this._dialogOpened$.next(true);
 
-        const dialogRef = this.dialog.open<UpupaDialogComponent, D, R>(UpupaDialogComponent, dialogOptions);
-        return dialogRef;
+        return this.dialog.open<DialogWrapperComponent, D, R>(DialogWrapperComponent, dialogOptions) as any;
     }
 
     open<T, D = any, R = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>, config?: DialogServiceConfig<D>): MatDialogRef<T, R> {

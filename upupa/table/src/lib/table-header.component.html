@@ -1,8 +1,13 @@
 @if (showSearch()) {
-    <!-- (click)="onFilter(q())"  (keydown.enter)="onFilter(q())" -->
     <div id="search-box-wrapper">
-        <input style="background: transparent; outline: none; border: none; display: flex; flex: 1" placeholder="Search" [(ngModel)]="q" />
-        <button mat-icon-button>
+        <input
+            style="background: transparent; outline: none; border: none; display: flex; flex: 1"
+            placeholder="Search"
+            [(ngModel)]="q"
+            (input)="onFilter()"
+            (keydown.enter)="_doFilter(q())"
+        />
+        <button mat-icon-button (click)="_doFilter(q())">
             <mat-icon>search</mat-icon>
         </button>
     </div>
@@ -13,4 +18,5 @@
     @for (template of inlineEndSlot() ?? []; track $index) {
         <portal [component]="template['component']" [inputs]="template.inputs" [outputs]="template['outputs']"></portal>
     }
+    <ng-content select></ng-content>
 </div>

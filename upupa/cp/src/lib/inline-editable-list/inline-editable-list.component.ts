@@ -1,10 +1,10 @@
 import { BreakpointObserver } from "@angular/cdk/layout";
-import { Component, ElementRef, forwardRef, Inject, input, Input, model, OnChanges, OnInit, SimpleChange, SimpleChanges } from "@angular/core";
-import { inject } from "@angular/core/testing";
-import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { Component, forwardRef, Inject, input, model, OnChanges, OnInit } from "@angular/core";
+
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { ActionDescriptor } from "@upupa/common";
-import { DataComponentBase, DataTableModule, ValueDataComponentBase } from "@upupa/table";
+import { DataTableModule, DataComponentBase } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 import { DynamicFormModule, Field, FormScheme } from "@upupa/dynamic-form";
 import { languageDir, LanguageService } from "@upupa/language";
@@ -27,7 +27,7 @@ import { InputDefaults } from "@upupa/dynamic-form-native-theme";
         },
     ],
 })
-export class InlineEditableListComponent extends ValueDataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
+export class InlineEditableListComponent extends DataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
     appearance = input(InputDefaults.appearance);
     placeholder = input("");
     fields = input<Field[]>([]);

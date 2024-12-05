@@ -8,7 +8,7 @@ import { FileSelectComponent } from "../file-select/file-select.component";
 
 import { AuthService } from "@upupa/auth";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
-import { ValueDataComponentBase } from "@upupa/table";
+import { DataComponentBase } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -25,7 +25,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
         },
     ],
 })
-export class FileInputComponent extends ValueDataComponentBase {
+export class FileInputComponent extends DataComponentBase {
     @Input() includeAccess = false;
     @Input() base = "";
     @Input() path = "";

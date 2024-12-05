@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, forwardRef, inject, input, model, SimpleChanges } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from '@angular/forms';
+import { Component, inject, input, model } from '@angular/core';
+import { ControlValueAccessor, FormControl, NgControl, UntypedFormControl } from '@angular/forms';
 
 @Component({ template: '' })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
-    name = input<string, string>('', {
+    name = input<string, string>(`field_${Date.now()}`, {
         alias: 'fieldName',
         transform: (v) => {
             return v ? v : `field_${Date.now()}`;

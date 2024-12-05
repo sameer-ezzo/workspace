@@ -3,7 +3,7 @@ import { FormControlDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@a
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatError, MatHint } from '@angular/material/form-field';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { UtilsModule } from '@upupa/common';
+import { ErrorsDirective, UtilsModule } from '@upupa/common';
 import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-theme';
 
 @Component({
@@ -17,7 +17,7 @@ import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-
             multi: true,
         },
     ],
-    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule],
+    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule,ErrorsDirective],
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {

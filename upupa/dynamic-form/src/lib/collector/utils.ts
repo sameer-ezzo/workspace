@@ -1,6 +1,5 @@
 import { FormGraph } from '../dynamic-form.component';
-import { FieldFormControl, FieldFormGroup } from '../field-form.control';
-import { Field, FormScheme } from '../types';
+import { Field } from '../types';
 import { CollectStyle } from './types';
 
 export function getGoogleFontUri(familyName: string) {
@@ -35,12 +34,12 @@ export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGraph
     const fs = Array.from(fields.entries());
     if (collectStyle === '1by1')
         pages = fs
-            .filter(([name, f]) => !_isNaturallyHidden(f.field()))
+            .filter(([name, f]) => !_isNaturallyHidden(f.field))
             .map((f, i) => {
                 return { from: i, to: i, fields: new Map([[f[0], f[1]]]) };
             });
     else if (collectStyle === 'linear') {
-        const _fs = fs.filter(([name, f]) => f.field().input !== 'page-breaker');
+        const _fs = fs.filter(([name, f]) => f.field.input !== 'page-breaker');
         pages = [{ from: 0, to: fs.length, fields: new Map(_fs) }];
     } else {
         // const pageBreakerIndexes = fs.filter(([name, f]) => f.type === 'page-breaker').map(([name, f]) => fs.indexOf(f));

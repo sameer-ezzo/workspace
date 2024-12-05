@@ -1,19 +1,19 @@
-import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { InputBaseComponent } from '@upupa/common';
-import { filter } from 'rxjs';
-import { ClipboardService, FileInfo, openFileDialog, UploadClient } from '@upupa/upload';
-import { ThemePalette } from '@angular/material/core';
-import { AuthService } from '@upupa/auth';
-import { FileEvent, ViewerExtendedFileVm } from '../viewer-file.vm';
-import { DialogService } from '@upupa/dialog';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { InputBaseComponent } from "@upupa/common";
+import { filter } from "rxjs";
+import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
+import { ThemePalette } from "@angular/material/core";
+import { AuthService } from "@upupa/auth";
+import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
+import { DialogService } from "@upupa/dialog";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-type ViewType = 'list' | 'grid';
+type ViewType = "list" | "grid";
 @Component({
-    selector: 'file-select',
-    templateUrl: './file-select.component.html',
-    styleUrls: ['./file-select.component.scss'],
+    selector: "file-select",
+    templateUrl: "./file-select.component.html",
+    styleUrls: ["./file-select.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -21,18 +21,18 @@ type ViewType = 'list' | 'grid';
             multi: true,
         },
     ],
-    exportAs: 'fileSelect',
+    exportAs: "fileSelect",
     host: {
-        '[class]': 'view()',
-        '[attr.name]': 'name()',
+        "[class]": "view()",
+        "[attr.name]": "name()",
     },
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
-    color = input<ThemePalette>('accent');
-    dateFormat = input('dd MMM yyyy');
-    placeholder = input('');
-    label = input('');
-    hint = input('');
+    color = input<ThemePalette>("accent");
+    dateFormat = input("dd MMM yyyy");
+    placeholder = input("");
+    label = input("");
+    hint = input("");
     readonly = input(false);
 
     hideSelectButton = input(false);
@@ -40,14 +40,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     includeAccess = input(false);
 
     // @Input() base = this.uploadClient.baseOrigin;
-    path = input.required<string, string>({
-        transform: (v: string) =>
-            v
-                .replace(/\/$/, '')
-                .split('/')
-                .filter((v) => v)
-                .join('/'),
-    });
+    path = input.required<string, string>({ transform: (v: string) => v || "/" });
 
     minAllowedFiles = input<number, number | undefined>(0, {
         transform: (v) => {
@@ -63,15 +56,15 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     maxFileSize = input(1024 * 1024 * 10); //10 MB
     maxSize = input(1024 * 1024 * 10); //10 MB
 
-    accept = input<string, string>('*.*', {
-        transform: (v) => (v ?? '*.*').toLocaleLowerCase(),
+    accept = input<string, string>("*.*", {
+        transform: (v) => (v ?? "*.*").toLocaleLowerCase(),
     });
 
-    view = input('list', {
-        transform: (v: ViewType) => v ?? 'list',
+    view = input("list", {
+        transform: (v: ViewType) => (v === "list" ? "list" : "grid"),
     });
 
-    fileSelector = input<'browser' | 'system'>('system');
+    fileSelector = input<"browser" | "system">("system");
     viewFiles = input(true);
 
     enableDragDrop = input(false);
@@ -80,9 +73,9 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     viewModel = signal<ViewerExtendedFileVm[]>([]);
 
     private readonly destroyRef = inject(DestroyRef);
-    base = signal<string>('');
+    base = signal<string>("");
 
-    @HostListener('blur', ['$event'])
+    @HostListener("blur", ["$event"])
     onBlur(event) {
         event.preventDefault();
         this.markAsTouched();
@@ -96,7 +89,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     ) {
         super();
 
-        this.base.set(new URL(uploadClient.baseUrl).origin + '/');
+        this.base.set(new URL(uploadClient.baseUrl).origin + "/");
 
         effect(
             () => {
@@ -115,7 +108,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
                 // make sure this component is focused or active
                 if (event.clipboardData.files && event.clipboardData.files.length) await this.uploadFileList(event.clipboardData.files);
                 else {
-                    console.warn('paste', event);
+                    console.warn("paste", event);
                     //else uploadByContent text or html or ...
                 }
             });
@@ -124,12 +117,12 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     selectFile() {
         if (!this.canUpload()) return;
         const viewer = this.fileSelector();
-        if (viewer === 'browser') this.showFileExplorer();
+        if (viewer === "browser") this.showFileExplorer();
         else this.showFileDialog();
     }
 
     private async showFileDialog() {
-        const accept = this.accept() ?? '';
+        const accept = this.accept() ?? "";
         const files = await openFileDialog(accept as string, this.maxAllowedFiles() !== 1);
         await this.uploadFileList(files);
     }
@@ -196,13 +189,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     viewerEventsHandler(e: FileEvent) {
-        if (e.name === 'remove') {
+        if (e.name === "remove") {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()
                 .filter((f) => !f.error && !(f.file instanceof File))
                 .map((f) => f.file as FileInfo);
             this.handleUserInput(vm);
-        } else if (e.name === 'uploadSuccess') {
+        } else if (e.name === "uploadSuccess") {
             const f = e.file as File;
             const fileInfo = e.fileInfo as FileInfo;
             const vm = this.viewModel().map((vf) => {
@@ -219,18 +212,18 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
     private validateFileExtensions(file: File, accepts: string) {
         if (!accepts) return null;
-        const validateByMime = accepts.indexOf('/') > -1;
+        const validateByMime = accepts.indexOf("/") > -1;
         if (validateByMime) {
             // accept="image/*" or "image/png,image/jpeg" or "image/png, image/jpeg" validate file by mime type
 
             const terms = accepts
-                .split(',')
+                .split(",")
                 .map((a) => a.toLowerCase())
-                .map((a) => a.split('/'));
-            const fileMime = file.type.split('/');
-            return terms.some((t) => (t[0] === '*' || t[0] === fileMime[0]) && (t[1] === '*' || t[1] === fileMime[1])) ? null : { extension: file.type, accepts };
-        } else if (file && accepts && accepts.indexOf('*.*') === -1) {
-            const segments = file.name.split('.');
+                .map((a) => a.split("/"));
+            const fileMime = file.type.split("/");
+            return terms.some((t) => (t[0] === "*" || t[0] === fileMime[0]) && (t[1] === "*" || t[1] === fileMime[1])) ? null : { extension: file.type, accepts };
+        } else if (file && accepts && accepts.indexOf("*.*") === -1) {
+            const segments = file.name.split(".");
 
             const ext = segments[segments.length - 1].toLowerCase();
             return accepts.indexOf(ext) > -1 ? null : { extension: `.${ext}`, accepts };
@@ -239,13 +232,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
     private validateFileMaxSize(file: File, maxSize: number) {
         if (file && maxSize > 0) {
-            return file.size > maxSize ? { ['max-size']: file.size } : null;
+            return file.size > maxSize ? { ["max-size"]: file.size } : null;
         }
         return null;
     }
     private validateFileMinSize(file: File, minSize: number) {
         if (file && minSize > 0) {
-            return file.size < minSize ? { ['min-size']: file.size } : null;
+            return file.size < minSize ? { ["min-size"]: file.size } : null;
         }
         return null;
     }

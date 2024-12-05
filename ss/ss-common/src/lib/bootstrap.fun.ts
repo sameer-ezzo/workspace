@@ -20,6 +20,7 @@ import { completeEndpointsInfo } from "./messaging/endpoints-info.fun";
 import { ConfigOptions } from "express-handlebars/types";
 import { env } from "process";
 import { NestFactoryStatic } from "@nestjs/core/nest-factory";
+import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
 export let appName: string;
 export let application: NestExpressApplication;
@@ -33,6 +34,10 @@ export type AppOptions = {
     websocketServer?: Partial<ServerOptions>;
     handlebarsConfig?: Partial<ConfigOptions>;
     middlewares?: NestMiddleware[];
+    cors?: {
+        enabled: boolean; // Indicates if CORS should be enabled
+        options?: CorsOptions; // Optional configuration when CORS is enabled
+    };
 };
 
 const defaultSocketServerOptions: Partial<ServerOptions> = {
@@ -152,9 +157,8 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
         else application.useWebSocketAdapter(new IoAdapter(application));
     }
 
-    if (env["NODE_ENV"] === "development") {
-        application.enableCors({ origin: "*" });
-    }
+    const cors = options.cors ?? { enabled: env["NODE_ENV"] === "development", options: { origin: "*" } };
+    if (cors.enabled) application.enableCors(cors.options);
 
     application.useGlobalInterceptors();
 

@@ -1,13 +1,11 @@
-import { Component, inject, DestroyRef, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, forwardRef, output } from "@angular/core";
+import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, forwardRef } from "@angular/core";
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { MatDialogRef } from "@angular/material/dialog";
-import { Subscription } from "rxjs";
-import { UpupaDialogComponent, UpupaDialogPortal } from "@upupa/dialog";
+import { DialogPortal } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { ActionEvent, deepAssign } from "@upupa/common";
-import { Class, delay } from "@noah-ark/common";
-import { FormGroup, FormGroupDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { Class } from "@noah-ark/common";
+import { AbstractControlDirective, ControlContainer, ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
@@ -24,23 +22,33 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         },
         {
             provide: FORM_GRAPH,
-            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl().graph(),
-            deps: [DataFormWithViewModelComponent],
+            useFactory: (form: DynamicFormComponent) => form.graph,
+            deps: [DynamicFormComponent],
         },
         {
             provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DataFormWithViewModelComponent),
+            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
+            deps: [DataFormWithViewModelComponent],
             multi: true,
         },
     ],
 })
-export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPortal<DataFormWithViewModelComponent<T>> {
+export class DataFormWithViewModelComponent<T = any> {
     private readonly injector = inject(Injector);
-
     dynamicFormEl = viewChild(DynamicFormComponent);
-    form = input<FormGroup, FormGroup>(new FormGroup({}), { transform: (v) => v ?? new FormGroup({}) });
-    dialogRef?: MatDialogRef<UpupaDialogComponent<DataFormWithViewModelComponent>> = inject(MatDialogRef, { optional: true });
 
+    label = input<string | undefined>();
+    name = input<string | undefined>();
+    formName = computed(() => this.name() ?? this.viewModel()?.name ?? new Date().getTime().toString());
+
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = new FormControl({});
+    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+        transform: (v) => {
+            return v ?? this._control ?? this._defaultControl ?? new FormControl({});
+        },
+    });
     loading = signal(false);
 
     viewModel = input.required<FormViewModelMirror, Class | FormViewModelMirror>({
@@ -53,16 +61,10 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     value = model<T>();
 
     // form actions
-
-    submitActionButton = computed(() => {
-        const { onSubmitAction } = this.viewModel();
-        return onSubmitAction;
-    });
     canSubmit = signal(false);
     actions = computed(() => {
         const { actions } = this.viewModel();
         const formActions = actions ?? [];
-
         return [...formActions].filter((x) => x);
     });
 
@@ -78,6 +80,9 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
             });
             deepAssign(instance, v);
             this.value.set(instance);
+            console.log("control", this.control());
+
+            // this.control().setValue(instance, { emitEvent: false });
         }
     }
 
@@ -85,6 +90,7 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
         const vm = this.value();
         runInInjectionContext(this.injector, async () => {
             await vm["onValueChange"]?.(e);
+            this.control().patchValue(vm, { emitEvent: false });
         });
     }
 
@@ -108,10 +114,10 @@ export class DataFormWithViewModelComponent<T = any> implements UpupaDialogPorta
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
         let { handlerName } = e.action as any;
-        if (!handlerName && e.action.type === "submit") handlerName = "onSubmit";
+
+        if (e.action.type == "submit" || handlerName === "onSubmit") return this.onSubmit();
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-        if (handlerName === "onSubmit") return this.onSubmit();
         return runInInjectionContext(this.injector, async () => {
             await vm[handlerName]();
         });

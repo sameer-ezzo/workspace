@@ -10,7 +10,7 @@ import { ActionDescriptor, ActionEvent, DynamicComponent, PortalComponent } from
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
-import { DialogRefD, UpupaDialogActionContext, UpupaDialogPortal } from "./dialog.service";
+import { DialogRefD, UpupaDialogActionContext, DialogPortal } from "./dialog.service";
 
 @Component({
     selector: "dialog-wrapper",
@@ -24,7 +24,7 @@ import { DialogRefD, UpupaDialogActionContext, UpupaDialogPortal } from "./dialo
     },
     // providers: [{ provide: MatDialogRef, useFactory: (upupa: UpupaDialogComponent) => upupa.dialogRef, deps: [UpupaDialogComponent] }],
 })
-export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, AfterViewInit {
+export class DialogWrapperComponent<C = any> implements DialogPortal<C>, AfterViewInit {
     hostClass = computed(() => [this.panelClass(), this.dialogActions().length > 0 ? "y-scroll" : ""].join(" "));
     panelClass = input<string, string>("dialog-wrapper-container", {
         transform: (v: string) => `dialog-wrapper-container ${(v ?? "").replace("dialog-wrapper-container", "")}`,
@@ -53,7 +53,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
     }
 
     public dialogData = inject(MAT_DIALOG_DATA) as DialogRefD;
-    dialogRef: MatDialogRef<UpupaDialogComponent<C>> = inject(MatDialogRef);
+    dialogRef: MatDialogRef<DialogWrapperComponent<C>> = inject(MatDialogRef);
     template = signal<DynamicComponent>(null);
     constructor() {
         const data = this.dialogData as DialogRefD["data"];
@@ -64,9 +64,7 @@ export class UpupaDialogComponent<C = any> implements UpupaDialogPortal<C>, Afte
         this.subTitle.set(data.subTitle);
         this.hideCloseButton.set(data.hideCloseButton === true);
 
-        this.dialogRef["afterAttached"] = () => {
-            return this._afterAttached$.asObservable();
-        };
+        this.dialogRef["afterAttached"] = () => this._afterAttached$.asObservable();
         this.dialogRef.componentInstance;
         // this.dialogRef['instanceRef'] = signal<any>(null);
     }

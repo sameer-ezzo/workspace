@@ -59,8 +59,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     onExternalLinkClick(link: { clientId: string }) {
     }
 
-    onSuccess(value: any) {
-        this.onSuccessHandler?.()
+    async onSuccess(value: any) {
+        const onSuccessHandler = await this.onSuccessHandler
+        if(typeof onSuccessHandler === 'function') onSuccessHandler()
     }
 
     onFailed(value: any) {

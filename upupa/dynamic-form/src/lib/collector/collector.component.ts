@@ -1,18 +1,18 @@
-import { Component, computed, EventEmitter, forwardRef, input, Input, Output, SimpleChanges, viewChild, ViewChild } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Condition } from '@noah-ark/expression-engine';
-import { ActionDescriptor, InputBaseComponent } from '@upupa/common';
-import { ActionsDescriptor } from '@upupa/common';
-import { Field, FormScheme } from '../types';
-import { CollectStyle, FormDesign } from './types';
-import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from './utils';
-import { DynamicFormComponent } from '../dynamic-form.component';
+import { Component, computed, EventEmitter, forwardRef, input, Input, Output, SimpleChanges, viewChild, ViewChild } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { Condition } from "@noah-ark/expression-engine";
+import { ActionDescriptor, InputBaseComponent } from "@upupa/common";
+import { ActionsDescriptor } from "@upupa/common";
+import { Field, FormScheme } from "../types";
+import { CollectStyle, FormDesign } from "./types";
+import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
+import { DynamicFormComponent } from "../dynamic-form.component";
 
 @Component({
-    selector: 'collector',
-    templateUrl: './collector.component.html',
-    styleUrls: ['./collector.component.scss'],
-    exportAs: 'collector',
+    selector: "collector",
+    templateUrl: "./collector.component.html",
+    styleUrls: ["./collector.component.scss"],
+    exportAs: "collector",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -22,13 +22,13 @@ import { DynamicFormComponent } from '../dynamic-form.component';
     ],
 })
 export class CollectorComponent extends InputBaseComponent<any> {
-    dynamicForm = viewChild<DynamicFormComponent>('dynForm');
-    form = computed(() => this.dynamicForm().form());
+    dynamicForm = viewChild<DynamicFormComponent>("dynForm");
+    form = computed(() => this.dynamicForm().control());
     @Output() submit = new EventEmitter();
     @Output() action = new EventEmitter<ActionDescriptor>();
     @Output() activePageChange = new EventEmitter<number>();
 
-    collectStyle = input<CollectStyle>('linear');
+    collectStyle = input<CollectStyle>("linear");
 
     fields = input.required<FormScheme>();
     @Input() conditions: Condition[];
@@ -45,21 +45,21 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     @Input() submitBtn: ActionDescriptor = {
-        name: 'submit',
-        type: 'submit',
-        variant: 'stroked',
-        text: 'Submit',
-        color: 'primary',
+        name: "submit",
+        type: "submit",
+        variant: "stroked",
+        text: "Submit",
+        color: "primary",
     };
     @Input() nextBtn: ActionDescriptor = {
-        name: 'next',
-        type: 'button',
-        text: 'Next',
+        name: "next",
+        type: "button",
+        text: "Next",
     };
     @Input() prevBtn: ActionDescriptor = {
-        name: 'prev',
-        type: 'button',
-        text: 'Previous',
+        name: "prev",
+        type: "button",
+        text: "Previous",
     };
 
     private formFieldsInfo = new Map<Field, { index: number; page: number }>();
@@ -109,29 +109,29 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     private _applyFormDesign(design: FormDesign) {
-        if (design.bgImage?.url) document.documentElement.style.setProperty('--bg-img-url', design.bgImage.url);
-        if (design.bgColor) document.documentElement.style.setProperty('--bg-color', design.bgColor);
-        if (design.textColor) document.documentElement.style.setProperty('--field-text-color', design.textColor);
-        if (design.valueColor) document.documentElement.style.setProperty('--field-value-color', design.valueColor);
-        if (design.buttonsColor) document.documentElement.style.setProperty('--button-color', design.buttonsColor);
+        if (design.bgImage?.url) document.documentElement.style.setProperty("--bg-img-url", design.bgImage.url);
+        if (design.bgColor) document.documentElement.style.setProperty("--bg-color", design.bgColor);
+        if (design.textColor) document.documentElement.style.setProperty("--field-text-color", design.textColor);
+        if (design.valueColor) document.documentElement.style.setProperty("--field-value-color", design.valueColor);
+        if (design.buttonsColor) document.documentElement.style.setProperty("--button-color", design.buttonsColor);
 
         if (design.headerFont) {
             loadFontFace(this.design.headerFont.font.family);
-            document.documentElement.style.setProperty('--header-font-family', this.design.headerFont.font.family);
+            document.documentElement.style.setProperty("--header-font-family", this.design.headerFont.font.family);
         }
         if (design.paragraphFont) {
             loadFontFace(this.design.paragraphFont.font.family);
-            document.documentElement.style.setProperty('--paragraph-font-family', this.design.paragraphFont.font.family);
-            document.documentElement.style.setProperty('--paragraph-font-size', this.design.paragraphFont.size || '22pt');
+            document.documentElement.style.setProperty("--paragraph-font-family", this.design.paragraphFont.font.family);
+            document.documentElement.style.setProperty("--paragraph-font-size", this.design.paragraphFont.size || "22pt");
         }
     }
 
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes['fields']) this.populatePagesInFields();
+        if (changes["fields"]) this.populatePagesInFields();
     }
 
     populatePagesInFields() {
-        this.pages = fieldsArrayToPages(this.collectStyle(), this.controls());
+        this.pages = fieldsArrayToPages(this.collectStyle(), this.controls);
 
         this.formFieldsInfo = new Map();
         for (let i = 0; i < this.pages.length; i++) {
@@ -149,7 +149,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
         }
 
         const page = this.pages[pageIndex];
-        this._pageInvalid = Array.from(page.fields).some(([name, f]) => this.controls().get('')?.invalid === true);
+        this._pageInvalid = Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true);
     }
 
     showFieldsOfPage() {
@@ -185,7 +185,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     next() {
-        this.dynamicForm().form().markAsTouched();
+        this.dynamicForm().control().markAsTouched();
         if (this.canGoNext()) this.activePage++;
     }
 
@@ -198,18 +198,18 @@ function loadFontFace(family: string) {
     const fontUri = getGoogleFontUri(family);
     loadFontFromUri(fontUri);
 
-    const head = document.head || document.getElementsByTagName('head')[0];
-    const preconnect = document.createElement('link');
-    preconnect.href = 'https://fonts.gstatic.com';
-    preconnect.rel = 'preconnect';
+    const head = document.head || document.getElementsByTagName("head")[0];
+    const preconnect = document.createElement("link");
+    preconnect.href = "https://fonts.gstatic.com";
+    preconnect.rel = "preconnect";
     head.appendChild(preconnect);
 
-    const stylesheet = document.createElement('link');
+    const stylesheet = document.createElement("link");
     stylesheet.href = fontUri;
-    stylesheet.rel = 'stylesheet';
+    stylesheet.rel = "stylesheet";
     head.appendChild(stylesheet);
 
-    const newStyle = document.createElement('style');
+    const newStyle = document.createElement("style");
     newStyle.appendChild(document.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
     document.head.appendChild(newStyle);
 }

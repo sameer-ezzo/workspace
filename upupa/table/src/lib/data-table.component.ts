@@ -1,18 +1,13 @@
 import {
     Component,
-    EventEmitter,
     OnChanges,
-    Input,
-    Output,
     SimpleChanges,
     Type,
     ElementRef,
-    forwardRef,
     ViewChild,
     ChangeDetectionStrategy,
     WritableSignal,
     signal,
-    HostBinding,
     HostListener,
     inject,
     input,
@@ -20,8 +15,9 @@ import {
     effect,
     Injector,
     InjectionToken,
-    Signal,
     DestroyRef,
+    forwardRef,
+    viewChildren,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -61,12 +57,20 @@ export function injectDataAdapter() {
         "[attr.tabindex]": "tabindex",
         "[attr.id]": "name()",
     },
+    providers: [
+        {
+            provide: DataAdapter,
+            useFactory: (self: DataTableComponent) => self.adapter(),
+            deps: [forwardRef(() => DataTableComponent)],
+        },
+    ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
     stickyHeader = input(false);
+    override maxAllowed = input<number, number>(Number.MAX_SAFE_INTEGER, { transform: (v) => Number.MAX_SAFE_INTEGER });
 
     name = input<string, string>(`table_${Date.now()}`, {
         alias: "tableName",
@@ -98,10 +102,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                     {
                         provide: ROW_ITEM,
                         useValue: row.item,
-                    },
-                    {
-                        provide: DataAdapter,
-                        useValue: this.adapter(),
                     },
                 ],
                 name: "RowInjector",
@@ -144,11 +144,14 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes);
-
         if (changes["adapter"]) {
+            const adapter = this.adapter();
+            if (!adapter) throw new Error("Adapter is required");
+
             this.loadData();
         }
+        await super.ngOnChanges(changes);
+
         if (changes["columns"]) this.generateColumns();
     }
 
@@ -277,9 +280,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     //     // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
     //     // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
     // }
-    onAdd() {
-        this.add.emit();
-    }
 
     isPurePipe(pipe: Type<any>): boolean {
         return !!pipe.prototype.constructor.ɵpipe.pure;

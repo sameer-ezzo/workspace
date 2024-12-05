@@ -1,31 +1,34 @@
 <input type="hidden" [value]="value()" [formControl]="control()" [required]="required()" />
 
-@if (viewFiles()) {
-    <fieldset>
-        @if (label()) {
-            <legend class="mbe-1">{{ label() }}</legend>
-        }
-        <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
-        <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
-
-        @if (control().touched && control().errors) {
-            <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-        }
-    </fieldset>
-} @else if (enableDragDrop() === true) {
+@if (enableDragDrop() === true) {
     @if (label()) {
         <mat-label class="mbe-1">{{ label() }}</mat-label>
     }
     <ng-container *ngTemplateOutlet="dragDropTemplate"></ng-container>
     <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
-    @if (control().touched && control().errors) {
-        <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+} @else {
+    @if (label()) {
+        <fieldset>
+            <legend class="mbe-1">{{ label() }}</legend>
+            <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
+            <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
+        </fieldset>
+    } @else {
+        <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
+        <ng-container *ngTemplateOutlet="uploadBtnTemplate"></ng-container>
     }
 }
 @if (placeholder() && viewModel()?.length === 0) {
     <div class="mt-16" style="display: flex; flex-flow: column">
         {{ placeholder() }}
     </div>
+}
+
+@if (hint()) {
+    <span>{{ hint() }}</span>
+}
+@if (control().touched && control().errors) {
+    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 }
 <ng-template #uploadBtnTemplate>
     @if (canUpload() && !hideSelectButton()) {
@@ -64,7 +67,6 @@
         class="drop-zone"
         [class.dragging]="dragging()"
         data-role="drag-drop-container"
-        tabindex="0"
         (click)="selectFile()"
         (dragleave)="dragLeave($event)"
         (dragover)="$event.preventDefault(); dragOver($event)"

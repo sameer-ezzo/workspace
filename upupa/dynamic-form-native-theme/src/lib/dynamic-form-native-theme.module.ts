@@ -9,7 +9,6 @@ import { DataTableModule } from "@upupa/table";
 import { UploadModule } from "@upupa/upload";
 import { AddressComponent } from "./address-edit/address.component";
 import { AutoCompleteTextComponent } from "./autocomplete-text-input/autocomplete-text.component";
-import { ChipsComponent } from "./chips-input/chips-input.component";
 import { ChoicesComponent } from "./choices/choices.component";
 import { ColorInputComponent } from "./color-input/color-input.component";
 import { DateInputComponent } from "./date-input/date-input.component";
@@ -86,7 +85,6 @@ export const DF_NATIVE_THEME_INPUTS = {
     },
     switch: { component: SwitchComponent },
     color: { component: ColorInputComponent },
-    chips: { component: ChipsComponent },
     "autocomplete-text": { component: AutoCompleteTextComponent },
     address: { component: AddressComponent },
 };
@@ -98,7 +96,6 @@ const declarations = [
     SelectComponent,
     TreeComponent,
     NumberComponent,
-    ChipsComponent,
     PasswordInputComponent,
     InputComponent,
     ChoicesComponent,
@@ -135,6 +132,7 @@ const imports = [
     DataTableModule,
     ScrollingModule,
     MatBtnComponent,
+    ErrorsDirective
 ];
 
 @NgModule({

@@ -1,18 +1,14 @@
-import { DynamicModule, FactoryProvider, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
-import { Broker, CommonModule, appName } from "@ss/common";
+import { DynamicModule, FactoryProvider, Inject, OnModuleInit, Provider } from "@nestjs/common";
+import { Broker, CommonModule } from "@ss/common";
 import { DbConnectionOptions, DbConnectionOptionsFactory } from "./data-options";
-import { DataChangeService } from "./data.change.service";
 import { DataService } from "./data.svr";
 import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collections";
 import { logger } from "./logger";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 
-import { MongooseModule, InjectConnection, getConnectionToken, Schema, ModelDefinition, AsyncModelFactory } from "@nestjs/mongoose";
-import mongoose, { Connection, models } from "mongoose";
-import { name } from "platform";
+import { MongooseModule, getConnectionToken, ModelDefinition } from "@nestjs/mongoose";
+import mongoose, { Connection} from "mongoose";
 import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
 import migrationSchema from "./migration-schema";
-import { options } from "marked";
 import tagSchema from "./tag.schema";
 import changeSchema from "./change-schema";
 import { MigrationsService } from "./migrations.svr";

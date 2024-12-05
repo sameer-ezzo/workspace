@@ -1,4 +1,5 @@
-import { Field, FormScheme, switchField } from "@upupa/dynamic-form";
+import { PasswordStrength } from "@upupa/auth";
+import { Field, FieldItem, formInput, formScheme, FormScheme, switchField } from "@upupa/dynamic-form";
 
 export const defaultVerifyCodeField: FormScheme = {
     code: {
@@ -16,6 +17,17 @@ export const defaultVerifyCodeField: FormScheme = {
     } as Field,
 };
 
+
+
+@formScheme()
+export class LoginFormViewModel {
+    @formInput({ input: "email" })
+    email = "";
+    @formInput({ input: "password", passwordStrength: new PasswordStrength(), showConfirmPasswordInput: false })
+    password = "";
+    @formInput({ input: "switch" })
+    rememberMe = true;
+}
 export const defaultEmailField: Field = {
     input: "email",
     inputs: { label: "Email", placeholder: "Use a valid email" },

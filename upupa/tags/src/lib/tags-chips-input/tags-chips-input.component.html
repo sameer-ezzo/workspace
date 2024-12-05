@@ -1,4 +1,4 @@
-<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
+<!-- <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     <input type="hidden" [value]="value()" />
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
@@ -28,7 +28,7 @@
         (blur)="markAsTouched()"
         (input)="filterModel.set(filterInput.value); updateFilter()"
         [placeholder]="placeholder()"
-        (matChipInputTokenEnd)="onAdding($event.value)"
+        (matChipInputTokenEnd)="add($event.value)"
     />
 
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
@@ -48,4 +48,4 @@
         }
     </mat-autocomplete>
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-</mat-form-field>
+</mat-form-field> -->

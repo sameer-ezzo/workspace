@@ -8,15 +8,15 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
 import { HttpClient } from '@angular/common/http';
 import { ActionDescriptor } from '@upupa/common';
-import { UpupaDialogComponent, UpupaDialogPortal } from '@upupa/dialog';
+import { DialogWrapperComponent, DialogPortal } from '@upupa/dialog';
 @Component({
     selector: 'edit-user-roles',
     templateUrl: './edit-user-roles.component.html',
     styleUrls: ['./edit-user-roles.component.scss'],
 })
-export class EditUserRolesComponent implements UpupaDialogPortal<EditUserRolesComponent> {
+export class EditUserRolesComponent implements DialogPortal<EditUserRolesComponent> {
     @ViewChild('userForm') form: DynamicFormComponent;
-    dialogRef: MatDialogRef<UpupaDialogComponent<EditUserRolesComponent>>;
+    dialogRef: MatDialogRef<DialogWrapperComponent<EditUserRolesComponent>>;
 
     loading = false;
 

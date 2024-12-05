@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UtilsModule } from '@upupa/common';
+import { ErrorsDirective, UtilsModule } from '@upupa/common';
 import { DynamicFormNativeThemeModule } from '@upupa/dynamic-form-native-theme';
 import { DataTableModule } from '@upupa/table';
 import { UploadModule } from '@upupa/upload';
@@ -66,6 +66,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
         },
     },
     array: { component: MatArrayInputComponent },
+    table: { component: MatArrayInputComponent },
     checks: {
         component: MatChoicesComponent,
         field: {
@@ -115,6 +116,7 @@ const imports = [
     DataTableModule,
     ScrollingModule,
     DynamicFormNativeThemeModule,
+    ErrorsDirective
 ];
 
 @NgModule({

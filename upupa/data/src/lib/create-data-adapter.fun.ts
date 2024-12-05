@@ -8,7 +8,7 @@ import { ClientDataSource } from "./datasource/client.data.source";
 import { HttpServerDataSource } from "./datasource/http-server-data-source";
 import { ApiDataSource } from "./datasource/api.data.source";
 
-export function createDataAdapter(descriptor: DataAdapterDescriptor<DataAdapterType>, injector: Injector): DataAdapter {
+export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
     let dataSource: ITableDataSource;
 
     switch (descriptor.type) {
@@ -18,6 +18,8 @@ export function createDataAdapter(descriptor: DataAdapterDescriptor<DataAdapterT
         case "server":
         case "api":
             dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.select ?? []);
+            descriptor.keyProperty ??= "_id" as any;
+            descriptor.displayProperty ??= "name" as any;
             break;
         case "http":
             const http = injector.get(HttpClient);

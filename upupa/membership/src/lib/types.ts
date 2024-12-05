@@ -1,47 +1,35 @@
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormScheme } from '@upupa/dynamic-form';
-import { LanguageService } from '@upupa/language';
-import {
-    defaultForgotPasswordFormFields,
-    defaultLoginFormFields,
-    defaultSignupFormFields,
-    defaultVerifyFormFields,
-} from './default-values';
-import { Condition } from '@noah-ark/expression-engine';
-import { AuthService, PasswordStrength } from '@upupa/auth';
+import { ActivatedRoute, Router } from "@angular/router";
+import { FormScheme, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { LanguageService } from "@upupa/language";
+import { defaultForgotPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
+import { Condition } from "@noah-ark/expression-engine";
+import { AuthService, PasswordStrength } from "@upupa/auth";
 
-export type IdpName =
-    | 'google'
-    | 'facebook'
-    | 'github'
-    | 'twitter'
-    | 'linkedin'
-    | 'microsoft'
-    | 'apple';
+export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {
     clientId: string;
     attributes?: {
-        context: 'signin';
-        callback: 'signin';
-        nonce: '';
-        auto_select: 'true' | 'false';
-        itp_support: 'true' | 'false';
+        context: "signin";
+        callback: "signin";
+        nonce: "";
+        auto_select: "true" | "false";
+        itp_support: "true" | "false";
     } & (
-        | { ux_mode: 'popup' }
+        | { ux_mode: "popup" }
         | {
-              ux_mode: 'redirect';
+              ux_mode: "redirect";
               login_uri?: string;
               scope?: string; //profile email openid
           }
     );
     customize?: {
-        class: 'g_id_signin';
-        type: 'standard';
-        size: 'large';
-        theme: 'outline';
-        text: 'sign_in_with';
-        shape: 'pill';
-        logo_alignment: 'left';
+        class: "g_id_signin";
+        type: "standard";
+        size: "large";
+        theme: "outline";
+        text: "sign_in_with";
+        shape: "pill";
+        logo_alignment: "left";
     };
 };
 type MembershipProvider<T = Function> = {
@@ -49,12 +37,8 @@ type MembershipProvider<T = Function> = {
     useFactory: (...args: any[]) => T;
 };
 
-export type PageNavigationLinkProvider = MembershipProvider<
-    PageNavigationLink[]
->;
-export type InitialValueFactoryProvider = MembershipProvider<
-    (...args: []) => Record<string, unknown>
->;
+export type PageNavigationLinkProvider = MembershipProvider<PageNavigationLink[]>;
+export type InitialValueFactoryProvider = MembershipProvider<(...args: []) => Record<string, unknown>>;
 export type FormHandlerProvider = MembershipProvider<(...args: []) => void>;
 
 export class BaseMembershipFormOptions {
@@ -78,11 +62,9 @@ export const defaultOnSuccessProvider: FormHandlerProvider = {
     useFactory: (router: Router, route: ActivatedRoute) => {
         return (...args: []) => {
             const { redirect } = route.snapshot.queryParams;
-            if (!redirect) return router.navigateByUrl('/');
-            const urlSegments = redirect
-                .split('/')
-                .filter((segment) => segment);
-            return router.navigate(['/', ...urlSegments]);
+            if (!redirect) return router.navigateByUrl("/");
+            const urlSegments = redirect.split("/").filter((segment) => segment);
+            return router.navigate(["/", ...urlSegments]);
         };
     },
 };
@@ -162,8 +144,8 @@ export const defaultSignupLinksProvider = {
     useFactory: (): PageNavigationLink[] => {
         return [
             {
-                label: 'Already have an account?',
-                text: 'Sign in',
+                label: "Already have an account?",
+                text: "Sign in",
                 url: `../login`,
             },
         ] as PageNavigationLink[];
@@ -176,13 +158,13 @@ export const defaultLoginLinksProvider = {
     useFactory: (): PageNavigationLink[] => {
         return [
             {
-                label: 'Forgot password?',
-                text: 'Reset password',
+                label: "Forgot password?",
+                text: "Reset password",
                 url: `../forgot-password`,
             },
             {
                 label: "Don't have account?",
-                text: 'Create new one',
+                text: "Create new one",
                 url: `../signup`,
             },
         ] as PageNavigationLink[];
@@ -191,7 +173,7 @@ export const defaultLoginLinksProvider = {
 
 export class MembershipSignupOptions extends BaseMembershipFormOptions {
     passwordStrength?: PasswordStrength = new PasswordStrength();
-    override title = 'Signup';
+    override title = "Signup";
     override fields: FormScheme = defaultSignupFormFields;
     override links = defaultSignupLinksProvider;
     override external_links = defaultSignupExternalLinksProvider;
@@ -200,28 +182,26 @@ export class MembershipSignupOptions extends BaseMembershipFormOptions {
     override initial_value_factory = defaultSignupInitialValueFactoryProvider;
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
-    override title = 'Sign in';
-    override fields: FormScheme = defaultLoginFormFields;
+    override title = "Sign in";
+    override fields: FormScheme = reflectFormViewModelType(LoginFormViewModel).fields;
 
     override links = defaultLoginLinksProvider;
     override external_links = defaultLoginExternalLinksProvider;
     override on_success = defaultLoginOnSuccessProvider;
     override on_failed = defaultLoginOnFailedProvider;
-    override initial_value_factory =
-        defaultLoginFormInitialValueFactoryProvider;
+    override initial_value_factory = defaultLoginFormInitialValueFactoryProvider;
 }
 export class MembershipForgotPasswordOptions extends BaseMembershipFormOptions {
-    override title = 'Forgot password';
+    override title = "Forgot password";
     override fields: FormScheme = defaultForgotPasswordFormFields;
     override links = defaultForgotPasswordLinksProvider;
     override external_links = defaultForgotPasswordExternalLinksProvider;
     override on_success = defaultForgotPasswordOnSuccessProvider;
     override on_failed = defaultForgotPasswordOnFailedProvider;
-    override initial_value_factory =
-        defaultForgotPasswordInitialValueFactoryProvider;
+    override initial_value_factory = defaultForgotPasswordInitialValueFactoryProvider;
 }
 export class MembershipVerifyOptions extends BaseMembershipFormOptions {
-    override title = 'Verify';
+    override title = "Verify";
     override fields: FormScheme = defaultVerifyFormFields;
     override links = defaultVerifyLinksProvider;
     override external_links = defaultVerifyExternalLinksProvider;
@@ -236,8 +216,7 @@ export class MembershipOptions {
 
     login = new MembershipLoginOptions();
     signup = new MembershipSignupOptions();
-    forgotPassword?: MembershipForgotPasswordOptions =
-        new MembershipForgotPasswordOptions();
+    forgotPassword?: MembershipForgotPasswordOptions = new MembershipForgotPasswordOptions();
     verify = new MembershipVerifyOptions();
     idPs?: Record<IdpName, any>;
 }

@@ -3,6 +3,7 @@ import { PageEvent } from "@angular/material/paginator";
 import { Observable, of } from "rxjs";
 import { BehaviorSubject } from "rxjs";
 import { Patch } from "@noah-ark/json-patch";
+import { Signal } from "@angular/core";
 
 export type PageDescriptor = Partial<PageEvent>;
 export type SortDescriptor = Sort;
@@ -21,7 +22,8 @@ export interface ITableDataSource<T = any> {
     readonly data$: Observable<T[]>;
     refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Observable<T[]>;
     destroy?();
-    readonly allDataLoaded: boolean; //so (filter/sort/group from client-side) true? false?
+
+    readonly allDataLoaded: Signal<boolean>; //so (filter/sort/group from client-side) true? false?
 
     init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor });
     page: PageDescriptor;
@@ -54,9 +56,9 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
 
     abstract readonly data: T[];
     abstract readonly data$: Observable<T[]>;
-    abstract readonly allDataLoaded: boolean;
+    abstract readonly allDataLoaded: Signal<boolean>;
 
-    abstract refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor });
+    abstract refresh(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }): Observable<T[]>;
     abstract destroy?();
 
     protected _initialized = false;
@@ -100,10 +102,8 @@ export abstract class TableDataSource<T = any> implements ITableDataSource<T> {
 
     init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
         this._initialized = true;
-        this.refresh(options);
+        return this.refresh(options);
     }
 
-    getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]> {
-        return of([]);
-    }
+    abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Observable<T[]>;
 }

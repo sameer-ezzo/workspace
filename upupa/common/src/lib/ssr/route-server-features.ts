@@ -10,18 +10,21 @@ import { Response } from "express";
  * @returns
  */
 export function withHttpStatus(status: number): RouteFeature {
-    return (route) => ({
-        canActivate: [
-            () => {
-                const res = inject(RESPONSE, { optional: true });
-                if (res) {
-                    res.status(status);
-                }
-                return true;
-            },
-            ...(route.canActivate ?? []),
-        ],
-    });
+    return {
+        name: "withHttpStatus",
+        modify: (route) => ({
+            canActivate: [
+                () => {
+                    const res = inject(RESPONSE, { optional: true });
+                    if (res) {
+                        res.status(status);
+                    }
+                    return true;
+                },
+                ...(route.canActivate ?? []),
+            ],
+        }),
+    };
 }
 
 /**
@@ -30,16 +33,19 @@ export function withHttpStatus(status: number): RouteFeature {
  * @returns
  */
 export function withHttpResponse(callback: (res: Response) => void): RouteFeature {
-    return (route) => ({
-        canActivate: [
-            () => {
-                const res = inject(RESPONSE, { optional: true });
-                if (res) callback(res);
-                return true;
-            },
-            ...(route.canActivate ?? []),
-        ],
-    });
+    return {
+        name: "withHttpResponse",
+        modify: (route) => ({
+            canActivate: [
+                () => {
+                    const res = inject(RESPONSE, { optional: true });
+                    if (res) callback(res);
+                    return true;
+                },
+                ...(route.canActivate ?? []),
+            ],
+        }),
+    };
 }
 
 /**

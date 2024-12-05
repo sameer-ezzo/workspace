@@ -1,46 +1,49 @@
 <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
-    <input type="hidden" [value]="value()" />
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()" [attr.name]="name()">
+    <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()">
         @for (item of selectedNormalized(); track item.key) {
-            <mat-chip-row (removed)="remove(item)">
+            <mat-chip-row [value]="item.value">
                 {{ item.display }}
-                <button matChipRemove [attr.aria-label]="'remove ' + item.key">
+                <button matChipRemove (click)="deselect(item.value)" [attr.aria-label]="'remove ' + item.key">
                     <mat-icon>cancel</mat-icon>
                 </button>
             </mat-chip-row>
         }
+        <input
+            #input
+            [attr.name]="name()"
+            matInput
+            [value]="text()"
+            (input)="text.set(input.value)"
+            [required]="required()"
+            [placeholder]="placeholder()"
+            [matChipInputFor]="chipGrid"
+            [matAutocomplete]="auto"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
+            (matChipInputTokenEnd)="add(input.value); input.value = ''"
+        />
     </mat-chip-grid>
-    <input
-        #filterInput
-        [matChipInputFor]="chipGrid"
-        [matAutocomplete]="auto"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
-        type="text"
-        matInput
-        (input)="filterModel.set(filterInput.value); updateFilter()"
-        [required]="required()"
-        (blur)="markAsTouched()"
-        [placeholder]="placeholder()"
-        (matChipInputTokenEnd)="onAdding($event.value)"
-    />
 
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectionChange($event.option.value)">
-        @if (options().length > 0 || filterInput.value.length > 0) {
-            @for (opt of options(); track opt.key) {
-                <mat-option [value]="opt.key">
-                    @if (opt.image) {
-                        <img [src]="opt.image" [attr.alt]="opt.display" />
+    <mat-autocomplete #auto (optionSelected)="$event.option.value ? select($event.option.value) : undefined">
+        @if (loading()) {
+            <!-- span will hide the checkbox for this option -->
+            <span disabled> Loading ...</span>
+        } @else {
+            @for (item of items(); track $index) {
+                <mat-option [value]="item.value">
+                    @if (item.image) {
+                        <img [src]="item.image" [attr.alt]="item.display" />
                     }
-                    <span>{{ opt.display }}</span>
+                    <span>{{ item.display }}</span>
                 </mat-option>
-            }
-            @if (filterInput.value.length > 0 && options.length === 0) {
-                <mat-option [value]="null">
-                    <span>Add</span>
-                </mat-option>
+            } @empty {
+                @if (canAdd() && text()?.length > 1) {
+                    <mat-option (click)="add(text())"><span>Add</span></mat-option>
+                } @else {
+                    <mat-option disabled>No options</mat-option>
+                }
             }
         }
     </mat-autocomplete>

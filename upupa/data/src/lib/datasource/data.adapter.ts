@@ -1,5 +1,5 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { Subscription, Observable, ReplaySubject, firstValueFrom, BehaviorSubject } from "rxjs";
+import { Subscription, Observable, ReplaySubject, firstValueFrom, BehaviorSubject, of } from "rxjs";
 import { ClientDataSource } from "./client.data.source";
 import { filterNormalized } from "./filter.fun";
 import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
@@ -121,9 +121,9 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         return v.map((x) => this.extract(x, this.keyProperty, x));
     }
 
-    getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
+    getItems(keys: (keyof T)[]): Observable<NormalizedItem<T>[]> {
         //todo: What if keyProperty is undefined?
-        if (keys == null || !keys.length) return Promise.resolve([]);
+        if (keys == null || !keys.length) return of([]);
 
         const KEYS = Array.isArray(keys) ? keys : [keys];
         const normalized = this.normalized() ?? [];
@@ -134,15 +134,13 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
             if (n) itemsInAdapter.push(n);
             else itemsNotInAdapter.push(key);
         }
-        if (itemsInAdapter.length === KEYS.length) return Promise.resolve(normalized.filter((n) => KEYS.includes(n.key)));
+        if (itemsInAdapter.length === KEYS.length) return of(normalized.filter((n) => KEYS.includes(n.key)));
 
-        const source = this.dataSource.getItems(itemsNotInAdapter, this.keyProperty).pipe(
+        return this.dataSource.getItems(itemsNotInAdapter, this.keyProperty).pipe(
             map((items) => items.filter((x) => itemsInAdapter.findIndex((n) => n.key === x?.[this.keyProperty]) === -1)),
             map((items) => items.map((i) => this.normalize(i))),
             map((items) => items.concat(itemsInAdapter)),
         );
-
-        return firstValueFrom(source);
     }
 
     _normalizeItem(item): NormalizedItem<T> {
@@ -152,11 +150,20 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         //     normalized.push(...n)
         //   }
         // }
+        if (!item)
+            return {
+                key: null,
+                display: null,
+                value: null,
+                image: null,
+                item: null,
+            } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
 
         const display = this.extract(item, this.displayProperty, item, true);
         let valueProperty = Array.isArray(this.valueProperty) ? [this.keyProperty, ...this.valueProperty] : [this.keyProperty, this.valueProperty];
+        valueProperty = Array.from(new Set(valueProperty)).filter((x) => x != null);
 
         // if item is primitive type like string then no need to extract.
         let value = item as any;
@@ -233,8 +240,8 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     }
 
     _allNormalized: NormalizedItem<T>[];
-    refresh(force = false) {
-        if (!force && this.dataSource.allDataLoaded) {
+    refresh(force = true): Observable<NormalizedItem<T>[]> {
+        if (!force && this.dataSource.allDataLoaded()) {
             if (!this._allNormalized) this._allNormalized = this.normalized();
             const terms = this.options?.terms ?? [];
             this.normalized.set(
@@ -246,8 +253,9 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
                     terms.map((t) => t.field),
                 ),
             );
+            return this.normalized$;
         } else {
-            this.dataSource.init({
+            return this.dataSource.init({
                 page: this.page,
                 sort: this.sort,
                 filter: this.filter,
