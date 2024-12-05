@@ -31,6 +31,7 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
 
     canAdd = input(true);
     adding = output<any>({ alias: "add" });
+    autoComplete = input(true);
 
     async add(value: string) {
         if (!value || !this.canAdd()) return;

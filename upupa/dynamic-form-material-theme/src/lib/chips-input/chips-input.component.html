@@ -27,22 +27,24 @@
     </mat-chip-grid>
 
     <mat-autocomplete #auto (optionSelected)="$event.option.value ? select($event.option.value) : undefined">
-        @if (loading()) {
-            <!-- span will hide the checkbox for this option -->
-            <span disabled> Loading ...</span>
-        } @else {
-            @for (item of items(); track $index) {
-                <mat-option [value]="item.value">
-                    @if (item.image) {
-                        <img [src]="item.image" [attr.alt]="item.display" />
+        @if(autoComplete()) {
+            @if (loading()) {
+                <!-- span will hide the checkbox for this option -->
+                <span disabled> Loading ...</span>
+            } @else {
+                @for (item of items(); track $index) {
+                    <mat-option [value]="item.value">
+                        @if (item.image) {
+                            <img [src]="item.image" [attr.alt]="item.display" />
+                        }
+                        <span>{{ item.display }}</span>
+                    </mat-option>
+                } @empty {
+                    @if (canAdd() && text()?.length > 1) {
+                        <mat-option (click)="add(text())"><span>Add</span></mat-option>
+                    } @else {
+                        <mat-option disabled>No options</mat-option>
                     }
-                    <span>{{ item.display }}</span>
-                </mat-option>
-            } @empty {
-                @if (canAdd() && text()?.length > 1) {
-                    <mat-option (click)="add(text())"><span>Add</span></mat-option>
-                } @else {
-                    <mat-option disabled>No options</mat-option>
                 }
             }
         }

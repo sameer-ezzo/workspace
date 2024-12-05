@@ -1,9 +1,11 @@
-@if (renderer === 'markdown') {
-  <p [innerHTML]="text | markdown"> </p>
-}
-@if (renderer === 'html') {
-  <p [innerHTML]="text | html"> </p>
-}
-@if (renderer === 'none') {
-  <p>{{text }} </p>
+@switch (renderer) {
+    @case ("markdown") {
+        <p [innerHTML]="text | markdown"></p>
+    }
+    @case ("html") {
+        <p [innerHTML]="text | html"></p>
+    }
+    @case ("none") {
+        <p>{{ text }}</p>
+    }
 }

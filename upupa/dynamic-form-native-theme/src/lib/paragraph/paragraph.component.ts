@@ -20,7 +20,7 @@ export class ParagraphComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["text"] || changes["renderer"]) {
             let text = this.text;
-            if (this.renderer === "markdown") text = new MarkdownPipe(this._sanitizer).transform(this.text).toString();
+            if (this.renderer === "markdown") text = new MarkdownPipe().transform(this.text);
             else if (this.renderer === "html") text = new HtmlPipe(this._sanitizer).transform(this.text).toString();
             this._rendere.setProperty(this.host.nativeElement, "innerHTML", text);
         }
