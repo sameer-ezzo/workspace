@@ -4,15 +4,11 @@ import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Validator, FormScheme, Fieldset } from "./types";
 import { JsonPointer } from "@noah-ark/json-patch";
 import { Injector } from "@angular/core";
-import { name } from "platform";
-import { FORM_GRAPH, FormGraph } from "./dynamic-form.component";
+import { FormGraph } from "./dynamic-form.component";
 import { FieldRef } from "./field-ref";
 
 export class DynamicFormBuilder {
-    constructor(
-        private readonly injector: Injector,
-        private readonly formService: DynamicFormService,
-    ) {}
+    constructor(private readonly injector: Injector, private readonly formService: DynamicFormService) {}
 
     build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGraph {
         const graph = new Map<string, FieldRef>();
@@ -22,12 +18,7 @@ export class DynamicFormBuilder {
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
 
-            // if (field.input === "form") {
-            //     const subFormGroup = this.getFieldset(fieldName, field, _path, rootForm);
-            //     form.addControl(fieldName, subFormGroup, { emitEvent: false });
-            //     graph.set(_path, subFormGroup["fieldRef"]);
-            // } else
-             if (field.input === "object") {
+            if (field.input === "object") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });
@@ -62,16 +53,16 @@ export class DynamicFormBuilder {
         const group = new FormGroup(
             {},
             {
-                validators: this.getValidators(field),
+                validators: this.getValidators(name, field),
                 asyncValidators: this.getAsyncValidators(field),
-            },
+            }
         );
         const fieldRef = new FieldRef(this.injector, name, _path, field, rootForm, group);
         group["fieldRef"] = fieldRef;
         return group;
     }
     getControl(name: string, field: Field, value: any, path: `/${string}`, form: FormGroup) {
-        const control = new FormControl(value, { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
+        const control = new FormControl(value, { validators: this.getValidators(name, field), asyncValidators: this.getAsyncValidators(field) });
         const fieldRef = new FieldRef(this.injector, name, path, field, form, control);
         control["fieldRef"] = fieldRef;
         return control;
@@ -112,7 +103,7 @@ export class DynamicFormBuilder {
         if (validatorFactory) return validatorFactory(validator);
         else throw `Field ${name} has an invalid validator: ${validator.name}`;
     }
-    getValidators(field: Field) {
+    getValidators(name: string, field: Field) {
         const validations = field.validations ?? [];
         const isRequired = field.inputs?.["required"] ?? false;
         const requiredValidators = validations.filter((v) => v.name === "required" || v.name === "requiredTrue");

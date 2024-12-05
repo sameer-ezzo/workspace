@@ -1,13 +1,8 @@
 import { DOCUMENT } from "@angular/common";
-import {
-    inject,
-    Injectable,
-    InjectionToken,
-} from "@angular/core";
+import { inject, Injectable, InjectionToken, Injector, runInInjectionContext } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 import { PageMetadata } from "./metadata";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
-
 
 export function updateHeaderTag(
     dom: Document,
@@ -34,10 +29,9 @@ export function updateHeaderTag(
 }
 
 export interface MetadataUpdateStrategy<C extends ContentMetadataConfig = ContentMetadataConfig> {
-    config: Partial<C>;
+    // config: Partial<C>;
     update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>): Promise<void>;
 }
-
 
 export const PAGE_METADATA_STRATEGIES = new InjectionToken<MetadataUpdateStrategy[]>("PAGE_METADATA_STRATEGIES");
 
@@ -51,8 +45,7 @@ export class MetadataService {
     private readonly router = inject(Router);
     private readonly dom = inject(DOCUMENT);
     private readonly config = inject(PAGE_METADATA_CONFIG);
-
-    listenForRouteChanges() {
+    async listenForRouteChanges() {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
                 const meta = this.extractMetadataForRoute(event.snapshot) ?? {};
@@ -64,8 +57,7 @@ export class MetadataService {
                 const baseUrl = this.config.canonicalBaseUrl ?? this.dom.location.origin;
                 const path = meta.canonicalPath ?? this.dom.location.pathname + this.dom.location.search;
                 meta.url = baseUrl + path;
-
-                this.updateMeta(meta, event.snapshot);
+                this.updateMeta(meta, this.config, event.snapshot);
             }
         });
     }
@@ -77,9 +69,9 @@ export class MetadataService {
         return meta;
     }
 
-    updateMeta(meta: PageMetadata, route: ActivatedRouteSnapshot) {
+    async updateMeta(meta: PageMetadata, config: ContentMetadataConfig<PageMetadata>, route: ActivatedRouteSnapshot) {
         for (const strategy of this.metadataUpdateStrategies) {
-            strategy.update(meta, this.config);
+            await strategy.update(meta, config);
         }
     }
 

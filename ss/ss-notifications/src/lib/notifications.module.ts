@@ -1,4 +1,4 @@
-import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
+import { DynamicModule, OnModuleInit, Provider } from "@nestjs/common";
 import { DataModule, DataService, getDataServiceToken } from "@ss/data";
 import { ModuleRef } from "@nestjs/core";
 import { NotificationService } from "./notification.svr";
@@ -8,7 +8,6 @@ import { NotificationOptions } from "./notification";
 import { CommonModule } from "@ss/common";
 import { Schema } from "mongoose";
 import { MongooseModule } from "@nestjs/mongoose";
-import { options } from "marked";
 
 export type Topics = {
     [topic: string]: { channels: string[]; options?: NotificationOptions };

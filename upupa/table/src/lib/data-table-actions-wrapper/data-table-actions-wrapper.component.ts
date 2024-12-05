@@ -18,6 +18,7 @@ import { ActionDescriptor, ActionEvent } from '@upupa/common';
     templateUrl: './data-table-actions-wrapper.component.html',
     styleUrls: ['./data-table-actions-wrapper.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DataTableActionsPortalComponent<T = any> {
     @HostBinding('attr.tabindex') tabindex = 0;

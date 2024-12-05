@@ -33,6 +33,10 @@ import {
     ControlContainer,
     FormControl,
     StatusChangeEvent,
+    FormResetEvent,
+    FormSubmittedEvent,
+    PristineChangeEvent,
+    TouchedChangeEvent,
 } from "@angular/forms";
 import { FormScheme } from "./types";
 import { Condition } from "@noah-ark/expression-engine";
@@ -88,6 +92,7 @@ export function fieldRef(path: string): FieldRef {
     host: {
         "[class]": "'dynamic-form ' + class()",
     },
+    standalone: false
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
     private readonly conditionalService = inject(ConditionalLogicService);
@@ -194,34 +199,42 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     _builder = new DynamicFormBuilder(inject(Injector), this.formService);
 
     constructor() {
-        effect(() => {
-            this.form.events.subscribe((e) => {
-                if (e instanceof ValueChangeEvent) {
-                    const value = this.value() ?? {};
-                    const source = e.source as AbstractControl & { fieldRef: FieldRef };
-                    const path = source.fieldRef?.path ?? "/";
-                    const changes = { [path]: new SimpleChange(JsonPointer.get(value, path, "/"), source.value, !this._patches.has(path)) };
-                    JsonPointer.set(value, path, source.value);
-                    let patch = undefined;
-                    if (path) {
-                        patch = { [path]: source.value };
-                        this._patches.set(path, source.value);
-                    }
-
-                    this.handleUserInput(value);
-
-                    const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
-                    console.log(`${this.name()} valueChanges`, ee);
-                    this.fieldValueChange.emit(ee);
-                } else if (e instanceof StatusChangeEvent) {
-                    if (e.status === "VALID") this.control().setErrors(null);
-                    else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
-                    else if (e.status === "PENDING") this.control().setErrors({ pending: true });
-
-                    if (this.form.enabled) this.control().enable();
-                    else this.control().disable();
+        this.form.events.subscribe((e) => {
+            if (e instanceof ValueChangeEvent) {
+                const value = this.value() ?? {};
+                const source = e.source as AbstractControl & { fieldRef: FieldRef };
+                const path = source.fieldRef?.path ?? "/";
+                const changes = { [path]: new SimpleChange(JsonPointer.get(value, path, "/"), source.value, !this._patches.has(path)) };
+                JsonPointer.set(value, path, source.value);
+                let patch = undefined;
+                if (path) {
+                    patch = { [path]: source.value };
+                    this._patches.set(path, source.value);
                 }
-            });
+
+                this.handleUserInput(value);
+
+                const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
+                if (this.options.enableLogs === true) console.log(`${this.name()}:${path} valueChanges`, ee);
+                this.fieldValueChange.emit(ee);
+            }
+            else if (e instanceof PristineChangeEvent) {
+                this.control().markAsPristine();
+            } else if (e instanceof TouchedChangeEvent) {
+                this.control().markAsTouched();
+            }
+            // else if (e instanceof StatusChangeEvent) {
+            //     if (e.status === "VALID") this.control().setErrors(null);
+            //     else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
+            //     else if (e.status === "PENDING") this.control().setErrors({ pending: true });
+
+            //     if (this.form.enabled) this.control().enable();
+            //     else this.control().disable();
+            // } else if (e instanceof FormResetEvent) {
+            //     this.control().reset();
+            //     this._patches.clear();
+            //     // update internal value
+            // }
         });
     }
 
@@ -275,7 +288,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     _onTouched: () => void;
 
     writeValue(val: T): void {
-        console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
+        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
         this.value.set(val);
         this.form.patchValue(val, { emitEvent: false, onlySelf: true });
     }
@@ -342,6 +355,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 @Pipe({
     name: "orderedKeyValue",
     pure: true,
+    standalone: false
 })
 export class OrderedKeyValuePipe extends KeyValuePipe {
     override transform(value: any, ...args: any[]): any {
