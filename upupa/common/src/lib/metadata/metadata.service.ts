@@ -1,5 +1,5 @@
 import { DOCUMENT } from "@angular/common";
-import { inject, Injectable, InjectionToken, Injector, runInInjectionContext } from "@angular/core";
+import { inject, Injectable, InjectionToken } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 import { PageMetadata } from "./metadata";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
@@ -9,7 +9,7 @@ export function updateHeaderTag(
     name: string,
     content: string | undefined,
     tagType: "title" | "meta" | "link" = "meta",
-    key: "rel" | "property" | "name" = "name",
+    key: "rel" | "property" | "name" = "name"
 ): void {
     if (tagType === "title") {
         dom.title = content ?? "";

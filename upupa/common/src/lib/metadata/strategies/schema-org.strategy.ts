@@ -1,5 +1,5 @@
 import { DOCUMENT } from "@angular/common";
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, InjectionToken } from "@angular/core";
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { ContentMetadataConfig } from "./page-metadata.strategy";
 
@@ -193,6 +193,18 @@ export interface SchemaOrgFormViewModel {
     product: Product;
     event: Event;
 }
+
+export type SchemaOrgConfig = Pick<ContentMetadataConfig<SchemaOrgFormViewModel>, "imageLoading">;
+export const DEFAULT_SCHEMA_ORG_CONFIG: SchemaOrgConfig = {
+    imageLoading: (config: { src?: string; size?: string }) => {
+        const src = config.src ?? "";
+        if (!src) return "";
+        const size = config.size ?? "1200x630";
+        return `${src}?size=${size}`;
+    },
+};
+export const SCHEMA_ORG_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
+
 @Injectable()
 export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
     private readonly dom = inject(DOCUMENT);
