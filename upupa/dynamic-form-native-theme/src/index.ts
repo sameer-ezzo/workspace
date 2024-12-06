@@ -12,7 +12,6 @@ export * from './lib/text-area/text-area.component';
 export * from './lib/date-input/date-input.component';
 export * from './lib/select/select.component';
 export * from './lib/autocomplete-text-input/autocomplete-text.component';
-export * from './lib/chips-input/chips-input.component';
 export * from './lib/choices/choices.component';
 export * from './lib/tree/tree.component';
 export * from './lib/color-input/color-input.component';

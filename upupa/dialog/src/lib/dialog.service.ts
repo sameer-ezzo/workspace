@@ -153,14 +153,9 @@ export class DialogService {
 
         //INPUTS
         if (_config.inputs) {
-            const component = dialogRef.componentInstance as any;
-            const inputs = _config.inputs;
-            const changes = {} as SimpleChanges;
-            for (const input in inputs) {
-                component[input] = inputs[input];
-                changes[input] = new SimpleChange(undefined, component[input], true);
+            for (const inputName in _config.inputs) {
+                dialogRef.componentRef.setInput(inputName, _config.inputs[inputName]);
             }
-            if ("ngOnChanges" in component) component.ngOnChanges(changes);
         }
 
         //OUTPUTS
