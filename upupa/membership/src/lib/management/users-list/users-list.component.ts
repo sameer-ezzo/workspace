@@ -12,6 +12,7 @@ import { AdminUserPasswordRestComponent } from "../admin-userpwd-reset/admin-use
 import { EditUserRolesComponent } from "../edit-user-roles/edit-user-roles.component";
 import { Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
+import { DOCUMENT } from "@angular/common";
 
 type ModelType = { _id: string; email: string } & Partial<User>;
 
@@ -97,6 +98,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
         if (this._templates.phone === undefined) this._templates.phone = this.phoneTemplate;
     }
 
+    private readonly doc = inject(DOCUMENT);
     async onAction(e: ActionEvent) {
         if (e.action === null) return;
 
@@ -115,7 +117,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                     this.bus.emit("impersonating-user-failed", true, this);
                 }
                 setTimeout(() => {
-                    document.location.reload();
+                    this.doc.location.reload();
                 }, 250);
                 break;
             case "create":

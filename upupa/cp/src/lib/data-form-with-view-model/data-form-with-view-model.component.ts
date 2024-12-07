@@ -1,11 +1,10 @@
-import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, forwardRef } from "@angular/core";
+import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output } from "@angular/core";
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { DialogPortal } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { ActionEvent, deepAssign } from "@upupa/common";
 import { Class } from "@noah-ark/common";
-import { AbstractControlDirective, ControlContainer, ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
+import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
@@ -80,8 +79,6 @@ export class DataFormWithViewModelComponent<T = any> {
             });
             deepAssign(instance, v);
             this.value.set(instance);
-            console.log("control", this.control());
-
             // this.control().setValue(instance, { emitEvent: false });
         }
     }

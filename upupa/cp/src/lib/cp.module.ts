@@ -1,5 +1,5 @@
 import { ModuleWithProviders, NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, DOCUMENT } from "@angular/common";
 import { CP_OPTIONS, USER_PICTURE_RESOLVER } from "./di.token";
 import { AuthModule, AuthService } from "@upupa/auth";
 import { DataModule, DataService } from "@upupa/data";
@@ -24,19 +24,19 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
-    useFactory: (auth: AuthService, data: DataService) => {
-        if (!auth.user$) return of(getUserInitialsImage(""));
+    useFactory: (auth: AuthService, data: DataService, document) => {
+        if (!auth.user$) return of(getUserInitialsImage(document, ""));
         return auth.user$.pipe(
             switchMap((u) =>
                 data.get<{ picture: string }>(`/user/${u.sub}?select=picture`).pipe(
                     map((res) => res.data?.[0]),
                     map((x) => x.picture as string),
-                    catchError((e) => of(getUserInitialsImage(u.name ?? u.email))),
-                ),
-            ),
+                    catchError((e) => of(getUserInitialsImage(document, u.name ?? u.email)))
+                )
+            )
         );
     },
-    deps: [AuthService, DataService],
+    deps: [AuthService, DataService, DOCUMENT],
 };
 
 @NgModule({
@@ -70,7 +70,7 @@ export class ControlPanelModule {
             providers?: any[];
         } = {
             providers: [userImageProvider],
-        },
+        }
     ): ModuleWithProviders<ControlPanelModule> {
         return {
             ngModule: ControlPanelModule,

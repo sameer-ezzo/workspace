@@ -83,7 +83,7 @@
         <div style="overflow-y: auto; display: flex; flex-flow: column nowrap; height: 100%; width: 100%">
             @for (c of countriesService.filtered; track c) {
                 <div (click)="country = c; toggleCodes(false)" class="phone-item" [class.active]="countriesService.filtered.length != countriesService.all.length">
-                    <img style="width: 35px" lazyload [srcSet]="'https://hatscripts.github.io/circle-flags/flags/' + (c.alpha_2 | lowercase) + '.svg'" alt="{{ c.name }}" />
+                    <img style="width: 35px" [src]="'https://hatscripts.github.io/circle-flags/flags/' + (c.alpha_2 | lowercase) + '.svg'" alt="{{ c.name }}" />
                     <div style="margin-inline-start: 0.5rem">
                         <b>{{ c.native_name }}</b
                         ><br />

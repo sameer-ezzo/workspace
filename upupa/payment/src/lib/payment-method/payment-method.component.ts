@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, TemplateRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ViewChild, forwardRef, ViewEncapsulation, OnDestroy, AfterViewInit, TemplateRef, inject } from "@angular/core";
 import { currencies } from "../currencies";
 import { PaymentService } from "../payment.service";
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, NgForm, ValidationErrors } from "@angular/forms";
@@ -9,6 +9,7 @@ import { SnackBarService } from "@upupa/dialog";
 import { DynamicFormCommands, DynamicFormEvents, FormScheme } from "@upupa/dynamic-form";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 import { Condition } from "@noah-ark/expression-engine";
+import { DOCUMENT } from "@angular/common";
 
 const strgKey = "pref_paymentM";
 
@@ -103,11 +104,7 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
 
     @Input() transfers = [];
 
-    constructor(
-        public paymentService: PaymentService,
-        public translator: TranslateService,
-        public snack: SnackBarService,
-    ) {}
+    constructor(public paymentService: PaymentService, public translator: TranslateService, public snack: SnackBarService) {}
 
     ngOnChanges(changes) {
         if (changes["amount"]) this.amount = parseFloat(this.amount + "");
@@ -155,13 +152,14 @@ export class PaymentMethodComponent implements ControlValueAccessor, OnDestroy, 
         this.addressEditor = true;
         this.model.address = { ...this.model.address };
     }
+    private readonly doc = inject(DOCUMENT);
 
     copyToClipboard(copyText: HTMLSpanElement) {
-        var textArea = document.createElement("textarea");
+        var textArea = this.doc.createElement("textarea");
         textArea.value = copyText.textContent;
-        document.body.appendChild(textArea);
+        this.doc.head.appendChild(textArea);
         textArea.select();
-        document.execCommand("Copy");
+        this.doc.execCommand("Copy");
         textArea.remove();
     }
 

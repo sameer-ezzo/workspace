@@ -3,7 +3,7 @@ import { loadScript } from "./load-script.func";
 
 import { AuthService } from "@upupa/auth";
 import { IdpName } from "./types";
-import { isPlatformBrowser } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 
 declare let google: any;
 
@@ -47,8 +47,9 @@ export class IdpButtonDirective {
 
     private readonly auth = inject(AuthService);
     private readonly zone = inject(NgZone);
+    private readonly doc = inject(DOCUMENT);
     async initializeGoogleSignIn() {
-        await loadScript("https://accounts.google.com/gsi/client");
+        await loadScript(this.doc, "https://accounts.google.com/gsi/client");
 
         const options = {
             client_id: this.idp.clientId,

@@ -8,6 +8,7 @@ import { AuthService } from "@upupa/auth";
 import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { DOCUMENT } from "@angular/common";
 
 type ViewType = "list" | "grid";
 @Component({
@@ -82,11 +83,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     private readonly host = inject(ElementRef);
-    constructor(
-        public readonly uploadClient: UploadClient,
-        private readonly clipboard: ClipboardService,
-        public readonly dialog: DialogService,
-    ) {
+    constructor(public readonly uploadClient: UploadClient, private readonly clipboard: ClipboardService, public readonly dialog: DialogService) {
         super();
 
         this.base.set(new URL(uploadClient.baseUrl).origin + "/");
@@ -94,15 +91,15 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         effect(
             () => {
                 const v = this.value();
-                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
+                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null } as ViewerExtendedFileVm)));
             },
-            { allowSignalWrites: true },
+            { allowSignalWrites: true }
         );
 
         this.clipboard.paste$
             .pipe(
                 filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
-                takeUntilDestroyed(this.destroyRef),
+                takeUntilDestroyed(this.destroyRef)
             )
             .subscribe(async (event) => {
                 // make sure this component is focused or active
@@ -121,9 +118,10 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         else this.showFileDialog();
     }
 
+    private readonly doc = inject(DOCUMENT);
     private async showFileDialog() {
         const accept = this.accept() ?? "";
-        const files = await openFileDialog(accept as string, this.maxAllowedFiles() !== 1);
+        const files = await openFileDialog(this.doc, accept as string, this.maxAllowedFiles() !== 1);
         await this.uploadFileList(files);
     }
 

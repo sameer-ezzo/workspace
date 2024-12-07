@@ -16,13 +16,13 @@ export class ParagraphComponent implements OnChanges {
     @Input() renderer: "markdown" | "html" | "none" = "markdown";
     private readonly _sanitizer = inject(DomSanitizer);
     private readonly host = inject(ElementRef);
-    private readonly _rendere = inject(Renderer2);
+    private readonly _renderer = inject(Renderer2);
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["text"] || changes["renderer"]) {
             let text = this.text;
             if (this.renderer === "markdown") text = new MarkdownPipe().transform(this.text);
             else if (this.renderer === "html") text = new HtmlPipe(this._sanitizer).transform(this.text).toString();
-            this._rendere.setProperty(this.host.nativeElement, "innerHTML", text);
+            this._renderer.setProperty(this.host.nativeElement, "innerHTML", text);
         }
     }
 }

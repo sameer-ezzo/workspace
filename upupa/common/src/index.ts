@@ -19,7 +19,6 @@ export * from "./lib/event.bus";
 export * from "./lib/gateway/gateway.service";
 
 export * from "./lib/input-base.component";
-export * from "./lib/directives/lazy-load.directive";
 export * from "./lib/html.pipe";
 export * from "./lib/markdown.pipe";
 

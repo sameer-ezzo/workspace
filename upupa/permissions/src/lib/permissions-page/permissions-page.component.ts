@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core'
 import { PermissionsService } from '../permissions.service'
 import { NodeModel } from '../node-model'
+import { DOCUMENT } from '@angular/common'
 
 @Component({
     selector: 'permissions-page',
@@ -20,13 +21,13 @@ export class PermissionsPageComponent {
 
 
     focused = signal<NodeModel>(null);
-
+private readonly doc = inject(DOCUMENT);
     async export() {
         const permissions = await this.permissionsService.getRules(true)
         const json = JSON.stringify(permissions, null, 2)
         const blob = new Blob([json], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
+        const a = this.doc.createElement('a')
         a.href = url
         a.download = `permissions_${new Date().getTime() / 10000}.json`
         a.click()
@@ -34,7 +35,7 @@ export class PermissionsPageComponent {
     }
 
     async restore() {
-        const input = document.createElement('input')
+        const input = this.doc.createElement('input')
         input.type = 'file'
         input.accept = 'application/json'
         input.click()

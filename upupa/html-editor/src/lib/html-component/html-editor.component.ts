@@ -3,14 +3,13 @@ import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { HtmlUploadAdapter } from "../html-upload-adapter";
 import { ErrorsDirective, InputBaseComponent, UtilsModule } from "@upupa/common";
-import { UploadClient, UploadModule, UploadService } from "@upupa/upload";
+import { UploadClient, UploadModule } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
-
-import DecoupledEditor from "@ckeditor/ckeditor5-build-decoupled-document";
 import { CommonModule } from "@angular/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { EditorConfig } from "@ckeditor/ckeditor5-core";
 
+declare type DecoupledEditor = any;
+declare type EditorConfig = any;
 // https://ckeditor.com/docs/ckeditor5/latest/installation/integrations/angular.html
 @Component({
     selector: "form-html",
@@ -18,7 +17,7 @@ import { EditorConfig } from "@ckeditor/ckeditor5-core";
     styleUrls: ["./html-editor.component.scss"],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
-    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule,ErrorsDirective],
+    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -39,7 +38,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
     config: EditorConfig;
 
     uploadPath = input("/html-editor-assets");
-    editorConfig = input<EditorConfig>(DecoupledEditor.defaultConfig);
+    editorConfig = input<EditorConfig>(null);
     private readonly uploadClient = inject(UploadClient);
     private readonly auth = inject(AuthService);
 
@@ -66,11 +65,15 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
         this.markAsTouched();
     }
     private async _initEditor() {
+        const DecoupledEditor = await import("@ckeditor/ckeditor5-build-decoupled-document").then((x) => x.default);
+        const EditorCord = await import("@ckeditor/ckeditor5-core");
+
         const lang = this.language() ?? "en";
         this.config = {
             language: { ui: lang, content: lang },
             placeholder: this.placeholder(),
-            ...this.editorConfig(),
+            ...DecoupledEditor.defaultConfig,
+            ...(this.editorConfig() ?? {}),
         };
 
         if (this.config?.mediaEmbed) this.config.mediaEmbed.previewsInData = true;

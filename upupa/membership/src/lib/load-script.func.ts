@@ -1,14 +1,14 @@
 // create function to load js file async and defer
 const scriptCache = new Map<string, Promise<HTMLScriptElement>>();
 
-export function loadScript(src: string, async = true, defer = true): Promise<HTMLScriptElement> {
+export function loadScript(doc, src: string, async = true, defer = true): Promise<HTMLScriptElement> {
     let cachedPromise = scriptCache.get(src);
 
     if (cachedPromise) {
         return cachedPromise;
     }
 
-    const script = document.createElement('script');
+    const script = doc.createElement("script");
     script.src = src;
     script.async = async;
     script.defer = defer;
@@ -18,7 +18,7 @@ export function loadScript(src: string, async = true, defer = true): Promise<HTM
         script.onerror = (error) => reject(error);
     });
 
-    document.body.appendChild(script);
+    doc.head.appendChild(script);
     scriptCache.set(src, cachedPromise);
 
     return cachedPromise;

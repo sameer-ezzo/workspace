@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, forwardRef, input, Input, Output, SimpleChanges, viewChild, ViewChild } from "@angular/core";
+import { Component, computed, EventEmitter, forwardRef, inject, input, Input, Output, SimpleChanges, viewChild, ViewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { ActionDescriptor, InputBaseComponent } from "@upupa/common";
@@ -7,6 +7,7 @@ import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
 import { DynamicFormComponent } from "../dynamic-form.component";
+import { DOCUMENT } from "@angular/common";
 
 @Component({
     selector: "collector",
@@ -76,7 +77,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
 
         this.activePage = v ? this.formFieldsInfo.get(v).page : null;
         // setTimeout(() => {
-        //     const element = document.getElementById(v.name);
+        //     const element = this.document.getElementById(v.name);
         //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
         // }, 300);
     }
@@ -107,22 +108,23 @@ export class CollectorComponent extends InputBaseComponent<any> {
         this._design = v;
         this._applyFormDesign(v);
     }
+    private readonly document = inject(DOCUMENT);
 
     private _applyFormDesign(design: FormDesign) {
-        if (design.bgImage?.url) document.documentElement.style.setProperty("--bg-img-url", design.bgImage.url);
-        if (design.bgColor) document.documentElement.style.setProperty("--bg-color", design.bgColor);
-        if (design.textColor) document.documentElement.style.setProperty("--field-text-color", design.textColor);
-        if (design.valueColor) document.documentElement.style.setProperty("--field-value-color", design.valueColor);
-        if (design.buttonsColor) document.documentElement.style.setProperty("--button-color", design.buttonsColor);
+        if (design.bgImage?.url) this.document.documentElement.style.setProperty("--bg-img-url", design.bgImage.url);
+        if (design.bgColor) this.document.documentElement.style.setProperty("--bg-color", design.bgColor);
+        if (design.textColor) this.document.documentElement.style.setProperty("--field-text-color", design.textColor);
+        if (design.valueColor) this.document.documentElement.style.setProperty("--field-value-color", design.valueColor);
+        if (design.buttonsColor) this.document.documentElement.style.setProperty("--button-color", design.buttonsColor);
 
         if (design.headerFont) {
-            loadFontFace(this.design.headerFont.font.family);
-            document.documentElement.style.setProperty("--header-font-family", this.design.headerFont.font.family);
+            loadFontFace(this.document, this.design.headerFont.font.family);
+            this.document.documentElement.style.setProperty("--header-font-family", this.design.headerFont.font.family);
         }
         if (design.paragraphFont) {
-            loadFontFace(this.design.paragraphFont.font.family);
-            document.documentElement.style.setProperty("--paragraph-font-family", this.design.paragraphFont.font.family);
-            document.documentElement.style.setProperty("--paragraph-font-size", this.design.paragraphFont.size || "22pt");
+            loadFontFace(this.document, this.design.paragraphFont.font.family);
+            this.document.documentElement.style.setProperty("--paragraph-font-family", this.design.paragraphFont.font.family);
+            this.document.documentElement.style.setProperty("--paragraph-font-size", this.design.paragraphFont.size || "22pt");
         }
     }
 
@@ -194,22 +196,22 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 }
 
-function loadFontFace(family: string) {
+function loadFontFace(doc, family: string) {
     const fontUri = getGoogleFontUri(family);
-    loadFontFromUri(fontUri);
+    loadFontFromUri(doc, fontUri);
 
-    const head = document.head || document.getElementsByTagName("head")[0];
-    const preconnect = document.createElement("link");
+    const head = this.document.head || this.document.getElementsByTagName("head")[0];
+    const preconnect = this.document.createElement("link");
     preconnect.href = "https://fonts.gstatic.com";
     preconnect.rel = "preconnect";
     head.appendChild(preconnect);
 
-    const stylesheet = document.createElement("link");
+    const stylesheet = this.document.createElement("link");
     stylesheet.href = fontUri;
     stylesheet.rel = "stylesheet";
     head.appendChild(stylesheet);
 
-    const newStyle = document.createElement("style");
-    newStyle.appendChild(document.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
-    document.head.appendChild(newStyle);
+    const newStyle = this.document.createElement("style");
+    newStyle.appendChild(this.document.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
+    this.document.head.appendChild(newStyle);
 }

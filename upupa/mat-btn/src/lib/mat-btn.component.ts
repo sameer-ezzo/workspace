@@ -5,13 +5,12 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatBadgeModule } from "@angular/material/badge";
 import { AuthorizeModule } from "@upupa/authz";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
-import { JsonPipe } from "@angular/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
     selector: "mat-btn",
     templateUrl: "./mat-btn.component.html",
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, JsonPipe, MatProgressSpinnerModule],
+    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, MatProgressSpinnerModule],
     standalone: true,
 })
 export class MatBtnComponent {

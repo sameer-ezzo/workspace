@@ -12,6 +12,7 @@ import { DataComponentBase } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { DOCUMENT } from "@angular/common";
 
 @Component({
     selector: "file-input",
@@ -116,12 +117,14 @@ export class FileInputComponent extends DataComponentBase {
 
     uploading = false;
     uploadingProgress: number | null = null;
+    private readonly doc = inject(DOCUMENT);
+
     async selectFile() {
         if (this.fileSelector === "browser") {
             return await this.showFileExplorer();
         }
 
-        const files = await openFileDialog(this.accept, this.maxAllowedFiles !== 1);
+        const files = await openFileDialog(this.doc, this.accept, this.maxAllowedFiles !== 1);
 
         this.uploading = files.length > 0;
         let uploadedFiles = 0;

@@ -1,4 +1,4 @@
-import { Component, forwardRef, ElementRef, input, viewChild, model } from "@angular/core";
+import { Component, forwardRef, ElementRef, input, viewChild, model, inject } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { fromEvent, merge, Subscription } from "rxjs";
 import { InputDefaults } from "../defaults";
@@ -7,6 +7,7 @@ import { countries, FilterService, InputBaseComponent } from "@upupa/common";
 import { takeWhile, tap } from "rxjs/operators";
 import * as libphonenumber from "google-libphonenumber";
 import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
+import { DOCUMENT } from "@angular/common";
 export type PhoneNumber = {
     raw: string;
     number: string;
@@ -24,7 +25,7 @@ export type PhoneNumber = {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => PhoneInputComponent),
             multi: true,
-        }
+        },
     ],
 })
 export class PhoneInputComponent extends InputBaseComponent {
@@ -138,10 +139,11 @@ export class PhoneInputComponent extends InputBaseComponent {
         }
     }
 
+    private readonly doc = inject(DOCUMENT);
     setPosition() {
-        const triger = document.getElementById("codes-trigger");
-        const rec = triger.getBoundingClientRect();
-        const panel = document.getElementById(this.id);
+        const trigger = this.doc.getElementById("codes-trigger");
+        const rec = trigger.getBoundingClientRect();
+        const panel = this.doc.getElementById(this.id);
         const box = panel.querySelector(`#box`) as HTMLDivElement;
         box.style.top = `${rec.top + rec.height + 10}px`;
         box.style.left = `${rec.left}px`;
@@ -154,7 +156,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     private readonly resize$ = fromEvent(window, "resize");
     reposition$ = merge(this.scroll$, this.resize$).pipe(
         takeWhile(() => this.showCodes === true),
-        tap(() => this.setPosition()),
+        tap(() => this.setPosition())
     );
 
     toggleCodes(f: boolean = undefined) {
@@ -163,10 +165,10 @@ export class PhoneInputComponent extends InputBaseComponent {
             this.setPosition();
             this.sub = this.reposition$.subscribe(() => {});
 
-            setTimeout(() => document.getElementById(`${this.id}-input`)?.focus(), 250);
+            setTimeout(() => this.doc.getElementById(`${this.id}-input`)?.focus(), 250);
         } else {
             if (this.sub) this.sub.unsubscribe();
-            document.getElementById(this.id).style.display = "none";
+            this.doc.getElementById(this.id).style.display = "none";
         }
     }
 

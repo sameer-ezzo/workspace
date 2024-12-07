@@ -1,9 +1,9 @@
-import { DOCUMENT } from '@angular/common';
-import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef } from '@angular/core';
-import { RouteFeature } from './route-feature';
-import { PortalComponent } from '../portal.component';
-import { ContentNode } from './content-node';
-import { createContentNodes } from './create-content-nodes';
+import { DOCUMENT } from "@angular/common";
+import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef } from "@angular/core";
+import { RouteFeature } from "./route-feature";
+import { PortalComponent } from "../portal.component";
+import { ContentNode } from "./content-node";
+import { createContentNodes } from "./create-content-nodes";
 
 /**
  * a wrapper for function @angular/core:createComponent that enables dynamic projection of content nodes to the component.
@@ -22,7 +22,7 @@ export function provideComponent(
         injector?: Injector;
         hostElement?: Element;
         elementInjector?: Injector;
-    },
+    }
 ) {
     const _options = { ...options };
 
@@ -42,10 +42,10 @@ export function provideComponent(
 
 export function createContentNode(content: ContentNode, environmentInjector: EnvironmentInjector | null): Node {
     //native html element
-    if (typeof content === 'string') {
-        const document = environmentInjector.get(DOCUMENT);
-        document.createElement('div').innerHTML = content;
-        const div = document.createElement('div');
+    if (typeof content === "string") {
+        const doc = environmentInjector.get(DOCUMENT);
+        doc.createElement("div").innerHTML = content;
+        const div = doc.createElement("div");
         div.innerHTML = content;
         return div;
     }
@@ -60,7 +60,7 @@ export function createContentNode(content: ContentNode, environmentInjector: Env
 
     // create component (and set inputs if necessary)
     let componentRef: ComponentRef<any>;
-    if ('component' in content) componentRef = provideComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
+    if ("component" in content) componentRef = provideComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
     else componentRef = provideComponent(content, { environmentInjector });
 
     return componentRef.location.nativeElement;
@@ -73,7 +73,7 @@ export function createContentNode(content: ContentNode, environmentInjector: Env
  */
 export function withComponentInputs(inputs: Record<string, any>): RouteFeature {
     return {
-        name: 'withComponentInputs',
+        name: "withComponentInputs",
         modify: () => ({ data: input }),
     };
 }
@@ -85,7 +85,7 @@ export function withComponentInputs(inputs: Record<string, any>): RouteFeature {
  */
 export function withContentProjection(projectedNodes: ContentNode[][]): RouteFeature {
     return {
-        name: 'withContentProjection',
+        name: "withContentProjection",
         modify: (route) => ({
             sealed: true,
             component: PortalComponent, // override route.component
