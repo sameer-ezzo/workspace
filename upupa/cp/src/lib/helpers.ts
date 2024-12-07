@@ -8,6 +8,7 @@ import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { EditButton } from "./buttons/edit-btn.component";
 
 function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     return { ...a, ...b } as Partial<T & X>;
@@ -95,7 +96,32 @@ export function editButton(
         dialogOptions?: Partial<DialogServiceConfig>;
     },
 ): Type<any> | DynamicComponent {
-    if (!formViewModel) throw new Error("formViewModel is required");
+    // if (!formViewModel) throw new Error("formViewModel is required");
+    // options ??= {};
+    // const defaultEditDescriptor: Partial<ActionDescriptor> = {
+    //     text: "Edit",
+    //     icon: "edit",
+    //     variant: "icon",
+    //     color: "accent",
+    // };
+    // options.descriptor = merge(defaultEditDescriptor, options.descriptor);
+
+    // return inlineButton({
+    //     descriptor: options.descriptor,
+    //     clickHandler: async (source) => {
+    //         const injector = inject(Injector);
+    //         const item = readInput("item", source);
+    //         const v = value ? value() : item;
+    //         const dialogOptions = { title: "Edit", ...options?.dialogOptions };
+    //         const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions, defaultAction: true });
+
+    //         const adapter = injector.get(DataAdapter);
+    //         adapter?.put(item, result.submitResult);
+    //         adapter?.refresh(true);
+    //     },
+    //     inputItem: null,
+    // });
+
     options ??= {};
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
         text: "Edit",
@@ -103,26 +129,16 @@ export function editButton(
         variant: "icon",
         color: "accent",
     };
-    options.descriptor = merge(defaultEditDescriptor, options.descriptor);
+    const btn = merge(defaultEditDescriptor, options.descriptor);
+    const dialogOptions = { title: "Edit", ...options?.dialogOptions };
 
-    return inlineButton({
-        descriptor: options.descriptor,
-        clickHandler: async (source) => {
-            const injector = inject(Injector);
-            const item = readInput("item", source);
-            const v = value ? value() : item;
-            const dialogOptions = { title: "Edit", ...options?.dialogOptions };
-            const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions, defaultAction: true });
-
-            const adapter = injector.get(DataAdapter);
-            adapter?.put(item, result.submitResult);
-            adapter?.refresh(true);
-        },
-        inputItem: null,
-    });
+    return {
+        component: EditButton,
+        inputs: { formViewModel, dialogOptions, btn },
+    };
 }
 
-async function editFormDialog<T>(
+export async function editFormDialog<T>(
     vm: Class | FormViewModelMirror,
     value = readInput("item", this),
     context?: { dialogOptions?: DialogServiceConfig; injector?: Injector; defaultAction?: ActionDescriptor | boolean },
