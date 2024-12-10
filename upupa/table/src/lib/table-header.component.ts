@@ -4,7 +4,7 @@ import { DynamicComponent, PortalComponent } from "@upupa/common";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { DataAdapter } from "@upupa/data";
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from "rxjs";
+import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
@@ -35,7 +35,6 @@ export class TableHeaderComponent {
 
     _doFilter(q) {
         const adapter = this.injector.get(DataAdapter); // lazy injected because adaptor is provided to input signal not during construction
-        adapter.dataSource.terms = [{ field: "title", type: "like" }];
         const f = { ...adapter.filter, ...(adapter.normalizeFilter(q) || {}) };
         adapter.filter = f;
     }
