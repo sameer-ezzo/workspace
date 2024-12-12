@@ -7,7 +7,6 @@ export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>
 export const PAGE_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("PAGE_METADATA_CONFIG");
 
 export const DEFAULT_CONTENT_METADATA_CONFIG: ContentMetadataConfig = {
-    titleTemplate: (title: string) => title || "",
     imageLoading: (config: { src?: string; size?: string }) => {
         const src = config.src ?? "";
         if (!src) return "";
@@ -17,7 +16,7 @@ export const DEFAULT_CONTENT_METADATA_CONFIG: ContentMetadataConfig = {
 };
 
 export type ContentMetadataConfig<M = PageMetadata> = {
-    titleTemplate: (title: string) => string;
+    titleTemplate?: (title: string) => string;
     canonicalBaseUrl?: string;
     fallback?: Partial<M>;
     imageLoading?: (config: { src?: string; size?: string }) => string;
@@ -38,7 +37,7 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         delete meta.og;
         delete meta.schema;
 
-        const title = this.config.titleTemplate(meta.title);
+        const title = this.config.titleTemplate?.(meta.title) ?? meta.title;
         updateHeaderTag(dom, "title", title, "title");
         updateHeaderTag(dom, "canonical", meta["canonical"], "link", "rel");
 

@@ -1,6 +1,8 @@
+import { CanActivate, Injectable } from "@nestjs/common";
 import { RouteFeature } from "../routing/route-feature";
 import { ResolverRequest, contentResolver } from "../routing/route-resolver";
 import { PageMetadata } from "./metadata";
+import { CanActivateFn } from "@angular/router";
 
 /**
  * provide content the page as route.data = {content}.
@@ -21,10 +23,14 @@ export function withContent<TContent>(content: TContent): RouteFeature {
  * Also, this content object is passed to the meta function to help generate metadata derived from content.
  * @param contentFn dynamic content to be provided.
  */
-export function withResolveContent(url: (resolveRequest: ResolverRequest) => string, options?: { headers?: { [header: string]: string } }): RouteFeature {
+export function withResolveContent(
+    url: (resolveRequest: ResolverRequest) => string,
+    map = (response) => response,
+    options?: { headers?: { [header: string]: string } },
+): RouteFeature {
     return {
         name: "withResolveContent",
-        modify: () => ({ resolve: contentResolver(url, options) }),
+        modify: () => ({ resolve: contentResolver(url, map, options) }),
     };
 }
 

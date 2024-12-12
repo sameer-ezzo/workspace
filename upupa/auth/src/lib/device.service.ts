@@ -24,7 +24,10 @@ export type Platform = {
     providedIn: "root",
 })
 export class DeviceService {
-    constructor(@Inject(AUTH_BASE_TOKEN) public readonly baseUrl: string, public readonly http: HttpClient) {}
+    constructor(
+        @Inject(AUTH_BASE_TOKEN) public readonly baseUrl: string,
+        public readonly http: HttpClient,
+    ) {}
 
     getDeviceId() {
         let id = localStorage.getItem("device");
@@ -36,7 +39,7 @@ export class DeviceService {
     }
 
     async getDevice(): Promise<Platform> {
-        const { name, prerelease, description, layout, manufacturer, os, product, ua, version } = await import("platform").then((p) => p.default);
+        const { name, prerelease, description, layout, manufacturer, os, product, ua, version } = await import("platform").then((p) => p);
         const platform = { name, prerelease, description, layout, manufacturer, os, product, ua, version } as Platform;
         platform.id = this.getDeviceId();
         platform.type = "Web";

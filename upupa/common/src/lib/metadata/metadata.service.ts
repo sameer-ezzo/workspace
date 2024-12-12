@@ -9,7 +9,7 @@ export function updateHeaderTag(
     name: string,
     content: string | undefined,
     tagType: "title" | "meta" | "link" = "meta",
-    key: "rel" | "property" | "name" = "name"
+    key: "rel" | "property" | "name" = "name",
 ): void {
     if (tagType === "title") {
         dom.title = content ?? "";
@@ -48,7 +48,11 @@ export class MetadataService {
     async listenForRouteChanges() {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
+                const navigation = this.router.getCurrentNavigation();
+                if (navigation?.["meta"]) return;
+
                 const meta = this.extractMetadataForRoute(event.snapshot) ?? {};
+                navigation["meta"] = meta; // TODO @SAMIR cascade falling back to parent route instead of just filling the whole meta object (ex: child route may only set the title but not the description .. should it fall back to parent route or global config?)
 
                 //TITLE
                 if (!meta.title && event.snapshot.title) meta.title = event.snapshot.title;
