@@ -1,5 +1,5 @@
 import { map, multicast, refCount, startWith } from "rxjs/operators";
-import { Injectable } from "@angular/core";
+import { afterNextRender, Injectable } from "@angular/core";
 import { Observable, ReplaySubject, interval, NEVER, combineLatest, firstValueFrom } from "rxjs";
 import { LocalService } from "./local.service";
 import { DataResult, DataConfig } from "./model";
@@ -32,7 +32,9 @@ export class DataService {
     private readonly cache = new CacheStore<DataListener>();
 
     constructor(public readonly api: ApiService) {
-        interval(10000).subscribe(() => this.recycleCache());
+        afterNextRender(() => {
+            interval(10000).subscribe(() => this.recycleCache());
+        });
     }
 
     //the path contains the filtering, sorting, page and selection
@@ -85,20 +87,6 @@ export class DataService {
 
     get<T>(path: string, query?: QueryDescriptor): Observable<ApiGetResult<T>> {
         return this.fetch<ApiGetResult<T>>(path, query).pipe(map((x) => x.data));
-    }
-
-    agg<T>(path: string, query?: QueryDescriptor) {
-        path = prefixPath(path);
-
-        if (query) {
-            const qs = Object.keys(query)
-                .map((k) => `${k}=${query[k]}`)
-                .join("&");
-            if (path.indexOf("?") > -1) path = path + "&" + qs;
-            else path = path + "?" + qs;
-        }
-
-        return this.api.agg<T>(path);
     }
 
     async put(path: string, value: any): Promise<any> {
@@ -166,7 +154,7 @@ export class DataService {
         const now = new Date();
         this.cache
             .mapItems()
-            .filter((x) => !x.item.value.subject.observed && (force || now.getTime() - x.item.timestamp.getTime() > 10000))
+            .filter((x) => force || (!x.item.value.subject.observed && now.getTime() - x.item.timestamp.getTime() > 10000))
             .forEach((x) => {
                 x.item.value.subject.complete();
                 x.item.value.subject.unsubscribe();
