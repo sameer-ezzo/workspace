@@ -3,7 +3,6 @@ export * from "./lib/dynamic-form.module";
 export * from "./lib/types";
 export * from "./lib/scheme-helper";
 export * from "./lib/dynamic-form.service";
-export * from "./lib/dynamic-form-dialog.service";
 
 export * from "./lib/collector/types";
 export * from "./lib/collector/utils";

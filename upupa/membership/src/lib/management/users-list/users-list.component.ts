@@ -139,18 +139,23 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                     }
                 }
 
-                const dialogRef = this.dialog.openDialog(UserFormComponent, {
-                    title: toTitleCase(`${e.action.name} user`),
-                    inputs: {
-                        user: fullUser,
-                        mode,
-                        options: formOptions, // this should be FormOptions only
+                const dialogRef = this.dialog.open(
+                    {
+                        component: UserFormComponent,
+                        inputs: {
+                            user: fullUser,
+                            //mode,
+                            options: formOptions, // this should be FormOptions only
+                        },
                     },
-                });
+                    {
+                        title: toTitleCase(`${e.action.name} user`),
+                    },
+                );
                 const componentRef = await firstValueFrom(dialogRef.afterAttached());
-                dialogRef.componentInstance.actionClick.subscribe((e) => {
-                    componentRef.instance.onAction(e);
-                });
+                // dialogRef.componentInstance.actionClick.subscribe((e) => {
+                //     componentRef.instance.onAction(e);
+                // });
 
                 task = firstValueFrom(dialogRef.afterClosed());
                 break;
@@ -158,10 +163,12 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             case "change-user-roles": {
                 task = firstValueFrom(
                     this.dialog
-                        .openDialog(EditUserRolesComponent, {
-                            title: "Change User Roles",
-                            inputs: { user: users[0] },
-                        })
+                        .open(
+                            { component: EditUserRolesComponent, inputs: { user: users[0] } },
+                            {
+                                title: "Change User Roles",
+                            },
+                        )
                         .afterClosed(),
                 );
                 break;
@@ -169,10 +176,12 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             case "reset":
                 task = firstValueFrom(
                     this.dialog
-                        .openDialog(AdminUserPasswordRestComponent, {
-                            title: "Reset Password",
-                            inputs: { user: users[0] },
-                        })
+                        .open(
+                            { component: AdminUserPasswordRestComponent, inputs: { 'user': users[0] } },
+                            {
+                                title: "Reset Password",
+                            },
+                        )
                         .afterClosed(),
                 );
                 break;

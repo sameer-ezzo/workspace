@@ -1,9 +1,9 @@
 import { Type } from "@angular/core";
-import { Route } from "@angular/router";
+import { Route, Routes } from "@angular/router";
 import { Observable } from "rxjs";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import { CP_SIDE_BAR_ITEMS } from "./di.token";
-import { SideBarViewModel } from "./side-bar-group-item";
+import { SideBarGroup, SideBarViewModel } from "./side-bar-group-item";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DataListWithInputsComponent } from "./data-list-with-inputs/data-list-with-inputs.component";
@@ -100,4 +100,66 @@ export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror;
             form: config.form,
         },
     };
+}
+
+
+
+
+export type FlattenedRoutes = Record<string, Route>;
+function flattenRoutes(routes: Routes, basePath = "/"): FlattenedRoutes {
+    const result: FlattenedRoutes = {};
+    for (const route of routes) {
+        if (route.children?.length) {
+            Object.assign(result, flattenRoutes(route.children, basePath + route.path + "/"));
+        } else {
+            result[basePath + route.path] = route;
+        }
+    }
+    return result;
+}
+
+export function routesToActions(routes: Routes, basePath = "/"): SideBarViewModel {
+    const flattenedRoutes = Object.entries(flattenRoutes(routes, basePath));
+    const sideBar: SideBarViewModel = [];
+    const groups = flattenedRoutes
+        .filter(([_, route]) => route.data?.["group"])
+        .map(([_, route]) => {
+            const g = route.data["group"];
+            if (typeof g === "string") {
+                return { name: g, text: g, items: [] } as SideBarGroup;
+            }
+            return { ...g, items: [] };
+        });
+    const groupMap = new Map<string, SideBarGroup>();
+    for (const group of groups) {
+        if (!groupMap.has(group.name)) groupMap.set(group.name, group);
+    }
+
+    for (const [path, route] of flattenedRoutes) {
+        const groupName = typeof route.data?.["group"] == "string" ? route.data?.["group"] : route.data?.["group"]?.name;
+        const action = route.data?.["action"];
+        if (!action) continue;
+
+        if (groupName) {
+            const group = groupMap.get(groupName);
+            group.items.push({
+                name: route.data?.["action"] ?? path,
+                link: path,
+                icon: route.data?.["icon"],
+                text: route.data?.["text"],
+            });
+            // check if group is already in sidebar
+            if (!sideBar.includes(group)) {
+                sideBar.push(group);
+            }
+        } else {
+            sideBar.push({
+                name: route.data?.["action"] ?? path,
+                link: path,
+                icon: route.data?.["icon"],
+                text: route.data?.["text"],
+            });
+        }
+    }
+    return sideBar;
 }
