@@ -51,7 +51,7 @@ export class PortalComponent {
         const _template = this.template();
         const _component = this.component();
         if (_template && _component) throw new Error('You must provide either template or component but not both');
-        if (!_template && !_component) throw new Error('You must provide either template or component but not both');
+        if (!_template && !_component) throw new Error('You must provide either template or component');
 
         const template: DynamicComponent = {
             component: _component ?? _template?.component,

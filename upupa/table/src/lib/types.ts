@@ -1,32 +1,29 @@
-import { Type } from '@angular/core';
-import { SortHeaderArrowPosition } from '@angular/material/sort';
-import { DynamicComponent } from '@upupa/common';
-import { NormalizedItem } from '@upupa/data';
+import { Type } from "@angular/core";
+import { SortHeaderArrowPosition } from "@angular/material/sort";
+import { DynamicTemplate } from "@upupa/common";
 
 export type PipeDescriptor = { pipe: Type<any>; args: string[] };
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> };
 
-
-
 export type ColumnDescriptor = {
-  displayPath?: string;
-  class?: string; // css class
-  order?: number;
-  header?: string;
-  width?: number;
-  visible?: boolean;
-  sticky?: 'start' | 'end';
-  sortDisabled?: boolean;
-  sortId?: string;
-  sortArrowPosition?: SortHeaderArrowPosition;
-  pipe?: PipeDescriptor | Type<any>;
-  template?: (Type<any> | DynamicComponent) | (Type<any> | DynamicComponent)[]
+    displayPath?: string;
+    class?: string; // css class
+    order?: number;
+    header?: string;
+    width?: number;
+    visible?: boolean;
+    sticky?: "start" | "end";
+    sortDisabled?: boolean;
+    sortId?: string;
+    sortArrowPosition?: SortHeaderArrowPosition;
+    pipe?: PipeDescriptor | Type<any>;
+    template?: DynamicTemplate | DynamicTemplate[];
 };
 
 export type ColumnsDescriptor<T = any> =
-  | Iterable<readonly [keyof T, Partial<ColumnDescriptor>]>
-  | {
-      [key in keyof T]: ColumnDescriptor | 1 | 0;
-    };
+    | Iterable<readonly [keyof T, Partial<ColumnDescriptor>]>
+    | {
+          [key in keyof T]: ColumnDescriptor | 1 | 0;
+      };
 
 export type ColumnsDescriptorStrict = { [key: string]: ColumnDescriptor };

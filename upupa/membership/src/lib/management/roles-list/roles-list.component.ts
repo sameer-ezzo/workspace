@@ -90,11 +90,11 @@ export class RolesListComponent implements OnInit {
                         },
                     ],
                 } as any;
-                const dialogRef = this.dialog.openDialog(RoleFormComponent, { ...data });
+                const dialogRef = this.dialog.open(RoleFormComponent, { ...data });
                 const componentRef: ComponentRef<RoleFormComponent> = await firstValueFrom(dialogRef.afterAttached());
-                dialogRef.componentInstance.actionClick.subscribe((e) => {
-                    componentRef.instance.onAction(e);
-                });
+                // dialogRef.componentInstance.actionClick.subscribe((e) => {
+                //     componentRef.instance.onAction(e);
+                // });
 
                 const res = await firstValueFrom(dialogRef.afterClosed());
                 if (!res) return;

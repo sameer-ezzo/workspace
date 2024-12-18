@@ -32,7 +32,7 @@ export class PromptService {
       ]
     } as MatDialogConfig;
 
-    return await firstValueFrom(this.dialog.openDialog(PromptComponent, _options).afterClosed())
+    return await firstValueFrom(this.dialog.open(PromptComponent, _options).afterClosed())
   }
 }
 
