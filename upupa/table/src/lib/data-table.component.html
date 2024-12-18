@@ -139,10 +139,9 @@
 <div class="mat-paginator">
     @let page = adapter().page;
     @let length = page.length ?? 0;
-    @let pageSize = page.pageSize ?? 1;
+    @let pageSize = page.pageSize ?? 25;
     @let pageIndex = page.pageIndex ?? 0;
-    @let showPaginator = length / pageSize > 1;
-    @if (showPaginator) {
+    @if (showPaginator()) {
         <mat-paginator
             [disabled]="loading() === true"
             [pageIndex]="pageIndex"
