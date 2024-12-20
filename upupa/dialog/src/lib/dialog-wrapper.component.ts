@@ -1,22 +1,21 @@
-import { AfterViewInit, ViewEncapsulation, HostListener, inject, DestroyRef, PLATFORM_ID, signal, input, computed, ComponentRef, output, forwardRef } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
+import { AfterViewInit, ViewEncapsulation, inject, DestroyRef, PLATFORM_ID, input, computed, forwardRef } from "@angular/core";
+import { MatDialogRef, MatDialogModule } from "@angular/material/dialog";
 
 import { Component } from "@angular/core";
-import { fromEvent, ReplaySubject, Subject } from "rxjs";
+import { fromEvent } from "rxjs";
 import { debounceTime, startWith } from "rxjs/operators";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { isPlatformBrowser } from "@angular/common";
-import { ActionDescriptor, ActionEvent, DynamicComponent, PortalComponent } from "@upupa/common";
-import { MatBtnComponent } from "@upupa/mat-btn";
+import { DynamicComponent, PortalComponent } from "@upupa/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
-import { UpupaDialogActionContext, DialogPortal } from "./dialog.service";
+import { DialogPortal } from "./dialog.service";
 import { DialogRef } from "./dialog-ref";
 
 @Component({
     selector: "dialog-wrapper",
     standalone: true,
-    imports: [MatDialogModule, MatBtnComponent, MatButtonModule, MatIconModule, PortalComponent],
+    imports: [MatDialogModule, MatButtonModule, MatIconModule, PortalComponent],
     templateUrl: "./dialog-wrapper.component.html",
     styleUrls: ["./dialog-wrapper.component.scss"],
     encapsulation: ViewEncapsulation.None,

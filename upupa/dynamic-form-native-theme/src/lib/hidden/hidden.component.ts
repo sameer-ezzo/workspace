@@ -1,7 +1,7 @@
 import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
-@Component({
+@Component({ standalone: true,
     selector: 'form-hidden-input',
     templateUrl: './hidden.component.html',
     styles: [

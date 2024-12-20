@@ -4,7 +4,7 @@ import { InputBaseComponent } from '@upupa/common';
 import { InputDefaults } from '../defaults';
 import { MatFormFieldAppearance, FloatLabelType } from '@angular/material/form-field';
 
-@Component({
+@Component({ standalone: true,
     selector: 'form-number',
     templateUrl: './number.component.html',
     styleUrls: ['./number.component.scss'],

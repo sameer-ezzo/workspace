@@ -1,11 +1,16 @@
-import { ChangeDetectionStrategy, Component, Directive, forwardRef, input, Pipe, TemplateRef, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
-import { InputComponent } from '@upupa/dynamic-form-native-theme';
+import { CommonModule } from "@angular/common";
+import { ChangeDetectionStrategy, Component, forwardRef, ViewEncapsulation } from "@angular/core";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { ErrorsDirective } from "@upupa/common";
+import { InputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    selector: 'mat-form-input',
-    templateUrl: './input.component.html',
-    styleUrls: ['./input.component.scss'],
+    standalone: true,
+    selector: "mat-form-input",
+    templateUrl: "./input.component.html",
+    styleUrls: ["./input.component.scss"],
     encapsulation: ViewEncapsulation.None,
     providers: [
         {
@@ -15,13 +20,13 @@ import { InputComponent } from '@upupa/dynamic-form-native-theme';
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [FormsModule, ReactiveFormsModule,ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
 })
-export class MatInputComponent extends InputComponent {
-    
-}
+export class MatInputComponent extends InputComponent {}
 
 @Component({
-    selector: 'hidden-input',
+    standalone: true,
+    selector: "hidden-input",
     template: ` <input type="hidden" [value]="value() ?? ''" /> `,
     encapsulation: ViewEncapsulation.None,
     providers: [

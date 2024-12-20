@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, AfterViewInit, viewChild, SimpleChanges, effect, HostListener } from "@angular/core";
+import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, viewChild, SimpleChanges, effect, HostListener } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { HtmlUploadAdapter } from "../html-upload-adapter";

@@ -1,10 +1,10 @@
-import { Component, inject, input, model } from '@angular/core';
-import { ControlValueAccessor, FormControl, NgControl, UntypedFormControl } from '@angular/forms';
+import { Component, inject, input, model } from "@angular/core";
+import { ControlValueAccessor, FormControl, NgControl, UntypedFormControl } from "@angular/forms";
 
-@Component({ template: '' })
+@Component({ standalone: true, template: "" })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
     name = input<string, string>(`field_${Date.now()}`, {
-        alias: 'fieldName',
+        alias: "fieldName",
         transform: (v) => {
             return v ? v : `field_${Date.now()}`;
         },

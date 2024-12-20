@@ -33,7 +33,7 @@ export class ToolbarUserMenuComponent {
     u$ = this.auth.user$.pipe(takeUntilDestroyed());
     userName$ = this.u$.pipe(
         filter((u) => !!u),
-        map((u) => u.name ?? u.email?.substring(0, u.email.indexOf("@")))
+        map((u) => u.name ?? u.email?.substring(0, u.email.indexOf("@"))),
     );
     impersonated$ = this.u$.pipe(map((u) => u?.claims?.["imps"] || undefined));
     navigateToLogin() {
@@ -42,7 +42,7 @@ export class ToolbarUserMenuComponent {
         const qps = new URLSearchParams(qpsStr);
         this.router.navigate(
             path.split("/").filter((s) => s.length),
-            { queryParams: Object.fromEntries(qps) }
+            { queryParams: Object.fromEntries(qps) },
         );
     }
     umcClicked(e) {

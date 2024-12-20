@@ -1,31 +1,17 @@
-<div
-    style="
-        width: 100%;
-        display: flex;
-        padding-block: 0.5em;
-        flex-flow: row nowrap;
-        justify-content: space-between;
-        align-items: center;
-    "
->
+<div style="width: 100%; display: flex; padding-block: 0.5em; flex-flow: row nowrap; justify-content: space-between; align-items: center">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <label>{{ label() }}</label>
     }
     <div style="position: relative; width: 50px; height: 50px">
-        <span
-            class="cph"
-            (click)="colorInput.click()"
-            [style.backgroundColor]="colorInput.value"
-        ></span>
+        <span class="cph" (click)="colorInput.click()" [style.backgroundColor]="colorInput.value"></span>
         <input
             style="z-index: -1; position: absolute; visibility: collapse"
             (input)="inputChange($event.target, colorInput)"
             type="color"
             #colorInput
             [value]="value()"
-            (ngModelChange)="propagateChange();"
+            (ngModelChange)="propagateChange()"
         />
     </div>
 </div>
-<mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-
+<span *errors="control().errors; control: control(); let message">{{ message }}</span>

@@ -1,19 +1,34 @@
-import { Component, computed, EventEmitter, forwardRef, inject, input, Input, Output, SimpleChanges, viewChild, ViewChild } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { Component, computed, EventEmitter, forwardRef, inject, input, Input, Output, SimpleChanges, viewChild } from "@angular/core";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
-import { ActionDescriptor, InputBaseComponent } from "@upupa/common";
+import { ActionDescriptor, InputBaseComponent, UtilsModule } from "@upupa/common";
 import { ActionsDescriptor } from "@upupa/common";
 import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
 import { DynamicFormComponent } from "../dynamic-form.component";
-import { DOCUMENT } from "@angular/common";
+import { CommonModule, DOCUMENT } from "@angular/common";
+import { MatBtnComponent } from "@upupa/mat-btn";
+import { ScrollingModule } from "@angular/cdk/scrolling";
+import { MatExpansionModule } from "@angular/material/expansion";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 
 @Component({
     selector: "collector",
+    standalone: true,
+    imports: [
+        DynamicFormComponent,
+        CommonModule,
+        UtilsModule,
+        FormsModule,
+        ReactiveFormsModule,
+        ScrollingModule,
+        DynamicFormNativeThemeModule,
+        MatBtnComponent,
+        MatExpansionModule,
+    ],
     templateUrl: "./collector.component.html",
     styleUrls: ["./collector.component.scss"],
-    exportAs: "collector",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

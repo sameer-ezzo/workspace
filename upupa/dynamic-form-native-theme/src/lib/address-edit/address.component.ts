@@ -1,11 +1,12 @@
-/* eslint-disable @angular-eslint/component-selector */
-import { Component, SimpleChanges, effect, forwardRef, input } from '@angular/core';
+import { Component, SimpleChanges, effect, forwardRef, input } from "@angular/core";
 
-import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl } from '@angular/forms';
-import { countries, InputBaseComponent } from '@upupa/common';
-import { ClientDataSource, DataAdapter } from '@upupa/data';
+import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl, ReactiveFormsModule, FormsModule } from "@angular/forms";
+import { countries, InputBaseComponent } from "@upupa/common";
+import { ClientDataSource, DataAdapter } from "@upupa/data";
+import { SelectComponent } from "../select/select.component";
+import { CommonModule } from "@angular/common";
 
-export type AccuracyLevel = 'country' | 'state' | 'city' | 'addressLine1' | 'addressLine2' | 'zipCode';
+export type AccuracyLevel = "country" | "state" | "city" | "addressLine1" | "addressLine2" | "zipCode";
 
 export type AddressModel = {
     country: string;
@@ -17,9 +18,11 @@ export type AddressModel = {
 };
 
 @Component({
-    selector: 'address-edit',
-    templateUrl: './address.component.html',
-    styleUrls: ['./address.component.scss'],
+    standalone: true,
+    selector: "address-edit",
+    imports: [FormsModule, ReactiveFormsModule, CommonModule, SelectComponent],
+    templateUrl: "./address.component.html",
+    styleUrls: ["./address.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,18 +32,18 @@ export type AddressModel = {
     ],
 })
 export class AddressComponent extends InputBaseComponent<AddressModel> {
-    label = input('Address');
+    label = input("Address");
 
-    display = input('native_name');
+    display = input("native_name");
     readonly = input(false);
 
     defaultAddressComponents = {
-        country: new UntypedFormControl(''),
-        zipCode: new UntypedFormControl(''),
-        state: new UntypedFormControl(''),
-        city: new UntypedFormControl(''),
-        addressLine1: new UntypedFormControl(''),
-        addressLine2: new UntypedFormControl(''),
+        country: new UntypedFormControl(""),
+        zipCode: new UntypedFormControl(""),
+        state: new UntypedFormControl(""),
+        city: new UntypedFormControl(""),
+        addressLine1: new UntypedFormControl(""),
+        addressLine2: new UntypedFormControl(""),
     };
     addressFormGroup = new UntypedFormGroup(this.defaultAddressComponents);
 
@@ -68,11 +71,11 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
         return this.addressFormGroup.get(name) as FormControl;
     }
 
-    countryAdapter = new DataAdapter(new ClientDataSource(Object.values(countries)), 'alpha_2', 'native_name', undefined, undefined, {
+    countryAdapter = new DataAdapter(new ClientDataSource(Object.values(countries)), "alpha_2", "native_name", undefined, undefined, {
         terms: [
-            { field: 'native_name', type: 'like' },
-            { field: 'alpha_2', type: 'like' },
-            { field: 'name', type: 'like' },
+            { field: "native_name", type: "like" },
+            { field: "alpha_2", type: "like" },
+            { field: "name", type: "like" },
         ],
     });
     constructor() {
@@ -83,7 +86,7 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
                 for (const ctrlName in this.addressFormGroup.controls) {
                     if (Object.prototype.hasOwnProperty.call(this.addressFormGroup.controls, ctrlName)) {
                         const ctrl = this.addressFormGroup.controls[ctrlName];
-                        ctrl.setValue(v?.[ctrlName] ?? '', {
+                        ctrl.setValue(v?.[ctrlName] ?? "", {
                             emitEvent: false,
                         });
                     }
@@ -103,7 +106,7 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['required']) {
+        if (changes["required"]) {
             if (this.required()) this.addressFormGroup.setValidators([Validators.required]);
         }
         if (this.readonly() === true) {

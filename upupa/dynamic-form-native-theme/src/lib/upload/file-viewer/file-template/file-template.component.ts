@@ -15,9 +15,13 @@ import { FileInfo } from "@noah-ark/common";
 import { FileIconPerTypePipe } from "../../file-icon-per-type.pipe";
 import { FileUploadService } from "../../file-upload.service";
 import { Subscription } from "rxjs";
-import { UploadStream } from "@upupa/upload";
+import { FileSizePipe, ImageComponent, UploadStream } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
-import { DOCUMENT } from "@angular/common";
+import { AsyncPipe, DatePipe, DOCUMENT } from "@angular/common";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 const actions = [
     (item: File | FileInfo) =>
@@ -43,6 +47,7 @@ const actions = [
 ];
 // class="file hoverable" [class.loading]="fileVm.uploadTask"
 @Component({
+    standalone: true,
     selector: "file-template",
     templateUrl: "./file-template.component.html",
     styleUrls: ["./file-template.component.scss"],
@@ -50,6 +55,7 @@ const actions = [
     host: {
         "[class]": "class()",
     },
+    imports: [MatIconModule, MatButtonModule, ImageComponent, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe],
 })
 export class FileTemplateComponent {
     private readonly auth = inject(AuthService);

@@ -19,7 +19,7 @@ import { MatTreeComponent } from '@upupa/dynamic-form-material-theme';
   (onNodeAction)="onNodeAction($event)" (onTreeAction)="onTreeAction($event)"></form-tree>
   
    */
-@Component({
+@Component({ standalone: true,
     selector: 'tags-tree',
     template: ``,
     styles: [

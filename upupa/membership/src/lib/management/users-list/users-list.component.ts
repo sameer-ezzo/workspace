@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { DataService, ApiDataSource, DataAdapter } from "@upupa/data";
 import { AuthService, User } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent, EventBus, toTitleCase } from "@upupa/common";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
 import { UserFormComponent } from "../user-form/user-form.component";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { defaultUserListActions, defaultUserListColumns, defaultUserListHeaderActions, UsersManagementOptions } from "../types";
@@ -13,13 +13,17 @@ import { EditUserRolesComponent } from "../edit-user-roles/edit-user-roles.compo
 import { Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 import { DOCUMENT } from "@angular/common";
+import { MatIconModule } from "@angular/material/icon";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 type ModelType = { _id: string; email: string } & Partial<User>;
 
 @Component({
+    standalone: true,
     selector: "users-list",
     templateUrl: "./users-list.component.html",
     styleUrls: ["./users-list.component.scss"],
+    imports: [MatIconModule, DataTableComponent, MatBtnComponent, TableHeaderComponent],
 })
 export class UsersListComponent implements OnChanges, AfterViewInit {
     focusedUser: any;
@@ -177,7 +181,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                 task = firstValueFrom(
                     this.dialog
                         .open(
-                            { component: AdminUserPasswordRestComponent, inputs: { 'user': users[0] } },
+                            { component: AdminUserPasswordRestComponent, inputs: { user: users[0] } },
                             {
                                 title: "Reset Password",
                             },

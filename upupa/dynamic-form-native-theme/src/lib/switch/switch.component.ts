@@ -1,11 +1,14 @@
-import { Component, forwardRef, input } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { InputComponent } from '../input/input.component';
+import { Component, forwardRef, input } from "@angular/core";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { InputComponent } from "../input/input.component";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 @Component({
-    selector: 'form-switch',
-    templateUrl: './switch.component.html',
-    styleUrls: ['./switch.component.css'],
+    standalone: true,
+    selector: "form-switch",
+    templateUrl: "./switch.component.html",
+    styleUrls: ["./switch.component.css"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -13,8 +16,9 @@ import { InputComponent } from '../input/input.component';
             multi: true,
         },
     ],
+    imports: [FormsModule, ReactiveFormsModule, MatSlideToggleModule, MatCheckboxModule],
 })
 export class SwitchComponent extends InputComponent {
-    template = input<'checkbox' | 'toggle'>('toggle');
-    renderer = input<'markdown' | 'html' | 'none'>('none');
+    template = input<"checkbox" | "toggle">("toggle");
+    renderer = input<"markdown" | "html" | "none">("none");
 }

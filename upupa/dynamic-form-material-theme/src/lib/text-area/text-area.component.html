@@ -1,22 +1,18 @@
-<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
-    @if (label()) {
-        <mat-label>{{ label() }}</mat-label>
-    }
-    <textarea
-        matInput
-        [value]="value()"
-        [formControl]="control()"
-        [required]="required()"
-        [readonly]="readonly()"
-        [placeholder]="placeholder()"
-        [cdkTextareaAutosize]="true"
-        [cdkAutosizeMinRows]="rows()"
-        [cdkAutosizeMaxRows]="maxRows()"
-        [attr.name]="name()"
-    >
-    </textarea>
-    @if (hint()) {
-        <mat-hint>{{ hint() }}</mat-hint>
-    }
-    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-</mat-form-field>
+@if (label()) {
+    <label>{{ label() }}</label>
+}
+<textarea
+    matInput
+    [value]="value()"
+    [formControl]="control()"
+    [required]="required()"
+    [readonly]="readonly()"
+    [placeholder]="placeholder()"
+    [attr.rows]="rows()"
+    [attr.name]="name()"
+>
+</textarea>
+@if (hint()) {
+    <span>{{ hint() }}</span>
+}
+<span *errors="control().errors; control: control(); let message">{{ message }}</span>

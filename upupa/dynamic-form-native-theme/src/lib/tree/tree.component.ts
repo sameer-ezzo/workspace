@@ -1,26 +1,30 @@
-import { Component, Input, forwardRef, SimpleChanges } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, SimpleChanges } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { DataAdapter, NormalizedItem } from '@upupa/data';
-import { HierarchicalNode } from './hierarchy';
-import { map } from 'rxjs/operators';
-import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { NestedTreeControl } from "@angular/cdk/tree";
+import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { HierarchicalNode } from "./hierarchy";
+import { map } from "rxjs/operators";
+import { MatTreeModule, MatTreeNestedDataSource } from "@angular/material/tree";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 
 /*
 TODO:
 if drag drop were to be added:
-1. This component is considred to be a form control with value 2-way binding (no changes allowed over adapter.data)
-2. heirachy.setParent must also provide index to insert the item instead of always pushing it
+1. This component is considered to be a form control with value 2-way binding (no changes allowed over adapter.data)
+2. hierarchy.setParent must also provide index to insert the item instead of always pushing it
 
 */
 
 @Component({
-    selector: 'form-tree',
-    templateUrl: './tree.component.html',
-    styleUrls: ['./tree.component.css'],
+    standalone: true,
+    selector: "form-tree",
+    templateUrl: "./tree.component.html",
+    styleUrls: ["./tree.component.css"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => TreeComponent), multi: true }],
-    exportAs: 'TreeInput',
+    exportAs: "TreeInput",
+    imports: [MatTreeModule, MatIconModule, MatButtonModule],
 })
 export class TreeComponent {
     treeControl = new NestedTreeControl<HierarchicalNode>((node) => node.children, { trackBy: (node) => node.key });
@@ -35,7 +39,7 @@ export class TreeComponent {
     @Input() hierarchyType: string;
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['adapter']) {
+        if (changes["adapter"]) {
             // if (this.hierarchyType === 'children') this.hierarchy = new HierarchyByChildren(this.adapter)
             // else this.hierarchy = new HeirarchyByParent(this.adapter);
             this.adapter.normalized$.pipe(map((data) => data.map((x) => this.normalizeHierarchy(null, x, 0)))).subscribe((n) => (this.dataSource.data = n));
@@ -47,12 +51,12 @@ export class TreeComponent {
         node.level = level;
         node.parent = parent;
         node.expandable = normalized.item?.children?.length > 0;
-        normalized['children'] = node.expandable ? normalized.item.children.map((x) => this.normalizeHierarchy(node, this.adapter.normalize(x), level + 1)) : [];
+        normalized["children"] = node.expandable ? normalized.item.children.map((x) => this.normalizeHierarchy(node, this.adapter.normalize(x), level + 1)) : [];
         return normalized as HierarchicalNode;
     }
 }
 
-// @Component({
+// @Component({ standalone: true,
 //   selector: 'form-tree',
 //   templateUrl: './tree.component.html',
 //   styleUrls: ['./tree.component.css'],

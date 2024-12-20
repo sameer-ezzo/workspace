@@ -105,8 +105,8 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
 }
 
 @Component({
-    selector: "inline-editable-list-form",
     standalone: true,
+    selector: "inline-editable-list-form",
     imports: [DynamicFormModule],
     templateUrl: "./inline-editable-list-form.component.html",
     styles: [

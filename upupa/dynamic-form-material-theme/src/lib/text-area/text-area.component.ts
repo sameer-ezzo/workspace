@@ -1,8 +1,9 @@
 import { Component, forwardRef } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
+    standalone: true,
     selector: "mat-form-text-area-input",
     templateUrl: "./text-area.component.html",
     styleUrls: ["./text-area.component.css"],
@@ -13,5 +14,6 @@ import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
+    imports: [FormsModule, ReactiveFormsModule],
 })
 export class MatTextAreaComponent extends TextAreaComponent {}

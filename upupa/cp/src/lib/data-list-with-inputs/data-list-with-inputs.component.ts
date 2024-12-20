@@ -1,19 +1,19 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from '@angular/core';
-import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from '@upupa/data';
-import { ActivatedRoute } from '@angular/router';
-import { ActionEvent, DynamicComponent, PortalComponent } from '@upupa/common';
-import { DataListViewModelQueryParam, DataTableComponent, DataTableModule, resolveDataListInputsFor } from '@upupa/table';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from "@angular/core";
+import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
+import { ActivatedRoute } from "@angular/router";
+import { DynamicComponent, PortalComponent } from "@upupa/common";
+import { DataListViewModelQueryParam, DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 
-import { CommonModule } from '@angular/common';
+import { CommonModule } from "@angular/common";
 
-import { DataListViewModel } from './viewmodels/api-data-table-viewmodel';
+import { DataListViewModel } from "./viewmodels/api-data-table-viewmodel";
 
 @Component({
-    selector: 'cp-data-list-with-inputs',
+    selector: "cp-data-list-with-inputs",
     standalone: true,
     imports: [CommonModule, DataTableModule, PortalComponent],
-    templateUrl: './data-list-with-inputs.component.html',
-    styleUrls: ['./data-list-with-inputs.component.scss'],
+    templateUrl: "./data-list-with-inputs.component.html",
+    styleUrls: ["./data-list-with-inputs.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [
         {
@@ -54,7 +54,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
 
         runInInjectionContext(this.injector, () => {
             this.instance = new viewModel();
-            this.instance['onInit']?.();
+            this.instance["onInit"]?.();
         });
 
         this.instance.dataAdapter = this.dataAdapter();
@@ -71,7 +71,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     });
 
     async ngAfterViewInit() {
-        await this.instance?.['afterViewInit']?.();
+        await this.instance?.["afterViewInit"]?.();
         if (this.instance.inputs.queryParams) {
             const vmQps: DataListViewModelQueryParam[] = this.instance.inputs.queryParams;
             this.route.queryParams.subscribe((params) => {
@@ -88,7 +88,7 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngOnDestroy() {
-        await this.instance?.['onDestroy']?.();
+        await this.instance?.["onDestroy"]?.();
     }
 
     // async onAction(e: ActionEvent) {

@@ -1,5 +1,5 @@
 import { Component, ViewChild, Input, ChangeDetectionStrategy, Output, EventEmitter } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
+import { DynamicFormComponent, DynamicFormModule, Field, FormScheme } from "@upupa/dynamic-form";
 import { InputBaseComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
 import { ReplaySubject, debounceTime } from "rxjs";

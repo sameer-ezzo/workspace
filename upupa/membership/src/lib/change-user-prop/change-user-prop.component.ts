@@ -1,15 +1,19 @@
-import { Component, Input, EventEmitter, SimpleChanges, Output, input, output, signal } from "@angular/core";
+import { Component, SimpleChanges, input, output, signal } from "@angular/core";
 import { AuthService } from "@upupa/auth";
 import { DataService } from "@upupa/data";
 import { Subscription, takeWhile } from "rxjs";
-import { emailField, Field, textField } from "@upupa/dynamic-form";
+import { DynamicFormComponent, emailField, Field, textField } from "@upupa/dynamic-form";
 import { languageDir, LanguageService } from "@upupa/language";
 import { MatInputComponent } from "@upupa/dynamic-form-material-theme";
 import { SnackBarService } from "@upupa/dialog";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
+    standalone: true,
     selector: "change-user-prop",
     templateUrl: "./change-user-prop.component.html",
+    imports: [MatIconModule, DynamicFormComponent, MatButtonModule],
 })
 export class ChangeUserPropComponent<T = any> extends MatInputComponent {
     propToBeChanged = input<"phone" | "email" | "name">("name", {

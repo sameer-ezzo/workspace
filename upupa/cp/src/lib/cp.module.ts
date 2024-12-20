@@ -7,7 +7,7 @@ import { DynamicFormModule } from "@upupa/dynamic-form";
 import { DataTableModule } from "@upupa/table";
 import { UploadModule } from "@upupa/upload";
 import { PopoverModule } from "@upupa/popover";
-import { LanguageModule, TranslationModule } from "@upupa/language";
+import { LanguageModule } from "@upupa/language";
 import { MaterialModulesModule } from "./material-modules.module";
 import { RouterModule } from "@angular/router";
 import { UtilsModule } from "@upupa/common";
@@ -31,9 +31,9 @@ const userImageProvider = {
                 data.get<{ picture: string }>(`/user/${u.sub}?select=picture`).pipe(
                     map((res) => res.data?.[0]),
                     map((x) => x.picture as string),
-                    catchError((e) => of(getUserInitialsImage(document, u.name ?? u.email)))
-                )
-            )
+                    catchError((e) => of(getUserInitialsImage(document, u.name ?? u.email))),
+                ),
+            ),
         );
     },
     deps: [AuthService, DataService, DOCUMENT],
@@ -48,7 +48,6 @@ const userImageProvider = {
         MaterialModulesModule,
         AuthModule,
         LanguageModule,
-        TranslationModule,
         DataModule,
         DynamicFormNativeThemeModule,
         DynamicFormModule,
@@ -70,7 +69,7 @@ export class ControlPanelModule {
             providers?: any[];
         } = {
             providers: [userImageProvider],
-        }
+        },
     ): ModuleWithProviders<ControlPanelModule> {
         return {
             ngModule: ControlPanelModule,

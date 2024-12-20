@@ -14,7 +14,7 @@ import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { DOCUMENT } from "@angular/common";
 
-@Component({
+@Component({ standalone: true,
     selector: "file-input",
     templateUrl: "./file-input.component.html",
     styleUrls: ["./file-input.component.scss"],

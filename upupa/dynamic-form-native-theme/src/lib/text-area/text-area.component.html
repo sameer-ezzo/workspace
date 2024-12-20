@@ -13,4 +13,4 @@
     [rows]="rows()"
     [required]="required()"
 ></textarea>
-<mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+<span *errors="control().errors; control: control(); let message">{{ message }}</span>

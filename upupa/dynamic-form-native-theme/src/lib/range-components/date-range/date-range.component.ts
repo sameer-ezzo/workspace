@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NumbersRangeComponent } from '../numbers-range/numbers-range.component';
 
 
-@Component({
+@Component({ standalone: true,
   selector: 'form-date-range-field',
   templateUrl: './date-range.component.html',
   styleUrls: ['./date-range.component.css'],

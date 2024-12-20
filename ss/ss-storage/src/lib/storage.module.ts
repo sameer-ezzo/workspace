@@ -7,7 +7,7 @@ import { ImageService } from "./image.svr";
 import { ImageController } from "./image.controller";
 import { StorageController } from "./storage.controller";
 import { StorageService } from "./storage.service";
-import fileSchema from "./schema";
+import FileSchema from "./schema";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Schema } from "mongoose";
 
@@ -19,10 +19,10 @@ export class StorageModule implements OnModuleInit {
     static register(
         options: { dbName: string; storageSchema: Schema; prefix?: string } = {
             dbName: "DB_DEFAULT",
-            storageSchema: fileSchema,
+            storageSchema: FileSchema,
         },
     ): DynamicModule {
-        options ?? { dbName: "DB_DEFAULT", storageSchema: fileSchema };
+        options ?? { dbName: "DB_DEFAULT", storageSchema: FileSchema };
         options.prefix ??= "";
         const storageSchema = options.storageSchema;
 

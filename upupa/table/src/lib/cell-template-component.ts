@@ -3,6 +3,7 @@ import { Component, input, Input, InputSignal } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";
+import { DynamicPipe } from "./dynamic.pipe";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
     value?: InputSignal<TValue>;
@@ -13,7 +14,9 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
 }
 
 @Component({
+    standalone: true,
     selector: "cell-template",
+    imports: [DynamicPipe],
     template: `
         @if (descriptor().value.pipe) {
             @if (descriptor().value.pipe["pipe"]) {
@@ -54,7 +57,6 @@ export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href
         }
     `,
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<TValue> {
     textProp = input.required<keyof TValue>();
     href = input<(value: TValue) => string>();

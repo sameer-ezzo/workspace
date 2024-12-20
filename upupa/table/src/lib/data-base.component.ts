@@ -1,12 +1,13 @@
-import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, effect, forwardRef, inject, input, model, output, signal } from "@angular/core";
+import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, forwardRef, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { firstValueFrom, Subscription, take } from "rxjs";
+import { Subscription, take } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 
 @Component({
+    standalone: true,
     selector: "data-base",
     template: "",
     styles: [],
@@ -81,7 +82,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         const keys = this.adapter().getKeysFromValue(v);
         if (!keys.length) return;
         this._vSub?.unsubscribe();
-        this.selectedNormalized;
         this._vSub = this.adapter()
             .getItems(keys)
             .pipe(take(1))

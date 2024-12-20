@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, inject } from "@angular/core";
+import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, inject, input, signal } from "@angular/core";
 import { UntypedFormControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
@@ -10,19 +10,20 @@ import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
     standalone: true,
     imports: [UtilsModule, MarkdownPipe],
 })
-export class ParagraphComponent implements OnChanges {
-    @Input() control: UntypedFormControl;
-    @Input() text: string;
-    @Input() renderer: "markdown" | "html" | "none" = "markdown";
+export class ParagraphComponent {
+    control = input<UntypedFormControl>();
+    text = input<string>();
+    renderer = input<"markdown" | "html" | "none">("none");
+    // renderedText = signal<string>();
     private readonly _sanitizer = inject(DomSanitizer);
     private readonly host = inject(ElementRef);
     private readonly _renderer = inject(Renderer2);
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes["text"] || changes["renderer"]) {
-            let text = this.text;
-            if (this.renderer === "markdown") text = new MarkdownPipe().transform(this.text);
-            else if (this.renderer === "html") text = new HtmlPipe(this._sanitizer).transform(this.text).toString();
-            this._renderer.setProperty(this.host.nativeElement, "innerHTML", text);
-        }
-    }
+    // ngOnChanges(changes: SimpleChanges): void {
+    //     if (changes["text"] || changes["renderer"]) {
+    //         if (this.renderer() === "markdown") this.renderedText.set(new MarkdownPipe().transform(this.text()));
+    //         else if (this.renderer() === "html") this.renderedText.set(new HtmlPipe(this._sanitizer).transform(this.text()).toString());
+    //         else this.renderedText.set(this.text());
+    //         this._renderer.setProperty(this.host.nativeElement, "innerHTML", this.renderedText());
+    //     }
+    // }
 }

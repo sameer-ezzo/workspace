@@ -5,10 +5,10 @@
     matInput
     #input
     type="number"
-    [value]="value"
+    [value]="value()"
     (input)="handleUserInput($event.target?.['value'])"
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
-/>    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-
+/>
+<span *errors="control().errors; control: control(); let message">{{ message }}</span>

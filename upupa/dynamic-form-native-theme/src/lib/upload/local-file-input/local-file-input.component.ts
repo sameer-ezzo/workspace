@@ -9,11 +9,14 @@ import { openFileDialog } from "@upupa/upload";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { MatError } from "@angular/material/form-field";
 
 @Component({
+    standalone: true,
     selector: "local-file-input",
     templateUrl: "./local-file-input.component.html",
     styleUrls: ["./local-file-input.component.scss"],
+    imports: [MatError],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

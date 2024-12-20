@@ -20,24 +20,26 @@ const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
 } as unknown as DynamicFormThemes;
 
-const declarations = [DynamicFormComponent, CollectorComponent, OrderedKeyValuePipe];
-
+const declarations = [];
+const modules = [
+    OrderedKeyValuePipe,
+    DynamicFormComponent,
+    CollectorComponent,
+    CommonModule,
+    UtilsModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ScrollingModule,
+    DynamicFormNativeThemeModule,
+    MatBtnComponent,
+    PortalComponent,
+    DynamicFormFieldComponent,
+    MatExpansionModule,
+];
 @NgModule({
     declarations: [...declarations],
-    exports: [...declarations, DynamicFormFieldComponent, ScrollingModule, FormsModule, ReactiveFormsModule, DynamicFormNativeThemeModule, DynamicFormFieldComponent],
-    bootstrap: [DynamicFormComponent],
-    imports: [
-        CommonModule,
-        UtilsModule,
-        FormsModule,
-        ReactiveFormsModule,
-        ScrollingModule,
-        DynamicFormNativeThemeModule,
-        MatBtnComponent,
-        PortalComponent,
-        DynamicFormFieldComponent,
-        MatExpansionModule,
-    ],
+    exports: [...declarations, ...modules],
+    imports: [...modules],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
         {
