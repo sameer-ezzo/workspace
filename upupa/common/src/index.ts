@@ -40,6 +40,7 @@ export * from "./lib/metadata/strategies/schema-org.strategy";
 export * from "./lib/routing/navigate-to.directive";
 export * from "./lib/routing/reuse-all-strategy";
 export * from "./lib/routing/route-feature";
+export * from "./lib/routing/signals";
 export * from "./lib/routing/route-preload";
 export * from "./lib/routing/route-resolver";
 export * from "./lib/routing/with-content-projection";
