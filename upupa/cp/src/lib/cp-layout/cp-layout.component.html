@@ -1,3 +1,6 @@
+@for (link of links(); track link.href) {
+    <link [rel]="link.type" [href]="link.href">
+}
 <main>
     <mat-toolbar class="mat-elevation-z2">
         @if (sideBarItems() | async; as items) {

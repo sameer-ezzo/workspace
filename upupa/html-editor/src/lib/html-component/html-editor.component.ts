@@ -8,8 +8,15 @@ import { AuthService } from "@upupa/auth";
 import { CommonModule } from "@angular/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
 
-declare type DecoupledEditor = any;
+// import { ClassicEditor,  } from 'ckeditor5';
+// import "@ckeditor/ckeditor5-core";
+import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
+
+
+
+// declare type DecoupledEditor = any;
 declare type EditorConfig = any;
+
 // https://ckeditor.com/docs/ckeditor5/latest/installation/integrations/angular.html
 @Component({
     selector: "form-html",
@@ -65,8 +72,8 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
         this.markAsTouched();
     }
     private async _initEditor() {
-        const DecoupledEditor = await import("@ckeditor/ckeditor5-build-decoupled-document").then((x) => x.default);
-        const EditorCord = await import("@ckeditor/ckeditor5-core");
+        // const DecoupledEditor = await import("@ckeditor/ckeditor5-build-decoupled-document").then((x) => x.default);
+        // const EditorCord = await import("@ckeditor/ckeditor5-core");
 
         const lang = this.language() ?? "en";
         this.config = {

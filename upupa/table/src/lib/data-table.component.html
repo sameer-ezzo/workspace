@@ -141,7 +141,7 @@
     @let length = page.length ?? 0;
     @let pageSize = page.pageSize ?? 25;
     @let pageIndex = page.pageIndex ?? 0;
-    @if (showPaginator()) {
+    @if (showPaginator() && length > 10) {
         <mat-paginator
             [disabled]="loading() === true"
             [pageIndex]="pageIndex"

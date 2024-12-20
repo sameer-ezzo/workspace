@@ -1,14 +1,13 @@
-import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
+import { Component, DestroyRef, ElementRef, HostListener, OnChanges, PLATFORM_ID, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
-import { AuthService } from "@upupa/auth";
 import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 
 type ViewType = "list" | "grid";
 @Component({
@@ -82,8 +81,14 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.markAsTouched();
     }
 
+    isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    clipboard? = this.isBrowser ? inject(ClipboardService) : undefined;
+
     private readonly host = inject(ElementRef);
-    constructor(public readonly uploadClient: UploadClient, private readonly clipboard: ClipboardService, public readonly dialog: DialogService) {
+    constructor(
+        public readonly uploadClient: UploadClient,
+        public readonly dialog: DialogService,
+    ) {
         super();
 
         this.base.set(new URL(uploadClient.baseUrl).origin + "/");
@@ -91,15 +96,15 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         effect(
             () => {
                 const v = this.value();
-                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null } as ViewerExtendedFileVm)));
+                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
             },
-            { allowSignalWrites: true }
+            { allowSignalWrites: true },
         );
 
-        this.clipboard.paste$
+        this.clipboard?.paste$
             .pipe(
                 filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
-                takeUntilDestroyed(this.destroyRef)
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(async (event) => {
                 // make sure this component is focused or active

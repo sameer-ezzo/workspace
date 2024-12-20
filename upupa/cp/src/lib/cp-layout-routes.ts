@@ -16,6 +16,7 @@ import { TableHeaderComponent } from "@upupa/table";
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
+    links?: { type: HTMLLinkElement['type']; href: string }[];
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
 };
 
@@ -30,6 +31,7 @@ export function withLayoutComponent(config: LayoutConfig): RouteFeature {
             component: config.layout ?? CpLayoutComponent,
             data: {
                 logo: config.logo,
+                links: config.links ?? [],
             },
             providers: [
                 Array.isArray(config.sidebar)
@@ -70,7 +72,6 @@ export function withTableHeader(showSearch: boolean, ...inlineEndSlot: DynamicCo
     };
 }
 
-
 export type DynamicFormConfig = { viewModel: Class | FormViewModelMirror; value?: any; form?: FormGroup };
 
 export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
@@ -101,9 +102,6 @@ export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror;
         },
     };
 }
-
-
-
 
 export type FlattenedRoutes = Record<string, Route>;
 function flattenRoutes(routes: Routes, basePath = "/"): FlattenedRoutes {

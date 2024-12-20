@@ -195,7 +195,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             });
         }
 
-        if (this.name && localStorage) {
+        if (this.name && typeof localStorage !== "undefined") {
             const parseJson = (str, def) => {
                 if (!str) return def;
                 try {

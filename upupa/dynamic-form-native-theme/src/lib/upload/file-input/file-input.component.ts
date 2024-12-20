@@ -7,7 +7,7 @@ import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { FileSelectComponent } from "../file-select/file-select.component";
 
 import { AuthService } from "@upupa/auth";
-import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
+import { FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { DataComponentBase } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
@@ -51,7 +51,6 @@ export class FileInputComponent extends DataComponentBase {
         public uploadClient: UploadClient,
         public data: DataService,
         public auth: AuthService,
-        public clipboard: ClipboardService,
         public dialog: DialogService,
     ) {
         super();
