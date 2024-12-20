@@ -68,7 +68,12 @@ export class ExtendedValueChangeEvent<T = any> {
 }
 
 export function fieldRef(path: string): FieldRef {
-    return inject(FORM_GRAPH, { optional: true })?.get(path);
+    if (!path.startsWith("/")) throw new Error("Invalid path");
+
+    const graph = inject<FormGraph>(FORM_GRAPH);
+    const result = graph.get(path);
+    if (!result) throw new Error(`Could not inject field ref with path ${path}`);
+    return result;
 }
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
@@ -92,7 +97,7 @@ export function fieldRef(path: string): FieldRef {
     host: {
         "[class]": "'dynamic-form ' + class()",
     },
-    standalone: false
+    standalone: false,
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
     private readonly conditionalService = inject(ConditionalLogicService);
@@ -217,8 +222,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
                 if (this.options.enableLogs === true) console.log(`${this.name()}:${path} valueChanges`, ee);
                 this.fieldValueChange.emit(ee);
-            }
-            else if (e instanceof PristineChangeEvent) {
+            } else if (e instanceof PristineChangeEvent) {
                 this.control().markAsPristine();
             } else if (e instanceof TouchedChangeEvent) {
                 this.control().markAsTouched();
@@ -355,7 +359,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 @Pipe({
     name: "orderedKeyValue",
     pure: true,
-    standalone: false
+    standalone: false,
 })
 export class OrderedKeyValuePipe extends KeyValuePipe {
     override transform(value: any, ...args: any[]): any {
