@@ -58,7 +58,7 @@ function inferFieldInputType(property: any, propertyKey: string, field: Partial<
     else return "text";
 }
 
-export function formInput(opt?: Partial<FieldOptions>) {
+export function formInput(opt?: Partial<FieldOptions>, group?: FieldGroup) {
     return (property: any, propertyKey: string) => {
         const formMetadata = reflectFormMetadata(property.constructor) ?? createFormMetadata();
 
@@ -71,6 +71,10 @@ export function formInput(opt?: Partial<FieldOptions>) {
         if (opt.group) formMetadata.groups[propertyKey] = typeof opt.group === "string" ? { name: opt.group, template: "div" } : opt.group;
 
         defineFormMetadata(property.constructor, formMetadata);
+
+        if (group) {
+            inputGroup(group)(property, propertyKey);
+        }
     };
 }
 

@@ -8,7 +8,7 @@ import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
-    selector: "cp-data-form-with-view-model",
+    selector: "data-form",
     standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: "./data-form-with-view-model.component.html",
