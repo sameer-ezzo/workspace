@@ -1,4 +1,3 @@
-/* eslint-disable @angular-eslint/component-selector */
 import { Component, SimpleChanges, effect, forwardRef, input } from '@angular/core';
 
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl } from '@angular/forms';

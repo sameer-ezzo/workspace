@@ -76,7 +76,6 @@ export function fieldRef(path: string): FieldRef {
     return result;
 }
 @Component({
-    // eslint-disable-next-line @angular-eslint/component-selector
     selector: "dynamic-form",
     templateUrl: "./dynamic-form.component.html",
     styleUrls: ["./dynamic-form.component.scss"],

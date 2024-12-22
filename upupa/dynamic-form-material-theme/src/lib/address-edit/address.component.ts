@@ -1,14 +1,13 @@
-/* eslint-disable @angular-eslint/component-selector */
-import { ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, input } from "@angular/core";
 
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { AddressComponent } from '@upupa/dynamic-form-native-theme';
-import { MatFormFieldAppearance } from '@angular/material/form-field';
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { AddressComponent } from "@upupa/dynamic-form-native-theme";
+import { MatFormFieldAppearance } from "@angular/material/form-field";
 
 @Component({
-    selector: 'mat-form-address-input',
-    templateUrl: './address.component.html',
-    styleUrls: ['./address.component.scss'],
+    selector: "mat-form-address-input",
+    templateUrl: "./address.component.html",
+    styleUrls: ["./address.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -19,5 +18,5 @@ import { MatFormFieldAppearance } from '@angular/material/form-field';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MatAddressComponent extends AddressComponent {
-    appearance = input<MatFormFieldAppearance>('outline');
+    appearance = input<MatFormFieldAppearance>("outline");
 }

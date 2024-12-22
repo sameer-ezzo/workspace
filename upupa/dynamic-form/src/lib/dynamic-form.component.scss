@@ -20,8 +20,8 @@ dynamic-form > form {
         margin-block-start: -1rem;
     }
 
-    .field:not(.hidden-input):not(:last-child) {
-        margin-block-end: 1rem;
+    .field:not(.hidden-input) {
+        margin-block-end: 0.25rem;
     }
 
     .field.hidden-input ~ field:not(.hidden-input) {
