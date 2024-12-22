@@ -1,0 +1,44 @@
+{
+  "name": "upupa-widget",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/workspace/upupa/widget/src",
+  "prefix": "raptor7-workspace",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "options": {
+        "tsConfig": "libs/workspace/upupa/widget/tsconfig.lib.json",
+        "project": "libs/workspace/upupa/widget/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/workspace/upupa/widget/tsconfig.lib.prod.json"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/upupa/widget/src/**/*.ts",
+          "libs/workspace/upupa/widget/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/upupa/widget"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/upupa/widget/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:angular",
+    "type:library"
+  ]
+}
