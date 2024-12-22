@@ -173,21 +173,25 @@ export function formInputArray(
     tableViewModel: Class,
     config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false },
     options?: Partial<FieldOptions>,
+    group?: FieldGroup,
 ) {
-    return formInput({
-        ...options,
-        input: "table",
-        inputs: {
-            viewModel: tableViewModel,
-            tableHeaderComponent: {
-                component: TableHeaderComponent,
-                inputs: {
-                    showSearch: config?.showSearch ?? false,
-                    inlineEndSlot: config?.inlineEndSlot ?? [],
+    return formInput(
+        {
+            ...options,
+            input: "table",
+            inputs: {
+                viewModel: tableViewModel,
+                tableHeaderComponent: {
+                    component: TableHeaderComponent,
+                    inputs: {
+                        showSearch: config?.showSearch ?? false,
+                        inlineEndSlot: config?.inlineEndSlot ?? [],
+                    },
                 },
             },
         },
-    });
+        group,
+    );
 }
 
 function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>): Field {

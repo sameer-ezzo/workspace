@@ -147,9 +147,9 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                     {
                         component: UserFormComponent,
                         inputs: {
-                            user: fullUser,
+                            // user: fullUser,
                             //mode,
-                            options: formOptions, // this should be FormOptions only
+                            // options: formOptions, // this should be FormOptions only
                         },
                     },
                     {
