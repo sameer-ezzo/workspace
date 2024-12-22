@@ -142,12 +142,11 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         },
     });
 
-    readonly formRef = viewChild<FormGroupDirective>("ngFormRef");
     value = model(undefined);
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
 
-    submit = output<DynamicFormComponent>();
+    submitted = output<T>();
     preventDirtyUnload = input(false);
 
     get patches(): Patch[] {
@@ -295,16 +294,19 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     injector = inject(Injector);
+    // formRef = viewChild<ElementRef<HTMLFormElement>>("formRef");
+    formRef = viewChild<FormGroupDirective>("formRef");
 
-    ngSubmit() {
+    submit() {
+        // this.formRef().nativeElement.submit();
         this.formRef().ngSubmit.emit();
     }
-    onSubmit(e: Event) {
+    onSubmit(e: SubmitEvent) {
         e?.stopPropagation();
         e?.preventDefault();
         if (this.form.invalid) {
             this.scrollToError();
-        } else this.submit.emit(this);
+        } else this.submitted.emit(this.value());
     }
 
     _onChange: (value: T) => void;
@@ -344,7 +346,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.graph).find(([c, f]) => f.control.invalid && f.hidden() !== true);
+        const c = Array.from(this.graph).find(([c, f]) => f.control?.invalid && f.hidden() !== true);
         if (!c) return;
         const fieldRef = c[1] as FieldRef;
         const control = fieldRef.control;

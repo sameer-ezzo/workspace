@@ -282,7 +282,9 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             if (field["rows"]) field.inputs["rows"] = field["rows"];
             if (field["maxRows"]) field.inputs["maxRows"] = field["maxRows"];
             if (field["minSize"]) field.inputs["minSize"] = field["minSize"];
-
+            break;
+        case "form":
+            field.inputs["viewModel"] = fieldOptions.viewModel;
             break;
 
         default:

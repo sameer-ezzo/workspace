@@ -1,5 +1,7 @@
-import { Route } from "@angular/router";
+import { Route, Routes } from "@angular/router";
 import { DynamicComponent } from "../dynamic-component";
+import { ActionDescriptor } from "../action-descriptor";
+import { SideBarViewModel, SideBarGroup } from "@upupa/cp";
 
 export type NamedRoute = Route & { name: string };
 export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component"> & { component: DynamicComponent<T> };
@@ -68,4 +70,17 @@ export function provideRoute<T = any>(
 
 function isDynamicComponentRoute(route: Partial<NamedRoute | DynamicComponentRoute>): route is DynamicComponentRoute {
     return !!(route as any).component?.component;
+}
+
+export function withAction(
+    action: Omit<ActionDescriptor, "name"> & { action: string; name?: string; group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string } },
+): RouteFeature {
+    return {
+        name: "withAction",
+        modify(route) {
+            return {
+                data: { ...route.data, action },
+            };
+        },
+    };
 }

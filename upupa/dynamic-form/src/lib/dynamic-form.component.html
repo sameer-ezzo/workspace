@@ -1,4 +1,4 @@
-<form #ngFormRef="ngForm" [formGroup]="form" [name]="name()" [attr.id]="name()" (ngSubmit)="onSubmit($event)">
+<form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form" [name]="name()" [attr.id]="name()" >
     <mat-accordion>
         @for (record of fields() | orderedKeyValue; track $index) {
             @let fieldName = record.key;
@@ -65,7 +65,7 @@
             [renderer]="fieldRef.inputs()?.['renderer'] || 'markdown'"
         ></paragraph>
     } @else {
-        <field [fieldRef]="fieldRef" [formControl]="control"></field>
+        <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formControl]="control"></field>
     }
 </ng-template>
 
