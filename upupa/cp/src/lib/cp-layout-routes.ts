@@ -16,7 +16,7 @@ import { TableHeaderComponent } from "@upupa/table";
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
-    links?: { type: HTMLLinkElement['type']; href: string }[];
+    links?: { type: HTMLLinkElement["type"]; href: string }[];
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
 };
 
@@ -61,8 +61,8 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
     };
 }
 
-export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>): Route {
-    return provideRoute(config, withTableComponent(config));
+export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>, ...features: RouteFeature[]): Route {
+    return provideRoute(config, withTableComponent(config), ...features);
 }
 
 export function withTableHeader(showSearch: boolean, ...inlineEndSlot: DynamicComponent[]): DynamicComponent {
@@ -88,8 +88,8 @@ export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
     };
 }
 
-export function provideFormRoute<T>(config: Route & DynamicFormConfig) {
-    return provideRoute(config, withFormComponent(config));
+export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...features: RouteFeature[]): Route {
+    return provideRoute(config, withFormComponent(config), ...features);
 }
 
 export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent {
@@ -118,33 +118,35 @@ function flattenRoutes(routes: Routes, basePath = "/"): FlattenedRoutes {
 
 export function routesToActions(routes: Routes, basePath = "/"): SideBarViewModel {
     const flattenedRoutes = Object.entries(flattenRoutes(routes, basePath));
+    const routesWithAction = flattenedRoutes.filter(([_, route]) => route.data?.["action"]);
+    const routesWithGroup = routesWithAction.filter(([_, route]) => route.data["action"].group);
     const sideBar: SideBarViewModel = [];
-    const groups = flattenedRoutes
-        .filter(([_, route]) => route.data?.["group"])
-        .map(([_, route]) => {
-            const g = route.data["group"];
-            if (typeof g === "string") {
-                return { name: g, text: g, items: [] } as SideBarGroup;
-            }
-            return { ...g, items: [] };
-        });
+    const groups = routesWithGroup.map(([_, route]) => {
+        const g = route.data["action"].group;
+        if (typeof g === "string") {
+            return { name: g, text: g, items: [] } as SideBarGroup;
+        }
+        return { ...g, items: [] };
+    });
+
+
+
+
     const groupMap = new Map<string, SideBarGroup>();
     for (const group of groups) {
         if (!groupMap.has(group.name)) groupMap.set(group.name, group);
     }
 
-    for (const [path, route] of flattenedRoutes) {
-        const groupName = typeof route.data?.["group"] == "string" ? route.data?.["group"] : route.data?.["group"]?.name;
-        const action = route.data?.["action"];
-        if (!action) continue;
+    for (const [path, route] of routesWithAction) {
+        const groupName = typeof route.data["action"].group === "string" ? route.data["action"].group : route.data["action"].group?.name;
 
         if (groupName) {
             const group = groupMap.get(groupName);
             group.items.push({
-                name: route.data?.["action"] ?? path,
+                name: route.data["action"].action ?? path,
                 link: path,
-                icon: route.data?.["icon"],
-                text: route.data?.["text"],
+                icon: route.data["action"].icon,
+                text: route.data["action"].text,
             });
             // check if group is already in sidebar
             if (!sideBar.includes(group)) {
@@ -152,10 +154,10 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
             }
         } else {
             sideBar.push({
-                name: route.data?.["action"] ?? path,
+                name: route.data["action"].action ?? path,
                 link: path,
-                icon: route.data?.["icon"],
-                text: route.data?.["text"],
+                icon: route.data["action"].icon,
+                text: route.data["action"].text,
             });
         }
     }

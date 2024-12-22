@@ -91,14 +91,18 @@ export class DataFormWithViewModelComponent<T = any> {
         });
     }
 
-    submitted = output<{ submitResult?: any; error?: any }>();
+    submitted = output<{ submitResult?: T; error?: any }>();
     submitting = signal(false);
     async onSubmit() {
         const vm = this.value();
-        runInInjectionContext(this.injector, async () => {
+        this.submitting.set(true);
+
+        let submitResult: T | undefined;
+        let error = undefined;
+
+        await runInInjectionContext(this.injector, async () => {
             try {
-                this.submitting.set(true);
-                const submitResult = (await vm["onSubmit"]?.()) ?? this.value();
+                submitResult = (await vm["onSubmit"]?.()) ?? this.value();
                 this.submitted.emit({ submitResult });
             } catch (error) {
                 this.submitted.emit({ error });
@@ -106,13 +110,19 @@ export class DataFormWithViewModelComponent<T = any> {
                 this.submitting.set(false);
             }
         });
+
+        return { error, submitResult };
+    }
+
+    submit() {
+        return this.dynamicFormEl().submit();
     }
 
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
         let { handlerName } = e.action as any;
 
-        if (e.action.type == "submit" || handlerName === "onSubmit") return this.onSubmit();
+        if (e.action.type == "submit" || handlerName === "onSubmit") return this.submit();
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
         return runInInjectionContext(this.injector, async () => {

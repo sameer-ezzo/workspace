@@ -54,7 +54,6 @@ export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href
         }
     `,
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<TValue> {
     textProp = input.required<keyof TValue>();
     href = input<(value: TValue) => string>();

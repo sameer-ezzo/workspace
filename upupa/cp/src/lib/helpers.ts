@@ -1,5 +1,5 @@
-import { Component, input, inject, Type, Injector, ComponentRef, OutputEmitterRef, runInInjectionContext, output } from "@angular/core";
-import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
+import { Component, input, inject, Type, Injector, ComponentRef, OutputEmitterRef, runInInjectionContext, output, OutputRef } from "@angular/core";
+import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService, DialogWrapperComponent } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
@@ -56,7 +56,7 @@ export async function createButtonHandler(
     const injector = options?.injector ?? inject(Injector);
     const v = value ? value() : readInput("item", sourceComponent);
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    const result = await editFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true, injector });
+    const result = await openFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true, injector });
 
     const adapter = injector.get(DataAdapter);
     adapter?.create(result.submitResult);
@@ -88,40 +88,13 @@ export function readValueFromApi<T = any>(path: string) {
     const ds = inject(DataService);
     return firstValueFrom(ds.get<T>(path)).then((r) => r.data?.[0] as T);
 }
-export function editButton(
+export function editButton<T = unknown>(
     formViewModel: Class,
-    value?: () => any | Promise<any>,
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
     },
-): Type<any> | DynamicComponent {
-    // if (!formViewModel) throw new Error("formViewModel is required");
-    // options ??= {};
-    // const defaultEditDescriptor: Partial<ActionDescriptor> = {
-    //     text: "Edit",
-    //     icon: "edit",
-    //     variant: "icon",
-    //     color: "accent",
-    // };
-    // options.descriptor = merge(defaultEditDescriptor, options.descriptor);
-
-    // return inlineButton({
-    //     descriptor: options.descriptor,
-    //     clickHandler: async (source) => {
-    //         const injector = inject(Injector);
-    //         const item = readInput("item", source);
-    //         const v = value ? value() : item;
-    //         const dialogOptions = { title: "Edit", ...options?.dialogOptions };
-    //         const result = await editFormDialog.call(source, formViewModel, v, { dialogOptions, defaultAction: true });
-
-    //         const adapter = injector.get(DataAdapter);
-    //         adapter?.put(item, result.submitResult);
-    //         adapter?.refresh(true);
-    //     },
-    //     inputItem: null,
-    // });
-
+): DynamicComponent {
     options ??= {};
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
         text: "Edit",
@@ -133,60 +106,62 @@ export function editButton(
     const dialogOptions = { title: "Edit", ...options?.dialogOptions };
 
     return {
-        component: EditButton,
+        component: EditButton<any, T>,
         inputs: { formViewModel, dialogOptions, btn },
-    };
+    } as DynamicComponent<EditButton>;
 }
 
-export async function editFormDialog<T>(
-    vm: Class | FormViewModelMirror,
-    value = readInput("item", this),
-    context?: { dialogOptions?: DialogConfig; injector?: Injector; defaultAction?: ActionDescriptor | boolean },
-) {
-    const injector = context?.injector ? context.injector : inject(Injector);
-    const snack = injector.get(SnackBarService);
-
-    const v = await value;
-    const { componentRef, dialogRef } = await openFormDialog<T>(vm, v, { injector, dialogOptions: context?.dialogOptions, defaultAction: context?.defaultAction });
-    const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
-
-    if (error) {
-        snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
-    } else {
-        dialogRef.close(submitResult);
-    }
-
-    return { submitResult, error };
+export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
+function isFormViewmodelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
+    return "viewModelType" in vm;
 }
 
-export async function openFormDialog<T>(
-    vm: Class | FormViewModelMirror,
-    value: any,
+export async function openFormDialog<TViewModelClass extends Class | FormViewModelMirror, TViewModel = ExtractViewModel<TViewModelClass>>(
+    vm: TViewModelClass,
+    value: TViewModel,
     context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean } = {},
 ) {
     const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
-    const _mirror = "viewModelType" in vm ? vm : reflectFormViewModelType(vm);
+    const _mirror = isFormViewmodelMirror(vm) ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
-    // let formActions = [...(_mirror.actions ?? []), ...(context.dialogOptions?.dialogActions ?? [])];
-    let formActions = [...(_mirror.actions ?? [])];
+    const v = await value;
+
+    let formActions = [...(_mirror.actions ?? [])] as ActionDescriptor[];
     let defaultAction = formActions.find((x) => x.type === "submit");
     if (context.defaultAction && !defaultAction) {
-        //defaultAction = context.defaultAction === true ? ({ text: "Submit", icon: "save", color: "primary", type: "submit" } as ActionDescriptor) : context.defaultAction;
+        defaultAction = context.defaultAction === true ? ({ text: "Submit", icon: "save", color: "primary", type: "submit" } as ActionDescriptor) : context.defaultAction;
         formActions = [defaultAction, ...formActions];
     }
     const opts: DialogConfig = {
         ...context?.dialogOptions,
-        // dialogActions: [...(context?.dialogOptions?.dialogActions ?? []), ...formActions],
+        footer: [
+            ...formActions.map((descriptor) =>
+                provideComponent({
+                    component: MatBtnComponent,
+                    inputs: { descriptor },
+                    outputs: {
+                        onClick: async () => {
+                            if (descriptor.type === "submit") {
+                                const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
+                                componentInstance.submit();
+                                const { submitResult, error } = await waitForOutput("submitted", componentInstance);
+                                dialogRef.close(submitResult);
+                            }
+                        },
+                    },
+                }),
+            ),
+        ],
     };
 
-    const dialogRef = dialog.open({ component: DataFormWithViewModelComponent, inputs: { viewModel: mirror, value }, injector: context?.injector }, opts);
+    const dialogRef = dialog.open({ component: DataFormWithViewModelComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector: context?.injector }, opts);
 
-    const componentRef: ComponentRef<DataFormWithViewModelComponent> = await firstValueFrom(dialogRef.afterAttached());
+    const componentRef: ComponentRef<DataFormWithViewModelComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
     const dialogWrapper = dialogRef.componentInstance;
     const form = componentRef.instance.dynamicFormEl().form;
     form.statusChanges.subscribe((status) => {
-        // dialogWrapper.dialogActions.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
+        // dialogWrapper.footer.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
     });
     form.updateValueAndValidity(); // to trigger initial form status
 
@@ -195,6 +170,16 @@ export async function openFormDialog<T>(
     // });
 
     return { dialogRef, componentRef };
+
+    // const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
+
+    // if (error) {
+    //     snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
+    // } else {
+    //     dialogRef.close(submitResult);
+    // }
+
+    // return { submitResult, error };
 }
 
 export function translationButtons(
@@ -229,7 +214,7 @@ export function translationButtons(
                 const mirror = reflectFormViewModelType(formViewModel);
                 mirror.viewModelType = Object; // to prevent view model submit handler
                 mirror.actions = [];
-                const { submitResult, error } = await editFormDialog.call(source, mirror, _value, {
+                const { submitResult, error } = await openFormDialog.call(source, mirror, _value, {
                     dialogOptions,
                     injector,
                     defaultAction: {
@@ -252,11 +237,10 @@ export function translationButtons(
     });
 }
 
-type ExtractEventType<T> = T extends OutputEmitterRef<infer R> ? R : never;
-export async function waitForOutput<T extends OutputEmitterRef<R>, R = ExtractEventType<T>>(output: string, instance = this): Promise<R> {
-    const emitter = instance[output] as T;
-    if (!emitter) throw new Error(`Output ${output} not found in ${instance.constructor.name}`);
-    return new Promise<R>((resolve) => {
+export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(output: K, instance: TCom = this): Promise<TOut[K]> {
+    const emitter = instance[output as any];
+    if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
+    return new Promise<any>((resolve) => {
         const sub = emitter.subscribe((e) => {
             sub.unsubscribe();
             resolve(e);
