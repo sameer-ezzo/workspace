@@ -109,4 +109,3 @@ export type FieldOptions =
               | ({ input: "group" } & BaseFormFieldOptions)
               | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));
-export type FieldInputType = FieldOptions["input"];

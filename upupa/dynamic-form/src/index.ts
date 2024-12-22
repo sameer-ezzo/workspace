@@ -25,3 +25,4 @@ export * from "./lib/conditional-logic.service";
 export * from "./lib/dynamic-form-inputs";
 
 export * from "./lib/field-ref";
+export * from "./lib/decorators/decorators.types";
