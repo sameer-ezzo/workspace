@@ -14,7 +14,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { AuthorizeModule } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
-import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 
 function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>) {
     if (!items) return of([]);
@@ -33,17 +32,6 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
     encapsulation: ViewEncapsulation.None,
 })
 export class CpLayoutComponent {
-    sanitizer = inject(DomSanitizer);
-    links = input<{ type: string; href: SafeResourceUrl }[], { type: string; href: string }[]>([], {
-        transform: (value) => {
-            if (!value) return [];
-            return value.map((l) => {
-                const sanitized = this.sanitizer.bypassSecurityTrustResourceUrl(l.href);
-                return { ...l, href: sanitized };
-            });
-        },
-    }); //TODO this introduce a vulnerability because links as input can be passed from router (external user input) ... I think all external resource loading should be declared in routes config
-
     drawer = viewChild(MatDrawer);
     sidebar = input();
     cp_side_bar_items = inject(CP_SIDE_BAR_ITEMS);

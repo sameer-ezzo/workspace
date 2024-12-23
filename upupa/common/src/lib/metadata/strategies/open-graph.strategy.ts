@@ -1,6 +1,6 @@
 import { DOCUMENT } from "@angular/common";
 import { Injectable, InjectionToken, inject } from "@angular/core";
-import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
+import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
 import { MetaContentBaseModel, PageMetadata } from "../metadata";
 import { ContentMetadataConfig } from "./page-metadata.strategy";
 
@@ -35,13 +35,13 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
     readonly config = inject(OPEN_GRAPH_CONFIG);
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => updateHeaderTag(this.dom, name, content, "meta", "property");
+    private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "property");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const fallback = metaFallback.fallback as any;
 
         const og = { ...(fallback.og ?? {}), ...(meta.og ?? {}) }; //as OpenGraphData;
-                
+
         const image = this.config?.imageLoading ? this.config.imageLoading({ src: og["og:image"] }) : og["og:image"];
         this.metaUpdateFn("og:image", image);
         delete og["og:image"];

@@ -4,20 +4,22 @@ import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 import { PageMetadata } from "./metadata";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
 
-export function updateHeaderTag(
+export function appendTagToHead(
     dom: Document,
     name: string,
     content: string | undefined,
     tagType: "title" | "meta" | "link" = "meta",
     key: "rel" | "property" | "name" = "name",
+    shouldRemoveExisting = true,
 ): void {
     if (tagType === "title") {
         dom.title = content ?? "";
         return;
     }
-    dom.querySelector(`${tagType}[${key}="${name}"]`)?.remove();
+    if (shouldRemoveExisting) dom.querySelector(`${tagType}[${key}="${name}"]`)?.remove();
     if (!content) return;
     const metaTag = dom.createElement(tagType);
+
     metaTag.setAttribute(key, name);
     if (tagType === "meta") {
         metaTag.setAttribute("content", content);
@@ -49,10 +51,12 @@ export class MetadataService {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
                 const navigation = this.router.getCurrentNavigation();
-                if (navigation?.["meta"]) return;
 
                 const meta = this.extractMetadataForRoute(event.snapshot) ?? {};
-                navigation["meta"] = meta; // TODO @SAMIR cascade falling back to parent route instead of just filling the whole meta object (ex: child route may only set the title but not the description .. should it fall back to parent route or global config?)
+                navigation["meta"] = { ...meta, ...navigation["meta"] }; //Merge with previous metadata (existing metadata has higher priority)
+
+                //Only update metadata for the root route
+                if (event.snapshot.root !== event.snapshot.parent) return;
 
                 //TITLE
                 if (!meta.title && event.snapshot.title) meta.title = event.snapshot.title;

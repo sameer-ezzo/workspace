@@ -16,12 +16,11 @@ import { TableHeaderComponent } from "@upupa/table";
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
-    links?: { type: HTMLLinkElement["type"]; href: string }[];
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
 };
 
-export function provideLayoutRoute(config: Route & LayoutConfig): Route {
-    return provideRoute(config, withLayoutComponent(config));
+export function provideLayoutRoute(config: Route & LayoutConfig, ...features: RouteFeature[]): Route {
+    return provideRoute(config, withLayoutComponent(config), ...features);
 }
 
 export function withLayoutComponent(config: LayoutConfig): RouteFeature {
@@ -31,7 +30,6 @@ export function withLayoutComponent(config: LayoutConfig): RouteFeature {
             component: config.layout ?? CpLayoutComponent,
             data: {
                 logo: config.logo,
-                links: config.links ?? [],
             },
             providers: [
                 Array.isArray(config.sidebar)
@@ -128,9 +126,6 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
         }
         return { ...g, items: [] };
     });
-
-
-
 
     const groupMap = new Map<string, SideBarGroup>();
     for (const group of groups) {
