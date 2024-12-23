@@ -1,6 +1,6 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
-import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
+import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
 import { PageMetadata } from "../metadata";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
@@ -38,19 +38,26 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         delete meta.schema;
 
         const title = this.config.titleTemplate?.(meta.title) ?? meta.title;
-        updateHeaderTag(dom, "title", title, "title");
-        updateHeaderTag(dom, "canonical", meta["canonical"], "link", "rel");
+        appendTagToHead(dom, "title", title, "title");
+        appendTagToHead(dom, "canonical", meta["canonical"], "link", "rel");
 
         const image = this.config?.imageLoading ? this.config.imageLoading({ src: meta.image }) : meta.image;
-        updateHeaderTag(dom, "image", image);
+        appendTagToHead(dom, "image", image);
+
+        if (meta.externalLinks) {
+            for (const link of meta.externalLinks) {
+                appendTagToHead(dom, link.rel, link.href, "link", "rel", false);
+            }
+        }
 
         delete meta["image"];
         delete meta["title"];
         delete meta["canonical"];
+        delete meta["externalLinks"];
 
         for (const key in meta) {
             const k = key; //as keyof PageMetadata;
-            updateHeaderTag(dom, key, meta[k] as string);
+            appendTagToHead(dom, key, meta[k] as string);
         }
     }
 }

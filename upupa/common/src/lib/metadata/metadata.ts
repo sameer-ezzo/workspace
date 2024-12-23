@@ -25,7 +25,7 @@ export type PageMetadata = MetaContentBaseModel & {
     charset?: "UTF-8" | "ISO-8859-1" | string;
     refresh?: string; // Example: '5; url=https://example.com'
     contentLanguage?: string; // Example: 'en', 'es', 'fr'
-
+    externalLinks?: { rel: HTMLLinkElement["type"]; href: string }[];
     openGraph?: OpenGraphData;
     twitter?: TwitterCard;
 };

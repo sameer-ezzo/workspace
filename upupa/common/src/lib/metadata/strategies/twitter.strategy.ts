@@ -1,7 +1,7 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
 import { MetaContentBaseModel } from "../metadata";
 import { ContentMetadataConfig } from "./page-metadata.strategy";
-import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
+import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
 import { DOCUMENT } from "@angular/common";
 
 export const TWITTER_CARD_CONFIG = new InjectionToken<TwitterCardConfig>("TWITTER_CARD_CONFIG");
@@ -45,7 +45,7 @@ export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> 
 
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => updateHeaderTag(this.dom, name, content, "meta", "name");
+    private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "name");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const fallback = metaFallback.fallback as any;
