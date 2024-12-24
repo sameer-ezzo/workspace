@@ -3,8 +3,6 @@ import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { map } from "rxjs";
 
-
-
 export function getRouteSegments(route: ActivatedRoute): { segment: string; config: string }[] {
     const parent = route.parent;
 
@@ -94,7 +92,7 @@ export function queryParams() {
         const query = route.snapshot.queryParams;
         if (Object.keys(value).some((key) => value[key] != query[key])) {
             const queryParams = { ...query, ...value };
-            router.navigate([], { queryParams, fragment: route.snapshot.fragment });
+            router.navigate([], { queryParams, fragment: route.snapshot.fragment, info: { scrollPositionRestoration: "disabled" } });
         }
     });
 
@@ -112,7 +110,7 @@ export function queryParam(paramName: string) {
         const query = route.snapshot.queryParams;
         if (value != query[paramName]) {
             const queryParams = { ...query, [paramName]: value };
-            router.navigate([], { queryParams, fragment: route.snapshot.fragment });
+            router.navigate([], { queryParams, fragment: route.snapshot.fragment, info: { scrollPositionRestoration: "disabled" } });
         }
     });
     return result;
