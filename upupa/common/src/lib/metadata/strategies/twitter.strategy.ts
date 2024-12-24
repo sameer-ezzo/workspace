@@ -1,12 +1,13 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
-import { MetaContentBaseModel } from "../metadata";
+
 import { ContentMetadataConfig } from "./page-metadata.strategy";
 import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
 import { DOCUMENT } from "@angular/common";
+import { TwitterCardMetadata } from "../models";
 
 export const TWITTER_CARD_CONFIG = new InjectionToken<TwitterCardConfig>("TWITTER_CARD_CONFIG");
 
-export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCard>, "imageLoading">;
+export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCardMetadata>, "imageLoading">;
 
 export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
     imageLoading: (config: { src?: string; size?: string }) => {
@@ -15,28 +16,6 @@ export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
         const size = config.size ?? "1200x675";
         return `${src}?size=${size}`;
     },
-};
-
-export type TwitterCard = MetaContentBaseModel & {
-    card?: "summary" | "summary_large_image" | "app" | "player"; // Standard Twitter Card types
-    imageAlt?: string;
-    site?: string;
-    creator?: string;
-    appName?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
-    appId?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
-    appUrl?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
 };
 
 @Injectable()

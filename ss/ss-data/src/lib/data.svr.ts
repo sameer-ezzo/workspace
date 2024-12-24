@@ -433,6 +433,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const doc = await model.findById(id).lean();
         if (!doc) throw new HttpException({ body: "NOT_FOUND" }, HttpStatus.NOT_FOUND);
 
+        patches ??= [];
         const directPatches = patches.filter((p) => p.path === "/");
 
         let result;

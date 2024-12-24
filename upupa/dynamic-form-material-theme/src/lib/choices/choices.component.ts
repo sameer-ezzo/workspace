@@ -4,7 +4,6 @@ import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/fo
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { ErrorsDirective } from "@upupa/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatRadioModule } from "@angular/material/radio";
 import { ChoicesComponent, ParagraphComponent } from "@upupa/dynamic-form-native-theme";
@@ -15,6 +14,6 @@ import { ChoicesComponent, ParagraphComponent } from "@upupa/dynamic-form-native
     styleUrls: ["./choices.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatChoicesComponent), multi: true }],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatCheckboxModule, MatRadioModule, MatIconModule, ParagraphComponent],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModule, MatCheckboxModule, MatRadioModule, MatIconModule, ParagraphComponent],
 })
 export class MatChoicesComponent extends ChoicesComponent {}

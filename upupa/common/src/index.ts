@@ -30,6 +30,7 @@ export * from "./lib/action-descriptor";
 export * from "./lib/logger";
 
 export * from "./lib/metadata/metadata.service";
+export * from "./lib/metadata/models";
 export * from "./lib/metadata/metadata";
 export * from "./lib/metadata/route-modifiers";
 export * from "./lib/metadata/strategies/open-graph.strategy";

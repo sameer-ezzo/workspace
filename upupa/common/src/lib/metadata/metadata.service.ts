@@ -1,8 +1,9 @@
 import { DOCUMENT } from "@angular/common";
 import { inject, Injectable, InjectionToken } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
-import { PageMetadata } from "./metadata";
+
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
+import { PageMetadata } from "./models";
 
 export function appendTagToHead(
     dom: Document,

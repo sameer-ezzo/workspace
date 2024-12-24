@@ -4,7 +4,7 @@ import { PermissionsService } from "../permissions.service";
 import { SnackBarService } from "@upupa/dialog";
 import { RulePermissionsTableComponent } from "../rule-permissions-table/rule-permissions-table.component";
 import { MatIconModule } from "@angular/material/icon";
-import { NgStyle, TitleCasePipe } from "@angular/common";
+import { TitleCasePipe } from "@angular/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @Component({
@@ -12,7 +12,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
     selector: "rule-form",
     templateUrl: "./rule-form.component.html",
     styleUrls: ["./rule-form.component.scss"],
-    imports: [RulePermissionsTableComponent, MatIconModule, TitleCasePipe, MatProgressBarModule, NgStyle],
+    imports: [RulePermissionsTableComponent, MatIconModule, TitleCasePipe, MatProgressBarModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RuleFormComponent {
