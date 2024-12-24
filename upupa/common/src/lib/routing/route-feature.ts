@@ -1,7 +1,6 @@
 import { Route, Routes } from "@angular/router";
 import { DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
-import { SideBarViewModel, SideBarGroup } from "@upupa/cp";
 
 export type NamedRoute = Route & { name: string };
 export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component"> & { component: DynamicComponent<T> };

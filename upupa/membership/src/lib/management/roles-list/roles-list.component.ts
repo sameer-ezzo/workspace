@@ -101,7 +101,7 @@ export class RolesListComponent implements OnInit {
 
                 const res = await firstValueFrom(dialogRef.afterClosed());
                 if (!res) return;
-                await this.data.refreshCache("/role");
+                await this.data.refresh("/role");
                 this.adapter.refresh();
                 break;
             }
@@ -116,7 +116,7 @@ export class RolesListComponent implements OnInit {
                 if (!res) return;
                 await this.data.delete(`/role/${role._id}`);
                 this.snack.openSuccess("Role deleted!");
-                await this.data.refreshCache("/role");
+                await this.data.refresh("/role");
                 this.adapter.refresh();
                 break;
             }

@@ -200,7 +200,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                 ) {
                     await this.banUser(user._id, !user.disabled);
                     this.snack.openSuccess("User banned");
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
                 break;
@@ -215,7 +215,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                 if (await this.confirm.openWarning(d)) {
                     await this.data.delete(`/user/${user._id}`);
                     this.snack.openSuccess("User deleted");
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
                 break;
@@ -230,7 +230,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             if (task) {
                 if (await task) {
                     this.snack.openSuccess();
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
             }

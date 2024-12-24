@@ -5,6 +5,8 @@ import { DataAdapter } from "@upupa/data";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { ITableCellTemplate } from "@upupa/table";
 import { openFormDialog, waitForOutput } from "../helpers";
+import { DialogRef } from "@upupa/dialog";
+import { firstValueFrom } from "rxjs";
 
 @Component({
     standalone: true,
@@ -25,10 +27,12 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
         // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
-            const { componentRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true });
-            const { submitResult } = await waitForOutput("submitted", componentRef.instance);
-            this.adapter?.put(this.item(), submitResult);
-            this.adapter?.refresh(true);
+            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true });
+            const { submitResult } = await firstValueFrom(dialogRef.afterClosed());
+            if (this.adapter && submitResult) {
+                await this.adapter.put(this.item(), submitResult);
+                this.adapter.refresh(true);
+            }
         });
     }
 }
