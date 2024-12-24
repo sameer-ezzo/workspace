@@ -146,12 +146,12 @@ export class WidgetBuilderComponent implements OnChanges {
         const template = { ...blueprint.template, selector };
         const widget: Widget = { ...blueprint, id, x, y, template };
 
-        this.value.update((v) => [...(v ?? []), widget]);
+        this.handleUserInput([...(this.value() ?? []), widget]);
         // this.gridOptions.update((x) => ({ ...x, layout: "compact" }));
     }
 
     remove(id: string) {
-        this.value.update((x) => x.filter((y) => y.id !== id));
+        this.handleUserInput((this.value() ?? []).filter((w) => w.id !== id));
     }
 
     async settings(id: string) {

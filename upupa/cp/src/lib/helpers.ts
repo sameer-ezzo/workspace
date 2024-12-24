@@ -56,11 +56,14 @@ export async function createButtonHandler(
     const injector = options?.injector ?? inject(Injector);
     const v = value ? value() : readInput("item", sourceComponent);
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    const result = await openFormDialog.call(sourceComponent, formViewModel, v, { dialogOptions, defaultAction: true, injector });
+    const { dialogRef } = await openFormDialog(formViewModel, v, { dialogOptions, defaultAction: true, injector });
+    const result = await firstValueFrom(dialogRef.afterClosed());
 
     const adapter = injector.get(DataAdapter);
-    adapter?.create(result.submitResult);
-    adapter?.refresh(true);
+    if (adapter && result?.submitResult) {
+        await adapter.create(result.submitResult);
+        adapter.refresh(true);
+    }
     return result;
 }
 
@@ -145,8 +148,8 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
                             if (descriptor.type === "submit") {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 componentInstance.submit();
-                                const { submitResult, error } = await waitForOutput("submitted", componentInstance);
-                                dialogRef.close(submitResult);
+                                const result = await waitForOutput("submitted", componentInstance);
+                                if (!result.error) dialogRef.close(result);
                             }
                         },
                     },
@@ -155,7 +158,10 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         ],
     };
 
-    const dialogRef = dialog.open({ component: DataFormWithViewModelComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector: context?.injector }, opts);
+    const dialogRef = dialog.open<DataFormWithViewModelComponent, any, { submitResult?; error? }>(
+        { component: DataFormWithViewModelComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector: context?.injector },
+        opts,
+    );
 
     const componentRef: ComponentRef<DataFormWithViewModelComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
     const dialogWrapper = dialogRef.componentInstance;

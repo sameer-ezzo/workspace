@@ -80,7 +80,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
     }
 
     override init(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor }) {
-        const refreshCache$ = from(this.dataService.refreshCache(this.path)); // refresh api cache to get the latest data
+        const refreshCache$ = from(this.dataService.refresh(this.path)); // refresh api cache to get the latest data
         return refreshCache$.pipe(switchMap(() => super.init(options)));
     }
 

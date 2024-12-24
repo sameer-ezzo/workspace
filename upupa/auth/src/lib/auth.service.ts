@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen, filter, switchMap, tap, take } from "rxjs/operators";
 import { AUTH_BASE_TOKEN, DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN } from "./di.token";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router, ActivationEnd } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
@@ -53,7 +53,7 @@ export class AuthService {
                 this.triggerNext(principle);
             }
         }),
-        switchMap((x) => this.user$)
+        switchMap((x) => this.user$),
     );
 
     private readonly _passwordPolicy = inject(DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN);
@@ -116,7 +116,7 @@ export class AuthService {
             const base64Url = tokenString.split(".")[1];
             const base64 = base64Url.replace("-", "+").replace("_", "/");
             const token = JSON.parse(
-                atob(base64)
+                atob(base64),
                 // Buffer.from(base64, 'base64')
             );
 
@@ -147,8 +147,15 @@ export class AuthService {
                     return principle;
                 }
             } catch (error) {
-                console.error("Signing out because: ", error);
-                this.signout();
+                if (error instanceof HttpErrorResponse) {
+                    const status = `${error.status}`;
+                    if (status.startsWith("4")) {
+                        console.error("Signing out because: ", error);
+                        this.signout();
+                    } else {
+                        console.error("Error refreshing token: ", error);
+                    }
+                }
                 return principle;
             }
         }
