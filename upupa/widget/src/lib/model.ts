@@ -1,8 +1,7 @@
-import { component, DynamicComponent } from "@upupa/common";
 import type { GridStackWidget } from "gridstack";
-import { TextWidget } from "./widgets/text.widget";
+import { DynamicComponent } from "@upupa/common";
 import { Class } from "@noah-ark/common";
-import { formInput, FormViewModelMirror } from "@upupa/dynamic-form";
+import { FormViewModelMirror } from "@upupa/dynamic-form";
 
 export type ComponentSelector = Omit<DynamicComponent, "component"> & { selector: string };
 export type Widget = GridStackWidget & {
@@ -16,7 +15,7 @@ export type Widget = GridStackWidget & {
 /**
  * @description This model used to actually render the widget on the editor grid.
  */
-export type MaterializedWidget<T = unknown> = Omit<Widget, "template"> & { template: DynamicComponent<T>; style?: Record<string, string> };
+export type MaterializedWidget<T = unknown> = Omit<Widget, "template"> & { template: DynamicComponent<T> & ComponentSelector; style?: Record<string, string> };
 
 /**
  * @description
@@ -41,6 +40,21 @@ export function materializeWidget(baseWidget: Widget, blueprint: WidgetBlueprint
         style: {
             "grid-column": `${baseWidget.x + 1} / span ${baseWidget.w ?? 1}`,
             "grid-row": `${baseWidget.y + 1} / span ${baseWidget.h ?? 1}`,
+        },
+    };
+}
+
+export function deMaterializeWidget(widget: MaterializedWidget): Widget {
+    const _widget = { ...widget };
+    delete _widget.style;
+    return {
+        ..._widget,
+        template: {
+            selector: widget.template.selector,
+            inputs: widget.template.inputs,
+            models: widget.template.models,
+            outputs: widget.template.outputs,
+            class: widget.template.class,
         },
     };
 }
