@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule } from "@angular/common";
 import {
     Component,
     EnvironmentInjector,
@@ -13,14 +13,14 @@ import {
     inject,
     input,
     output,
-} from '@angular/core';
-import { Subscription } from 'rxjs';
-import { createContentNodes } from './routing/create-content-nodes';
-import { ContentNode } from './routing/content-node';
-import { DynamicComponent } from './dynamic-component';
+} from "@angular/core";
+import { Subscription } from "rxjs";
+import { createContentNodes } from "./routing/create-content-nodes";
+import { ContentNode } from "./routing/content-node";
+import { DynamicComponent } from "./dynamic-component";
 
 @Component({
-    selector: 'portal',
+    selector: "portal",
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
     template: ``,
@@ -50,8 +50,8 @@ export class PortalComponent {
     ngOnChanges(changes: SimpleChanges) {
         const _template = this.template();
         const _component = this.component();
-        if (_template && _component) throw new Error('You must provide either template or component but not both');
-        if (!_template && !_component) throw new Error('You must provide either template or component');
+        if (_template && _component) throw new Error("You must provide either template or component but not both");
+        if (!_template && !_component) throw new Error("You must provide either template or component");
 
         const template: DynamicComponent = {
             component: _component ?? _template?.component,
@@ -62,16 +62,23 @@ export class PortalComponent {
             injector: this.injector() ?? _template?.injector,
         };
 
-        if (changes['component'] || changes['content'] || changes['template']) {
-            this.detach();
-            this.attach(template);
+        if (changes["component"] || changes["content"] || changes["template"]) {
+            const previousComponent = this.componentRef?.instance?.constructor;
+            // only detach if the component type has changed
+            if (previousComponent !== template.component) {
+                this.detach();
+                this.attach(template);
+            } else {
+                this.setInputs(template.inputs ?? {});
+                this.subscribeToOutputs(template.outputs ?? {});
+            }
         }
 
-        if (changes['outputs'] && !changes['outputs'].firstChange) {
+        if (changes["outputs"] && !changes["outputs"].firstChange) {
             this.subscribeToOutputs(template.outputs ?? {});
         }
 
-        if (changes['inputs'] && !changes['inputs'].firstChange) {
+        if (changes["inputs"] && !changes["inputs"].firstChange) {
             this.setInputs(template.inputs ?? {});
         }
     }
