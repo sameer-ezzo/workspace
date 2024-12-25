@@ -162,7 +162,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         //     exclude.forEach((x) => (projection[x] = 0)); //make sure to exclude in nothing included
         // }
 
-        let model = await this.getModel(modelName);
+        const model = await this.getModel(modelName);
 
         if (id) {
             if (!model) return undefined as T;

@@ -104,8 +104,9 @@ export class DataFormWithViewModelComponent<T = any> {
             try {
                 submitResult = (await vm["onSubmit"]?.()) ?? this.value();
                 this.submitted.emit({ submitResult });
-            } catch (error) {
-                this.submitted.emit({ error });
+            } catch (err) {
+                error = err;
+                this.submitted.emit({ error: err });
             } finally {
                 this.submitting.set(false);
             }
@@ -120,7 +121,7 @@ export class DataFormWithViewModelComponent<T = any> {
 
     async onAction(e: ActionEvent): Promise<void> {
         const vm = this.value();
-        let { handlerName } = e.action as any;
+        const { handlerName } = e.action as any;
 
         if (e.action.type == "submit" || handlerName === "onSubmit") return this.submit();
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);

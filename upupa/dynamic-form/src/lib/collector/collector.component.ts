@@ -169,7 +169,8 @@ export class CollectorComponent extends InputBaseComponent<any> {
             Object.values(fields).forEach((f: any) => {
                 const info = this.formFieldsInfo[f.name];
                 const hidden = info && info.page !== this.activePage;
-                f.ui = { ...f.ui, hidden };
+                f.inputs ??= {};
+                f.inputs["hidden"] = hidden;
             });
         }
         this._checkPageInvalid(this.activePage);
