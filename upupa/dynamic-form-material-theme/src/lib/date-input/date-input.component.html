@@ -2,7 +2,17 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <input matInput [matDatepicker]="picker" #input [formControl]="control()" [readonly]="readonly()" [placeholder]="placeholder()" [attr.name]="name()" />
+    <input
+        #input
+        matInput
+        [value]="value()"
+        (input)="value.set($event.target.value)"
+        [formControl]="control()"
+        [matDatepicker]="picker"
+        [readonly]="readonly()"
+        [placeholder]="placeholder()"
+        [attr.name]="name()"
+    />
     <mat-datepicker-toggle matSuffix touchUi [for]="picker"></mat-datepicker-toggle>
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>

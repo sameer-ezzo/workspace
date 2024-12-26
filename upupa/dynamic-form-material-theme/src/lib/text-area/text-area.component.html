@@ -5,6 +5,7 @@
     <textarea
         matInput
         [value]="value()"
+        (input)="value.set($event.target.value)"
         [formControl]="control()"
         [required]="required()"
         [readonly]="readonly()"

@@ -1,3 +1,5 @@
+{{value() | json}}
+{{control().value | json}}
 <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
@@ -7,8 +9,10 @@
         <mat-select
             #selectInput
             multiple
-            (openedChange)="selectInput.panelOpen ? loadData() : null"
+            [value]="value()"
+            (selectionChange)="select(selectInput.value)"
             [formControl]="control()"
+            (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
             [panelClass]="panelClass()"
             [placeholder]="placeholder()"
@@ -53,8 +57,10 @@
     } @else {
         <mat-select
             #selectInput
-            (openedChange)="selectInput.panelOpen ? loadData() : null"
+            [value]="value()"
+            (selectionChange)="select(selectInput.value)"
             [formControl]="control()"
+            (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
             [placeholder]="placeholder()"
             [panelClass]="panelClass()"
