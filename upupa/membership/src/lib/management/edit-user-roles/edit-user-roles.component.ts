@@ -13,6 +13,7 @@ import { MatButtonModule } from "@angular/material/button";
 
 @Component({
     selector: "edit-user-roles",
+    standalone: true,
     templateUrl: "./edit-user-roles.component.html",
     styleUrls: ["./edit-user-roles.component.scss"],
     imports: [DynamicFormComponent, MatButtonModule],

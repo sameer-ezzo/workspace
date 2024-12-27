@@ -8,7 +8,8 @@ import { AuthorizationService } from "./authorization.service";
 
 @Directive({
     selector: '[authAction]',
-    exportAs: 'authAction'
+    exportAs: 'authAction',
+    standalone: true,
 })
 export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
 

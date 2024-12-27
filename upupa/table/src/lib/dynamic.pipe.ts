@@ -21,5 +21,6 @@ export class DynamicPipe implements PipeTransform {
 @Pipe({
     name: "impure",
     pure: false,
+    standalone: true,
 })
 export class NonePureDynamicPipe extends DynamicPipe {}

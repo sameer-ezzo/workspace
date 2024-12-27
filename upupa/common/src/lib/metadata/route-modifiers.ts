@@ -37,13 +37,13 @@ export function withResolveContent(
  * provide metadata for the page for meta data service to update the page header
  * @param pageData static metadata for the page
  */
-export function withPageMetadata(pageData: PageMetadata): RouteFeature;
+export function withPageMetadata(pageData: Partial<PageMetadata>): RouteFeature;
 /**
  * provide metadata for the page for meta data service to update the page header
  * @param pageDataFn dynamic metadata for the page
  */
-export function withPageMetadata<TContent = unknown>(pageDataFn: (content?: TContent) => PageMetadata): RouteFeature;
-export function withPageMetadata<TContent = unknown>(pageData: PageMetadata | ((content?: TContent) => PageMetadata)): RouteFeature {
+export function withPageMetadata<TContent = unknown>(pageDataFn: (content?: TContent) => Partial<PageMetadata>): RouteFeature;
+export function withPageMetadata<TContent = unknown>(pageData: Partial<PageMetadata> | ((content?: TContent) => Partial<PageMetadata>)): RouteFeature {
     return {
         name: "withPageMetadata",
         modify: () => {

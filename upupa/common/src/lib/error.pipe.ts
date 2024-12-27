@@ -29,7 +29,7 @@ export class ErrorService {
     }
 }
 
-@Pipe({ name: 'error', pure: false })
+@Pipe({ name: 'error', pure: false, standalone: true })
 export class ErrorPipe extends TextPipe {
 
     constructor(protected errorService: ErrorService, translateService: TranslateService, _ref: ChangeDetectorRef) {
