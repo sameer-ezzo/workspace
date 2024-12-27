@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output } from "@angular/core";
+import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, InjectionToken } from "@angular/core";
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
@@ -6,6 +6,13 @@ import { ActionEvent, deepAssign } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+
+export const FORM_VIEW_MODEL = new InjectionToken<any[]>("FORM_VIEW_MODEL");
+
+export function injectFormViewModel(viewModel: Class) {
+    const values = inject(FORM_VIEW_MODEL);
+    return values.find((x) => x.__proto__.constructor === viewModel);
+}
 
 @Component({
     selector: "data-form",
@@ -27,6 +34,12 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         {
             provide: NG_VALUE_ACCESSOR,
             useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
+            deps: [DataFormWithViewModelComponent],
+            multi: true,
+        },
+        {
+            provide: FORM_VIEW_MODEL,
+            useFactory: (self: DataFormWithViewModelComponent) => self.value(),
             deps: [DataFormWithViewModelComponent],
             multi: true,
         },
@@ -67,6 +80,18 @@ export class DataFormWithViewModelComponent<T = any> {
         return [...formActions].filter((x) => x);
     });
 
+    _injector() {
+        return Injector.create({
+            providers: [
+                {
+                    provide: this.viewModel().viewModelType,
+                    useValue: this.value(),
+                },
+            ],
+            parent: this.injector,
+        });
+    }
+
     // private instance = signal<any>(null);
     ngOnChanges(changes: SimpleChanges) {
         const v = this.value();
@@ -74,7 +99,7 @@ export class DataFormWithViewModelComponent<T = any> {
 
         if (!(v instanceof type)) {
             let instance: any;
-            runInInjectionContext(this.injector, () => {
+            runInInjectionContext(this._injector(), () => {
                 instance = new type();
             });
             deepAssign(instance, v);
@@ -85,7 +110,7 @@ export class DataFormWithViewModelComponent<T = any> {
 
     onValueChange(e: any) {
         const vm = this.value();
-        runInInjectionContext(this.injector, async () => {
+        runInInjectionContext(this._injector(), async () => {
             await vm["onValueChange"]?.(e);
             this.control().patchValue(vm, { emitEvent: false });
         });
@@ -100,7 +125,7 @@ export class DataFormWithViewModelComponent<T = any> {
         let submitResult: T | undefined;
         let error = undefined;
 
-        await runInInjectionContext(this.injector, async () => {
+        await runInInjectionContext(this._injector(), async () => {
             try {
                 submitResult = (await vm["onSubmit"]?.()) ?? this.value();
                 this.submitted.emit({ submitResult });
@@ -125,7 +150,7 @@ export class DataFormWithViewModelComponent<T = any> {
         if (e.action.type == "submit" || handlerName === "onSubmit") return this.submit();
         if (!vm[handlerName]) throw new Error(`Handler ${handlerName} not found in ViewModel`);
 
-        return runInInjectionContext(this.injector, async () => {
+        return runInInjectionContext(this._injector(), async () => {
             await vm[handlerName]();
         });
     }

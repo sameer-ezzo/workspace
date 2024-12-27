@@ -1,5 +1,5 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef, Injector } from "@angular/core";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors, NgControl } from "@angular/forms";
+import { Component, forwardRef, inject, input, computed, model, ComponentRef } from "@angular/core";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from "@angular/forms";
 import { PortalComponent } from "@upupa/common";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormService } from "./dynamic-form.service";

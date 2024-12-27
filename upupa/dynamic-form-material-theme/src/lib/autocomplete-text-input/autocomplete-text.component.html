@@ -11,7 +11,7 @@
             [required]="required()"
             [attr.name]="name()"
             [value]="value()"
-            (input)="value.set($event.target.value)"
+            (input)="value.set(input.value)"
             [formControl]="control()"
             [placeholder]="placeholder()"
         />

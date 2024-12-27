@@ -3,7 +3,7 @@
         <mat-slide-toggle
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
-            [value]="value()"
+            [checked]="value()"
             (change)="value.set($event.source?.checked)"
             [formControl]="control()"
             [checked]="value"
@@ -16,7 +16,7 @@
         <mat-checkbox
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
-            [value]="value()"
+            [checked]="value()"
             (change)="value.set($event.checked)"
             [formControl]="control()"
             [checked]="value"

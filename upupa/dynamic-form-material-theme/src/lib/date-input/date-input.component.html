@@ -6,7 +6,7 @@
         #input
         matInput
         [value]="value()"
-        (input)="value.set($event.target.value)"
+        (input)="value.set(input.value)"
         [formControl]="control()"
         [matDatepicker]="picker"
         [readonly]="readonly()"

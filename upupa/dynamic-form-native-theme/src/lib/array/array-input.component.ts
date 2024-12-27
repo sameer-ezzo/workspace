@@ -25,6 +25,7 @@ import { Class } from "@noah-ark/common";
     ],
 })
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
+    injector = inject(Injector);
     dataTableEl = viewChild(DataTableComponent);
     label = input("");
     readonly dataSource = new ClientDataSource<T>([]);
@@ -35,7 +36,7 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
             let template = null;
             if (c instanceof Type) template = { component: c };
             else template = c;
-            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter() }] });
+            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter() }], parent: this.injector });
             return template;
         },
     });

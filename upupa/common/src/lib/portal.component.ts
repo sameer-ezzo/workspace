@@ -45,7 +45,8 @@ export class PortalComponent<TCom = any> {
     outputs = input<DynamicComponent<TCom>["outputs"]>();
     models = input<DynamicComponent<TCom>["models"]>();
     content = input<ContentNode[][]>(undefined);
-    injector = input<Injector>(this.host.injector);
+    injector = input<Injector>();
+    _injector = inject(Injector);
 
     attached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
     detached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
@@ -65,7 +66,7 @@ export class PortalComponent<TCom = any> {
             content: this.content() ?? _template?.content,
             outputs: this.outputs() ?? _template?.outputs,
             class: this.class() ?? _template?.class,
-            injector: this.injector() ?? _template?.injector,
+            injector: this.injector() ?? _template?.injector ?? this._injector,
             models: this.models() ?? _template?.models,
         };
 
