@@ -22,3 +22,4 @@ export * from "./lib/decorators/form-view-model.decorator";
 export * from "./lib/helpers";
 export * from "./lib/form-view-model/form-view-model.component";
 export * from "./lib/buttons/edit-btn.component";
+export * from "./lib/buttons/create-btn.component";

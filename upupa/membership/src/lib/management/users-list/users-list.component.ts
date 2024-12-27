@@ -75,12 +75,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
 
         this.userSelect = [...new Set(["_id", "email", ...Object.getOwnPropertyNames(this.columns ?? {})])];
 
-        this.usersDataSource = new ApiDataSource<ModelType>(this.data, "/user", this.userSelect);
-        if (this.adapter) {
-            this.adapter.destroy();
-            this.adapter = null;
-        }
-        if (this.adapter) this.adapter.destroy();
+        this.usersDataSource = new ApiDataSource<ModelType>(this.data, "/user?select=" + this.userSelect.join(","));
 
         this.adapter = new DataAdapter(this.usersDataSource, "_id", "email", "_id", null, {
             page: { pageIndex: 0, pageSize: 100 },

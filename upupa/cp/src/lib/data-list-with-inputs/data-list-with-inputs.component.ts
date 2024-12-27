@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, runInInjectionContext, viewChild } from "@angular/core";
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
-import { DynamicComponent, PortalComponent } from "@upupa/common";
+import { ActionEvent, DynamicComponent, PortalComponent } from "@upupa/common";
 import { DataListViewModelQueryParam, DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 
 import { CommonModule } from "@angular/common";
@@ -79,10 +79,11 @@ export class DataListWithInputsComponent implements AfterViewInit, OnDestroy {
                     .filter((qp) => params[qp.param])
                     .map((qp) => ({ [qp.param]: params[qp.param] }))
                     .reduce((acc, qp) => ({ ...acc, ...qp }), {});
-                this.instance.dataAdapter.filter = {
-                    ...this.instance.dataAdapter.filter,
+                const filter = {
+                    ...this.instance.dataAdapter.filter(),
                     ...qps,
                 };
+                this.instance.dataAdapter.load({ filter });
             });
         }
     }

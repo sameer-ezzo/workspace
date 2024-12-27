@@ -17,6 +17,7 @@ import {
     Pipe,
     InjectionToken,
     SimpleChange,
+    runInInjectionContext,
 } from "@angular/core";
 import {
     NG_VALUE_ACCESSOR,
@@ -119,10 +120,11 @@ export function fieldRef(path: string): FieldRef {
     ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
-    private readonly conditionalService = inject(ConditionalLogicService);
-    private readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
-    public readonly bus = inject(EventBus);
-    private readonly _patches: Map<`group:${string}` | `/${string}`, unknown> = new Map();
+    readonly conditionalService = inject(ConditionalLogicService);
+    readonly injector = inject(Injector);
+    readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
+    readonly bus = inject(EventBus);
+    readonly _patches: Map<`group:${string}` | `/${string}`, unknown> = new Map();
     fields = input.required<FormScheme>();
 
     conditions = input<Condition[]>([]);
@@ -219,7 +221,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     graph: FormGraph = new Map();
 
     formService = inject(DynamicFormService);
-    _builder = new DynamicFormBuilder(inject(Injector), this.formService);
+    _builder = new DynamicFormBuilder(this.injector, this.formService);
 
     constructor() {
         this.form.events.subscribe((e) => {
@@ -293,7 +295,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         }
     }
 
-    injector = inject(Injector);
     // formRef = viewChild<ElementRef<HTMLFormElement>>("formRef");
     formRef = viewChild<FormGroupDirective>("formRef");
 

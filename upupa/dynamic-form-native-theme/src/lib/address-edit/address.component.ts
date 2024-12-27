@@ -1,4 +1,4 @@
-import { Component, SimpleChanges, effect, forwardRef, input } from "@angular/core";
+import { Component, SimpleChanges, effect, forwardRef, input } from '@angular/core';
 
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl, ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { countries, InputBaseComponent } from "@upupa/common";

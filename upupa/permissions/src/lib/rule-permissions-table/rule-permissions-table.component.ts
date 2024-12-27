@@ -32,7 +32,7 @@ export class RulePermissionsTableComponent {
     public set permissions(value: SimplePermission[]) {
         if (this._permissions === value) return;
         this._permissions = value;
-        this.permissionsDataSource.all = this.permissions;
+        this.permissionsDataSource.all.set(this.permissions);
     }
 
     tableColumns = { ...TABLE_COLUMNS } as unknown as ColumnsDescriptor;
@@ -92,9 +92,9 @@ export class RulePermissionsTableComponent {
 
     private async _updatePermission(permission) {
         const res = await this.permissionsService.addOrUpdatePermission(permission);
-        const idx = this.permissionsDataSource.all.findIndex((p) => p._id === permission._id);
-        this.permissionsDataSource.all[idx] = res;
-        this.permissionsChange.emit(this.permissionsDataSource.all);
+        // const idx = this.permissionsDataSource.all.findIndex((p) => p._id === permission._id);
+        // this.permissionsDataSource.all[idx] = res;
+        // this.permissionsChange.emit(this.permissionsDataSource.all);
         this.cdRef.markForCheck();
     }
 
@@ -130,9 +130,8 @@ export class RulePermissionsTableComponent {
         switch (action) {
             case "delete": {
                 await this.permissionsService.deletePermission(e.data[0]);
-                this.permissionsDataSource.all = this.permissionsDataSource.all.filter((p) => p._id !== e.data[0]._id);
                 this.cdRef.markForCheck();
-                this.permissionsChange.emit(this.permissionsDataSource.all);
+                this.permissionsChange.emit(this.permissionsDataSource.all());
                 break;
             }
             default:

@@ -8,11 +8,6 @@ import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { EditButton } from "./buttons/edit-btn.component";
-
-function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
-    return { ...a, ...b } as Partial<T & X>;
-}
 
 @Component({
     selector: "inline-button",
@@ -47,71 +42,9 @@ export function inlineButton<T = unknown>(options: { descriptor?: Partial<Action
     return template;
 }
 
-export async function createButtonHandler(
-    sourceComponent: any,
-    formViewModel: Class,
-    value?: () => any | Promise<any>,
-    options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogConfig>; injector?: Injector },
-) {
-    const injector = options?.injector ?? inject(Injector);
-    const v = value ? value() : readInput("item", sourceComponent);
-    const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    const { dialogRef } = await openFormDialog(formViewModel, v, { dialogOptions, defaultAction: true, injector });
-    const result = await firstValueFrom(dialogRef.afterClosed());
-
-    const adapter = injector.get(DataAdapter);
-    if (adapter && result?.submitResult) {
-        await adapter.create(result.submitResult);
-        adapter.refresh(true);
-    }
-    return result;
-}
-
-export function createButton(
-    formViewModel: Class,
-    value?: () => any | Promise<any>,
-    options?: { descriptor?: Partial<ActionDescriptor>; dialogOptions?: Partial<DialogConfig> },
-): DynamicComponent {
-    if (!formViewModel) throw new Error("formViewModel is required");
-    const btnDescriptor: Partial<ActionDescriptor> = {
-        text: "Create",
-        icon: "add",
-        color: "primary",
-        variant: "raised",
-    };
-
-    return inlineButton({
-        descriptor: merge(btnDescriptor, options?.descriptor),
-        clickHandler: async (source) => createButtonHandler(source, formViewModel, value, options),
-        inputItem: null,
-    });
-}
-
 export function readValueFromApi<T = any>(path: string) {
     const ds = inject(DataService);
     return firstValueFrom(ds.get<T>(path)).then((r) => r.data?.[0] as T);
-}
-export function editButton<T = unknown>(
-    formViewModel: Class,
-    options?: {
-        descriptor?: Partial<ActionDescriptor>;
-        dialogOptions?: Partial<DialogConfig>;
-    },
-): DynamicComponent {
-    options ??= {};
-    const defaultEditDescriptor: Partial<ActionDescriptor> = {
-        text: "Edit",
-        icon: "edit",
-        variant: "icon",
-        color: "accent",
-    };
-    const btn = merge(defaultEditDescriptor, options.descriptor);
-    const dialogOptions = { title: "Edit", ...options?.dialogOptions };
-
-    return {
-        component: EditButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn },
-    } as DynamicComponent<EditButton>;
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
@@ -298,9 +231,9 @@ export function deleteButton(
         variant: "icon",
         color: "warn",
     };
-    options.descriptor = merge(defaultDeleteDescriptor, options.descriptor);
+    options.descriptor = { ...defaultDeleteDescriptor, ...options.descriptor };
 
-    const confirmOptions = merge({ title: "Delete", confirmText: "Are you sure you want to delete this item?", no: "Keep it", yes: "Delete" }, options?.confirm ?? {});
+    const confirmOptions = { ...{ title: "Delete", confirmText: "Are you sure you want to delete this item?", no: "Keep it", yes: "Delete" }, ...options?.confirm };
     return inlineButton({
         descriptor: options.descriptor,
         clickHandler: (source) => {

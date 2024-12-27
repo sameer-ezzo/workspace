@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, forwardRef, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { Subscription, take } from "rxjs";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
@@ -77,15 +76,12 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         this.setInternalValue(v);
     }
 
-    private _vSub: Subscription;
-    private _normalizeValue(v: Partial<T> | Partial<T>[]) {
+    private async _normalizeValue(v: Partial<T> | Partial<T>[]) {
         const keys = this.adapter().getKeysFromValue(v);
         if (!keys.length) return;
-        this._vSub?.unsubscribe();
-        this._vSub = this.adapter()
+        await this.adapter()
             .getItems(keys)
-            .pipe(take(1))
-            .subscribe((items) => {
+            .then((items) => {
                 this.selectedNormalized.set(items);
                 const ValidationErrors = this.validate(this.control());
                 if (ValidationErrors) this.control().markAsTouched();
@@ -132,33 +128,35 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     focusedItemChange = output<NormalizedItem<T>>();
     itemClick = output<NormalizedItem<T>>();
 
-    itemAdded = output<NormalizedItem<T>>();
-    itemRemoved = output<NormalizedItem<T>>();
-    itemUpdated = output<NormalizedItem<T>>();
     readonly itemsSource = signal<"adapter" | "selected">(this.lazyLoadData() ? "selected" : "adapter");
 
     readonly items = computed<NormalizedItem<T>[]>(() => {
-        return this.itemsSource() === "adapter" ? this.adapter().normalized() : this.selectedNormalized();
+        const normalized = this.adapter().normalized();
+        const selectedNormalized = this.selectedNormalized();
+        return this.itemsSource() === "adapter" ? normalized : selectedNormalized;
     });
 
     _firstLoad = false;
     async loadData() {
         if (this._firstLoad) return;
         this.loading.set(true);
-        this.adapter()
-            .refresh()
-            .pipe(take(1))
-            .subscribe(() => {
-                this.itemsSource.set("adapter");
-                this.loading.set(false);
-                this._firstLoad = true;
-            });
+        this.adapter().refresh();
+        // .pipe(take(1))
+        // .subscribe(() => {
+        //     this.itemsSource.set("adapter");
+        //     this.loading.set(false);
+        //     this._firstLoad = true;
+        // });
+
+        this.loading.set(false);
+        this._firstLoad = true;
     }
 
     compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes["adapter"]) {
+            this._firstLoad = false;
             const adapter = this.adapter();
             if (!adapter) throw new Error("Adapter is required");
 
@@ -174,16 +172,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
                     : (optVal: any, selectVal: any) => optVal === selectVal;
 
             if (!this.lazyLoadData()) this.loadData();
-
-            this.adapter().itemAdded.subscribe((item) => {
-                this.itemAdded.emit(item);
-            });
-            this.adapter().itemRemoved.subscribe((item) => {
-                this.itemRemoved.emit(item);
-            });
-            this.adapter().itemUpdated.subscribe((item) => {
-                this.itemUpdated.emit(item);
-            });
         }
 
         if (changes["lazyLoadData"]) {
@@ -199,15 +187,15 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() pageChange = new EventEmitter<PageEvent>();
-    onPageChange(page: PageEvent) {
-        this.adapter().page = page;
+    async onPageChange(page: PageEvent) {
+        await this.adapter().load({ page });
         this.pageChange.emit(page);
     }
 
     // eslint-disable-next-line @typescript-eslint/member-ordering
     @Output() sortChange = new EventEmitter<Sort>();
-    onSortData(sort: Sort) {
-        this.adapter().sort = sort;
+    async onSortData(sort: Sort) {
+        await this.adapter().load({ sort });
         this.sortChange.emit(sort);
     }
 

@@ -9,13 +9,10 @@ import { DynamicFormComponent, FormScheme, selectField } from "@upupa/dynamic-fo
 import { HttpClient } from "@angular/common/http";
 import { ActionDescriptor } from "@upupa/common";
 import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
-import { MatButtonModule } from "@angular/material/button";
 @Component({
-    standalone: true,
     selector: "edit-user-roles",
     templateUrl: "./edit-user-roles.component.html",
     styleUrls: ["./edit-user-roles.component.scss"],
-    imports: [DynamicFormComponent, MatButtonModule],
 })
 export class EditUserRolesComponent implements DialogPortal<EditUserRolesComponent> {
     @ViewChild("userForm") form: DynamicFormComponent;
@@ -38,7 +35,7 @@ export class EditUserRolesComponent implements DialogPortal<EditUserRolesCompone
             roles: selectField(
                 "roles",
                 "Roles",
-                new DataAdapter(new ApiDataSource(this.data, "role", ["_id", "name"]), "_id", "name", undefined, undefined),
+                new DataAdapter(new ApiDataSource(this.data, "role?select=_id,name"), "_id", "name", undefined, undefined),
                 "User roles",
                 undefined,
                 "outline",

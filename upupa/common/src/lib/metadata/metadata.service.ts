@@ -51,10 +51,11 @@ export class MetadataService {
     async listenForRouteChanges() {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
+                //accumulate metadata from child route up to the root route
                 const navigation = this.router.getCurrentNavigation();
 
-                const meta = this.extractMetadataForRoute(event.snapshot) ?? {};
-                navigation["meta"] = { ...meta, ...navigation["meta"] }; //Merge with previous metadata (existing metadata has higher priority)
+                const meta = { ...this.extractMetadataForRoute(event.snapshot), ...navigation.extras["meta"] };
+                navigation.extras["meta"] = meta;
 
                 //Only update metadata for the root route
                 if (event.snapshot.root !== event.snapshot.parent) return;

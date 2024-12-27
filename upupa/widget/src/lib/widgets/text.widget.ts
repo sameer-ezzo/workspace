@@ -10,7 +10,7 @@ class TextWidgetSettings {
 @Component({
     selector: "text-widget",
     standalone: true,
-    template: `{{ text() }}`,
+    template: ` {{ text() }} `,
 })
 export class TextWidget {
     text = input<string>();

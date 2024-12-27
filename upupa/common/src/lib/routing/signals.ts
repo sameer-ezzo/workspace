@@ -1,4 +1,4 @@
-import { inject, signal, effect, WritableSignal } from "@angular/core";
+import { inject, signal, effect, WritableSignal, EffectRef } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { map } from "rxjs";
@@ -116,10 +116,17 @@ export function queryParam(paramName: string) {
     return result;
 }
 
-export function signalLink<T = unknown>(main: WritableSignal<T>, branch: WritableSignal<T>) {
+export function signalLink<T = unknown>(main: WritableSignal<T>, branch: WritableSignal<T>): EffectRef {
     //order of effects matters so fill the derived signal first then bypass first write on base signal
-    effect(() => branch.set(main()), { allowSignalWrites: true });
-    effect(() => main.set(branch()), { allowSignalWrites: true });
+    const ref1 = effect(() => branch.set(main()), { allowSignalWrites: true });
+    const ref2 = effect(() => main.set(branch()), { allowSignalWrites: true });
+
+    return {
+        destroy() {
+            ref1.destroy();
+            ref2.destroy();
+        },
+    };
 }
 export function signalBranch<T = unknown>(main: WritableSignal<T>) {
     const branch = signal(main());

@@ -7,27 +7,31 @@ import { ITableCellTemplate } from "@upupa/table";
 import { openFormDialog, waitForOutput } from "../helpers";
 import { DialogConfig, DialogRef } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
+import { reflectFormViewModelType } from "@upupa/dynamic-form";
+import { injectFormViewModel } from "../data-form-with-view-model/data-form-with-view-model.component";
 
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (onClick)="edit()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (onClick)="create()" [descriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
-export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
+export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
     injector = inject(Injector);
     adapter = inject(DataAdapter, { optional: true });
 
     item = input<TItem>();
-    dialogOptions = input<any>({ title: "Edit" });
-    btn = input<ActionDescriptor>({ name: "edit", icon: "edit", variant: "icon" });
-    formViewModel = input<Class>();
+    dialogOptions = input<any>({ title: "Create" });
+    btn = input<ActionDescriptor>({ name: "create", color: "primary", icon: "add", variant: "raised" });
+    formViewModel = input<Class<TItem>>();
 
-    async edit() {
+    async create() {
         // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
-            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true, injector: this.injector });
+            const mirror = reflectFormViewModelType(this.formViewModel());
+            const value = this.item() ?? new mirror.viewModelType();
+            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
             const { submitResult } = result;
             if (this.adapter && submitResult) {
@@ -38,25 +42,25 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
     }
 }
 
-export function editButton<T = unknown>(
+export function createButton<T = unknown>(
     formViewModel: Class,
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
     },
-): DynamicComponent {
+): DynamicComponent<CreateButton> {
     options ??= {};
-    const defaultEditDescriptor: Partial<ActionDescriptor> = {
-        text: "Edit",
-        icon: "edit",
-        variant: "icon",
-        color: "accent",
+    const defaultCreateDescriptor: Partial<ActionDescriptor> = {
+        text: "Create",
+        icon: "add",
+        variant: "raised",
+        color: "primary",
     };
-    const btn = { ...defaultEditDescriptor, ...options.descriptor };
-    const dialogOptions = { title: "Edit", ...options?.dialogOptions };
+    const btn = { ...defaultCreateDescriptor, ...options.descriptor };
+    const dialogOptions = { title: "Create", ...options?.dialogOptions };
 
     return {
-        component: EditButton<any, T>,
+        component: CreateButton<any, T>,
         inputs: { formViewModel, dialogOptions, btn },
-    } as DynamicComponent<EditButton>;
+    } as DynamicComponent<CreateButton>;
 }

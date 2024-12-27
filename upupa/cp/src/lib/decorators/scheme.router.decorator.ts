@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { toTitleCase } from "@upupa/common";
 import { ColumnDescriptor, resolveDataListInputsFor, setDataListMetadataFor } from "@upupa/table";
 import { DatePipe } from "@angular/common";
-import { DataAdapterDescriptor, DataAdapterType, ProviderOptions } from "@upupa/data";
+import { DataAdapterDescriptor, DataAdapterType, DataLoaderOptions } from "@upupa/data";
 import { Type } from "@angular/core";
 export type DataListViewModelType = any;
 
@@ -57,7 +57,7 @@ export function dataListViewModel(options: Partial<DataListViewModelOptions> = {
 export type ApiDataListViewModelParamFunc<T = string> = (url: string, params?: Record<string, string>, queryParams?: Record<string, string>, ...args: []) => T;
 export type ApiDataListViewModelOptions = Omit<DataListViewModelOptions, "dataAdapterDescriptor"> & {
     path: string | ApiDataListViewModelParamFunc<string>;
-    adapterOptions?: ApiDataListViewModelParamFunc<Partial<ProviderOptions<any>>>;
+    adapterOptions?: ApiDataListViewModelParamFunc<Partial<DataLoaderOptions<any>>>;
     formViewModel: Type<any> | ApiDataListViewModelParamFunc<Type<any>>;
 };
 export function apiDataListViewModel(options?: Partial<ApiDataListViewModelOptions>) {

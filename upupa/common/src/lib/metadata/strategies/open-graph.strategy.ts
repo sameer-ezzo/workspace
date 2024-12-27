@@ -1,7 +1,6 @@
 import { DOCUMENT } from "@angular/common";
 import { Injectable, InjectionToken, inject } from "@angular/core";
 import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
-
 import { ContentMetadataConfig } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";
 

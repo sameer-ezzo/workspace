@@ -54,17 +54,17 @@ export class SliderComponent extends InputComponent {
         }
         if (changes["step"]) this.step = +this.step;
 
-        if (changes["adapter"]) {
-            this.adapter.normalized$.subscribe((n) => {
-                this._options = {
-                    floor: 0,
-                    ceil: n.length - 1,
-                    showTicks: true,
-                    stepsArray: n.map((x, i) => {
-                        return { legend: <any>x.display, value: i };
-                    }),
-                };
-            });
+        if (changes['adapter']) {
+            // this.adapter.normalized$.subscribe((n) => {
+            //     this._options = {
+            //         floor: 0,
+            //         ceil: n.length - 1,
+            //         showTicks: true,
+            //         stepsArray: n.map((x, i) => {
+            //             return { legend: <any>x.display, value: i };
+            //         }),
+            //     };
+            // });
         }
 
         if (!this._options.stepsArray) {

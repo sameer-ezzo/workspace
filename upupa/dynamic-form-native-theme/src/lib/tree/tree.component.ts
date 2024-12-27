@@ -42,7 +42,7 @@ export class TreeComponent {
         if (changes["adapter"]) {
             // if (this.hierarchyType === 'children') this.hierarchy = new HierarchyByChildren(this.adapter)
             // else this.hierarchy = new HeirarchyByParent(this.adapter);
-            this.adapter.normalized$.pipe(map((data) => data.map((x) => this.normalizeHierarchy(null, x, 0)))).subscribe((n) => (this.dataSource.data = n));
+            // this.adapter.normalized$.pipe(map((data) => data.map((x) => this.normalizeHierarchy(null, x, 0)))).subscribe((n) => (this.dataSource.data = n));
         }
     }
 
