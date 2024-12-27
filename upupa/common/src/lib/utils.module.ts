@@ -20,9 +20,14 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatBadgeModule } from "@angular/material/badge";
 import { PortalComponent } from "./portal.component";
 
-const declarations = [InputBaseComponent, OnlyNumberDirective, HtmlPipe, FocusDirective, ErrorPipe];
+const declarations = [];
 
 const imports = [
+    ErrorPipe,
+    FocusDirective,
+    HtmlPipe,
+    OnlyNumberDirective,
+    InputBaseComponent,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
@@ -30,7 +35,6 @@ const imports = [
     MatSelectModule,
     MatSnackBarModule,
     MatDialogModule,
-    // LanguageModule,
     MatIconModule,
     ReactiveFormsModule,
     MatBadgeModule,

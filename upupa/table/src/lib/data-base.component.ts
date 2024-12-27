@@ -6,6 +6,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 
 @Component({
+    standalone: true,
     selector: "data-base",
     template: "",
     styles: [],
@@ -78,7 +79,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     private async _normalizeValue(v: Partial<T> | Partial<T>[]) {
         const keys = this.adapter().getKeysFromValue(v);
         if (!keys.length) return;
-        this.selectedNormalized;
         await this.adapter()
             .getItems(keys)
             .then((items) => {

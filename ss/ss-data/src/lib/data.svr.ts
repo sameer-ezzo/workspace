@@ -162,7 +162,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         //     exclude.forEach((x) => (projection[x] = 0)); //make sure to exclude in nothing included
         // }
 
-        let model = await this.getModel(modelName);
+        const model = await this.getModel(modelName);
 
         if (id) {
             if (!model) return undefined as T;
@@ -433,6 +433,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const doc = await model.findById(id).lean();
         if (!doc) throw new HttpException({ body: "NOT_FOUND" }, HttpStatus.NOT_FOUND);
 
+        patches ??= [];
         const directPatches = patches.filter((p) => p.path === "/");
 
         let result;

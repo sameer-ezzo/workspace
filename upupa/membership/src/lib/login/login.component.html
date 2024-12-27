@@ -12,13 +12,12 @@
         }
     </div>
 }
-
 @if (options.fields) {
     <login-form
         (success)="onSuccess($event)"
         (resetPassword)="onResetPassword($event)"
         (fail)="onFailed($event)"
-        [(value)]="value"
+        [value]="value()"
         [fields]="options.fields"
         [conditions]="options.conditions"
     ></login-form>

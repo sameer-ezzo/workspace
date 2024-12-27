@@ -3,12 +3,15 @@ import { Component, forwardRef, inject, model, computed, effect } from "@angular
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@upupa/auth";
-import { EventBus } from "@upupa/common";
 import { DataAdapter, DataService, ApiDataSource } from "@upupa/data";
 import { FileInfo } from "@upupa/upload";
-import { BehaviorSubject, Subscription } from "rxjs";
 import { FileSelectComponent } from "../file-select/file-select.component";
 import { SnackBarService } from "@upupa/dialog";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
 
 const valueProperty = [
     "_id",
@@ -27,6 +30,7 @@ const valueProperty = [
 ] as (keyof FileInfo)[];
 
 @Component({
+    standalone: true,
     selector: "file-browser",
     templateUrl: "./file-browser.component.html",
     styleUrls: ["./file-browser.component.scss"],
@@ -37,6 +41,7 @@ const valueProperty = [
             multi: true,
         },
     ],
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonToggleModule],
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);

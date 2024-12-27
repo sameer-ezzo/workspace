@@ -5,7 +5,7 @@ import { FileRecord } from "@noah-ark/common";
 export interface FileDocument extends Document<string>, FileRecord { }
 
 
-export const fileSchema = new Schema({
+export const FileSchema = new Schema({
     _id: String,
     fieldname: { type: String, index: true },
     originalname: String,
@@ -21,4 +21,4 @@ export const fileSchema = new Schema({
     meta: Object
 }, { strict: false })
 
-export default fileSchema;
+export default FileSchema;

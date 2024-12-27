@@ -2,15 +2,11 @@ import { Component, Input, SimpleChanges } from "@angular/core";
 
 import { AuthService } from "@upupa/auth";
 import { DataService, ObjectId } from "@upupa/data";
-import { FormDesign, FormScheme, hiddenField, textField } from "@upupa/dynamic-form";
+import { DynamicFormComponent, FormDesign, FormScheme, hiddenField, textField } from "@upupa/dynamic-form";
 import { ActionEvent } from "@upupa/common";
 import { DialogRef } from "@angular/cdk/dialog";
 
-@Component({
-    selector: "role-form",
-    templateUrl: "./role-form.component.html",
-    styleUrls: ["./role-form.component.scss"],
-})
+@Component({ standalone: true, selector: "role-form", templateUrl: "./role-form.component.html", styleUrls: ["./role-form.component.scss"], imports: [DynamicFormComponent] })
 export class RoleFormComponent {
     loading = false;
 

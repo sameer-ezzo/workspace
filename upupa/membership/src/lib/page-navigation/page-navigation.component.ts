@@ -1,19 +1,23 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output } from "@angular/core";
+import { RouterLink } from "@angular/router";
+import { IdpButtonDirective } from "../idp-button.directive";
 
 @Component({
-  selector: 'page-navigation',
-  templateUrl: './page-navigation.component.html',
-  styleUrls: ['./page-navigation.component.scss']
+    standalone: true,
+    selector: "page-navigation",
+    templateUrl: "./page-navigation.component.html",
+    styleUrls: ["./page-navigation.component.scss"],
+    imports: [RouterLink, IdpButtonDirective],
 })
 export class PageNavigationComponent {
-  private _links: any[];
-  @Input()
-  public get links(): any[] {
-    return this._links;
-  }
-  public set links(value: any[]) {
-    this._links = value;
-  }
-  @Output() onLinkClick = new EventEmitter<any>();
-  @Output() success = new EventEmitter<any>();
+    private _links: any[];
+    @Input()
+    public get links(): any[] {
+        return this._links;
+    }
+    public set links(value: any[]) {
+        this._links = value;
+    }
+    @Output() onLinkClick = new EventEmitter<any>();
+    @Output() success = new EventEmitter<any>();
 }

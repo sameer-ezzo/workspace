@@ -15,7 +15,7 @@ if drag drop were to be added:
 
 */
 
-@Component({
+@Component({ standalone: true,
     selector: 'mat-form-tree-input',
     templateUrl: './tree.component.html',
     styleUrls: ['./tree.component.css'],
@@ -52,7 +52,7 @@ export class MatTreeComponent {
     }
 }
 
-// @Component({
+// @Component({ standalone: true,
 //   selector: 'form-tree',
 //   templateUrl: './tree.component.html',
 //   styleUrls: ['./tree.component.css'],

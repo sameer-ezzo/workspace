@@ -4,7 +4,7 @@ import { Field } from '@upupa/dynamic-form';
 import { TagsService } from '../tags.service';
 
 
-@Component({
+@Component({ standalone: true,
   selector: 'tag-form',
   templateUrl: './tag-form.component.html',
   styleUrls: ['./tag-form.component.css']

@@ -129,24 +129,7 @@ const membershipOptionsProviders = (options: MembershipOptions): Provider[] => {
 
 const _defaultMembershipOptions = new MembershipOptions();
 
-const components = [
-    IdpButtonDirective,
-    SignUpComponent,
-    SignUpFormComponent,
-    ForgotPasswordComponent,
-    ForgotPasswordFormComponent,
-    ResetPasswordComponent,
-    ResetPasswordFormComponent,
-    VerifyComponent,
-    ProfileComponent,
-    LoginComponent,
-    LoginFormComponent,
-    ChangeAvatarComponent,
-    ChangePhoneComponent,
-    ChangeEmailComponent,
-    PageNavigationComponent,
-    ChangeUserPropComponent,
-];
+const components = [];
 
 @NgModule({
     imports: [
@@ -161,6 +144,22 @@ const components = [
         MembershipRoutingModule,
         UtilsModule,
         DynamicFormModule,
+        IdpButtonDirective,
+        SignUpComponent,
+        SignUpFormComponent,
+        ForgotPasswordComponent,
+        ForgotPasswordFormComponent,
+        ResetPasswordComponent,
+        ResetPasswordFormComponent,
+        VerifyComponent,
+        ProfileComponent,
+        LoginComponent,
+        LoginFormComponent,
+        ChangeAvatarComponent,
+        ChangePhoneComponent,
+        ChangeEmailComponent,
+        PageNavigationComponent,
+        ChangeUserPropComponent,
     ],
     declarations: [...components],
     exports: [...components],

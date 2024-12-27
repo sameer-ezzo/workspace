@@ -1,8 +1,6 @@
-import { CanActivate, Injectable } from "@nestjs/common";
 import { RouteFeature } from "../routing/route-feature";
 import { ResolverRequest, contentResolver } from "../routing/route-resolver";
-import { PageMetadata } from "./metadata";
-import { CanActivateFn } from "@angular/router";
+import { PageMetadata } from "./models";
 
 /**
  * provide content the page as route.data = {content}.

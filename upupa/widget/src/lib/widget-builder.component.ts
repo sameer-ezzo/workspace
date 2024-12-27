@@ -15,7 +15,6 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 import { formInput } from "@upupa/dynamic-form";
 import { randomString } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
-import { JsonPipe } from "@angular/common";
 
 export const DEFAULT_GRID_OPTIONS: GridStackOptions = {
     margin: 5,
@@ -36,7 +35,7 @@ export class InputsViewModel {
 @Component({
     selector: "widget-builder",
     standalone: true,
-    imports: [GridstackComponent, GridstackItemComponent, PortalComponent, MatButtonModule, MatIconModule, JsonPipe],
+    imports: [GridstackComponent, GridstackItemComponent, PortalComponent, MatButtonModule, MatIconModule],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: WidgetBuilderComponent, multi: true }],
     styles: `
         ::ng-deep {

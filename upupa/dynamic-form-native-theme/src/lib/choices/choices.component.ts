@@ -1,7 +1,7 @@
 import { Component, forwardRef, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SelectComponent } from '../select/select.component';
-@Component({
+@Component({ standalone: true,
     selector: 'form-choices',
     templateUrl: './choices.component.html',
     styleUrls: ['./choices.component.scss'],

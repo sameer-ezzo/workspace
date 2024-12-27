@@ -1,6 +1,5 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed, InputSignal } from "@angular/core";
-import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
-import { MatSelect } from "@angular/material/select";
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model } from "@angular/core";
+import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActionDescriptor } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
 
@@ -8,6 +7,7 @@ import { debounceTime } from "rxjs";
 import { InputDefaults } from "../defaults";
 
 @Component({
+    standalone: true,
     selector: "form-select",
     templateUrl: "./select.component.html",
     providers: [

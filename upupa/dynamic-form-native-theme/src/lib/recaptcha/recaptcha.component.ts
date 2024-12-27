@@ -3,7 +3,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@an
 import { ReplaySubject } from 'rxjs';
 
 
-@Component({
+@Component({ standalone: true,
     selector: 'form-recaptcha-field',
     templateUrl: './recaptcha.component.html',
     styleUrls: ['./recaptcha.component.css'],

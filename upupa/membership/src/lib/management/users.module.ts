@@ -5,7 +5,6 @@ import { AdminResetPasswordComponent } from "./admin-reset-pwd/admin-reset-pwd.c
 import { UserFormComponent } from "./user-form/user-form.component";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { DataModule } from "@upupa/data";
-import { TranslationModule } from "@upupa/language";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
@@ -50,15 +49,12 @@ const imports = [
     MatExpansionModule,
     MatDialogModule,
     MatTooltipModule,
-    TranslationModule,
     UtilsModule,
     DataTableModule,
     DataModule,
     DynamicFormModule,
     TableHeaderComponent,
-    MatBtnComponent
-];
-const declarations = [
+    MatBtnComponent,
     UsersComponent,
     EditUserRolesComponent,
     UsersListComponent,
@@ -68,6 +64,8 @@ const declarations = [
     ChangePasswordComponent,
     RolesListComponent,
     RoleFormComponent,
+];
+const declarations = [
 ];
 @NgModule({
     imports: imports,

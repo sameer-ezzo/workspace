@@ -17,6 +17,7 @@ export type PhoneNumber = {
 };
 
 @Component({
+    standalone: true,
     selector: "form-phone-field",
     templateUrl: "./phone.component.html",
     styleUrls: ["./phone.component.scss"],
@@ -156,7 +157,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     private readonly resize$ = fromEvent(window, "resize");
     reposition$ = merge(this.scroll$, this.resize$).pipe(
         takeWhile(() => this.showCodes === true),
-        tap(() => this.setPosition())
+        tap(() => this.setPosition()),
     );
 
     toggleCodes(f: boolean = undefined) {

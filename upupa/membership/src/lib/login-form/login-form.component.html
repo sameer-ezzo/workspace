@@ -1,9 +1,1 @@
-<collector
-    #loginForm
-    [fields]="fields"
-    [conditions]="conditions"
-    [submitBtn]="submitBtn"
-    (submit)="signin()"
-    [(value)]="value"
->
-</collector>
+<collector #loginForm [fields]="fields()" [conditions]="conditions()" [submitBtn]="submitBtn()" (submit)="signin()" [(value)]="value"> </collector>

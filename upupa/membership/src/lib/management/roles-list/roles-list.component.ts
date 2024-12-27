@@ -3,17 +3,20 @@ import { HttpClient } from "@angular/common/http";
 import { ApiDataSource, DataAdapter, DataService } from "@upupa/data";
 import { AuthService } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent, toTitleCase } from "@upupa/common";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions } from "../types";
 import { RoleFormComponent } from "../role-form/role-form.component";
 import { firstValueFrom } from "rxjs";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
+    standalone: true,
     selector: "roles-list",
     templateUrl: "./roles-list.component.html",
     styleUrls: ["./roles-list.component.css"],
+    imports: [DataTableComponent, TableHeaderComponent, MatBtnComponent],
 })
 export class RolesListComponent implements OnInit {
     focusedUser: any;

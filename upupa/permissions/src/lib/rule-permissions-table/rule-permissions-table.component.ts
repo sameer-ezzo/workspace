@@ -1,17 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { AccessType, AuthorizeMessage, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, DataTableComponent } from "@upupa/table";
 import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
 import { PromptService } from "@upupa/dialog";
+import { MatIconModule } from "@angular/material/icon";
+import { FormsModule } from "@angular/forms";
+import { CommonModule } from "@angular/common";
 
 @Component({
+    standalone: true,
     selector: "rule-permissions-table",
     templateUrl: "./rule-permissions-table.component.html",
     styleUrls: ["./rule-permissions-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatIconModule, DataTableComponent, FormsModule, CommonModule],
 })
 export class RulePermissionsTableComponent {
     focused: any;

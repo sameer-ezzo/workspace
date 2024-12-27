@@ -1,7 +1,7 @@
 import { Component, Input, SimpleChanges, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
-@Component({
+@Component({ standalone: true,
     selector: 'payment-card',
     templateUrl: './payment-card.component.html',
     styleUrls: ['./payment-card.component.css'],

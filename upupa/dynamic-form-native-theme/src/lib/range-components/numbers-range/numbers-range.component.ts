@@ -9,7 +9,7 @@ function nullEmptyCheck(v) {
     return v === null || v === '';
 }
 // https://angular-slider.github.io/ngx-slider/demos
-@Component({
+@Component({ standalone: true,
     selector: 'form-numbers-range',
     templateUrl: './numbers-range.component.html',
     styleUrls: ['./numbers-range.component.scss'],

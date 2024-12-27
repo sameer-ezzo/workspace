@@ -16,6 +16,7 @@
         [conditions]="conditions"
         [name]="name()"
         (submit)="onSubmit()"
+        (fieldValueChange)="fieldValueChange.emit($event)"
         (valueChange)="_checkPageInvalid(activePage); propagateChange()"
     >
     </dynamic-form>

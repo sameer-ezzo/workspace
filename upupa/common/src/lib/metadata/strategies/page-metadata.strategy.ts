@@ -1,7 +1,7 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
-import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
-import { PageMetadata } from "../metadata";
+import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
+import { PageMetadata } from "../models";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
 export const PAGE_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("PAGE_METADATA_CONFIG");

@@ -4,7 +4,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { DataComponentBase } from '@upupa/table';
 import { InputDefaults } from '../defaults';
 
-@Component({
+@Component({ standalone: true,
     selector: 'form-autocomplete-text',
     templateUrl: './autocomplete-text.component.html',
     providers: [

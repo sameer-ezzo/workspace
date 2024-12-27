@@ -23,12 +23,21 @@ import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 
-import { MatCheckboxChange } from "@angular/material/checkbox";
+import { MatCheckboxChange, MatCheckboxModule } from "@angular/material/checkbox";
 import { DataComponentBase } from "./data-base.component";
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
-import { MatTable } from "@angular/material/table";
+import { MatTable, MatTableModule } from "@angular/material/table";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatSortModule } from "@angular/material/sort";
+import { CommonModule } from "@angular/common";
+import { DragDropModule } from "@angular/cdk/drag-drop";
+import { DefaultTableCellTemplate } from "./cell-template-component";
+import { JsonPointerPipe } from "./json-pointer.pipe";
+import { PortalComponent } from "@upupa/common";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatIconModule } from "@angular/material/icon";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
@@ -40,6 +49,7 @@ export function injectDataAdapter() {
 }
 
 @Component({
+    standalone: true,
     selector: "data-table",
     templateUrl: "./data-table.component.html",
     styleUrls: ["./data-table.component.scss"],
@@ -50,6 +60,19 @@ export function injectDataAdapter() {
             state("expanded", style({ height: "*" })),
             transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)")),
         ]),
+    ],
+    imports: [
+        MatPaginatorModule,
+        MatTableModule,
+        MatSortModule,
+        MatCheckboxModule,
+        MatProgressBarModule,
+        CommonModule,
+        MatIconModule,
+        DragDropModule,
+        DefaultTableCellTemplate,
+        PortalComponent,
+        JsonPointerPipe,
     ],
     host: {
         "attr.role": "table",

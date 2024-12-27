@@ -10,7 +10,7 @@ declare let google: any;
 @Directive({
     selector: "[idp-button]",
     exportAs: "idpButton",
-    standalone: false,
+    standalone: true,
 })
 export class IdpButtonDirective {
     private readonly locale = inject(LOCALE_ID);

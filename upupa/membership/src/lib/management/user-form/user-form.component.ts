@@ -12,6 +12,7 @@ import { MatDialogRef } from "@angular/material/dialog";
 import { DynamicFormComponent, FormScheme } from "@upupa/dynamic-form";
 import { Condition } from "@noah-ark/expression-engine";
 import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
+import { MatButtonModule } from "@angular/material/button";
 
 type UserFormOptions = {
     scheme: FormScheme;
@@ -19,9 +20,11 @@ type UserFormOptions = {
 };
 
 @Component({
+    standalone: true,
     selector: "user-form",
     templateUrl: "./user-form.component.html",
     styleUrls: ["./user-form.component.scss"],
+    imports: [MatButtonModule, DynamicFormComponent],
 })
 export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
     @ViewChild("userForm") form: any;

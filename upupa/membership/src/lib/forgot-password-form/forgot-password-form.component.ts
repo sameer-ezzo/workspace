@@ -1,34 +1,31 @@
-import { Component, Input, Output, EventEmitter, inject, ViewChild, signal } from '@angular/core';
-import { AuthService } from '@upupa/auth';
-import { ActionDescriptor } from '@upupa/common';
-import { CollectorComponent, FormScheme } from '@upupa/dynamic-form';
-import { defaultForgotPasswordFormFields } from '../default-values';
-import { Condition } from '@noah-ark/expression-engine';
-import { FormControl } from '@angular/forms';
-
+import { Component, Input, Output, EventEmitter, inject, ViewChild, signal } from "@angular/core";
+import { AuthService } from "@upupa/auth";
+import { ActionDescriptor } from "@upupa/common";
+import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
+import { defaultForgotPasswordFormFields } from "../default-values";
+import { Condition } from "@noah-ark/expression-engine";
+import { FormControl } from "@angular/forms";
 
 @Component({
-    selector: 'forgot-password-form',
-    templateUrl: './forgot-password-form.component.html',
-    styleUrls: ['./forgot-password-form.component.scss']
+    standalone: true,
+    selector: "forgot-password-form",
+    templateUrl: "./forgot-password-form.component.html",
+    styleUrls: ["./forgot-password-form.component.scss"],
+    imports: [CollectorComponent],
 })
 export class ForgotPasswordFormComponent {
-
-    control = new FormControl();    
-    @ViewChild('loginForm') loginForm: CollectorComponent;
-    private readonly auth = inject(AuthService)
+    control = new FormControl();
+    @ViewChild("loginForm") loginForm: CollectorComponent;
+    private readonly auth = inject(AuthService);
     loading = signal(false);
     error: string;
     @Output() success = new EventEmitter();
     @Output() fail = new EventEmitter();
 
-    @Input() model: { email: string, phone?: string } & Record<string, unknown> = { email: '' }
-    @Input() submitBtn: ActionDescriptor = { name: 'submit', type: 'submit', text: 'Submit', color: 'primary', variant: 'raised' };
-    @Input() fields: FormScheme = defaultForgotPasswordFormFields
-    @Input() conditions: Condition[] = []
-
-
-
+    @Input() model: { email: string; phone?: string } & Record<string, unknown> = { email: "" };
+    @Input() submitBtn: ActionDescriptor = { name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised" };
+    @Input() fields: FormScheme = defaultForgotPasswordFormFields;
+    @Input() conditions: Condition[] = [];
 
     async send() {
         this.loading.set(true);
@@ -38,8 +35,7 @@ export class ForgotPasswordFormComponent {
             this.success.emit();
         } catch (error) {
             this.fail.emit();
-        }
-        finally {
+        } finally {
             this.loading.set(false);
         }
     }

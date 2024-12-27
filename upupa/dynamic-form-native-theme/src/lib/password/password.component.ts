@@ -5,6 +5,7 @@ import { PasswordStrength, generatePassword, verifyPassword } from "@upupa/auth"
 import { InputComponent } from "../input/input.component";
 
 @Component({
+    standalone: true,
     selector: "form-password-field",
     templateUrl: "./password.component.html",
     styleUrls: ["./password.component.scss"],
@@ -31,7 +32,7 @@ export class PasswordInputComponent extends InputComponent implements Validator 
     showPassword = model(false);
     canGenerateRandomPassword = input(false);
     passwordStrength = input<PasswordStrength>(new PasswordStrength());
-    autocomplete = input<"current-password" | "new-password">("new-password");
+    override autocomplete = input<"current-password" | "new-password">("new-password");
 
     changeTouchedStatus(ctrl: AbstractControl) {
         if (this.showConfirmPasswordInput() !== true) this.markAsTouched();

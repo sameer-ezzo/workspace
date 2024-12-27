@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-@Component({
+@Component({ standalone: true,
   selector: 'lib-users',
   template: `
     <p>

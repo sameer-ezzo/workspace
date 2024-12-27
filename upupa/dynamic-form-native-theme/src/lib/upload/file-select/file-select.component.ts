@@ -1,5 +1,5 @@
-import { Component, DestroyRef, ElementRef, HostListener, OnChanges, PLATFORM_ID, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
@@ -9,8 +9,14 @@ import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 
+import { MatError, MatFormFieldModule } from "@angular/material/form-field";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { FilesViewerComponent } from "../file-viewer/file-viewer.component";
+
 type ViewType = "list" | "grid";
 @Component({
+    standalone: true,
     selector: "file-select",
     templateUrl: "./file-select.component.html",
     styleUrls: ["./file-select.component.scss"],
@@ -26,6 +32,7 @@ type ViewType = "list" | "grid";
         "[class]": "view()",
         "[attr.name]": "name()",
     },
+    imports: [FormsModule, ReactiveFormsModule, MatError, MatButtonModule, MatFormFieldModule, MatIconModule, FilesViewerComponent],
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");

@@ -36,11 +36,12 @@ import {
   UpupaDialogActionContext,
 } from '@upupa/dialog';
 
-@Component({
+@Component({ standalone: true,
   selector: 'cp-data-list',
   templateUrl: './data-list.component.html',
   styleUrls: ['./data-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
 export class DataListFilterComponent implements AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);

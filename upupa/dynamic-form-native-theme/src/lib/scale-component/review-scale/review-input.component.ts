@@ -9,7 +9,7 @@ function dir(el: any): 'rtl' | 'ltr' {
 
 const off = Number.MAX_SAFE_INTEGER;
 
-@Component({
+@Component({ standalone: true,
     selector: 'form-review-input-field',
     templateUrl: './review-input.component.html',
     styleUrls: ['./review-input.component.css'],

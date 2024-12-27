@@ -5,7 +5,7 @@ import { Tag } from '../tag.model';
 import { TagsService } from '../tags.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
-@Component({
+@Component({ standalone: true,
     selector: 'tags-chips-input',
     templateUrl: './tags-chips-input.component.html',
     styleUrls: ['./tags-chips-input.component.scss'],

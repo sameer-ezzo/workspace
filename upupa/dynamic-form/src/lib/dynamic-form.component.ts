@@ -15,9 +15,7 @@ import {
     Injector,
     model,
     Pipe,
-    effect,
     InjectionToken,
-    signal,
     SimpleChange,
     runInInjectionContext,
 } from "@angular/core";
@@ -25,24 +23,20 @@ import {
     NG_VALUE_ACCESSOR,
     ControlValueAccessor,
     AbstractControl,
-    UntypedFormBuilder,
     ValueChangeEvent,
     FormGroup,
     FormGroupDirective,
     NgControl,
-    AbstractControlDirective,
-    ControlContainer,
     FormControl,
-    StatusChangeEvent,
-    FormResetEvent,
-    FormSubmittedEvent,
     PristineChangeEvent,
     TouchedChangeEvent,
+    FormsModule,
+    ReactiveFormsModule,
 } from "@angular/forms";
 import { FormScheme } from "./types";
 import { Condition } from "@noah-ark/expression-engine";
 import { Subscription } from "rxjs";
-import { EventBus } from "@upupa/common";
+import { EventBus, UtilsModule } from "@upupa/common";
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormModuleOptions } from "./dynamic-form.options";
@@ -50,8 +44,23 @@ import { DYNAMIC_FORM_OPTIONS } from "./di.token";
 import { DynamicFormBuilder } from "./dynamic-form-renderer";
 import { DynamicFormService } from "./dynamic-form.service";
 import { ConditionalLogicService } from "./conditional-logic.service";
-import { KeyValuePipe } from "@angular/common";
+import { CommonModule, KeyValuePipe } from "@angular/common";
 import { FieldRef } from "./field-ref";
+import { ScrollingModule } from "@angular/cdk/scrolling";
+import { MatExpansionModule } from "@angular/material/expansion";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
+
+@Pipe({
+    name: "orderedKeyValue",
+    pure: true,
+    standalone: true,
+})
+export class OrderedKeyValuePipe extends KeyValuePipe {
+    override transform(value: any, ...args: any[]): any {
+        return Object.keys(value).map((key) => ({ key, value: value[key] }));
+    }
+}
 
 export type FormGraph = Map<string, FieldRef>;
 export const FORM_GRAPH = new InjectionToken<FormGraph>("FormControls");
@@ -97,7 +106,18 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     host: {
         "[class]": "'dynamic-form ' + class()",
     },
-    standalone: false,
+    standalone: true,
+    imports: [
+        OrderedKeyValuePipe,
+        CommonModule,
+        UtilsModule,
+        FormsModule,
+        ReactiveFormsModule,
+        ScrollingModule,
+        DynamicFormNativeThemeModule,
+        DynamicFormFieldComponent,
+        MatExpansionModule,
+    ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
     readonly conditionalService = inject(ConditionalLogicService);
@@ -351,16 +371,5 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     isFormGroup(control: AbstractControl): control is FormGroup {
         return control instanceof FormGroup;
-    }
-}
-
-@Pipe({
-    name: "orderedKeyValue",
-    pure: true,
-    standalone: false,
-})
-export class OrderedKeyValuePipe extends KeyValuePipe {
-    override transform(value: any, ...args: any[]): any {
-        return Object.keys(value).map((key) => ({ key, value: value[key] }));
     }
 }

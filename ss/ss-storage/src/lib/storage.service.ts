@@ -15,7 +15,7 @@ import * as os from "os";
 
 import { execSync } from "child_process";
 import { PostedFile, File } from "@noah-ark/common";
-import fileSchema from "./schema";
+import FileSchema from "./schema";
 import mongoose from "mongoose";
 import { join } from "path";
 import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from "fs";

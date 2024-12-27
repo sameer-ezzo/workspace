@@ -1,10 +1,9 @@
-import { JsonPipe } from "@angular/common";
 import { Component, input, model, SimpleChanges, OnChanges, computed } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Widget, WidgetBlueprint } from "./model";
 import { DataFormComponent } from "@upupa/cp";
-import { formInput, FormViewModelMirror } from "@upupa/dynamic-form";
+import { formInput } from "@upupa/dynamic-form";
 import { FormsModule } from "@angular/forms";
 
 export class WidgetSettingsForm {
@@ -36,7 +35,7 @@ export class WidgetSettingsForm {
 @Component({
     selector: "widget-settings",
     standalone: true,
-    imports: [MatButtonModule, MatIconModule, JsonPipe, DataFormComponent, FormsModule],
+    imports: [MatButtonModule, MatIconModule, DataFormComponent, FormsModule],
     template: `
         <h1>Settings</h1>
         <data-form [viewModel]="settingsForm" [(value)]="settings"></data-form>
