@@ -1,9 +1,8 @@
-import { Component, SimpleChanges, effect, forwardRef, input } from '@angular/core';
+import { Component, SimpleChanges, effect, forwardRef, input } from "@angular/core";
 
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl, ReactiveFormsModule, FormsModule } from "@angular/forms";
 import { countries, InputBaseComponent } from "@upupa/common";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
-import { SelectComponent } from "../select/select.component";
 import { CommonModule } from "@angular/common";
 
 export type AccuracyLevel = "country" | "state" | "city" | "addressLine1" | "addressLine2" | "zipCode";
@@ -20,7 +19,7 @@ export type AddressModel = {
 @Component({
     standalone: true,
     selector: "address-edit",
-    imports: [FormsModule, ReactiveFormsModule, CommonModule, SelectComponent],
+    imports: [FormsModule, ReactiveFormsModule, CommonModule],
     templateUrl: "./address.component.html",
     styleUrls: ["./address.component.scss"],
     providers: [

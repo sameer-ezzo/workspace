@@ -5,7 +5,6 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { ErrorsDirective } from "@upupa/common";
 // import { Options } from "@angular-slider/ngx-slider";
 import { SliderComponent } from "@upupa/dynamic-form-native-theme";
 
@@ -23,6 +22,6 @@ import { SliderComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, ErrorsDirective, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
+    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
 })
 export class MatSliderComponent extends SliderComponent {}

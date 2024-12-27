@@ -37,7 +37,7 @@ export class WidgetSettingsForm {
 @Component({
     selector: "widget-settings",
     standalone: true,
-    imports: [MatButtonModule, MatIconModule, JsonPipe, DataFormWithViewModelComponent, FormsModule],
+    imports: [MatButtonModule, MatIconModule, DataFormWithViewModelComponent, FormsModule],
     template: `
         <h1>Settings</h1>
         <data-form [viewModel]="settingsForm" [(value)]="settings"></data-form>
