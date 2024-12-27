@@ -90,7 +90,7 @@ export class RecaptchaComponent implements ControlValueAccessor, AfterViewInit {
 }
 
 
-@Directive({ selector: 'button[recaptcha]' })
+@Directive({ selector: 'button[recaptcha]',standalone: true })
 export class RecaptchaDirective {
     @Input('recaptcha-key') key: string;
 
