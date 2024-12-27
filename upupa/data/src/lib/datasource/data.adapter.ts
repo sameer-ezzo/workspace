@@ -114,7 +114,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const _dic = Object.fromEntries(_normalized.map((i) => [i.key, i]));
         return KEYS.map((key) => {
             return toBeLoaded.includes(key) ? _dic[key] : itemsInAdapter.find((i) => i.key === key);
-        });
+        }).filter((x) => x);
     }
 
     normalize(item: T): NormalizedItem<T> {

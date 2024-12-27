@@ -7,7 +7,7 @@ import { SideBarGroup, SideBarViewModel } from "./side-bar-group-item";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DataListWithInputsComponent } from "./data-list-with-inputs/data-list-with-inputs.component";
-import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
+import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "@upupa/dynamic-form";
 import { FormGroup } from "@angular/forms";
@@ -76,7 +76,7 @@ export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
     return {
         name: "withFormComponent",
         modify: () => ({
-            component: DataFormWithViewModelComponent,
+            component: DataFormComponent,
             data: {
                 viewModel: config.viewModel,
                 value: config.value,
@@ -92,7 +92,7 @@ export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...featur
 
 export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent {
     return {
-        component: DataFormWithViewModelComponent,
+        component: DataFormComponent,
         inputs: {
             viewModel: config.viewModel,
             value: config.value,

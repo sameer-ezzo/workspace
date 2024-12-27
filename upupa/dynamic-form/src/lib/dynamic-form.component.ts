@@ -68,10 +68,10 @@ export class ExtendedValueChangeEvent<T = any> {
     ) {}
 }
 
-export function fieldRef(path: string): FieldRef {
+export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     if (!path.startsWith("/")) throw new Error("Invalid path");
 
-    const graph = inject<FormGraph>(FORM_GRAPH);
+    const graph = inject<FormGraph>(FORM_GRAPH, { host: true }); // make sure to only load graph of the current form (not a parent provided one)
     const result = graph.get(path);
     if (!result) throw new Error(`Could not inject field ref with path ${path}`);
     return result;
@@ -253,10 +253,6 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
             this._patches.clear();
             this.graph = this._builder.build(this.form, scheme, this.value(), "/");
-            // emit initial value change event
-            this.fieldValueChange.emit(
-                new ExtendedValueChangeEvent(this.value(), this.graph, this.graph.get("/"), undefined, { "/": new SimpleChange(undefined, this.value(), true) }),
-            );
 
             //handlers
             this.subs?.forEach((s) => s.unsubscribe());

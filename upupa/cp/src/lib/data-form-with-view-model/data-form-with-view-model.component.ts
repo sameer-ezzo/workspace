@@ -7,11 +7,17 @@ import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
-export const FORM_VIEW_MODEL = new InjectionToken<any[]>("FORM_VIEW_MODEL");
+export const FORM_VIEW_MODEL = new InjectionToken<any>("FORM_VIEW_MODEL");
 
-export function injectFormViewModel(viewModel: Class) {
-    const values = inject(FORM_VIEW_MODEL);
-    return values.find((x) => x.__proto__.constructor === viewModel);
+export function injectFormViewModels(): any[] {
+    const fromSelf = inject(FORM_VIEW_MODEL, { optional: true, self: true });
+    const fromParent = inject(FORM_VIEW_MODEL, { optional: true, skipSelf: true });
+    return [fromSelf, fromParent].filter((x) => x);
+}
+export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
+    const _class = "viewModelType" in viewModel ? viewModel.viewModelType : viewModel;
+    const models = injectFormViewModels();
+    return models.find((x) => x.__proto__.constructor === _class);
 }
 
 @Component({
@@ -23,8 +29,8 @@ export function injectFormViewModel(viewModel: Class) {
     providers: [
         {
             provide: DynamicFormComponent,
-            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
-            deps: [DataFormWithViewModelComponent],
+            useFactory: (self: DataFormComponent) => self.dynamicFormEl(),
+            deps: [DataFormComponent],
         },
         {
             provide: FORM_GRAPH,
@@ -33,19 +39,18 @@ export function injectFormViewModel(viewModel: Class) {
         },
         {
             provide: NG_VALUE_ACCESSOR,
-            useFactory: (self: DataFormWithViewModelComponent) => self.dynamicFormEl(),
-            deps: [DataFormWithViewModelComponent],
+            useFactory: (self: DataFormComponent) => self.dynamicFormEl(),
+            deps: [DataFormComponent],
             multi: true,
         },
         {
             provide: FORM_VIEW_MODEL,
-            useFactory: (self: DataFormWithViewModelComponent) => self.value(),
-            deps: [DataFormWithViewModelComponent],
-            multi: true,
+            useFactory: (self: DataFormComponent) => self.value(),
+            deps: [DataFormComponent],
         },
     ],
 })
-export class DataFormWithViewModelComponent<T = any> {
+export class DataFormComponent<T = any> {
     private readonly injector = inject(Injector);
     dynamicFormEl = viewChild(DynamicFormComponent);
 
@@ -81,30 +86,20 @@ export class DataFormWithViewModelComponent<T = any> {
     });
 
     _injector() {
-        return Injector.create({
-            providers: [
-                {
-                    provide: this.viewModel().viewModelType,
-                    useValue: this.value(),
-                },
-            ],
-            parent: this.injector,
-        });
+        return this.injector;
     }
 
     // private instance = signal<any>(null);
     ngOnChanges(changes: SimpleChanges) {
-        const v = this.value();
-        const type = this.viewModel().viewModelType;
+        if (changes["viewModel"] || changes["value"]) {
+            const v = this.value();
+            const type = this.viewModel().viewModelType;
 
-        if (!(v instanceof type)) {
-            let instance: any;
-            runInInjectionContext(this._injector(), () => {
-                instance = new type();
-            });
-            deepAssign(instance, v);
-            this.value.set(instance);
-            // this.control().setValue(instance, { emitEvent: false });
+            if (!(v instanceof type)) {
+                const instance = runInInjectionContext(this._injector(), () => new type());
+                deepAssign(instance, v);
+                this.value.set(instance);
+            }
         }
     }
 
@@ -118,25 +113,25 @@ export class DataFormWithViewModelComponent<T = any> {
 
     submitted = output<{ submitResult?: T; error?: any }>();
     submitting = signal(false);
-    async onSubmit() {
+    onSubmit(): Promise<{ submitResult?: any; error?: any }> {
         const vm = this.value();
         this.submitting.set(true);
 
         let submitResult: T | undefined;
         let error = undefined;
 
-        await runInInjectionContext(this._injector(), async () => {
+        return runInInjectionContext(this._injector(), async () => {
             try {
                 submitResult = (await vm["onSubmit"]?.()) ?? this.value();
                 this.submitted.emit({ submitResult });
+                return { submitResult };
             } catch (error) {
                 this.submitted.emit({ error });
+                return { error };
             } finally {
                 this.submitting.set(false);
             }
         });
-
-        return { error, submitResult };
     }
 
     submit() {

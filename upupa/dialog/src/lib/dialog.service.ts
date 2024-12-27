@@ -47,11 +47,12 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
 export class DialogService {
     private readonly dialog = inject(MatDialog);
 
-    open<TCom, TData = any,TResult = any>(template: DynamicTemplate<TCom>, options?: DialogConfig): DialogRef<TCom, TResult> {
+    open<TCom, TData = any, TResult = any>(template: DynamicTemplate<TCom>, options?: DialogConfig): DialogRef<TCom, TResult> {
         if (!template) throw new Error("template is not provided for dialog!");
 
-        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, options);
-        matDialogRef.componentRef.setInput("template", component(template));
+        const t = component(template);
+        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, { ...options, injector: t.injector ?? options?.injector });
+        matDialogRef.componentRef.setInput("template", t);
         matDialogRef.componentRef.setInput(
             "header",
             (options?.header ?? []).map((t) => component(t)),
@@ -63,7 +64,7 @@ export class DialogService {
         matDialogRef.componentRef.setInput("title", options?.title);
         matDialogRef.componentRef.setInput("hideCloseButton", options?.hideCloseButton);
 
-        return matDialogRef as any;
+        return matDialogRef as DialogRef<TCom, TResult>;
     }
 
     // open<T, D = any, R = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>, config?: DialogServiceConfig<D>): MatDialogRef<T, R> {

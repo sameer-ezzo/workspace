@@ -98,7 +98,7 @@
             <mat-progress-spinner style="margin: 0.5rem;" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {
-            <button matSuffix mat-icon-button (click)="clearValue($event)">
+            <button type="button" matSuffix mat-icon-button (click)="clearValue($event)">
                 <mat-icon>clear</mat-icon>
             </button>
         }
@@ -125,7 +125,7 @@
             [formControl]="filterControl"
         />
         @if (filterInput.value.length > 0) {
-            <!-- <button mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
+            <!-- <button type="button" mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
                 <mat-icon>clear</mat-icon>
             </button> -->
         }

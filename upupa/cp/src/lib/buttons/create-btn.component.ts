@@ -55,6 +55,7 @@ export function createButton<T = unknown>(
         icon: "add",
         variant: "raised",
         color: "primary",
+        type: "button",
     };
     const btn = { ...defaultCreateDescriptor, ...options.descriptor };
     const dialogOptions = { title: "Create", ...options?.dialogOptions };

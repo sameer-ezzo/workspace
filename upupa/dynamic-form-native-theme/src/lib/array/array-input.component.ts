@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges, inject, Injector } from "@angular/core";
+import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
@@ -62,5 +62,10 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
         this.dataSource.all.set(value);
+    }
+
+    tableHeaderComponentRef: ComponentRef<any>;
+    onTableHeaderAttached({ componentRef }) {
+        this.tableHeaderComponentRef = componentRef;
     }
 }

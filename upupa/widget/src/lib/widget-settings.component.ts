@@ -3,8 +3,7 @@ import { Component, input, model, SimpleChanges, OnChanges, computed } from "@an
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Widget, WidgetBlueprint } from "./model";
-import { DataFormWithViewModelComponent } from "@upupa/cp";
-import { Class } from "@noah-ark/common";
+import { DataFormComponent } from "@upupa/cp";
 import { formInput, FormViewModelMirror } from "@upupa/dynamic-form";
 import { FormsModule } from "@angular/forms";
 
@@ -37,7 +36,7 @@ export class WidgetSettingsForm {
 @Component({
     selector: "widget-settings",
     standalone: true,
-    imports: [MatButtonModule, MatIconModule, JsonPipe, DataFormWithViewModelComponent, FormsModule],
+    imports: [MatButtonModule, MatIconModule, JsonPipe, DataFormComponent, FormsModule],
     template: `
         <h1>Settings</h1>
         <data-form [viewModel]="settingsForm" [(value)]="settings"></data-form>

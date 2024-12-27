@@ -4,10 +4,11 @@ import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarSe
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
-import { DataFormWithViewModelComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
+import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { NgControl } from "@angular/forms";
 
 @Component({
     selector: "inline-button",
@@ -57,7 +58,9 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     value: TViewModel,
     context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean } = {},
 ) {
-    const dialog = context?.injector?.get(DialogService) ?? inject(DialogService);
+    const _injector = context?.injector ?? inject(Injector);
+    const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
+    const dialog = injector.get(DialogService);
     const _mirror = isFormViewmodelMirror(vm) ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
@@ -91,18 +94,17 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         ],
     };
 
-    const dialogRef = dialog.open<DataFormWithViewModelComponent, any, { submitResult?; error? }>(
-        { component: DataFormWithViewModelComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector: context?.injector },
+    const dialogRef = dialog.open<DataFormComponent, any, { submitResult?; error? }>(
+        { component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector },
         opts,
     );
 
-    const componentRef: ComponentRef<DataFormWithViewModelComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
+    const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
     const dialogWrapper = dialogRef.componentInstance;
     const form = componentRef.instance.dynamicFormEl().form;
     form.statusChanges.subscribe((status) => {
         // dialogWrapper.footer.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
     });
-    form.updateValueAndValidity(); // to trigger initial form status
 
     // dialogWrapper.actionClick.subscribe((e) => {
     //     componentRef.instance.onAction(e);

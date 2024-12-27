@@ -51,6 +51,7 @@ export function editButton<T = unknown>(
         icon: "edit",
         variant: "icon",
         color: "accent",
+        type: "button",
     };
     const btn = { ...defaultEditDescriptor, ...options.descriptor };
     const dialogOptions = { title: "Edit", ...options?.dialogOptions };

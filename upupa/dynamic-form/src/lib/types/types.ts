@@ -1,8 +1,7 @@
 import { Type } from "@angular/core";
+import { DynamicComponent } from "@upupa/common";
 
-
-
-export type FieldItem = {
+export type FieldItem<TCom = any> = {
     /**
      * @description input type inspired by html, it can be a string for any custom component or an INPUT_TYPE.
      * @example text, select, number, textarea
@@ -12,17 +11,15 @@ export type FieldItem = {
     /** @description Optional. The text associated with the field */
     text?: string;
 
-
     /** @description Optional. Array of validators for the field */
     validations?: Validator[];
 
     //UI
 
     class?: string;
-    inputs?: Record<string, any>;
-    outputs?: Record<string, any>;
+    inputs?: DynamicComponent<TCom>["inputs"];
+    outputs?: DynamicComponent<TCom>["outputs"];
     hidden?: boolean;
-
 };
 
 const INPUTS = [
