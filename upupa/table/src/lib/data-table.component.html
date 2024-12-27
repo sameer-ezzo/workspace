@@ -14,8 +14,8 @@
         matSort
         [class.sticky-header]="stickyHeader()"
         [matSortDisabled]="loading()"
-        [matSortDirection]="adapter().sort?.direction"
-        [matSortActive]="adapter().sort?.active"
+        [matSortDirection]="adapter().sort()?.direction"
+        [matSortActive]="adapter().sort()?.active"
         (matSortChange)="onSortData($event)"
     >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
@@ -137,7 +137,7 @@
 
 <!-- Hide paginator when total data is lte page size -->
 <div class="mat-paginator">
-    @let page = adapter().page;
+    @let page = adapter().page();
     @let length = page.length ?? 0;
     @let pageSize = page.pageSize ?? 25;
     @let pageIndex = page.pageIndex ?? 0;

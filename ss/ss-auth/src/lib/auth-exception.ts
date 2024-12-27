@@ -20,9 +20,7 @@ export namespace AuthExceptions {
 export class AuthException extends HttpException {
     constructor(public readonly code: string, message?: any) {
         super(null, HttpStatus.UNAUTHORIZED)
-        if(message) {
-            this.message = message
-        }
+        this.message = message ?? code
 
     }
 }

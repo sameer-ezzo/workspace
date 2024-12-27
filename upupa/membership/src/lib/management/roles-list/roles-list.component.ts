@@ -47,7 +47,7 @@ export class RolesListComponent implements OnInit {
         this.actions = (_options?.rowActions || defaultRolesListActions) as ActionDescriptor[];
 
         const select = [...new Set(["name"].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
-        const dataSource = new ApiDataSource<any>(this.data, "/role", select);
+        const dataSource = new ApiDataSource<any>(this.data, "/role?select=" + select.join(","));
 
         this.adapter = new DataAdapter(dataSource, "_id", "email", "_id", null, {
             page: { pageIndex: 0, pageSize: 15 },

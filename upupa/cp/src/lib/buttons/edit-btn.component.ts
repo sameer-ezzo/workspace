@@ -32,7 +32,7 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
             const { submitResult } = result;
             if (this.adapter && submitResult) {
                 await this.adapter.put(this.item(), submitResult);
-                this.adapter.refresh(true);
+                this.adapter.refresh();
             }
         });
     }

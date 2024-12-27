@@ -52,7 +52,6 @@ import { DynamicFormService } from "./dynamic-form.service";
 import { ConditionalLogicService } from "./conditional-logic.service";
 import { KeyValuePipe } from "@angular/common";
 import { FieldRef } from "./field-ref";
-import { injectFormViewModel } from "@upupa/cp";
 
 export type FormGraph = Map<string, FieldRef>;
 export const FORM_GRAPH = new InjectionToken<FormGraph>("FormControls");

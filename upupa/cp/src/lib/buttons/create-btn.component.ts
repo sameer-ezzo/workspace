@@ -36,7 +36,7 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
             const { submitResult } = result;
             if (this.adapter && submitResult) {
                 await this.adapter.put(this.item(), submitResult);
-                this.adapter.refresh(true);
+                this.adapter.refresh();
             }
         });
     }

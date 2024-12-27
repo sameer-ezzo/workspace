@@ -63,7 +63,7 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
     }
 
     async onTableAction(event) {
-        let value = this.clientDataSource.all;
+        let value = this.clientDataSource.all();
 
         if (event.action.name === "edit") {
             const res = await firstValueFrom(
@@ -100,7 +100,7 @@ export class InlineEditableListComponent extends DataComponentBase<any> implemen
 
         this.value.set((value ?? []).slice());
 
-        this.clientDataSource.all = this.value() as any[];
+        this.clientDataSource.all.set(this.value() as any[]);
     }
 }
 

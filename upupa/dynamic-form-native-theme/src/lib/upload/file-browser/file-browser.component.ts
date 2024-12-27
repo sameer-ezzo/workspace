@@ -52,7 +52,7 @@ export class FileBrowserComponent {
 
     segments = computed(() => (this.path() ?? "").split("/"));
 
-    dataSource = new ApiDataSource<FileInfo>(this.data, "/storage", valueProperty);
+    dataSource = new ApiDataSource<FileInfo>(this.data, `/storage?select=${valueProperty.join(",")}`);
     adapter = new DataAdapter<FileInfo>(this.dataSource, "_id", undefined, valueProperty, undefined, {
         filter: {
             destination: `storage${this.path() == "/" ? "" : this.path()}*`,
@@ -72,8 +72,7 @@ export class FileBrowserComponent {
         effect(() => {
             const _path = this.path() ?? "/";
             const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
-            this.adapter.filter = filter;
-            this.adapter.refresh();
+            this.adapter.load({ filter });
         });
     }
 

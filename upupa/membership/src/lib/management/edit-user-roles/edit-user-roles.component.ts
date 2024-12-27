@@ -1,21 +1,21 @@
-import { Component, Input, SimpleChanges, ViewChild, signal } from '@angular/core';
+import { Component, Input, SimpleChanges, ViewChild, signal } from "@angular/core";
 
-import { AuthService } from '@upupa/auth';
+import { AuthService } from "@upupa/auth";
 
-import { firstValueFrom, map } from 'rxjs';
-import { DataAdapter, DataService, ObjectId, ApiDataSource } from '@upupa/data';
-import { MatDialogRef } from '@angular/material/dialog';
-import { DynamicFormComponent, FormScheme, selectField } from '@upupa/dynamic-form';
-import { HttpClient } from '@angular/common/http';
-import { ActionDescriptor } from '@upupa/common';
-import { DialogWrapperComponent, DialogPortal } from '@upupa/dialog';
+import { firstValueFrom, map } from "rxjs";
+import { DataAdapter, DataService, ObjectId, ApiDataSource } from "@upupa/data";
+import { MatDialogRef } from "@angular/material/dialog";
+import { DynamicFormComponent, FormScheme, selectField } from "@upupa/dynamic-form";
+import { HttpClient } from "@angular/common/http";
+import { ActionDescriptor } from "@upupa/common";
+import { DialogWrapperComponent, DialogPortal } from "@upupa/dialog";
 @Component({
-    selector: 'edit-user-roles',
-    templateUrl: './edit-user-roles.component.html',
-    styleUrls: ['./edit-user-roles.component.scss'],
+    selector: "edit-user-roles",
+    templateUrl: "./edit-user-roles.component.html",
+    styleUrls: ["./edit-user-roles.component.scss"],
 })
 export class EditUserRolesComponent implements DialogPortal<EditUserRolesComponent> {
-    @ViewChild('userForm') form: DynamicFormComponent;
+    @ViewChild("userForm") form: DynamicFormComponent;
     dialogRef: MatDialogRef<DialogWrapperComponent<EditUserRolesComponent>>;
 
     loading = false;
@@ -23,7 +23,7 @@ export class EditUserRolesComponent implements DialogPortal<EditUserRolesCompone
     @Input() user: any = { _id: ObjectId.generate() };
 
     @Input() actions: ActionDescriptor[] = [];
-    @Input() mode: 'edit' | 'create' = 'create';
+    @Input() mode: "edit" | "create" = "create";
 
     scheme = signal<FormScheme>(null);
     constructor(
@@ -33,14 +33,14 @@ export class EditUserRolesComponent implements DialogPortal<EditUserRolesCompone
     ) {
         this.scheme.set({
             roles: selectField(
-                'roles',
-                'Roles',
-                new DataAdapter(new ApiDataSource(this.data, 'role', ['_id', 'name']), '_id', 'name', undefined, undefined),
-                'User roles',
+                "roles",
+                "Roles",
+                new DataAdapter(new ApiDataSource(this.data, "role?select=_id,name"), "_id", "name", undefined, undefined),
+                "User roles",
                 undefined,
-                'outline',
+                "outline",
                 10000,
-                [{ name: 'required' }],
+                [{ name: "required" }],
             ),
         });
     }
@@ -48,7 +48,7 @@ export class EditUserRolesComponent implements DialogPortal<EditUserRolesCompone
     value: { roles: string[] } = { roles: [] };
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
         if (this.user && this.user._id === null) {
-            throw 'Invalid user object passed to component';
+            throw "Invalid user object passed to component";
         }
         this.value = await firstValueFrom(this.data.get<{ roles: string[] }>(`/user/${this.user._id}?select=_id,roles`).pipe(map((res) => res.data?.[0] ?? { roles: [] })));
     }

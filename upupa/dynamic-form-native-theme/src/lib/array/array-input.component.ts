@@ -48,11 +48,11 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     });
 
     updateValueFromDataSource() {
-        this.handleUserInput(this.dataSource.all);
+        this.handleUserInput(this.dataSource.all());
     }
     ngOnChanges(changes: SimpleChanges) {
         if (changes["value"]) {
-            this.dataSource.all = this.value();
+            this.dataSource.all.set(this.value());
         }
     }
     override writeValue(value: T[]): void {
@@ -61,6 +61,6 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
         if (value && !Array.isArray(value)) {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
-        this.dataSource.all = value;
+        this.dataSource.all.set(value);
     }
 }

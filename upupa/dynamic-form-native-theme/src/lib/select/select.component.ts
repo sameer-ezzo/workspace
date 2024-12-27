@@ -28,8 +28,8 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     ngAfterViewInit() {
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;
-            const _filter = { ...filter, ...(this.adapter().normalizeFilter(v) || {}) };
-            this.adapter().filter = _filter;
+            const _filter = { ...filter, search: v };
+            this.adapter().load({ filter: _filter });
         });
     }
 

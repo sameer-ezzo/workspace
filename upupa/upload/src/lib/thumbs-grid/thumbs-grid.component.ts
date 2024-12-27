@@ -51,7 +51,7 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
 
         try {
             await this.client.delete("/" + t.item.path, new URL(this.base).origin);
-            this.adapter().refresh();
+            await this.adapter().load();
             this.loading.set(false);
         } catch (error) {
             console.error(error);
