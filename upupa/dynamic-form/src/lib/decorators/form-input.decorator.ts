@@ -284,7 +284,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             if (field["minSize"]) field.inputs["minSize"] = field["minSize"];
             break;
         case "form":
-            field.inputs["viewModel"] = fieldOptions.viewModel;
+            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
             break;
 
         default:

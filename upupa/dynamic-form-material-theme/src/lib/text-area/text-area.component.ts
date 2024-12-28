@@ -2,6 +2,7 @@ import { Component, forwardRef } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { ErrorsDirective } from "@upupa/common";
 import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
@@ -16,6 +17,6 @@ import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule],
 })
 export class MatTextAreaComponent extends TextAreaComponent {}

@@ -118,7 +118,6 @@ export class DataFormComponent<T = any> {
         this.submitting.set(true);
 
         let submitResult: T | undefined;
-        let error = undefined;
 
         return runInInjectionContext(this._injector(), async () => {
             try {

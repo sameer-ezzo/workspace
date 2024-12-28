@@ -112,7 +112,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
 
     return { dialogRef, componentRef };
 
-    // const { submitResult, error } = await waitForOutput<DataFormWithViewModelComponent["submitted"]>("submitted", componentRef.instance);
+    // const { submitResult, error } = await waitForOutput<DataFormComponent["submitted"]>("submitted", componentRef.instance);
 
     // if (error) {
     //     snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
