@@ -2,12 +2,12 @@ import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges
 import { Subject, Subscription } from "rxjs";
 import { AuthService } from "@upupa/auth";
 import { takeUntil } from "rxjs/operators";
-import { NgStyle } from "@angular/common";
+import { CommonModule, NgStyle } from "@angular/common";
 
 @Component({
     standalone: true,
     selector: "image",
-    imports: [NgStyle],
+    imports: [CommonModule, NgStyle],
     templateUrl: "./image.component.html",
     styleUrls: ["./image.component.scss"],
     host: {

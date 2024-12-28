@@ -7,7 +7,7 @@ import { ThemePalette } from "@angular/material/core";
 import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
 
 import { MatError, MatFormFieldModule } from "@angular/material/form-field";
 import { MatButtonModule } from "@angular/material/button";
@@ -32,7 +32,7 @@ type ViewType = "list" | "grid";
         "[class]": "view()",
         "[attr.name]": "name()",
     },
-    imports: [FormsModule, ReactiveFormsModule, MatError, MatButtonModule, MatFormFieldModule, MatIconModule, FilesViewerComponent],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, MatFormFieldModule, MatIconModule, FilesViewerComponent],
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");

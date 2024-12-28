@@ -42,7 +42,7 @@ export class ChangeAvatarComponent {
             )
             .subscribe(async (userAvatars) => {
                 this.userAvatars = userAvatars.data;
-                this.avatar = this.userAvatars.length > 0 ? `${this.userAvatars[0].path}?access_token=${this.auth.get_token()}` : "";
+                this.avatar = this.userAvatars.length > 0 ? `${this.userAvatars[0]?.path}?access_token=${this.auth.get_token()}` : "";
             });
     }
     ngOnDestroy() {

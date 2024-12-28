@@ -20,7 +20,7 @@
 <div id="avatar-actions">
   <button mat-icon-button (click)="changeAvatar()" color="accent" [disabled]="disabled"><mat-icon>edit</mat-icon></button>
   @if (userAvatars?.length) {
-    <button mat-icon-button (click)="removeAvatar(userAvatars[0].path); auth.refresh()" color="warn" [disabled]="disabled"><mat-icon>close</mat-icon></button>
+    <button mat-icon-button (click)="removeAvatar(userAvatars[0]?.path); auth.refresh()" color="warn" [disabled]="disabled"><mat-icon>close</mat-icon></button>
   }
 </div>
 
