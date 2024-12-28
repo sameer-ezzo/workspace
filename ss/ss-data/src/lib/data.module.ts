@@ -6,12 +6,13 @@ import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collec
 import { logger } from "./logger";
 
 import { MongooseModule, getConnectionToken, ModelDefinition } from "@nestjs/mongoose";
-import mongoose, { Connection} from "mongoose";
+import mongoose, { Connection, plugin } from "mongoose";
 import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
 import migrationSchema from "./migration-schema";
 import tagSchema from "./tag.schema";
 import changeSchema from "./change-schema";
 import { MigrationsService } from "./migrations.svr";
+
 
 const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions("DB_DEFAULT", {
     retryAttempts: 5,
@@ -111,7 +112,7 @@ function extractMongooseRoot(options: DataOptions[]) {
         delete opts.prefix;
         return MongooseModule.forRoot(databaseInfo.uri, {
             ...opts,
-            connectionName: dbName,
+            connectionName: dbName
         });
     }) as any;
 }

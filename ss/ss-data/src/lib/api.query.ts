@@ -1,8 +1,8 @@
 // https://github.com/surfer77/mongoose-string-query
 
-import { ObjectId } from 'mongodb';
-import { logger } from './logger';
-import { Model } from 'mongoose';
+import { ObjectId } from "mongodb";
+import { logger } from "./logger";
+import { Model } from "mongoose";
 
 // */
 const operatorPattern = /^\{(\S+)\}(.*)/;
@@ -94,8 +94,16 @@ http://localhost:3001/agg/item?campaigns={ne}null&lookup_match=branch:vendor:cam
 //DISTINCT http://localhost:3001/agg/transaction?group_by=account&page=1&per_page=2
 //FULL http://localhost:3001/agg/transaction?group_by=account,{project}total={sum}amount&select=_id,account,two,status,amount&sort_by=net&page=1&per_page=100&fields1=one={add}1:&fields2=two={add}1:$one
 
+interface Lookup {
+    from: string;
+    foreignField: string;
+    localField: string;
+    as: string;
+    unwind?: boolean;
+}
+
 export class QueryParser {
-    private dateOperators = ['year', 'month', 'date', 'hour', 'minute', 'second'];
+    private dateOperators = ["year", "month", "date", "hour", "minute", "second"];
     private dateMethods = [
         (d: Date) => d.getFullYear(),
         (d: Date) => d.getMonth(),
@@ -112,16 +120,16 @@ export class QueryParser {
         const operator = operatorMatches[1];
         const val = operatorMatches[2];
 
-        if (operator === 'eq' || operator === 'ne' || operator === 'not') return { [key]: { ['$' + operator]: this.autoParseValue(val, key, model) } };
-        else if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') return { [key]: { ['$' + operator]: this.autoParseValue(val, key, model) } };
-        else if (operator === 'btw') {
-            const range = (val || '').split(',');
+        if (operator === "eq" || operator === "ne" || operator === "not") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === "gt" || operator === "gte" || operator === "lt" || operator === "lte") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === "btw") {
+            const range = (val || "").split(",");
             const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
             if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
                 return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
             } else return;
-        } else if (operator === 'all' || operator === 'in' || operator === 'nin' || /in\d/.test(operator)) {
-            const array = typeof val === 'string' ? (val || '').split(',') : [val];
+        } else if (operator === "all" || operator === "in" || operator === "nin" || /in\d/.test(operator)) {
+            const array = typeof val === "string" ? (val || "").split(",") : [val];
             if (/in\d/.test(operator)) {
                 //nesting
                 const [, nesting] = /in(\d)/.exec(operator) || [];
@@ -132,23 +140,23 @@ export class QueryParser {
 
                     while (n > 0) {
                         --n;
-                        pointer['$elemMatch'] = {};
-                        pointer = pointer['$elemMatch'];
+                        pointer["$elemMatch"] = {};
+                        pointer = pointer["$elemMatch"];
                     }
-                    pointer['name'] = array[0];
+                    pointer["name"] = array[0];
                     return { [key]: elemMatch };
                 }
             }
-            return { [key]: { ['$' + operator]: array.map((val) => this.autoParseValue(val, key, model)) } };
-        } else if (operator === 'center') {
-            const [long, lat, radius] = (val || '').split(',').map((p: string) => +p);
+            return { [key]: { ["$" + operator]: array.map((val) => this.autoParseValue(val, key, model)) } };
+        } else if (operator === "center") {
+            const [long, lat, radius] = (val || "").split(",").map((p: string) => +p);
             const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
             return { [key]: within };
-        } else if (operator === 'exists') return { [key]: { $exists: true } };
+        } else if (operator === "exists") return { [key]: { $exists: true } };
         else if (this.dateOperators.indexOf(operator) > -1) {
             const date = this.autoParseValue(val, key, model);
             if (!(date instanceof Date)) {
-                logger.warn('DATE_EXPECTED', { key, val });
+                logger.warn("DATE_EXPECTED", { key, val });
                 return undefined;
             }
 
@@ -160,15 +168,15 @@ export class QueryParser {
                 max[i] = min[i] = this.dateMethods[i](date);
             }
             return [{ [key]: { $gte: new Date(...min) } }, { [key]: { $lte: new Date(...max) } }];
-        } else console.error('UNKNOWN OP', { key, operator });
+        } else console.error("UNKNOWN OP", { key, operator });
     }
 
     private parseExpression(key: string, value: string, model?: Model<any>): any {
         //OR
-        const subExpressions = value.split('|').filter((s) => s);
+        const subExpressions = value.split("|").filter((s) => s);
         if (subExpressions.length > 1) {
             const $or = subExpressions.map((sub) => {
-                const s_exp = sub.split('=');
+                const s_exp = sub.split("=");
                 if (s_exp.length === 1) return this.parseExpression(key, sub, model);
                 else return this.parseExpression(s_exp[0], s_exp[1], model);
             });
@@ -227,73 +235,73 @@ export class QueryParser {
         } else {
             //If not operator the default value conversion is string
             const val = this.autoParseValue(value, key, model);
-            if (val === '') return;
+            if (val === "") return;
             if (val === undefined) return { [key]: { $exists: false } };
-            else if (typeof val === 'string' && val.indexOf('*') > -1) {
+            else if (typeof val === "string" && val.indexOf("*") > -1) {
                 const purified = this.escapeRegex(value);
-                return { [key]: new RegExp(purified, 'gi') };
+                return { [key]: new RegExp(purified, "gi") };
             } else return { [key]: val };
         }
     }
 
     private escapeRegex(value: string) {
-        let purified = '';
+        let purified = "";
         for (let i = 0; i < value.length; i++) {
             const char = value[i];
             const prevChar = i > 0 ? value[i - 1] : null;
 
-            if (i === 0 && char != '*') purified = '^'; //strict check
+            if (i === 0 && char != "*") purified = "^"; //strict check
 
             switch (char) {
-                case '*':
-                    if (prevChar === '*' || prevChar === null) break;
-                    else purified += '*';
+                case "*":
+                    if (prevChar === "*" || prevChar === null) break;
+                    else purified += "*";
                     break;
-                case '\\':
+                case "\\":
                     break; //bad char
-                case '.':
-                case '+':
-                case '?':
-                case '^':
-                case '$':
-                case '{':
-                case '}':
-                case '(':
-                case ')':
-                case '[':
-                case ']':
-                case '|':
-                    purified += '\\' + char;
+                case ".":
+                case "+":
+                case "?":
+                case "^":
+                case "$":
+                case "{":
+                case "}":
+                case "(":
+                case ")":
+                case "[":
+                case "]":
+                case "|":
+                    purified += "\\" + char;
                     break; //escape regex char
                 default:
                     purified += char;
                     break;
             }
         }
-        purified = purified.endsWith('*') ? purified.substring(0, purified.length - 1) : purified;
+        purified = purified.endsWith("*") ? purified.substring(0, purified.length - 1) : purified;
         return purified;
     }
 
     private getPathType(path: string, model: Model<any>) {
-        return model.schema.path(path)?.instance ?? 'String';
+        return model.schema.path(path)?.instance ?? "String";
     }
 
     autoParseValue(value: string, key: string, model?: Model<any>): any {
-        if (value === '') return '';
-        if (value === 'null') return null;
-        if (value === 'undefined') return undefined;
-        if (value === 'true') return true;
-        if (value === 'false') return false;
+        if (value === "") return "";
+        if (value === "null") return null;
+        if (value === "undefined") return undefined;
+        if (value === "true") return true;
+        if (value === "false") return false;
 
-        const keyType = key && model ? (this.getPathType(key, model) ?? 'String') : 'String';
-        if (keyType === 'String') return value;
-        if (keyType === 'Date') return new Date(value);
-        if (keyType === 'ObjectId') return new ObjectId(value);
-        if (keyType === 'Number') return +value;
-        if (keyType === 'Array') {
-            if (value.indexOf && value.indexOf(':') > -1)
+        const keyType = key && model ? (this.getPathType(key, model) ?? "String") : "String";
+        if (keyType === "String") return value;
+        if (keyType === "Date") return new Date(value);
+        if (keyType === "ObjectId") return new ObjectId(value);
+        if (keyType === "Number") return +value;
+        if (keyType === "Array") {
+            if (value.indexOf && value.indexOf(":") > -1)
                 return value
-                    .split(':')
+                    .split(":")
                     .filter((x) => x)
                     .map((x) => this.autoParseValue(x, key, model));
             return value;
@@ -302,20 +310,21 @@ export class QueryParser {
 
     private _select(s: string) {
         const select: { [field: string]: 1 | 0 } = {};
-        const fields = s.split(',');
+        const fields = s.split(",");
         for (const x of fields) {
-            select[x] = x.startsWith('!') ? 0 : 1;
+            if (x.startsWith("!")) select[x.substring(1)] = 0;
+            else select[x] = 1;
         }
         return select;
     }
 
     private _fields(s: string) {
-        const g = s.split(',');
+        const g = s.split(",");
         let fields: { [field: string]: any } | undefined;
 
         for (let j = 0; j < g.length; j++) {
             const x = g[j];
-            const segments = x.split('=');
+            const segments = x.split("=");
             if (segments.length > 1) {
                 fields = fields || {};
                 const o = this._operator(segments[1]);
@@ -326,6 +335,28 @@ export class QueryParser {
             }
         }
         return fields;
+    }
+
+    _autoLookups(model: Model<any>) {
+        if (!model || !model.schema) return [];
+        const schemaPaths = model.schema.paths;
+        const lookups: Lookup[] = [];
+
+        Object.keys(schemaPaths).forEach((key) => {
+            const pathOptions = schemaPaths[key]?.options;
+
+            if (pathOptions?.autolookup && pathOptions?.ref) {
+                lookups.push({
+                    from: pathOptions.ref,
+                    foreignField: pathOptions.foreignField ?? "_id",
+                    localField: key,
+                    as: pathOptions.autolookup,
+                    unwind: schemaPaths[key].instance !== "Array", // Unwind if the field is not an array
+                });
+            }
+        });
+
+        return lookups;
     }
 
     parse(query: { [key: string]: string }[], model?: Model<any>) {
@@ -344,51 +375,52 @@ export class QueryParser {
         let fields1: { [field: string]: any } | undefined;
         let fields2: { [field: string]: any } | undefined;
         let fields3: { [field: string]: any } | undefined;
-        let lookups: { from: string; foreignField: string; localField: string; as: string; unwind?: boolean }[] | undefined;
+        let lookups: Lookup[] = this._autoLookups(model);
         let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
 
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
-            if (x.key === 'page' && !isNaN(+x.value)) page = +x.value;
-            else if (x.key === 'per_page' && !isNaN(+x.value)) per_page = Math.min(+x.value, 500);
-            else if (x.key === 'group_by') {
-                const g = x.value.split(',');
+            if (x.key === "page" && !isNaN(+x.value)) page = +x.value;
+            else if (x.key === "per_page" && !isNaN(+x.value)) per_page = Math.min(+x.value, 500);
+            else if (x.key === "group_by") {
+                const g = x.value.split(",");
                 const key = g.length > 1 ? g.shift() : x.value;
-                group = { _id: '$' + key };
+                group = { _id: "$" + key };
 
-                if (g.length && g[0].startsWith('{project}')) {
-                    group.items = { $push: '$$ROOT' };
+                if (g.length && g[0].startsWith("{project}")) {
+                    group.items = { $push: "$$ROOT" };
                     g[0] = g[0].substring(9);
-                    group_fields = this._fields(g.join(','));
+                    group_fields = this._fields(g.join(","));
                 }
-            } else if (x.key === 'sort_by' && x.value) {
-                const sort_by_array = x.value.split(',');
+            } else if (x.key === "sort_by" && x.value) {
+                const sort_by_array = x.value.split(",");
                 const [field, direction] = sort_by_array;
-                if (sort_by_array.length === 1 && field.startsWith('-')) sort = { [field.substring(1)]: -1 };
-                else sort = { [field]: direction === 'desc' ? -1 : 1 };
-            } else if (x.key === 'select' && x.value) select = this._select(x.value);
-            else if (x.key === 'fields1' && x.value) fields1 = this._fields(x.value);
-            else if (x.key === 'fields2' && x.value) fields2 = this._fields(x.value);
-            else if (x.key === 'fields3' && x.value) fields3 = this._fields(x.value);
-            else if (x.key === 'lookup' && x.value) {
+                if (sort_by_array.length === 1 && field.startsWith("-")) sort = { [field.substring(1)]: -1 };
+                else sort = { [field]: direction === "desc" ? -1 : 1 };
+            } else if (x.key === "select" && x.value) select = this._select(x.value);
+            else if (x.key === "fields1" && x.value) fields1 = this._fields(x.value);
+            else if (x.key === "fields2" && x.value) fields2 = this._fields(x.value);
+            else if (x.key === "fields3" && x.value) fields3 = this._fields(x.value);
+            else if (x.key === "lookup" && x.value) {
                 //lookup=lookup_1;lookup_2
-                lookups = x.value.split(';').map((l) => {
-                    //lookup=collection:foriegn:local:as
-                    const p = l.split(':');
+                const _lookups = x.value.split(";").map((l) => {
+                    //lookup=collection:foreign:local:as
+                    const p = l.split(":");
                     if (p.length === 4 || p.length === 5) {
                         const [from, foreignField, localField, as] = p;
                         let unwind = false;
-                        if (p.length === 5 && p[4] === 'unwind') unwind = true;
+                        if (p.length === 5 && p[4] === "unwind") unwind = true;
                         return { from, foreignField, localField, as, unwind };
-                    } else throw 'INVALID_LOOKUP_PARAMS';
+                    } else throw "INVALID_LOOKUP_PARAMS";
                 });
-            } else if (x.key === 'lookup_match') {
+                lookups = [..._lookups, ...lookups];
+            } else if (x.key === "lookup_match") {
                 //lookup_match=lookup_1;lookup_2
-                lookupsMatch = x.value.split(';').map((l) => {
+                lookupsMatch = x.value.split(";").map((l) => {
                     //lookup=collection:foriegn:local:as:f1:v1
-                    let p = l.split(':');
+                    let p = l.split(":");
 
                     const [from, foreignField, localField, as] = p;
                     const match = [];

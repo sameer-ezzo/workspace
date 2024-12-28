@@ -201,7 +201,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
 
         const model = await this.getModel(segments.collection);
-        const queryInfo = q ? this.queryParser.parse(<any>q, model) : null;
+        const queryInfo = q ? this.queryParser.parse(q, model) : null;
         const filter: any = queryInfo ? queryInfo.filter : {};
         const sort = queryInfo ? queryInfo.sort : {};
         const page = queryInfo ? +queryInfo.page : 1;
@@ -259,7 +259,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
         const model = await this.getModel(pathInfo.collection);
         if (!model) return Promise.resolve([]);
-        const query = q ? this.queryParser.parse(<any>q, model) : ({} as any);
+        const query: any = q ? this.queryParser.parse(q, model) : {};
         const pipeline = [];
         let _id = undefined;
         if (pathInfo.id) {
@@ -275,14 +275,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             if (query.fields1) pipeline.push({ $addFields: query.fields1 });
             if (query.fields2) pipeline.push({ $addFields: query.fields2 });
-            if (query.fields3) pipeline.push({ $addFields: query.fields3 });
             if (query.lookups)
                 query.lookups.forEach((l: any) => {
                     l.from = this.prefix + l.from;
                     const unwind = l.unwind;
                     delete l.unwind;
                     pipeline.push({ $lookup: l });
-                    if (unwind) pipeline.push({ $unwind: "$" + l.as });
+                    if (unwind) pipeline.push({ $unwind: { path: "$" + l.as, preserveNullAndEmptyArrays: true } });
                 });
             if (query.lookupsMatch) {
                 query.lookupsMatch.forEach((l: any) => {
@@ -310,6 +309,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     });
                 });
             }
+            if (query.fields3) pipeline.push({ $addFields: query.fields3 });
             if (query.filter && query.filter.$and && query.filter.$and.length) pipeline.push({ $match: query.filter });
             if (query.sort) pipeline.push({ $sort: query.sort });
             if (query.select) pipeline.push({ $project: query.select });
