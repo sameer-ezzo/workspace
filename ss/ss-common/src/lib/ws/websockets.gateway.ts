@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { HttpAdapterHost } from '@nestjs/core'
 import { Deferred, Principle } from "@noah-ark/common"
 import * as jose from "jose"
-import { __secret } from "../secret.fun"
+import { _env_secret } from "../secret.fun"
 import { logger } from "../logger"
 
 type RemoteSocket = Awaited<ReturnType<ReturnType<Server['in']>['fetchSockets']>>[number]
@@ -23,7 +23,7 @@ export type WsEvent<T = any> = {
 }
 
 async function verifyToken(token: string): Promise<Principle | undefined> {
-    const secret = __secret()
+    const secret = _env_secret()
     try {
         const result = await jose.jwtVerify(token, new TextEncoder().encode(secret))
         return result.payload as Principle

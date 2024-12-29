@@ -73,7 +73,7 @@ export class AuthenticationInterceptor implements NestInterceptor {
 }
 
 import { Request } from 'express';
-import { __secret } from '@ss/common'
+import { _env_secret } from '@ss/common'
 
 export interface HttpAuthenticationProvider {
     authenticate(req: Request): Promise<Principle>
@@ -152,7 +152,7 @@ export class CookieAuthenticationProvider implements HttpAuthenticationProvider 
                     console.error('CookieAuthenticationProvider.authenticate', error)
             }
         } else {
-            const secret = __secret()
+            const secret = _env_secret()
             try {
                 const { payload } = await jose.jwtVerify(token, new TextEncoder().encode(secret))
                 req.principle = payload as Principle

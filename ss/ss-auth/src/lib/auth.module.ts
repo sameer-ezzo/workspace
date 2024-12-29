@@ -3,7 +3,7 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AuthOptions } from "./auth-options";
 import { AuthenticationInterceptor } from "./auth.middleware";
 
-import { CommonModule, __secret } from "@ss/common";
+import { CommonModule, _env_secret } from "@ss/common";
 import { randomString } from "@noah-ark/common";
 import { logger } from "./logger";
 
@@ -19,7 +19,7 @@ import { Schema } from "mongoose";
 
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
-    secret: __secret(),
+    secret: _env_secret(),
     accessTokenExpiry: process.env.accessTokenExpiry || defaultAuthOptions.accessTokenExpiry,
     refreshTokenExpiry: process.env.refreshTokenExpiry || defaultAuthOptions.refreshTokenExpiry,
     forceEmailVerification: process.env.forceEmailVerification === "true",
@@ -64,18 +64,8 @@ export class AuthModule implements OnModuleInit {
     ): DynamicModule {
         if (!modelOptions || !modelOptions.userSchema || !modelOptions.dbName) throw new Error("Invalid options passed to AuthModule.register");
         const options = { ..._authOptions, ...authOptions } as AuthOptions;
-        if (options.secret !== __secret()) {
-            logger.warn("Auth secret has been overridden (the one passed in env is used)");
-            options.secret = __secret();
-        }
-        if (!options.secret) {
-            logger.error("Auth secret is not set");
 
-            const prod = process.env.NODE_PROD === "production";
-            options.secret = prod ? randomString(10) : "dev-secret-PLEASE-CHANGE!";
-            process.env.secret = options.secret;
-            process.env.SECRET = options.secret;
-        }
+        if (!options.secret) throw new Error("Secret not provided in AuthOptions");
 
         const providers: Provider[] = [
             AuthService,
