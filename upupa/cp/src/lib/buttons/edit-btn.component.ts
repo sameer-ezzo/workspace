@@ -29,6 +29,7 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
         runInInjectionContext(this.injector, async () => {
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
+            if(!result) return;
             const { submitResult } = result;
             if (this.adapter && submitResult) {
                 await this.adapter.put(this.item(), submitResult);

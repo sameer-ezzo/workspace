@@ -1,6 +1,12 @@
 import { Component, inject, input, model } from "@angular/core";
 import { ControlValueAccessor, FormControl, NgControl, UntypedFormControl } from "@angular/forms";
 
+export function _defaultControl(parentComponent: any) {
+    const control = new FormControl();
+    control["_parentComponent"] = parentComponent;
+    return control;
+}
+
 @Component({ standalone: true, template: "" })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
     name = input<string, string>(`field_${Date.now()}`, {
@@ -15,7 +21,7 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = new FormControl();
+    _defaultControl = _defaultControl(this);
     control = input<FormControl>(this._control ?? this._defaultControl);
     handleUserInput(v: T) {
         this.value.set(v);

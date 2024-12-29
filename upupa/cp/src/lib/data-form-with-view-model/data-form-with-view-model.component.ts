@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, input, Injector, runInInjectionCon
 import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
-import { ActionEvent, deepAssign } from "@upupa/common";
+import { _defaultControl, ActionEvent, deepAssign } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
@@ -19,6 +19,8 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
     const models = injectFormViewModels();
     return models.find((x) => x.__proto__.constructor === _class);
 }
+
+
 
 @Component({
     selector: "data-form",
@@ -58,12 +60,12 @@ export class DataFormComponent<T = any> {
     name = input<string | undefined>();
     formName = computed(() => this.name() ?? this.viewModel()?.name ?? new Date().getTime().toString());
 
-    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
-    _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = new FormControl({});
+    _ngControl = inject(NgControl, { optional: true });
+    _control = this._ngControl?.control as FormControl;
+    _defaultControl = _defaultControl(this);
     control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
         transform: (v) => {
-            return v ?? this._control ?? this._defaultControl ?? new FormControl({});
+            return v ?? this._control ?? this._defaultControl;
         },
     });
     loading = signal(false);

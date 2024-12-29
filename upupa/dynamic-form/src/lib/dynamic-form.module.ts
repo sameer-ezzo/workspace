@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
+import { makeEnvironmentProviders, ModuleWithProviders, NgModule, Provider } from "@angular/core";
 import { DynamicFormComponent, OrderedKeyValuePipe } from "./dynamic-form.component";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 
@@ -69,4 +69,18 @@ export class DynamicFormModule {
             ],
         };
     }
+}
+
+
+export function provideDynamicForm(providers?: Provider[],
+    themes?: DynamicFormThemes,
+    defaultThemeName?: "native" | string,
+    options: DynamicFormModuleOptions = { enableLogs: false }){
+        return makeEnvironmentProviders([
+            ...providers,
+            { provide: DEFAULT_THEME_NAME, useValue: defaultThemeName },
+            { provide: DYNAMIC_COMPONENT_MAPPER, useValue: themes },
+            { provide: DYNAMIC_FORM_OPTIONS, useValue: options },
+        ]);
+
 }

@@ -3,7 +3,8 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+import { _defaultControl } from "@upupa/common";
 
 @Component({
     standalone: true,
@@ -19,21 +20,22 @@ import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, 
     ],
 })
 export class DataComponentBase<T = any> implements ControlValueAccessor, OnChanges, Validator {
-    validate(control: AbstractControl): ValidationErrors | null {
-        if (control.value) {
-            const keys = this.adapter().getKeysFromValue(control.value);
-            const normalized = this.selectedNormalized();
+    validate(control: AbstractControl): ValidationErrors {
+        if (!control.value) return undefined;
 
-            const matches = normalized.filter((x) => keys.includes(x.key)).filter((x) => x);
+        const keys = this.adapter().getKeysFromValue(control.value);
+        const normalized = this.selectedNormalized();
 
-            if (matches.length !== keys.length)
-                return {
-                    select: {
-                        message: `No option found matching value`,
-                    },
-                };
-        }
-        return null;
+        const matches = normalized.filter((x) => keys.includes(x.key)).filter((x) => x);
+
+        if (matches.length !== keys.length)
+            return {
+                select: {
+                    message: `No option found matching value '${control.value}'`,
+                },
+            };
+
+        return undefined;
     }
 
     valueChange = output<Partial<T> | Partial<T>[]>();
@@ -43,7 +45,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = new FormControl();
+    _defaultControl = _defaultControl(this);
     control = input<FormControl>(this._control ?? this._defaultControl);
 
     // >>>>> ControlValueAccessor ----------------------------------------
@@ -77,16 +79,25 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     }
 
     private async _normalizeValue(v: Partial<T> | Partial<T>[]) {
+        const control = this.control();
+
         const keys = this.adapter().getKeysFromValue(v);
         if (!keys.length) return;
-        await this.adapter()
-            .getItems(keys)
-            .then((items) => {
-                this.selectedNormalized.set(items);
-                const ValidationErrors = this.validate(this.control());
-                if (ValidationErrors) this.control().markAsTouched();
-                this.control().setErrors(ValidationErrors);
-            });
+
+        try {
+            const items = await this.adapter().getItems(keys);
+            // Knowing that Samir has said that we should add unmatched items to the selectedNormalized, I - Rami - still wasn't convinced and refused to add them.
+            this.selectedNormalized.set(items);
+
+            const ValidationErrors = this.validate(control);
+
+            if (ValidationErrors) {
+                control.markAsTouched();
+                control.setErrors(ValidationErrors);
+            } else if (control.errors) control.setErrors(undefined);
+        } catch (error) {
+            console.error("Adapter error, couldn't write value", error);
+        }
     }
 
     registerOnChange(fn: (value: Partial<T> | Partial<T>[]) => void): void {
@@ -140,13 +151,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     async loadData() {
         if (this._firstLoad) return;
         this.loading.set(true);
-        this.adapter().refresh();
-        // .pipe(take(1))
-        // .subscribe(() => {
-        //     this.itemsSource.set("adapter");
-        //     this.loading.set(false);
-        //     this._firstLoad = true;
-        // });
+        await this.adapter().refresh();
 
         this.loading.set(false);
         this._firstLoad = true;
@@ -167,7 +172,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
                     ? (optVal: any, selectVal: any) => {
                           if (optVal === selectVal) return true;
                           if (optVal == undefined || selectVal == undefined) return false;
-                          return optVal[keyProperty] === selectVal[keyProperty];
+                          return typeof optVal == "object" ? optVal[keyProperty] === selectVal[keyProperty] : false;
                       }
                     : (optVal: any, selectVal: any) => optVal === selectVal;
 
@@ -226,7 +231,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         this.propagateChange();
     }
 
-    select(...value: Partial<T>[]) {
+    _select(...value: Partial<T>[]) {
         if (this.singleValueAsArray()) {
             this.selectionModel.select(...value);
             this.value.set(this.selectionModel.selected);
@@ -241,6 +246,9 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
                 .normalized()
                 .filter((x) => this.selected().includes(x.value)),
         );
+    }
+    select(...value: Partial<T>[]) {
+        this._select(...value);
         this.markAsTouched();
         this.propagateChange();
     }

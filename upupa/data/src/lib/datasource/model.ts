@@ -21,7 +21,7 @@ export declare type DataLoaderOptions<T> = {
  * It can be a single key of T or an array of keys of T.
  */
 export type Key<T> = keyof T | (keyof T)[];
-export type NormalizedItem<T = any> = { key: any; item: T; display: Partial<T>; value: Partial<T>; image?: Partial<T>; defaultSearchTerm?: string };
+export type NormalizedItem<T = any> = { key: any; item: T; display: Partial<T>; value: Partial<T>; image?: Partial<T>; defaultSearchTerm?: string; disabled?: boolean };
 
 export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "date" | "boolean" };
 

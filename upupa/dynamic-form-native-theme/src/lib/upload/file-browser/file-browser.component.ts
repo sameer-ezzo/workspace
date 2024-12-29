@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, forwardRef, inject, model, computed, effect } from "@angular/core";
+import { Component, forwardRef, inject, model, computed, effect, SimpleChanges } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@upupa/auth";
@@ -12,6 +12,7 @@ import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
+import { MatButtonModule } from "@angular/material/button";
 
 const valueProperty = [
     "_id",
@@ -41,7 +42,7 @@ const valueProperty = [
             multi: true,
         },
     ],
-    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonToggleModule],
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule,MatButtonModule, MatButtonToggleModule],
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);
@@ -73,12 +74,15 @@ export class FileBrowserComponent {
     value = model<FileInfo[]>([]);
     disabled = model(false);
 
-    constructor() {
-        effect(() => {
+
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['path']) {
             const _path = this.path() ?? "/";
             const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
             this.adapter.load({ filter });
-        });
+        }
+
     }
 
     selectFile(fileSelect: FileSelectComponent) {

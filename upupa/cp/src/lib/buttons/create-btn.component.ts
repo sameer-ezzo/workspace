@@ -33,6 +33,7 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
             const value = this.item() ?? new mirror.viewModelType();
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
+            if(!result) return;
             const { submitResult } = result;
             if (this.adapter && submitResult) {
                 await this.adapter.create(submitResult);

@@ -8,7 +8,7 @@
             #selectInput
             multiple
             [value]="value()"
-            (selectionChange)="select(selectInput.value)"
+            (selectionChange)="_select(selectInput.value)"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
@@ -56,7 +56,7 @@
         <mat-select
             #selectInput
             [value]="value()"
-            (selectionChange)="select(selectInput.value)"
+            (selectionChange)="_select(selectInput.value)"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
@@ -72,8 +72,11 @@
                 <mat-option disabled> Loading ... </mat-option>
             }
 
+            <mat-option ></mat-option>
+
+
             @for (item of items(); track $index) {
-                <mat-option [value]="item.value">
+                <mat-option [value]="item.value" [disabled]="item.disabled">
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
@@ -81,6 +84,8 @@
                     <mat-option disabled> No items found </mat-option>
                 }
             }
+
+
 
             @for (item of actions; track i; let i = $index) {
                 <mat-option (click)="onAction($event, item)">

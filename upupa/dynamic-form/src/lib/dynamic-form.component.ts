@@ -32,11 +32,13 @@ import {
     TouchedChangeEvent,
     FormsModule,
     ReactiveFormsModule,
+    StatusChangeEvent,
+    FormResetEvent,
 } from "@angular/forms";
 import { FormScheme } from "./types";
 import { Condition } from "@noah-ark/expression-engine";
 import { Subscription } from "rxjs";
-import { EventBus, UtilsModule } from "@upupa/common";
+import { _defaultControl, EventBus, UtilsModule } from "@upupa/common";
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormModuleOptions } from "./dynamic-form.options";
@@ -50,6 +52,8 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
+
+
 
 @Pipe({
     name: "orderedKeyValue",
@@ -135,12 +139,36 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     form = new FormGroup({});
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = new FormControl({});
+    _defaultControl = this._syncControl(_defaultControl(this));
     control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
         transform: (v) => {
-            return v ?? this._control ?? this._defaultControl ?? new FormControl({});
+            return this._syncControl(v) ?? this._control ?? this._defaultControl;
         },
     });
+
+    _syncControl(c: FormControl) {
+        c.events.subscribe((e) => {
+            if (e instanceof ValueChangeEvent) {
+                this.form.patchValue(e.value, { emitEvent: false });
+            } else if (e instanceof PristineChangeEvent) {
+                this.form.markAsPristine({ emitEvent: false });
+            } else if (e instanceof TouchedChangeEvent) {
+                this.form.markAsTouched({ emitEvent: false });
+            } else if (e instanceof StatusChangeEvent) {
+                if (c.enabled) this.form.enable({ emitEvent: false });
+                else this.form.disable({ emitEvent: false });
+
+                if (e.status === "VALID") this.form.setErrors(null, { emitEvent: false });
+                else if (e.status === "INVALID") this.form.setErrors(c.errors, { emitEvent: false });
+                else if (e.status === "PENDING") this.form.setErrors({ pending: true }, { emitEvent: false });
+            } else if (e instanceof FormResetEvent) {
+                this.form.reset({ emitEvent: false });
+                this._patches.clear();
+            }
+        });
+
+        return c;
+    }
 
     value = model(undefined);
 
@@ -244,19 +272,17 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 this.control().markAsPristine();
             } else if (e instanceof TouchedChangeEvent) {
                 this.control().markAsTouched();
-            }
-            // else if (e instanceof StatusChangeEvent) {
-            //     if (e.status === "VALID") this.control().setErrors(null);
-            //     else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
-            //     else if (e.status === "PENDING") this.control().setErrors({ pending: true });
+            } else if (e instanceof StatusChangeEvent) {
+                // if (e.status === "VALID") this.control().setErrors(null);
+                // else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
+                // else if (e.status === "PENDING") this.control().setErrors({ pending: true });
 
-            //     if (this.form.enabled) this.control().enable();
-            //     else this.control().disable();
-            // } else if (e instanceof FormResetEvent) {
-            //     this.control().reset();
-            //     this._patches.clear();
-            //     // update internal value
-            // }
+                if (this.form.enabled) this.control().enable();
+                else this.control().disable();
+            } else if (e instanceof FormResetEvent) {
+                this.control().reset();
+                this._patches.clear();
+            }
         });
     }
 
@@ -278,7 +304,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         }
         if (changes["value"]) {
             this._patches.clear();
-            this.form.patchValue(this.value());
+            this.form.patchValue(this.value(),{emitEvent:false});
             this.propagateChange();
         }
 
