@@ -14,6 +14,7 @@ export declare type DataLoaderOptions<T> = {
     page?: Partial<PageDescriptor>;
     sort?: SortDescriptor;
     filter?: Partial<FilterDescriptor>;
+    autoRefresh?: boolean;
 };
 
 /**

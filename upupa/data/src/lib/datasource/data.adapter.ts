@@ -19,6 +19,7 @@ function DataAdapterStore<T>() {
         { protectedState: false },
         withState({
             loading: false,
+            autoRefresh: true,
             data: [] as T[],
             error: null as Error,
             allDataLoaded: false,
@@ -50,6 +51,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             sort: options?.sort,
             filter: options?.filter,
             terms: options?.terms ?? [..._displayProperties, ..._keyProperties, ..._valueProperties],
+            autoRefresh: options?.autoRefresh === false ? false : true,
         };
         patchState(this, _initial);
     }
@@ -73,20 +75,28 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         return this.load();
     }
 
-    async create(value: Partial<T>): Promise<unknown> {
-        return this.dataSource.create(value);
+    async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const result = await this.dataSource.create(value);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
-    async put(item: T, value: Partial<T>): Promise<unknown> {
-        return this.dataSource.put(item, value);
+    async put(item: T, value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const result = await this.dataSource.put(item, value);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
-    async patch(item: T, patches: Patch[]): Promise<unknown> {
-        return this.dataSource.patch(item, patches);
+    async patch(item: T, patches: Patch[], opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const result = await this.dataSource.patch(item, patches);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
-    async delete(item: T): Promise<unknown> {
-        return this.dataSource.delete(item);
+    async delete(item: T, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const result = await this.dataSource.delete(item);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
     getKeysFromValue(value: Partial<T> | Partial<T>[]): (keyof T)[] {

@@ -24,6 +24,7 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
     dialogOptions = input<any>({ title: "Create" });
     btn = input<ActionDescriptor>({ name: "create", color: "primary", icon: "add", variant: "raised" });
     formViewModel = input<Class<TItem>>();
+    updateAdapter = input<boolean>(false);
 
     async create() {
         // const v = value ? value() : item;
@@ -33,11 +34,11 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
             const value = this.item() ?? new mirror.viewModelType();
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
-            if(!result) return;
-            const { submitResult } = result;
-            if (this.adapter && submitResult) {
-                await this.adapter.create(submitResult);
-                this.adapter.refresh();
+            if (result && this.updateAdapter()) {
+                const { submitResult } = result;
+                if (this.adapter && submitResult) {
+                    await this.adapter.create(submitResult);
+                }
             }
         });
     }
@@ -48,6 +49,7 @@ export function createButton<T = unknown>(
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
+        updateAdapter?: boolean;
     },
 ): DynamicComponent<CreateButton> {
     options ??= {};
@@ -63,6 +65,6 @@ export function createButton<T = unknown>(
 
     return {
         component: CreateButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn },
+        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter },
     } as DynamicComponent<CreateButton>;
 }

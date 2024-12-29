@@ -23,15 +23,17 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
     btn = input<ActionDescriptor>({ name: "edit", icon: "edit", variant: "icon" });
     formViewModel = input<Class>();
 
+    updateAdapter = input<boolean>(false);
+
     async edit() {
         // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
-            if(!result) return;
+            if (!result) return;
             const { submitResult } = result;
-            if (this.adapter && submitResult) {
+            if (result && this.updateAdapter()) {
                 await this.adapter.put(this.item(), submitResult);
                 this.adapter.refresh();
             }
@@ -44,6 +46,7 @@ export function editButton<T = unknown>(
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
+        updateAdapter?: boolean;
     },
 ): DynamicComponent {
     options ??= {};
@@ -59,6 +62,6 @@ export function editButton<T = unknown>(
 
     return {
         component: EditButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn },
+        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options?.updateAdapter },
     } as DynamicComponent<EditButton>;
 }
