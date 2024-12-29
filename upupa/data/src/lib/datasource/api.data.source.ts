@@ -1,11 +1,8 @@
-import { ReplaySubject, Observable, of, from, firstValueFrom } from "rxjs";
-import { catchError, debounceTime, map, switchMap, tap } from "rxjs/operators";
+import { firstValueFrom } from "rxjs";
 import { FilterDescriptor, PageDescriptor, SortDescriptor, TableDataSource, Term } from "./model";
-import { PageEvent } from "@angular/material/paginator";
 import { DataService } from "../data.service";
-import { QueryDescriptor } from "../di.token";
 import { Patch } from "@noah-ark/json-patch";
-import { inject, signal } from "@angular/core";
+import { signal } from "@angular/core";
 
 export class ApiDataSource<T = any> extends TableDataSource<T> {
     readonly allDataLoaded = signal(false);
