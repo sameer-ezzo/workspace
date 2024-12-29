@@ -18,7 +18,7 @@ declare type EditorConfig = any;
     selector: "form-html",
     templateUrl: "./html-editor.component.html",
     styleUrls: ["./html-editor.component.scss"],
-    encapsulation: ViewEncapsulation.None,
+
     standalone: true,
     imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
     providers: [

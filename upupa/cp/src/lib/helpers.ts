@@ -73,6 +73,9 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         formActions = [defaultAction, ...formActions];
     }
     const opts: DialogConfig = {
+        width: "90%",
+        maxWidth: "750px",
+        maxHeight: "95vh",
         ...context?.dialogOptions,
         footer: [
             ...formActions.map((descriptor) =>

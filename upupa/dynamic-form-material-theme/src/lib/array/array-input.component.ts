@@ -11,6 +11,7 @@ import { DataTableModule } from "@upupa/table";
     templateUrl: "./array-input.component.html",
     standalone: true,
     imports: [DataTableModule, PortalComponent, MatFormFieldModule, MatInputModule],
+    styleUrl: "./array-input.component.scss",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

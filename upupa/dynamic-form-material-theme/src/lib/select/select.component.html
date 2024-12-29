@@ -103,7 +103,7 @@
             <mat-progress-spinner style="margin: 0.5rem;" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {
-            <button type="button" matSuffix mat-icon-button (click)="clearValue($event)">
+            <button type="button" style="margin-inline-end: -1rem" mat-icon-button (click)="clearValue($event)">
                 <mat-icon>clear</mat-icon>
             </button>
         }

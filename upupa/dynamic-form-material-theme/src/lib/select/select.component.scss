@@ -24,6 +24,9 @@
         z-index: 100;
     }
 }
+.mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper {
+    padding-inline: 1rem !important;
+}
 .select-filter-wrapper {
     position: sticky;
     top: -8px;
