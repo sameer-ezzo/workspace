@@ -27,7 +27,6 @@ type ViewType = "list" | "grid";
             multi: true,
         },
     ],
-    exportAs: "fileSelect",
     host: {
         "[class]": "view()",
         "[attr.name]": "name()",
