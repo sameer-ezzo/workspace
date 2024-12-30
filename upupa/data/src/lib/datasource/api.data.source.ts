@@ -13,11 +13,20 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
     //     switchMap((src) => src),
     // );
 
+    private readonly url: URL;
+    private get pathname() {
+        return this.url ? this.url.pathname : this.path;
+    }
+    private get queryParams() {
+        return this.url ? Object.fromEntries(this.url.searchParams) : {};
+    }
     constructor(
         private readonly dataService: DataService,
         public readonly path: string,
     ) {
         super();
+        const _url = new URL("/", dataService.api.api_base);
+        this.url = new URL(path, _url.protocol + "//" + _url.host);
     }
 
     _evalTerm(term: Term<T>, value: string) {
@@ -44,7 +53,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         const page = options?.page ?? { pageIndex: 0, pageSize: 25 };
         const terms = options?.terms ?? [];
 
-        const query: any = {};
+        const query: any = { ...this.queryParams };
         if (search) {
             const termsFields = terms.slice();
             if (termsFields.length) {
@@ -69,47 +78,29 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         if (sort?.active) query.sort_by = `${sort.active},${sort.direction}`;
 
         // const src = this.getData(page, query);
-        const data$ = this.dataService.get<T[]>(this.path, query);
+        const data$ = this.dataService.get<T[]>(this.pathname, query);
         return firstValueFrom(data$).then((res) => res.data);
     }
 
-    // getData(page: Partial<PageEvent>, query: QueryDescriptor): Promise<T[]> {
-    // return this.dataService.get<T[]>(this.path, query).pipe(
-    //     catchError((error) =>
-    //         of({
-    //             data: [],
-    //             total: 0,
-    //             error,
-    //         }),
-    //     ),
-    //     tap((res) => {
-    //         page.length = res.total;
-    //         this.data = res.data as T[];
-    //         this.allDataLoaded.set(this.data.length >= res.total);
-    //     }),
-    //     map((res) => res.data),
-    // );
-    // }
-
     override create(value: Partial<T>): Promise<unknown> {
-        return this.dataService.post(this.path, value);
+        return this.dataService.post(this.pathname, value);
     }
 
     override put(item: T, value: Partial<T>): Promise<unknown> {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
-        return this.dataService.put(`${this.path}/${key}`, value);
+        return this.dataService.put(`${this.pathname}/${key}`, value);
     }
 
     override patch(item: T, patches: Patch[]): Promise<unknown> {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
-        return this.dataService.patch(`${this.path}/${key}`, patches);
+        return this.dataService.patch(`${this.pathname}/${key}`, patches);
     }
     override delete(item: T): Promise<void> {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
-        return this.dataService.delete(`${this.path}/${key}`);
+        return this.dataService.delete(`${this.pathname}/${key}`);
     }
 
     destroy?() {}
@@ -117,6 +108,6 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
     override getItems(keys: (string | number | symbol)[], key: string | number | symbol): Promise<T[]> {
         if (!keys?.length) return Promise.resolve([]);
         const query = { [key]: `{in}${keys.join(",")}` };
-        return firstValueFrom(this.dataService.get<T[]>(this.path, query)).then((res) => res.data);
+        return firstValueFrom(this.dataService.get<T[]>(this.pathname, query)).then((res) => res.data);
     }
 }

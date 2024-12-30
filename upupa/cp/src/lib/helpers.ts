@@ -87,8 +87,6 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
                             if (descriptor.type === "submit") {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 componentInstance.submit();
-                                const result = await waitForOutput("submitted", componentInstance);
-                                if (!result.error) dialogRef.close(result);
                             }
                         },
                     },
@@ -112,7 +110,8 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     // dialogWrapper.actionClick.subscribe((e) => {
     //     componentRef.instance.onAction(e);
     // });
-
+    const result = await waitForOutput("submitted", componentRef.instance);
+    if (!result.error) dialogRef.close(result);
     return { dialogRef, componentRef };
 
     // const { submitResult, error } = await waitForOutput<DataFormComponent["submitted"]>("submitted", componentRef.instance);
