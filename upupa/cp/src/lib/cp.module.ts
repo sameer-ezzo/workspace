@@ -12,7 +12,7 @@ import { MaterialModulesModule } from "./material-modules.module";
 import { RouterModule } from "@angular/router";
 import { UtilsModule } from "@upupa/common";
 import { MatSidenavModule } from "@angular/material/sidenav";
-import { MembershipModule, UsersManagementModule } from "@upupa/membership";
+import { UsersManagementModule } from "@upupa/membership";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { TagsModule, TagsPipe } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
@@ -55,7 +55,7 @@ const userImageProvider = {
         UploadModule,
         PopoverModule,
         UsersManagementModule,
-        MembershipModule,
+        // MembershipModule,
         TagsModule,
         AuthorizeModule,
         PermissionsModule,

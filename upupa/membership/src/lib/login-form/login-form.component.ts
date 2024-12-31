@@ -1,25 +1,26 @@
-import { Component, inject, signal, output, viewChild, model, input } from "@angular/core";
+import { Component, inject, signal, output, viewChild, model, input, computed } from "@angular/core";
 import { AuthModule, AuthService, Credentials } from "@upupa/auth";
-import { CollectorComponent, DynamicFormModule, FormScheme } from "@upupa/dynamic-form";
-import { ActionDescriptor } from "@upupa/common";
+import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
+import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
 
 import { FormControl } from "@angular/forms";
 import { Principle } from "@noah-ark/common";
 import { CommonModule } from "@angular/common";
+import { LoginExternalLinksComponent } from "./login-external-links.component";
+
 @Component({
     standalone: true,
     selector: "login-form",
     styleUrls: ["./login-form.component.scss"],
     templateUrl: "./login-form.component.html",
-    imports: [CollectorComponent, AuthModule, CommonModule],
+    imports: [CollectorComponent, AuthModule, CommonModule, PortalComponent],
 })
 export class LoginFormComponent {
     loginForm = viewChild<CollectorComponent>("loginForm");
     private readonly auth = inject(AuthService);
     loading = signal(false);
     error: string;
-
     control = new FormControl();
 
     success = output<Principle | { type: "reset-pwd"; reset_token: string }>();
@@ -34,8 +35,8 @@ export class LoginFormComponent {
         color: "primary",
         variant: "raised",
     });
-// https://www.chromium.org/developers/design-documents/form-styles-that-chromium-understands/
-// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
+    // https://www.chromium.org/developers/design-documents/form-styles-that-chromium-understands/
+    // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
     fields = input<FormScheme, FormScheme>(
         {},
         {
@@ -50,9 +51,34 @@ export class LoginFormComponent {
     );
     conditions = input<Condition[]>([]);
 
+    externalLinks = input<DynamicComponent>({ component: LoginExternalLinksComponent });
+
+    stage = signal<"check-user" | "fill-password">("check-user");
+    formFields = computed(() => {
+        const fields = this.fields();
+        const stage = this.stage();
+        if (stage === "check-user") {
+            return {
+                email: fields["email"],
+            };
+        } else {
+            return {
+                ...fields,
+            };
+        }
+    });
     async signin() {
         this.error = null;
         this.loading.set(true);
+
+        const stage = this.stage();
+        if (stage === "check-user") {
+            const value = this.value();
+            const res = await this.auth.checkUser(value.email);
+            if (!res.canLogin) throw new Error("INVALID_ATTEMPT");
+            this.stage.set("fill-password");
+            return;
+        }
 
         try {
             const res = await this.auth.signin(this.value() as Credentials);

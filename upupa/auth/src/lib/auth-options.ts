@@ -6,30 +6,27 @@ import { PasswordStrength } from './password-strength-policy';
 
 
 const logInProvider: Provider = {
-    provide: DEFAULT_LOGIN_PROVIDER_TOKEN, useFactory: (lang: LanguageService, route: ActivatedRoute) => {
-        const l = lang.language ?? lang.defaultLang
+    provide: DEFAULT_LOGIN_PROVIDER_TOKEN, useFactory: (route: ActivatedRoute) => {
         // get path from route as string
         const url = route.snapshot.url.toString()
         const red = url.length > 0 ? `?redirect=${url}` : ''
 
-        return `/${l}/account/login${red}`
+        return `/login${red}`
     }, deps: [LanguageService, ActivatedRoute]
 }
 const verifyProvider: Provider = {
-    provide: DEFAULT_VERIFY_PROVIDER_TOKEN, useFactory: (lang: LanguageService, route: ActivatedRoute) => {
-        const l = lang.language ?? lang.defaultLang
+    provide: DEFAULT_VERIFY_PROVIDER_TOKEN, useFactory: (route: ActivatedRoute) => {
         const url = route.snapshot.url.toString()
         const red = url.length > 0 ? `?redirect=${url}` : ''
-        return `/${l}/account/verify${red}`
+        return `/verify${red}`
     }, deps: [LanguageService, ActivatedRoute]
 }
 
 const forbiddenProvider: Provider = {
-    provide: DEFAULT_VERIFY_PROVIDER_TOKEN, useFactory: (lang: LanguageService, route: ActivatedRoute) => {
-        const l = lang.language ?? lang.defaultLang
+    provide: DEFAULT_VERIFY_PROVIDER_TOKEN, useFactory: (route: ActivatedRoute) => {
         const url = route.snapshot.url.toString()
         const red = url.length > 0 ? `?redirect=${url}` : ''
-        return `/${l}/forbidden${red}`
+        return `/${red}`
     }, deps: [LanguageService, ActivatedRoute]
 }
 
@@ -47,7 +44,7 @@ export class AuthOptions {
         deps: [ActivatedRoute, Router],
         useFactory: (route: ActivatedRoute, router: Router) => {
             return () => {
-                let redirect = route.snapshot.queryParams['redirect'] ?? '/' as string;
+                const redirect = route.snapshot.queryParams['redirect'] ?? '/' as string;
                 router.navigateByUrl(redirect)
             }
         }

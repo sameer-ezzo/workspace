@@ -1,4 +1,4 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, inject } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen, filter, switchMap, tap, take } from "rxjs/operators";
 import { AUTH_BASE_TOKEN, DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN } from "./di.token";
@@ -11,7 +11,7 @@ import { Principle } from "@noah-ark/common";
 import { analyzePassword } from "./password-strength-policy";
 import { DeviceService } from "./device.service";
 import { LocalStorageService } from "./local-storage.service";
-import { DOCUMENT } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 
 export const TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
@@ -31,6 +31,7 @@ export const REFRESH_TOKEN = "refresh_token";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
+    isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
     refreshed$ = new Subject<number>();
     user?: Principle;
     private _user$ = new ReplaySubject<Principle>(1);
@@ -39,22 +40,22 @@ export class AuthService {
     private _token$ = new Subject<string>();
     token$ = this._token$.asObservable();
 
-    observeUrlAccessToken$ = interval(200).pipe(
-        filter(() => !this.router),
-        take(1),
-        switchMap((x) => this.router.events),
-        filter((e) => e instanceof ActivationEnd), //if access_token is provided by the link switch to it
-        tap((e: ActivationEnd) => {
-            const access_token = e.snapshot.queryParams["access_token"];
-            const principle = this.jwt(access_token);
-            if (access_token && principle) {
-                const refresh_token = e.snapshot.queryParams["refresh_token"] || this.get_refresh_token();
-                this.setTokens({ access_token, refresh_token });
-                this.triggerNext(principle);
-            }
-        }),
-        switchMap((x) => this.user$),
-    );
+    // observeUrlAccessToken$ = interval(200).pipe(
+    //     filter(() => !this.router),
+    //     take(1),
+    //     switchMap((x) => this.router.events),
+    //     filter((e) => e instanceof ActivationEnd), //if access_token is provided by the link switch to it
+    //     tap((e: ActivationEnd) => {
+    //         const access_token = e.snapshot.queryParams["access_token"];
+    //         const principle = this.jwt(access_token);
+    //         if (access_token && principle) {
+    //             const refresh_token = e.snapshot.queryParams["refresh_token"] || this.get_refresh_token();
+    //             this.setTokens({ access_token, refresh_token });
+    //             this.triggerNext(principle);
+    //         }
+    //     }),
+    //     switchMap((x) => this.user$),
+    // );
 
     private readonly _passwordPolicy = inject(DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN);
     get passwordPolicy() {
@@ -69,12 +70,15 @@ export class AuthService {
 
     constructor() {
         const user = this.jwt(this.get_token());
-        if (user) this.triggerNext(user);
-        else this.triggerNext(null);
-        //auto refresh identity
-        this.refreshed$.pipe(delayWhen(() => interval(1000 * 60 * 15))).subscribe(() => this.refresh());
+        this.triggerNext(user);
 
-        this.refresh();
+        if (this.isBrowser) {
+            //auto refresh identity
+            this.refreshed$.pipe(delayWhen(() => interval(1000 * 60 * 15))).subscribe(() => this.refresh());
+            this.refresh();
+        } else {
+            this.refresh();
+        }
     }
 
     private readonly doc = inject(DOCUMENT);
@@ -132,6 +136,10 @@ export class AuthService {
         this.localStorage.removeItem(TOKEN);
         this.localStorage.removeItem(REFRESH_TOKEN);
         this.triggerNext(null);
+    }
+
+    async checkUser(usernameOrEmailOrPhone: string): Promise<{ canLogin: boolean } & Record<string, unknown>> {
+        return this._doHttpFetch(`${this.baseUrl}/check-user`, { usernameOrEmailOrPhone });
     }
 
     async refresh(refresh_token?: string): Promise<Principle | null> {
@@ -252,7 +260,7 @@ export class AuthService {
     forgotPassword(email: string, payload?: any): Promise<any> {
         if (email) {
             payload = payload || {};
-            return this._doHttpFetch(this.baseUrl + "/forgotpassword", { email, ...payload });
+            return this._doHttpFetch(this.baseUrl + "/forgot-password", { email, ...payload });
         } else throw "EMAIL_REQUIRED";
     }
 

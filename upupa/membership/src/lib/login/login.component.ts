@@ -12,9 +12,10 @@ import { IdpName, MembershipLoginOptions } from "../types";
 import { ActivatedRoute, Router } from "@angular/router";
 
 import { AuthService } from "@upupa/auth";
-import { LoginFormComponent } from "../login-form/login-form.component";
+
 import { PageNavigationComponent } from "../page-navigation/page-navigation.component";
 import { CommonModule } from "@angular/common";
+import { LoginFormComponent } from "../login-form/login-form.component";
 
 @Component({
     standalone: true,
@@ -26,19 +27,19 @@ import { CommonModule } from "@angular/common";
 })
 export class LoginComponent implements OnInit, AfterViewInit {
     readonly options: MembershipLoginOptions = inject(LOG_IN_OPTIONS);
-    readonly idps_options: Record<string, any> = inject(IdPs_OPTIONS);
-
-    private readonly router = inject(Router);
-    private readonly route = inject(ActivatedRoute);
-
+    readonly idps_options: Record<string, any> = inject(IdPs_OPTIONS, { optional: true });
     private readonly onSuccessHandler = inject(LOG_IN_ON_SUCCESS_TOKEN, { optional: true });
     private readonly onFailedHandler = inject(LOG_IN_ON_FAILED_TOKEN, { optional: true }) ?? (() => {});
     readonly initialValueFactory = inject(LOG_IN_INITIAL_VALUE_FACTORY_TOKEN, { optional: true }) ?? (() => ({ email: "", password: "", rememberMe: false }));
-    value = model(this.initialValueFactory() as any);
-    readonly links = inject(LOG_IN_LINKS_TOKEN) ?? [];
-    external_links = inject(LOG_IN_EXTERNAL_LINKS_TOKEN) ?? [];
 
+    readonly links = inject(LOG_IN_LINKS_TOKEN, { optional: true }) ?? [];
+    external_links = inject(LOG_IN_EXTERNAL_LINKS_TOKEN, { optional: true }) ?? [];
+
+    private readonly router = inject(Router);
+    private readonly route = inject(ActivatedRoute);
     private readonly auth = inject(AuthService);
+
+    value = model(this.initialValueFactory() as any);
 
     idps: { text: string; idpName?: IdpName; clientId: string }[] = null;
 
@@ -71,9 +72,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
 
     async onResetPassword(payload: { reset_token: string }) {
-        await this.router.navigate(["../reset-password"], {
-            queryParams: { ...this.route.snapshot.queryParams, reset_token: payload.reset_token },
-            relativeTo: this.route,
-        });
+        // await this.router.navigate(["../reset-password"], {
+        //     queryParams: { ...this.route.snapshot.queryParams, reset_token: payload.reset_token },
+        //     relativeTo: this.route,
+        // });
     }
 }

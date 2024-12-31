@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, ViewChild, signal } from "@angular/core";
+import { Component, Input, Output, EventEmitter, inject, ViewChild, signal, model } from "@angular/core";
 import { AuthService } from "@upupa/auth";
 import { ActionDescriptor } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
@@ -22,7 +22,7 @@ export class ForgotPasswordFormComponent {
     @Output() success = new EventEmitter();
     @Output() fail = new EventEmitter();
 
-    @Input() model: { email: string; phone?: string } & Record<string, unknown> = { email: "" };
+    model = model<{ email: "" }>();
     @Input() submitBtn: ActionDescriptor = { name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised" };
     @Input() fields: FormScheme = defaultForgotPasswordFormFields;
     @Input() conditions: Condition[] = [];
@@ -31,7 +31,9 @@ export class ForgotPasswordFormComponent {
         this.loading.set(true);
 
         try {
-            await this.auth.forgotPassword(this.model.email, this.model);
+            const res = await this.auth.forgotPassword(this.model().email, this.model);
+            console.log(res);
+
             this.success.emit();
         } catch (error) {
             this.fail.emit();

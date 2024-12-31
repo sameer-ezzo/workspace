@@ -6,6 +6,7 @@ import { RulesModule } from "@ss/rules";
 import { AuthModule, AuthService } from "@ss/auth";
 import { UsersOptions } from "./types";
 import { User } from "@noah-ark/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 const defaultOptions = new UsersOptions();
 
@@ -39,7 +40,7 @@ export class UsersModule implements OnModuleInit {
         return {
             global: true,
             module: UsersModule,
-            imports: [AuthModule, RulesModule, DataModule, CommonModule],
+            imports: [AuthModule, RulesModule, DataModule, CommonModule, EventEmitterModule],
             providers: [...providers, { provide: "USERS_OPTIONS", useValue: options }],
             controllers: [UsersController],
         };

@@ -42,19 +42,10 @@ export type InitialValueFactoryProvider = MembershipProvider<(...args: []) => Re
 export type FormHandlerProvider = MembershipProvider<(...args: []) => void>;
 
 export class BaseMembershipFormOptions {
-    fields: FormScheme;
-    conditions?: Condition[];
-
-    logo?: string;
-    title?: string;
-    subTitle?: string;
     hostClass?: string;
 
-    links?: PageNavigationLinkProvider;
-    external_links?: PageNavigationLinkProvider;
-    initial_value_factory?: InitialValueFactoryProvider;
-    on_success?: FormHandlerProvider;
-    on_failed?: FormHandlerProvider;
+    fields: FormScheme;
+    conditions?: Condition[];
 }
 
 export const defaultOnSuccessProvider: FormHandlerProvider = {
@@ -138,76 +129,42 @@ export const defaultLinksProvider = {
         return [] as PageNavigationLink[];
     },
 };
-export const defaultVerifyLinksProvider = { ...defaultLinksProvider };
-
-export const defaultSignupLinksProvider = {
-    useFactory: (): PageNavigationLink[] => {
-        return [
-            {
-                label: "Already have an account?",
-                text: "Sign in",
-                url: `../login`,
-            },
-        ] as PageNavigationLink[];
-    },
-};
-export const defaultForgotPasswordLinksProvider = {
-    ...defaultSignupLinksProvider,
-};
-export const defaultLoginLinksProvider = {
-    useFactory: (): PageNavigationLink[] => {
-        return [
-            {
-                label: "Forgot password?",
-                text: "Reset password",
-                url: `../forgot-password`,
-            },
-            {
-                label: "Don't have account?",
-                text: "Create new one",
-                url: `../signup`,
-            },
-        ] as PageNavigationLink[];
-    },
-};
 
 export class MembershipSignupOptions extends BaseMembershipFormOptions {
     passwordStrength?: PasswordStrength = new PasswordStrength();
-    override title = "Signup";
     override fields: FormScheme = defaultSignupFormFields;
-    override links = defaultSignupLinksProvider;
-    override external_links = defaultSignupExternalLinksProvider;
-    override on_success = defaultSignupOnSuccessProvider;
-    override on_failed = defaultSignupOnFailedProvider;
-    override initial_value_factory = defaultSignupInitialValueFactoryProvider;
+    // override links = defaultSignupLinksProvider;
+    // override external_links = defaultSignupExternalLinksProvider;
+    // override on_success = defaultSignupOnSuccessProvider;
+    // override on_failed = defaultSignupOnFailedProvider;
+    // override initial_value_factory = defaultSignupInitialValueFactoryProvider;
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
-    override title = "Sign in";
     override fields: FormScheme = reflectFormViewModelType(LoginFormViewModel).fields;
 
-    override links = defaultLoginLinksProvider;
-    override external_links = defaultLoginExternalLinksProvider;
-    override on_success = defaultLoginOnSuccessProvider;
-    override on_failed = defaultLoginOnFailedProvider;
-    override initial_value_factory = defaultLoginFormInitialValueFactoryProvider;
+    on_success = defaultLoginOnSuccessProvider;
+    on_failed = defaultLoginOnFailedProvider;
+
+    // override links = defaultLoginLinksProvider;
+    // override external_links = defaultLoginExternalLinksProvider;
+
+    // override initial_value_factory = defaultLoginFormInitialValueFactoryProvider;
 }
 export class MembershipForgotPasswordOptions extends BaseMembershipFormOptions {
-    override title = "Forgot password";
     override fields: FormScheme = defaultForgotPasswordFormFields;
-    override links = defaultForgotPasswordLinksProvider;
-    override external_links = defaultForgotPasswordExternalLinksProvider;
-    override on_success = defaultForgotPasswordOnSuccessProvider;
-    override on_failed = defaultForgotPasswordOnFailedProvider;
-    override initial_value_factory = defaultForgotPasswordInitialValueFactoryProvider;
+    on_success = defaultForgotPasswordOnSuccessProvider;
+    on_failed = defaultForgotPasswordOnFailedProvider;
+    // override links = defaultForgotPasswordLinksProvider;
+    // override external_links = defaultForgotPasswordExternalLinksProvider;
+    // override initial_value_factory = defaultForgotPasswordInitialValueFactoryProvider;
 }
 export class MembershipVerifyOptions extends BaseMembershipFormOptions {
-    override title = "Verify";
     override fields: FormScheme = defaultVerifyFormFields;
-    override links = defaultVerifyLinksProvider;
-    override external_links = defaultVerifyExternalLinksProvider;
-    override on_success = defaultVerifyOnSuccessProvider;
-    override on_failed = defaultVerifyOnFailedProvider;
-    override initial_value_factory = defaultVerifyInitialValueFactoryProvider;
+    // override links = defaultVerifyLinksProvider;
+    // override external_links = defaultVerifyExternalLinksProvider;
+    // override on_success = defaultVerifyOnSuccessProvider;
+    // override on_failed = defaultVerifyOnFailedProvider;
+    // override initial_value_factory = defaultVerifyInitialValueFactoryProvider;
 }
 
 export class MembershipOptions {

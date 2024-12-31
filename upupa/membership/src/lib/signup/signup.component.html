@@ -1,32 +1,9 @@
+<signup-form (success)="onSuccess($event)" (fail)="onFailed($event)" [model]="model" [fields]="options.fields" [conditions]="options.conditions"></signup-form>
 
-    @if(options?.logo || options?.title || options?.subTitle){
-    <div class="header-wrapper">
-        @if(options?.logo){
-        <img class="logo" src="{{options?.logo}}" />
-        }
-
-        @if(options?.title){
-        <h1 class="title">{{options?.title}}</h1>
-        }
-        @if(options?.subTitle){
-        <p class="subtitle">{{options?.subTitle}}</p>
-        }
-    </div>
-    }
-
-    <signup-form (success)="onSuccess($event)" (fail)="onFailed($event)" [model]="model" [fields]="options.fields"
-        [conditions]="options.conditions"></signup-form>
-
-    <!-- 
-    [submitBtn]="signupBtn"
-    [design]="design" 
-     [collectStyle]="formStyle" -->
-
-
-    @if(links){
+@if (links) {
     <page-navigation [links]="links"></page-navigation>
-    }
+}
 
-    @if(external_links){
+@if (external_links) {
     <page-navigation [links]="external_links"></page-navigation>
-    }
+}
