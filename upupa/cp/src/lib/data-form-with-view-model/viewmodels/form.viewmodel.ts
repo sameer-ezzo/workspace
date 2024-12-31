@@ -1,14 +1,13 @@
 import { ValidationErrors } from "@angular/forms";
 import { ExtendedValueChangeEvent } from "@upupa/dynamic-form";
 
-export interface OnSubmit<SubmitResult = unknown> {
-    onSubmit(): Promise<SubmitResult> | SubmitResult;
+export type SubmitResult<R = any> = { submitResult?: R; error?: any };
+
+export interface OnSubmit {
+    onSubmit<R>(): Promise<any> | any;
 }
 export interface OnValidate {
     validate?: () => Promise<Promise<ValidationErrors>>;
-}
-export interface OnAfterSubmit {
-    afterSubmit?: () => Promise<void> | void;
 }
 export interface OnValueChange {
     onValueChange(e: ExtendedValueChangeEvent);

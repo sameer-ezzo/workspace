@@ -26,11 +26,11 @@ export type NormalizedItem<T = any> = { key: any; item: T; display: Partial<T>; 
 
 export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "date" | "boolean" };
 
-export abstract class TableDataSource<T = any> {
+export abstract class TableDataSource<T = any, WriteResult = any> {
     abstract load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<T[]>;
     abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Promise<T[]>;
-    abstract create<R = unknown>(value: Partial<T>): Promise<unknown>;
-    abstract put<R = unknown>(item: T, value: Partial<T>): Promise<unknown>;
-    abstract patch<R = unknown>(item: T, patches: Patch[]): Promise<unknown>;
-    abstract delete<R = unknown>(item: T): Promise<unknown>;
+    abstract create(value: Partial<T>): Promise<WriteResult>;
+    abstract put(item: T, value: Partial<T>): Promise<WriteResult>;
+    abstract patch(item: T, patches: Patch[]): Promise<WriteResult>;
+    abstract delete(item: T): Promise<WriteResult>;
 }

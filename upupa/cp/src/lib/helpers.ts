@@ -72,7 +72,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         defaultAction = context.defaultAction === true ? ({ text: "Submit", icon: "save", color: "primary", type: "submit" } as ActionDescriptor) : context.defaultAction;
         formActions = [defaultAction, ...formActions];
     }
-    const opts: DialogConfig = {
+    const options: DialogConfig = {
         width: "90%",
         maxWidth: "750px",
         maxHeight: "95vh",
@@ -95,34 +95,9 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         ],
     };
 
-    const dialogRef = dialog.open<DataFormComponent, any, { submitResult?; error? }>(
-        { component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector },
-        opts,
-    );
-
+    const dialogRef = dialog.open({ component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector }, options);
     const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
-    const dialogWrapper = dialogRef.componentInstance;
-    const form = componentRef.instance.dynamicFormEl().form;
-    form.statusChanges.subscribe((status) => {
-        // dialogWrapper.footer.update((actions) => actions.map((a) => (a.type === "submit" ? { ...a, disabled: status === "INVALID" } : a)));
-    });
-
-    // dialogWrapper.actionClick.subscribe((e) => {
-    //     componentRef.instance.onAction(e);
-    // });
-    const result = await waitForOutput("submitted", componentRef.instance);
-    if (!result.error) dialogRef.close(result);
     return { dialogRef, componentRef };
-
-    // const { submitResult, error } = await waitForOutput<DataFormComponent["submitted"]>("submitted", componentRef.instance);
-
-    // if (error) {
-    //     snack.openFailed(typeof error === "object" ? (error.message ?? error.error.message) : error, error);
-    // } else {
-    //     dialogRef.close(submitResult);
-    // }
-
-    // return { submitResult, error };
 }
 
 export function translationButtons(

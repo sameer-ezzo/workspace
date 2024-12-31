@@ -75,19 +75,19 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         return this.load();
     }
 
-    async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+    async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.create(value);
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
 
-    async put(item: T, value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+    async put(item: T, value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.put(item, value);
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
 
-    async patch(item: T, patches: Patch[], opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+    async patch(item: T, patches: Patch[], opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.patch(item, patches);
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;

@@ -5,6 +5,7 @@ import { filter } from "./filter.fun";
 import { switchMap, map, tap, shareReplay } from "rxjs/operators";
 import { JsonPatch, Patch } from "@noah-ark/json-patch";
 import { computed, signal } from "@angular/core";
+import { T } from "@angular/cdk/keycodes";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -23,7 +24,7 @@ export function compare(a, b): number {
     else return 0;
 }
 
-export class ClientDataSource<T = any> extends TableDataSource<T> {
+export class ClientDataSource<T = any> extends TableDataSource<T, Partial<T>> {
     all = signal<T[]>([]);
     constructor(all: T[]) {
         super();
@@ -34,18 +35,18 @@ export class ClientDataSource<T = any> extends TableDataSource<T> {
         return filter(this.all(), options.filter, options.sort, options.page, options.terms);
     }
 
-    override create(value: Partial<T>): Promise<unknown> {
+    override create(value: Partial<T>) {
         this.all.update((all) => [...all, value as T]);
         return Promise.resolve(value);
     }
 
-    override put(item: T, value: Partial<T>): Promise<unknown> {
+    override put(item: T, value: Partial<T>) {
         const key = this.all().indexOf(item);
         this.all[key] = value as T;
         return Promise.resolve(value);
     }
 
-    override patch(item: T, patches: Patch[]): Promise<unknown> {
+    override patch(item: T, patches: Patch[]) {
         const key = this.all().indexOf(item);
         let _item = this.all[key];
         if (typeof _item !== "object") _item = {} as T;
@@ -54,7 +55,7 @@ export class ClientDataSource<T = any> extends TableDataSource<T> {
         return Promise.resolve(_item);
     }
 
-    override delete(item: T): Promise<unknown> {
+    override delete(item: T) {
         this.all.update((all) => all.filter((x) => x !== item));
         return Promise.resolve(item);
     }

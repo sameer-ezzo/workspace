@@ -16,9 +16,9 @@ import { logger } from "./logger";
 export type DocumentIdType = string | number | mongoose.Types.ObjectId;
 
 export type WriteResult<T> = {
-    errors?: any[];
     _id: any;
     document?: T;
+    errors?: any[];
 };
 
 import toMongodb from "jsonpatch-to-mongodb";
@@ -332,7 +332,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         return <T[]>result;
     }
 
-    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<{ _id: ObjectId; result: WriteResult<T> }> {
+    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<WriteResult<T>> {
         let segments: PathInfo;
         try {
             segments = typeof path === "string" ? PathInfo.parse(path) : path;
@@ -368,7 +368,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 ],
                 user,
             });
-            return { _id: newData._id, result: result };
+            return { _id: newData._id, document: result };
         } else {
             if (!newData._id) newData._id = await this.generateId();
             else {
@@ -387,11 +387,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 patches: [{ op: "add", path: "/", value: result }],
                 user,
             });
-            return { _id: newData._id, result };
+            return { _id: newData._id, document: result };
         }
     }
 
-    private generatePatches(value: any, currentPath: string = ""): Patch[] {
+    private _generatePatches(value: any, currentPath: string = ""): Patch[] {
         let patches: Patch[] = [];
 
         if (typeof value !== "object" || value === null) {
@@ -400,13 +400,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         } else if (Array.isArray(value)) {
             // Handle arrays
             value.forEach((item, index) => {
-                patches = patches.concat(this.generatePatches(item, `${currentPath}/${index}`));
+                patches = patches.concat(this._generatePatches(item, `${currentPath}/${index}`));
             });
         } else {
             // Handle objects
             for (const key in value) {
                 if (value.hasOwnProperty(key)) {
-                    patches = patches.concat(this.generatePatches(value[key], `${currentPath}/${key}`));
+                    patches = patches.concat(this._generatePatches(value[key], `${currentPath}/${key}`));
                 }
             }
         }
@@ -443,7 +443,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const directPatch = directPatches[directPatches.length - 1];
             const lastDirectPatchIndex = patches.indexOf(directPatch);
             patches = patches.filter((p, i) => i > lastDirectPatchIndex);
-            const updatePatches = this.generatePatches(directPatch.value, "");
+            const updatePatches = this._generatePatches(directPatch.value, "");
             _directPatches.push(...updatePatches);
         }
 
@@ -470,15 +470,16 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             });
         }
 
-        if (result)
+        if (result) {
             this.broker.emit(`data-changed/${collection}/${id}`, {
                 path: `/${collection}/${id}`,
                 data: result,
                 patches,
                 user,
             });
+        }
 
-        return result;
+        return { _id: id, document: result };
     }
 
     toPatches<T = any>(path: string, value: any): { path: string; patches: Patch[] } {
