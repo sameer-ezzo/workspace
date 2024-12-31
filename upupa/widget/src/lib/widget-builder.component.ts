@@ -125,7 +125,7 @@ export class WidgetBuilderComponent implements OnChanges {
                         component: MatBtnComponent,
                         inputs: { descriptor: { text: "Select", name: "select" } },
                         outputs: {
-                            onClick: async () => {
+                            click: async () => {
                                 const widgetSelector = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 dialogRef.close(widgetSelector.selectedBlueprint());
                             },
@@ -168,7 +168,7 @@ export class WidgetBuilderComponent implements OnChanges {
                         component: MatBtnComponent,
                         inputs: { descriptor: { text: "Select", name: "select" } },
                         outputs: {
-                            onClick: async () => {
+                            click: async () => {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 dialogRef.close({ settings: componentInstance.settings(), inputs: componentInstance.inputs() });
                             },

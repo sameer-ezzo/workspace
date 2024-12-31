@@ -1,5 +1,5 @@
 import { PasswordStrength } from "@upupa/auth";
-import { Field, FieldItem, formInput, formScheme, FormScheme, switchField } from "@upupa/dynamic-form";
+import { Field, formInput, formScheme, FormScheme, hiddenField, switchField } from "@upupa/dynamic-form";
 
 export const defaultVerifyCodeField: FormScheme = {
     code: {
@@ -16,8 +16,6 @@ export const defaultVerifyCodeField: FormScheme = {
         ],
     } as Field,
 };
-
-
 
 @formScheme()
 export class LoginFormViewModel {
@@ -50,6 +48,11 @@ export const defaultLoginFormFields: FormScheme = {
 };
 
 export const defaultForgotPasswordFormFields: FormScheme = {
+    email: defaultEmailField,
+};
+
+export const defaultResetPasswordFormFields: FormScheme = {
+    reset_token: hiddenField("reset_token"),
     email: defaultEmailField,
 };
 

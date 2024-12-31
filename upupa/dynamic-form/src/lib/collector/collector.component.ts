@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, forwardRef, inject, input, Input, output, Output, SimpleChanges, viewChild } from "@angular/core";
+import { Component, computed, forwardRef, inject, input, model, output, signal, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { ActionDescriptor, InputBaseComponent, UtilsModule } from "@upupa/common";
@@ -32,67 +32,42 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 export class CollectorComponent extends InputBaseComponent<any> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
     form = computed(() => this.dynamicForm().control());
-    @Output() submit = new EventEmitter();
-    @Output() action = new EventEmitter<ActionDescriptor>();
-    @Output() activePageChange = new EventEmitter<number>();
+    submit = output();
+    action = output<ActionDescriptor>();
+    activePageChange = output<number>();
     fieldValueChange = output<ExtendedValueChangeEvent<any>>();
 
     collectStyle = input<CollectStyle>("linear");
 
     fields = input.required<FormScheme>();
-    @Input() conditions: Condition[];
-    @Input() actions: ActionsDescriptor;
-    _activePage = 0;
-    @Input()
-    get activePage() {
-        return this._activePage;
-    }
-    set activePage(value: number) {
-        this._activePage = value;
-        this.showFieldsOfPage();
-        this.activePageChange.emit(this._activePage);
-    }
+    conditions = input<Condition[]>([]);
+    actions = input<ActionsDescriptor>();
 
-    @Input() submitBtn: ActionDescriptor = {
+    activePage = model<number>();
+
+    submitBtn = input<ActionDescriptor>({
         name: "submit",
         type: "submit",
         variant: "stroked",
         text: "Submit",
         color: "primary",
-    };
-    @Input() nextBtn: ActionDescriptor = {
+    });
+    nextBtn = input<ActionDescriptor>({
         name: "next",
         type: "button",
         text: "Next",
-    };
-    @Input() prevBtn: ActionDescriptor = {
+    });
+    prevBtn = input<ActionDescriptor>({
         name: "prev",
         type: "button",
         text: "Previous",
-    };
+    });
 
     private formFieldsInfo = new Map<Field, { index: number; page: number }>();
 
-    private _focusedField: Field;
-    @Input()
-    public get focusedField(): Field {
-        return this._focusedField;
-    }
-    public set focusedField(v: Field) {
-        if (this._focusedField === v) return;
-        this._focusedField = v;
-        if (this.pages?.length === 0) this.populatePagesInFields();
-
-        this.activePage = v ? this.formFieldsInfo.get(v).page : null;
-        // setTimeout(() => {
-        //     const element = this.document.getElementById(v.name);
-        //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
-        // }, 300);
-    }
-
     pages: FormPage[] = [];
-    _pageInvalid = true;
-    loading = false;
+    _pageInvalid = signal(true);
+    loading = signal(false);
 
     get controls() {
         return this.dynamicForm().graph;
@@ -106,16 +81,10 @@ export class CollectorComponent extends InputBaseComponent<any> {
     get totalPages() {
         return this.pages.length;
     }
+    focusedField = input<Field>();
 
-    private _design: FormDesign;
-    @Input()
-    public get design(): FormDesign {
-        return this._design;
-    }
-    public set design(v: FormDesign) {
-        this._design = v;
-        this._applyFormDesign(v);
-    }
+    design = input<FormDesign>();
+
     private readonly document = inject(DOCUMENT);
 
     private _applyFormDesign(design: FormDesign) {
@@ -126,18 +95,29 @@ export class CollectorComponent extends InputBaseComponent<any> {
         if (design.buttonsColor) this.document.documentElement.style.setProperty("--button-color", design.buttonsColor);
 
         if (design.headerFont) {
-            loadFontFace(this.document, this.design.headerFont.font.family);
-            this.document.documentElement.style.setProperty("--header-font-family", this.design.headerFont.font.family);
+            loadFontFace(this.document, design.headerFont.font.family);
+            this.document.documentElement.style.setProperty("--header-font-family", design.headerFont.font.family);
         }
         if (design.paragraphFont) {
-            loadFontFace(this.document, this.design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-family", this.design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-size", this.design.paragraphFont.size || "22pt");
+            loadFontFace(this.document, design.paragraphFont.font.family);
+            this.document.documentElement.style.setProperty("--paragraph-font-family", design.paragraphFont.font.family);
+            this.document.documentElement.style.setProperty("--paragraph-font-size", design.paragraphFont.size || "22pt");
         }
     }
 
     async ngOnChanges(changes: SimpleChanges) {
+        if (changes["design"]) this._applyFormDesign(this.design());
         if (changes["fields"]) this.populatePagesInFields();
+        if (changes["activePage"]) this.showFieldsOfPage();
+        if (changes["focusedField"]) {
+            if (this.pages?.length === 0) this.populatePagesInFields();
+            const v = this.focusedField();
+            this.activePage.set(v ? this.formFieldsInfo.get(v).page : null);
+            // setTimeout(() => {
+            //     const element = this.document.getElementById(v.name);
+            //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
+            // }, 300);
+        }
     }
 
     populatePagesInFields() {
@@ -154,26 +134,26 @@ export class CollectorComponent extends InputBaseComponent<any> {
 
     _checkPageInvalid(pageIndex: number) {
         if (pageIndex < 0 || pageIndex > this.pages.length - 1) {
-            this._pageInvalid = false;
+            this._pageInvalid.set(false);
             return;
         }
 
         const page = this.pages[pageIndex];
-        this._pageInvalid = Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true);
+        if (page?.fields) this._pageInvalid.set(Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true));
     }
 
     showFieldsOfPage() {
         const fields = this.fields();
 
-        if (this.activePage > -1) {
+        if (this.activePage() > -1) {
             Object.values(fields).forEach((f: any) => {
                 const info = this.formFieldsInfo[f.name];
-                const hidden = info && info.page !== this.activePage;
+                const hidden = info && info.page !== this.activePage();
                 f.inputs ??= {};
                 f.inputs["hidden"] = hidden;
             });
         }
-        this._checkPageInvalid(this.activePage);
+        this._checkPageInvalid(this.activePage());
     }
 
     async actionClicked(action: ActionDescriptor) {
@@ -181,27 +161,27 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     async onSubmit() {
-        this.loading = true;
-        this._checkPageInvalid(this.activePage);
+        this.loading.set(true);
+        this._checkPageInvalid(this.activePage());
         if (!this._pageInvalid) this.submit.emit(this.value());
-        this.loading = false;
+        this.loading.set(false);
     }
 
     canGoNext() {
-        return !this._pageInvalid && this.activePage < this.totalPages - 1;
+        return !this._pageInvalid && this.activePage() < this.totalPages - 1;
     }
 
     canGoPrev() {
-        return this.activePage > 0;
+        return this.activePage() > 0;
     }
 
     next() {
         this.dynamicForm().control().markAsTouched();
-        if (this.canGoNext()) this.activePage++;
+        if (this.canGoNext()) this.activePage.update((a) => a + 1);
     }
 
     prev() {
-        if (this.canGoPrev()) this.activePage--;
+        if (this.canGoPrev()) this.activePage.update((a) => a - 1);
     }
 }
 

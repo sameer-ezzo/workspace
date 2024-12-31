@@ -75,6 +75,8 @@ export class LoginFormComponent {
         if (stage === "check-user") {
             const value = this.value();
             const res = await this.auth.checkUser(value.email);
+            console.log(res);
+            
             if (!res.canLogin) throw new Error("INVALID_ATTEMPT");
             this.stage.set("fill-password");
             return;

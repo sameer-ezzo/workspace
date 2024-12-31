@@ -34,6 +34,7 @@ import {
     LOG_IN_ON_SUCCESS_TOKEN,
     LOG_IN_OPTIONS,
     MEMBERSHIP_OPTIONS,
+    RESET_PASSWORD_OPTIONS,
     SIGNUP_EXTERNAL_LINKS_TOKEN,
     SIGNUP_INITIAL_VALUE_FACTORY_TOKEN,
     SIGNUP_LINKS_TOKEN,
@@ -47,7 +48,15 @@ import {
     VERIFY_ON_SUCCESS_TOKEN,
     VERIFY_OPTIONS,
 } from "./di.token";
-import { BaseMembershipFormOptions, MembershipForgotPasswordOptions, MembershipLoginOptions, MembershipOptions, MembershipSignupOptions, MembershipVerifyOptions } from "./types";
+import {
+    BaseMembershipFormOptions,
+    MembershipForgotPasswordOptions,
+    MembershipLoginOptions,
+    MembershipOptions,
+    MembershipResetPasswordOptions,
+    MembershipSignupOptions,
+    MembershipVerifyOptions,
+} from "./types";
 import { PageNavigationComponent } from "./page-navigation/page-navigation.component";
 import { ChangeUserPropComponent } from "./change-user-prop/change-user-prop.component";
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
@@ -191,30 +200,15 @@ const components = [];
 
 export function provideLogin(options?: Partial<MembershipLoginOptions>) {
     const opts = { ..._defaultMembershipOptions.login, ...options };
-    return makeEnvironmentProviders([
-        { provide: LOG_IN_OPTIONS, useValue: opts },
-        { provide: LOG_IN_ON_SUCCESS_TOKEN, ...opts.on_success },
-        { provide: LOG_IN_ON_FAILED_TOKEN, ...opts.on_failed },
-        // {
-        //     provide: LOG_IN_INITIAL_VALUE_FACTORY_TOKEN,
-        //     ...opts.initial_value_factory,
-        // },
-        // { provide: LOG_IN_LINKS_TOKEN, ...opts.links },
-        // { provide: LOG_IN_EXTERNAL_LINKS_TOKEN, ...opts.external_links },
-    ]);
+    return makeEnvironmentProviders([{ provide: LOG_IN_OPTIONS, useValue: opts }]);
 }
 
 export function provideForgotPassword(options?: Partial<MembershipForgotPasswordOptions>) {
     const opts = { ..._defaultMembershipOptions.forgotPassword, ...options };
-    return makeEnvironmentProviders([
-        { provide: FORGOT_PASSWORD_OPTIONS, useValue: opts },
-        { provide: FORGOT_PASSWORD_ON_SUCCESS_TOKEN, ...opts.on_success },
-        { provide: FORGOT_PASSWORD_ON_FAILED_TOKEN, ...opts.on_failed },
-        // {
-        //     provide: FORGOT_PASSWORD_INITIAL_VALUE_FACTORY_TOKEN,
-        //     ...opts.initial_value_factory,
-        // },
-        // { provide: FORGOT_PASSWORD_LINKS_TOKEN, ...opts.links },
-        // { provide: FORGOT_PASSWORD_EXTERNAL_LINKS_TOKEN, ...opts.external_links },
-    ]);
+    return makeEnvironmentProviders([{ provide: FORGOT_PASSWORD_OPTIONS, useValue: opts }]);
+}
+
+export function provideResetPassword(options?: Partial<MembershipResetPasswordOptions>) {
+    const opts = { ..._defaultMembershipOptions.resetPassword, ...options };
+    return makeEnvironmentProviders([{ provide: RESET_PASSWORD_OPTIONS, useValue: opts }]);
 }

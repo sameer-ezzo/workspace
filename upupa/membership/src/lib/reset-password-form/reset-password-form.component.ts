@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, Optional, Inject, ViewChild } from "@angular/core";
+import { Component, Input, Output, EventEmitter, Optional, Inject, ViewChild, output, input, inject, signal, viewChild, model, SimpleChanges } from "@angular/core";
 import { AuthService } from "@upupa/auth";
 import { DynamicFormComponent, FormScheme, hiddenField } from "@upupa/dynamic-form";
 import { passwordField } from "../default-values";
 import { MEMBERSHIP_OPTIONS } from "../di.token";
 import { MembershipOptions } from "../types";
 import { MatButtonModule } from "@angular/material/button";
+import { ActivatedRoute, Router } from "@angular/router";
 
 @Component({
     standalone: true,
@@ -14,38 +15,66 @@ import { MatButtonModule } from "@angular/material/button";
     imports: [DynamicFormComponent, MatButtonModule],
 })
 export class ResetPasswordFormComponent {
-    redirectPath: string;
-    loading = false;
+    public options = inject<MembershipOptions>(MEMBERSHIP_OPTIONS, { optional: true });
+    router = inject(Router);
+    route = inject(ActivatedRoute);
+    public auth = inject(AuthService);
 
-    @ViewChild("resetPwdForm") form: DynamicFormComponent;
-    value = { name: "", password: "", confirmPassword: "", reset_token: "" };
+    redirectPath: string;
+    loading = signal(false);
+    form = viewChild<DynamicFormComponent>("resetPwdForm");
+
+    value = model<{ name: ""; password: ""; confirmPassword: ""; reset_token: "" }>();
     fields: FormScheme = {
         reset_token: hiddenField("reset_token"),
         password: passwordField,
     };
 
-    @Input() reset_token: string;
+    reset_token = input<string, string>("", {
+        transform: (v) => {
+            console.log(v);
+            return v;
+        },
+    });
 
-    @Output() success = new EventEmitter();
-    @Output() fail = new EventEmitter();
+    ngOnChanges(changes: SimpleChanges) {
+        console.log(changes);
 
-    constructor(
-        @Optional() @Inject(MEMBERSHIP_OPTIONS) public options: MembershipOptions,
-        public auth: AuthService,
-    ) {}
+        if (changes["reset_token"]) {
+            const token = this.reset_token();
+            if (!token) this.router.navigate(["../forgot-password"], { relativeTo: this.route });
+        }
+    }
+
+    success = output<any>();
+    fail = output<any>();
 
     async send(form: DynamicFormComponent) {
         if (form.invalid) return;
-        this.loading = true;
+        this.loading.set(true);
 
         try {
-            const res = await this.auth.reset_password(this.value.password, this.reset_token);
+            const v = this.value();
+            const res = await this.auth.reset_password(v.password, this.reset_token());
             this.success.emit(res);
         } catch (error) {
-            console.error(error);
-            this.fail.emit(error);
+            const err = this.handleError(error);
+            console.error(err);
+            this.fail.emit(err);
         } finally {
-            this.loading = false;
+            this.loading.set(false);
         }
+    }
+
+    handleError(e) {
+        let err = e.error ?? e;
+        if (err.statusCode === 400) {
+            // if (msg === "NEW-PASSWORD_RESET-TOKEN_REQUIRED" || msg === "TOKEN_ALREADY_USED" || msg === "INVALID_TOKEN") {
+
+            if (e.message === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
+            else if (e.message === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
+            else if (e.message === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
+        }
+        return err;
     }
 }

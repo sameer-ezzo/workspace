@@ -14,7 +14,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     standalone: true,
 })
 export class MatBtnComponent {
-    onClick = output<ActionEvent>();
+    click = output<ActionEvent>();
 
     loading = input(false);
     descriptor = input.required<ActionDescriptor>();
@@ -42,7 +42,7 @@ export class MatBtnComponent {
         event.preventDefault();
         event.stopPropagation();
 
-        this.onClick.emit({
+        this.click.emit({
             ...event,
             action: this.descriptor(),
             data: this.data(),

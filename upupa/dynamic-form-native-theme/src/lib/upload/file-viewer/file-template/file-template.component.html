@@ -41,7 +41,7 @@
 @if (fileVm.actions.length || fileVm.menuActions.length) {
     <div class="actions hover-container">
         @for (a of fileVm.actions; track $index) {
-            <mat-btn class="action onhover" (onClick)="onMenuAction(a, fileVm)" [descriptor]="a"></mat-btn>
+            <mat-btn class="action onhover" (click)="onMenuAction(a, fileVm)" [descriptor]="a"></mat-btn>
         }
         @if (fileVm.menuActions?.length > 0) {
             <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">

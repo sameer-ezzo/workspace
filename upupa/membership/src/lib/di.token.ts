@@ -1,5 +1,13 @@
 import { InjectionToken } from "@angular/core";
-import { MembershipForgotPasswordOptions, MembershipLoginOptions, MembershipOptions, MembershipSignupOptions, MembershipVerifyOptions, PageNavigationLink } from "./types";
+import {
+    MembershipForgotPasswordOptions,
+    MembershipLoginOptions,
+    MembershipOptions,
+    MembershipResetPasswordOptions,
+    MembershipSignupOptions,
+    MembershipVerifyOptions,
+    PageNavigationLink,
+} from "./types";
 
 export const SIGNUP_OPTIONS = new InjectionToken<MembershipSignupOptions>("signupoptions");
 
@@ -7,6 +15,7 @@ export const SIGNUP_LINKS = new InjectionToken<PageNavigationLink[]>("signup_lin
 export const LOG_IN_OPTIONS = new InjectionToken<MembershipLoginOptions>("log_in_options");
 export const IdPs_OPTIONS = new InjectionToken<Record<string, any>>("idps_options");
 export const FORGOT_PASSWORD_OPTIONS = new InjectionToken<MembershipForgotPasswordOptions>("forgotpasswordoptions");
+export const RESET_PASSWORD_OPTIONS = new InjectionToken<MembershipResetPasswordOptions>("resetpasswordoptions");
 export const VERIFY_OPTIONS = new InjectionToken<MembershipVerifyOptions>("verifyoptions");
 export const MEMBERSHIP_OPTIONS = new InjectionToken<MembershipOptions>("membershipoptions");
 

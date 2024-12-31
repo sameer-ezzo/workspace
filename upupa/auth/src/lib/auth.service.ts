@@ -260,7 +260,7 @@ export class AuthService {
     forgotPassword(email: string, payload?: any): Promise<any> {
         if (email) {
             payload = payload || {};
-            return this._doHttpFetch(this.baseUrl + "/forgot-password", { email, ...payload });
+            return this._doHttpFetch(this.baseUrl + "/forgot-password", { ...payload, email: email.trim().toLocaleLowerCase() });
         } else throw "EMAIL_REQUIRED";
     }
 

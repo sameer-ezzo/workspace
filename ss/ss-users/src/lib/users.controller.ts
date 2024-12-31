@@ -14,7 +14,8 @@ import { logger } from "./logger";
 import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
 import { UsersOptions } from "./types";
-import { EventEmitter2 } from "@nestjs/event-emitter";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import { UserCreatedEvent, UserForgotPasswordEvent, UserSendVerificationEvent, UserSignedUpEvent } from "./events";
 
 export type SigninRequestBase = { device?: UserDevice };
 export type PasswordSigninRequestGrant = {
@@ -32,7 +33,6 @@ export class UsersController {
     private http: Axios;
     constructor(
         private auth: AuthService,
-        private readonly broker: Broker,
         @Inject("USERS_OPTIONS") private readonly options: UsersOptions,
         @Inject("DB_AUTH") private dataService: DataService,
         private authorizationService: AuthorizeService,
@@ -59,11 +59,11 @@ export class UsersController {
         operation: "Forgot Password",
     })
     public async forgotPassword(@Message() msg: IncomingMessage<{ email: string }>) {
-        const email = msg.payload.email;
-        if (!email) return;
+        const { email } = msg.payload;
+        if (!email) throw new HttpException("MISSING_EMAIL", HttpStatus.BAD_REQUEST);
 
         const user = await this.auth.findUserByEmail(email);
-        if (!user) return;
+        if (!user) throw new HttpException("INVALID_USER", HttpStatus.BAD_REQUEST);
 
         const resetToken = await this.auth.issueResetPasswordToken(user);
         const expire = user.get("forgetExpire");
@@ -72,11 +72,8 @@ export class UsersController {
 
         user.set("forgetExpire", now + 1000 * 60 * 10);
         await user.save();
-        this.broker.emit(`${appName}/auth/forgot-password`, {
-            ...msg.payload,
-            user,
-            token: resetToken,
-        });
+        this.eventEmitter.emit(UserForgotPasswordEvent.EVENT_NAME, new UserForgotPasswordEvent({ user, resetToken, options: this.options }));
+        return { email: user.email };
     }
 
     @EndPoint({
@@ -205,7 +202,7 @@ export class UsersController {
             }
             const res = await this.auth.signUp(_user, _user.password);
             if (roles?.length) this.auth.addUserToRoles(res._id, roles);
-            this.eventEmitter.emit("user.created", { user: document, options: this.options });
+            this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document, options: this.options }));
 
             return { _id: res._id, ...msg.payload };
         } catch (error) {
@@ -350,7 +347,7 @@ export class UsersController {
             } as unknown as User;
             const external = userRecord?.external ?? {};
             try {
-                const res = await this.auth.signUp(
+                const { document: res } = await this.auth.signUp(
                     {
                         ...user,
                         external: { ...external, ["google"]: googleUser.sub },
@@ -438,10 +435,10 @@ export class UsersController {
             if (user_errors.length) {
                 throw new HttpException(user_errors, HttpStatus.BAD_REQUEST);
             }
-            const { user: document } = await this.auth.signUp(_user, msg.payload.password);
+            const { document: user } = await this.auth.signUp(_user, msg.payload.password);
             delete user.passwordHash;
 
-            this.broker.emit("auth.signup", user);
+            this.eventEmitter.emit(UserSignedUpEvent.EVENT_NAME, new UserSignedUpEvent({ user, options: this.options }));
             return user;
         } catch (error) {
             logger.error("", error);
@@ -525,17 +522,7 @@ export class UsersController {
             verification = r.verification;
         } else if (verification.sendAttempts > 2 && now - verification?.lastSend < 60 * 1000) throw new HttpException("ALREADY_SENT", HttpStatus.BAD_REQUEST);
 
-        const code = verification.code;
         try {
-            const result = firstValueFrom(
-                this.broker.send("auth.send-verification-notification", {
-                    to: value,
-                    name,
-                    id,
-                    code,
-                    token,
-                }),
-            );
             verification = {
                 ...verification,
                 lastSend: now,
@@ -543,6 +530,7 @@ export class UsersController {
             };
             user.set(`${name}Verification`, verification);
             await user.save();
+            this.eventEmitter.emit(UserSendVerificationEvent.EVENT_NAME, new UserSendVerificationEvent({ user, verification, options: this.options }));
         } catch (error) {
             logger.error(error);
             throw error;
@@ -655,6 +643,11 @@ export class UsersController {
     @Authorize({ by: "anonymous" })
     public async whoami(@Message() msg: IncomingMessage) {
         return msg.principle ?? {};
+    }
+
+    @OnEvent("user.*")
+    logUserEvents(payload: any) {
+        logger.info(payload);
     }
 }
 
