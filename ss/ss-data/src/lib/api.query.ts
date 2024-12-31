@@ -337,26 +337,26 @@ export class QueryParser {
         return fields;
     }
 
-    _autoLookups(model: Model<any>) {
+    _autoLookups(model: Model<any>, from: string) {
         if (!model || !model.schema) return [];
         const schemaPaths = model.schema.paths;
-        const lookups: Lookup[] = [];
-
-        Object.keys(schemaPaths).forEach((key) => {
+        const lookups: Lookup[] = Object.keys(schemaPaths).map((key) => {
             const pathOptions = schemaPaths[key]?.options;
 
+            if (from !== "auto" && from !== key) return;
+
             if (pathOptions?.autolookup && pathOptions?.ref) {
-                lookups.push({
+                return {
                     from: pathOptions.ref,
                     foreignField: pathOptions.foreignField ?? "_id",
                     localField: key,
                     as: pathOptions.autolookup,
                     unwind: schemaPaths[key].instance !== "Array", // Unwind if the field is not an array
-                });
+                };
             }
         });
 
-        return lookups;
+        return lookups.filter((x) => x);
     }
 
     parse(query: { [key: string]: string }[], model?: Model<any>) {
@@ -375,7 +375,7 @@ export class QueryParser {
         let fields1: { [field: string]: any } | undefined;
         let fields2: { [field: string]: any } | undefined;
         let fields3: { [field: string]: any } | undefined;
-        let lookups: Lookup[] = this._autoLookups(model);
+        let lookups: Lookup[] = [];
         let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
@@ -405,17 +405,22 @@ export class QueryParser {
             else if (x.key === "fields3" && x.value) fields3 = this._fields(x.value);
             else if (x.key === "lookup" && x.value) {
                 //lookup=lookup_1;lookup_2
-                const _lookups = x.value.split(";").map((l) => {
+                const _lookups: Lookup[][] = x.value.split(";").map((l) => {
                     //lookup=collection:foreign:local:as
                     const p = l.split(":");
                     if (p.length === 4 || p.length === 5) {
                         const [from, foreignField, localField, as] = p;
                         let unwind = false;
                         if (p.length === 5 && p[4] === "unwind") unwind = true;
-                        return { from, foreignField, localField, as, unwind };
-                    } else throw "INVALID_LOOKUP_PARAMS";
+                        return [{ from, foreignField, localField, as, unwind }];
+                    } else if (p.length === 1) {
+                        const [from] = p;
+                        return this._autoLookups(model, from);
+                    }
+
+                    throw "INVALID_LOOKUP_PARAMS";
                 });
-                lookups = [..._lookups, ...lookups];
+                lookups = _lookups.reduce((a, b) => a.concat(b));
             } else if (x.key === "lookup_match") {
                 //lookup_match=lookup_1;lookup_2
                 lookupsMatch = x.value.split(";").map((l) => {
