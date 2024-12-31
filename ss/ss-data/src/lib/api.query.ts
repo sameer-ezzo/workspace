@@ -296,7 +296,7 @@ export class QueryParser {
         const keyType = key && model ? (this.getPathType(key, model) ?? "String") : "String";
         if (keyType === "String") return value;
         if (keyType === "Date") return new Date(value);
-        if (keyType === "ObjectId") return new ObjectId(value);
+        if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
         if (keyType === "Number") return +value;
         if (keyType === "Array") {
             if (value.indexOf && value.indexOf(":") > -1)

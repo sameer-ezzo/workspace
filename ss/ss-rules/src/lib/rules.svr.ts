@@ -49,7 +49,7 @@ export class RulesService {
 
         if (!permission._id) {
             const r = await this.dataService.post(`/permission`, p, principle);
-            p = r.result as Permission<boolean | AuthorizeFun>;
+            p = r.document as Permission<boolean | AuthorizeFun>;
         } else await this.dataService.put(`/permission/${permission._id}`, p, principle);
 
         rule.actions ??= {};

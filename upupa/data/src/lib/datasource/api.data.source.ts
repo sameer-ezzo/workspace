@@ -82,22 +82,22 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         return firstValueFrom(data$).then((res) => res.data);
     }
 
-    override create(value: Partial<T>): Promise<unknown> {
+    override create(value: Partial<T>) {
         return this.dataService.post(this.pathname, value);
     }
 
-    override put(item: T, value: Partial<T>): Promise<unknown> {
+    override put(item: T, value: Partial<T>) {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
         return this.dataService.put(`${this.pathname}/${key}`, value);
     }
 
-    override patch(item: T, patches: Patch[]): Promise<unknown> {
+    override patch(item: T, patches: Patch[]) {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
         return this.dataService.patch(`${this.pathname}/${key}`, patches);
     }
-    override delete(item: T): Promise<void> {
+    override delete(item: T) {
         const key = item?.["_id"];
         if (key == undefined) throw new Error("Item has no _id key");
         return this.dataService.delete(`${this.pathname}/${key}`);
