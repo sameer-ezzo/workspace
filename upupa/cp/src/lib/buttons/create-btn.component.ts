@@ -46,6 +46,7 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
 
 export function createButton<T = unknown>(
     formViewModel: Class,
+    value = new formViewModel(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -65,6 +66,6 @@ export function createButton<T = unknown>(
 
     return {
         component: CreateButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter },
+        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter, item: value },
     } as DynamicComponent<CreateButton>;
 }

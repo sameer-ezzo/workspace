@@ -3,6 +3,7 @@ import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import { DataAdapter } from "@upupa/data";
 import { SnackBarService, DialogRef, SnackbarConfig } from "@upupa/dialog";
 import { FriendlyError, friendlyError } from "./friendly-error";
+import { SubmitResult } from "./data-form-with-view-model/viewmodels/form.viewmodel";
 
 export function navigateTo(commands: string[], extras?: NavigationExtras) {
     const _router = inject(Router);
@@ -10,13 +11,13 @@ export function navigateTo(commands: string[], extras?: NavigationExtras) {
     _router.navigate(commands, { relativeTo: _route, ...extras });
 }
 
-export function closeDialogOrNavigateTo(dialogResult: any, commands: string[], extras?: NavigationExtras) {
+export function closeDialogOrNavigateTo(dialogResult: SubmitResult<any>, commands: string[], extras?: NavigationExtras) {
     const dialogRef = inject(DialogRef);
     if (dialogRef) dialogRef.close(dialogResult);
     else navigateTo(commands, extras);
 }
 
-export function closeDialog(dialogResult: any) {
+export function closeDialog(dialogResult: SubmitResult<any>) {
     const dialogRef = inject(DialogRef);
     if (dialogRef) dialogRef.close(dialogResult);
 }
