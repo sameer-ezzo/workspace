@@ -9,7 +9,7 @@
 <data-table
     #dataTable
     [lazyLoadData]="false"
-    [adapter]="adapter()"
+    [adapter]="adapter"
     [columns]="columns()"
     (itemAdded)="updateValueFromDataSource()"
     (itemRemoved)="updateValueFromDataSource()"
