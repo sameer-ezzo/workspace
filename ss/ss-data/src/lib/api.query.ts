@@ -349,9 +349,9 @@ export class QueryParser {
                 return {
                     from: pathOptions.ref,
                     foreignField: pathOptions.foreignField ?? "_id",
-                    localField: key,
+                    localField: pathOptions.localField ?? key,
                     as: pathOptions.autolookup,
-                    unwind: schemaPaths[key].instance !== "Array", // Unwind if the field is not an array
+                    unwind: pathOptions.unwind ?? schemaPaths[key].instance !== "Array", // Unwind if the field is not an array
                 };
             }
         });

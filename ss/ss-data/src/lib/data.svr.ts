@@ -465,7 +465,6 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             const update = toMongodb(patches);
             result = await model.findOneAndUpdate({ _id: id }, update, {
-                upsert: true,
                 new: true,
             });
         }
@@ -514,8 +513,20 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const doc = await model.findById(segments.id).lean();
         if (!doc) return this.post(path, value, user);
 
-        const { path: _path, patches } = this.toPatches(path, value);
-        return this.patch<T>(_path, patches, user);
+        if (segments.projectionPath) {
+            const document = await model.findByIdAndUpdate(segments.id, { $set: { [segments.projectionPath]: value } }, { new: true }).lean();
+            return { _id: segments.id, document } as WriteResult<T>;
+        } else {
+            const document = await model.findOneAndReplace({ _id: segments.id }, value, { new: true }).lean();
+            return { _id: segments.id, document } as WriteResult<T>;
+        }
+
+        // if (document)
+        //     this.broker.emit(`data-changed/${segments.collection}/${segments.id}`, {
+        //         path: `/${segments.collection}/${segments.id}`,
+        //         data: document,
+        //         user,
+        //     });
     }
 
     async delete<T = any>(path: string, user: any): Promise<WriteResult<T>> {
