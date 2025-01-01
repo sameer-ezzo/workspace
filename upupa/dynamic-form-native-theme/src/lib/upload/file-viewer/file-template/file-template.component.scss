@@ -125,10 +125,12 @@
     .size {
         grid-area: size;
         font-size: smaller;
+        text-wrap: nowrap;
     }
     .date {
         grid-area: date;
         font-size: smaller;
+        text-wrap: nowrap;
     }
     .actions {
         grid-area: actions;

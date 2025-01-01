@@ -47,7 +47,7 @@ export class FilesViewerComponent {
     public fileUploader = inject(FileUploadService);
     protected breakpointObserver = inject(BreakpointObserver);
 
-    onFileEvent(event: FileEvent) {
+    async onFileEvent(event: FileEvent) {
         if (event.name === "remove") {
         }
 
