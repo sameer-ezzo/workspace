@@ -16,7 +16,7 @@
 <span style="flex: 1"></span>
 <div style="display: flex; align-items: center">
     @for (template of inlineEndSlot() ?? []; track $index) {
-        <portal [component]="template['component']" [inputs]="template.inputs" [outputs]="template['outputs']"></portal>
+        <portal [component]="template['component']" [inputs]="template.inputs" [outputs]="template['outputs']" (attached)="onAttached($event,$index)"></portal>
     }
     <ng-content select></ng-content>
 </div>

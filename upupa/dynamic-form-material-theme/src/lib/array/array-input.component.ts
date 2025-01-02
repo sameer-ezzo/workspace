@@ -1,6 +1,7 @@
 import { Component, forwardRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 import { PortalComponent } from "@upupa/common";
 import { ArrayInputComponent } from "@upupa/dynamic-form-native-theme";
 import { DataTableModule } from "@upupa/table";
@@ -9,7 +10,8 @@ import { DataTableModule } from "@upupa/table";
     selector: "mat-form-array-input",
     templateUrl: "./array-input.component.html",
     standalone: true,
-    imports: [DataTableModule, PortalComponent, MatFormFieldModule],
+    imports: [DataTableModule, PortalComponent, MatFormFieldModule, MatInputModule],
+    styleUrl: "./array-input.component.scss",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

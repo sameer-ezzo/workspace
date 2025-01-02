@@ -1,0 +1,16 @@
+{
+    "name": "@upupa/widget",
+    "version": "0.0.3",
+    "peerDependencies": {
+        "@angular/common": "^18.2.1",
+        "@angular/core": "^18.2.1"
+    },
+    "dependencies": {
+        "tslib": "^2.6.1"
+    },
+    "exports": {
+        ".": {
+            "sass": "./src/styles.scss"
+        }
+    }
+}

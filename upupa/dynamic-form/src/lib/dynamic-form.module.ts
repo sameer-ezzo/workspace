@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
+import { makeEnvironmentProviders, ModuleWithProviders, NgModule, Provider } from "@angular/core";
 import { DynamicFormComponent, OrderedKeyValuePipe } from "./dynamic-form.component";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 
@@ -20,24 +20,26 @@ const nativeTheme = {
     [NATIVE_THEME_NAME]: DF_NATIVE_THEME_INPUTS,
 } as unknown as DynamicFormThemes;
 
-const declarations = [DynamicFormComponent, CollectorComponent, OrderedKeyValuePipe];
-
+const declarations = [];
+const modules = [
+    OrderedKeyValuePipe,
+    DynamicFormComponent,
+    CollectorComponent,
+    CommonModule,
+    UtilsModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ScrollingModule,
+    DynamicFormNativeThemeModule,
+    MatBtnComponent,
+    PortalComponent,
+    DynamicFormFieldComponent,
+    MatExpansionModule,
+];
 @NgModule({
     declarations: [...declarations],
-    exports: [...declarations, DynamicFormFieldComponent, ScrollingModule, FormsModule, ReactiveFormsModule, DynamicFormNativeThemeModule, DynamicFormFieldComponent],
-    bootstrap: [DynamicFormComponent],
-    imports: [
-        CommonModule,
-        UtilsModule,
-        FormsModule,
-        ReactiveFormsModule,
-        ScrollingModule,
-        DynamicFormNativeThemeModule,
-        MatBtnComponent,
-        PortalComponent,
-        DynamicFormFieldComponent,
-        MatExpansionModule,
-    ],
+    exports: [...declarations, ...modules],
+    imports: [...modules],
     providers: [
         { provide: DEFAULT_THEME_NAME, useValue: NATIVE_THEME_NAME },
         {
@@ -67,4 +69,18 @@ export class DynamicFormModule {
             ],
         };
     }
+}
+
+
+export function provideDynamicForm(providers?: Provider[],
+    themes?: DynamicFormThemes,
+    defaultThemeName?: "native" | string,
+    options: DynamicFormModuleOptions = { enableLogs: false }){
+        return makeEnvironmentProviders([
+            ...providers,
+            { provide: DEFAULT_THEME_NAME, useValue: defaultThemeName },
+            { provide: DYNAMIC_COMPONENT_MAPPER, useValue: themes },
+            { provide: DYNAMIC_FORM_OPTIONS, useValue: options },
+        ]);
+
 }

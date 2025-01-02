@@ -1,4 +1,3 @@
-@let selectInput = undefined;
 <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
@@ -8,8 +7,10 @@
         <mat-select
             #selectInput
             multiple
-            (openedChange)="selectInput.panelOpen ? loadData() : null"
+            [value]="value()"
+            (selectionChange)="_select(selectInput.value)"
             [formControl]="control()"
+            (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
             [panelClass]="panelClass()"
             [placeholder]="placeholder()"
@@ -54,8 +55,10 @@
     } @else {
         <mat-select
             #selectInput
-            (openedChange)="selectInput.panelOpen ? loadData() : null"
+            [value]="value()"
+            (selectionChange)="_select(selectInput.value)"
             [formControl]="control()"
+            (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
             [placeholder]="placeholder()"
             [panelClass]="panelClass()"
@@ -69,8 +72,11 @@
                 <mat-option disabled> Loading ... </mat-option>
             }
 
+            <mat-option ></mat-option>
+
+
             @for (item of items(); track $index) {
-                <mat-option [value]="item.value">
+                <mat-option [value]="item.value" [disabled]="item.disabled">
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
@@ -78,6 +84,8 @@
                     <mat-option disabled> No items found </mat-option>
                 }
             }
+
+
 
             @for (item of actions; track i; let i = $index) {
                 <mat-option (click)="onAction($event, item)">
@@ -95,7 +103,7 @@
             <mat-progress-spinner style="margin: 0.5rem;" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {
-            <button matSuffix mat-icon-button (click)="clearValue($event)">
+            <button type="button" style="margin-inline-end: -1rem" mat-icon-button (click)="clearValue($event)">
                 <mat-icon>clear</mat-icon>
             </button>
         }
@@ -122,7 +130,7 @@
             [formControl]="filterControl"
         />
         @if (filterInput.value.length > 0) {
-            <!-- <button mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
+            <!-- <button type="button" mat-icon-button (click)="$event.stopPropagation(); filterModel.set(''); updateFilter()">
                 <mat-icon>clear</mat-icon>
             </button> -->
         }

@@ -3,7 +3,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { InputBaseComponent } from '@upupa/common';
 import { InputDefaults } from '../defaults';
 
-@Component({
+@Component({ standalone: true,
     selector: 'form-color-input-field',
     templateUrl: './color-input.component.html',
     styleUrls: ['./color-input.component.css'],

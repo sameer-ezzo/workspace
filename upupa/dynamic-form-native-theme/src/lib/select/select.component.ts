@@ -1,6 +1,5 @@
-import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model, SimpleChanges, computed, InputSignal } from "@angular/core";
-import { AbstractControl, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from "@angular/forms";
-import { MatSelect } from "@angular/material/select";
+import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model } from "@angular/core";
+import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActionDescriptor } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
 
@@ -8,6 +7,7 @@ import { debounceTime } from "rxjs";
 import { InputDefaults } from "../defaults";
 
 @Component({
+    standalone: true,
     selector: "form-select",
     templateUrl: "./select.component.html",
     providers: [
@@ -28,8 +28,8 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     ngAfterViewInit() {
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
             const filter = this.adapter().filter;
-            const _filter = { ...filter, ...(this.adapter().normalizeFilter(v) || {}) };
-            this.adapter().filter = _filter;
+            const _filter = { ...filter, search: v };
+            this.adapter().load({ filter: _filter });
         });
     }
 

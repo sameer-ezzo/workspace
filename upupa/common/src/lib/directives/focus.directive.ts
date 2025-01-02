@@ -6,7 +6,7 @@ import { Directive, ElementRef, Inject, Input, NgZone, PLATFORM_ID } from '@angu
 
 @Directive({
     selector: '[focus]',
-    // standalone: true
+    standalone: true
 })
 export class FocusDirective {
     @Input() focus = false

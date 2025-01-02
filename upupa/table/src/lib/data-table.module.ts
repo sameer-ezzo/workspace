@@ -1,6 +1,5 @@
-import { TranslationModule } from '@upupa/language';
-import { UtilsModule, PortalComponent } from '@upupa/common';
-import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
+import { UtilsModule, PortalComponent } from "@upupa/common";
+import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
 
 import {
     CommonModule,
@@ -17,39 +16,39 @@ import {
     UpperCasePipe,
     I18nPluralPipe,
     I18nSelectPipe,
-} from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatChipsModule } from '@angular/material/chips';
+} from "@angular/common";
+import { MatTableModule } from "@angular/material/table";
+import { MatSortModule } from "@angular/material/sort";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
+import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatDialogModule } from "@angular/material/dialog";
+import { MatChipsModule } from "@angular/material/chips";
 
-import { DynamicPipe, NonePureDynamicPipe } from './dynamic.pipe';
-import { DataTableComponent } from './data-table.component';
-import { JsonPointerPipe } from './json-pointer.pipe';
-import { ColumnsSelectComponent } from './columns-select.component/columns-select.component';
+import { DynamicPipe, NonePureDynamicPipe } from "./dynamic.pipe";
+import { DataTableComponent } from "./data-table.component";
+import { JsonPointerPipe } from "./json-pointer.pipe";
+import { ColumnsSelectComponent } from "./columns-select.component/columns-select.component";
 
-import { MatCardModule } from '@angular/material/card';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { DataComponentBase } from './data-base.component';
-import { DefaultTableCellTemplate } from './cell-template-component';
-import { DATA_TABLE_OPTIONS, DataTableOptions } from './di.tokens';
-import { ActionDescriptorComponent, MatBtnComponent } from '@upupa/mat-btn';
-import { TableColumnSelectorPipe } from './table-column-selector.pipe';
-import { DataTableActionsPortalComponent } from './data-table-actions-wrapper/data-table-actions-wrapper.component';
+import { MatCardModule } from "@angular/material/card";
+import { DragDropModule } from "@angular/cdk/drag-drop";
+import { DataComponentBase } from "./data-base.component";
+import { DefaultTableCellTemplate } from "./cell-template-component";
+import { DATA_TABLE_OPTIONS, DataTableOptions } from "./di.tokens";
+import { ActionDescriptorComponent, MatBtnComponent } from "@upupa/mat-btn";
+import { TableColumnSelectorPipe } from "./table-column-selector.pipe";
 
-import { TableHeaderComponent } from './table-header.component';
+
+import { TableHeaderComponent } from "./table-header.component";
 
 const pipes = [
     DatePipe,
@@ -68,7 +67,7 @@ const pipes = [
     I18nSelectPipe,
 ];
 
-const material = [
+const imports = [
     MatCardModule,
     MatTableModule,
     MatChipsModule,
@@ -84,10 +83,7 @@ const material = [
     MatIconModule,
     MatButtonModule,
     MatToolbarModule,
-];
-const declarations = [
     DataTableComponent,
-    DataTableActionsPortalComponent,
     DefaultTableCellTemplate,
     ColumnsSelectComponent,
     DynamicPipe,
@@ -96,34 +92,27 @@ const declarations = [
     TableColumnSelectorPipe,
     DataComponentBase,
     DataComponentBase,
+    MatBtnComponent,
+    ActionDescriptorComponent,
+    PortalComponent,
+    TableHeaderComponent,
+    CommonModule,
+    UtilsModule,
+    RouterModule,
+    FormsModule,
+    UtilsModule,
+    DragDropModule,
 ];
+const declarations = [];
 
 @NgModule({
     declarations: declarations,
-    imports: [
-        CommonModule,
-        UtilsModule,
-        RouterModule,
-        FormsModule,
-        UtilsModule,
-        DragDropModule,
-        ...material,
-        TranslationModule,
-        MatBtnComponent,
-        ActionDescriptorComponent,
-        PortalComponent,
-        TableHeaderComponent,
-    ],
-    exports: [...declarations, DragDropModule],
-    providers: [
-        ...pipes,
-        { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() },
-    ],
+    imports: [...imports, ...pipes],
+    exports: [...imports, DragDropModule],
+    providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }],
 })
 export class DataTableModule {
-    static forRoot(
-        providers: Provider[]
-    ): ModuleWithProviders<DataTableModule> {
+    static forRoot(providers: Provider[]): ModuleWithProviders<DataTableModule> {
         return {
             ngModule: DataTableModule,
             providers: [

@@ -14,7 +14,8 @@
                 [inputs]="template.inputs"
                 [outputs]="template.outputs"
                 [content]="template.content"
-                [className]="template.class ?? ''"
+                [className]="template.class"
+                [injector]="injector"
             ></portal>
         </ng-container>
     } @else {

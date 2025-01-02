@@ -6,9 +6,15 @@ import { BreakpointObserver } from "@angular/cdk/layout";
 import { MatDialog } from "@angular/material/dialog";
 import { DataComponentBase } from "@upupa/table";
 import { FileInfo } from "../model";
+import { MatIconModule } from "@angular/material/icon";
+import { ImageComponent } from "../image.component/image.component";
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @Component({
+    standalone: true,
     selector: "thumbs-grid",
+    imports: [MatIconModule, ImageComponent, MatCheckboxModule, MatProgressBarModule],
     templateUrl: "./thumbs-grid.component.html",
     styleUrls: ["./thumbs-grid.component.css"],
     providers: [
@@ -51,7 +57,7 @@ export class ThumbsGridComponent extends DataComponentBase<FileInfo> implements 
 
         try {
             await this.client.delete("/" + t.item.path, new URL(this.base).origin);
-            this.adapter().refresh();
+            await this.adapter().load();
             this.loading.set(false);
         } catch (error) {
             console.error(error);

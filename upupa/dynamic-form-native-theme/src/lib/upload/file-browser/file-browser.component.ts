@@ -1,14 +1,20 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, forwardRef, inject, model, computed, effect } from "@angular/core";
+import { Component, forwardRef, inject, model, computed, effect, SimpleChanges } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { AuthService } from "@upupa/auth";
-import { EventBus } from "@upupa/common";
 import { DataAdapter, DataService, ApiDataSource } from "@upupa/data";
 import { FileInfo } from "@upupa/upload";
-import { BehaviorSubject, Subscription } from "rxjs";
 import { FileSelectComponent } from "../file-select/file-select.component";
 import { SnackBarService } from "@upupa/dialog";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
+import { MatButtonModule } from "@angular/material/button";
+import { FileEvent } from "../viewer-file.vm";
+import { FileUploadService } from "../file-upload.service";
 
 const valueProperty = [
     "_id",
@@ -27,6 +33,7 @@ const valueProperty = [
 ] as (keyof FileInfo)[];
 
 @Component({
+    standalone: true,
     selector: "file-browser",
     templateUrl: "./file-browser.component.html",
     styleUrls: ["./file-browser.component.scss"],
@@ -37,6 +44,7 @@ const valueProperty = [
             multi: true,
         },
     ],
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule,MatButtonModule, MatButtonToggleModule],
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);
@@ -52,7 +60,7 @@ export class FileBrowserComponent {
 
     segments = computed(() => (this.path() ?? "").split("/"));
 
-    dataSource = new ApiDataSource<FileInfo>(this.data, "/storage", valueProperty);
+    dataSource = new ApiDataSource<FileInfo>(this.data, `/storage?select=${valueProperty.join(",")}`);
     adapter = new DataAdapter<FileInfo>(this.dataSource, "_id", undefined, valueProperty, undefined, {
         filter: {
             destination: `storage${this.path() == "/" ? "" : this.path()}*`,
@@ -68,13 +76,29 @@ export class FileBrowserComponent {
     value = model<FileInfo[]>([]);
     disabled = model(false);
 
-    constructor() {
-        effect(() => {
+    public fileUploader = inject(FileUploadService);
+
+    async onFileEvent(event: FileEvent) {
+        if (event.name === "remove") {
+            if('path' in event.file) {
+                try{
+                    await this.fileUploader.uploadClient.delete(event.file.path);
+                }
+                catch(e){
+                    if(e.status !== 404) throw e
+
+                }
+            }
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['path']) {
             const _path = this.path() ?? "/";
             const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
-            this.adapter.filter = filter;
-            this.adapter.refresh();
-        });
+            this.adapter.load({ filter });
+        }
+
     }
 
     selectFile(fileSelect: FileSelectComponent) {

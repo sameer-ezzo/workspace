@@ -5,14 +5,20 @@ export function filterNormalized<T>(normalized: NormalizedItem<T>[], filter: Fil
     let result = normalized;
 
     //FILTER
-    const term = (filter && filter.terms && filter.terms.length) ? filter.terms.join('{}').toLocaleLowerCase() : '';
+    const term = filter?.search?.toLocaleLowerCase();
 
     if (term) {
-        result = normalized.filter(norm => {
+        result = normalized.filter((norm) => {
             const item = norm.item;
             if (norm.defaultSearchTerm === undefined) {
                 const t = Array.isArray(terms) ? terms : [terms];
-                const defaultSearchTerm = typeof item !== 'object' ? (item + '') : t.map(k => getByPath(item, k as string)).join('{}').trim();
+                const defaultSearchTerm =
+                    typeof item !== "object"
+                        ? item + ""
+                        : t
+                              .map((k) => getByPath(item, k as string))
+                              .join("{}")
+                              .trim();
                 norm.defaultSearchTerm = defaultSearchTerm.toLocaleLowerCase();
             }
             return norm.defaultSearchTerm?.indexOf(term) > -1;
@@ -21,7 +27,7 @@ export function filterNormalized<T>(normalized: NormalizedItem<T>[], filter: Fil
 
     //SORT
     if (sort?.active && sort.direction) {
-        const dir = sort.direction === 'desc' ? -1 : 1;
+        const dir = sort.direction === "desc" ? -1 : 1;
         result = result.sort((a, b) => {
             const x = getByPath(a.item, sort.active);
             const y = getByPath(b.item, sort.active);
@@ -40,27 +46,27 @@ export function filterNormalized<T>(normalized: NormalizedItem<T>[], filter: Fil
     return result;
 }
 
-
 export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescriptor, page: PageDescriptor, terms: Term<T>[]): T[] {
-
     let result = all;
     if (!result) return [];
     //FILTER
-    const _terms = filter?.terms || []
-    const term = _terms.join('{}').toLocaleLowerCase();
-
+    const term = filter?.search?.toLocaleLowerCase();
     if (term) {
-        result = all.filter(item => {
+        result = all.filter((item) => {
             const itemTerm: string =
-                typeof item !== 'object' ? (item + '') :
-                    terms.map(t => getByPath(item, t.field as string)).join('{}').trim();
+                typeof item !== "object"
+                    ? item + ""
+                    : terms
+                          .map((t) => getByPath(item, t.field as string))
+                          .join("{}")
+                          .trim();
             return itemTerm.toLocaleLowerCase().indexOf(term) > -1;
         });
     }
 
     //SORT
     if (sort && sort.active && sort.direction) {
-        const dir = sort.direction === 'desc' ? -1 : 1;
+        const dir = sort.direction === "desc" ? -1 : 1;
         result = result.sort((a, b) => {
             const x = getByPath(a, sort.active);
             const y = getByPath(b, sort.active);
@@ -79,9 +85,8 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     return result;
 }
 
-
 export function getByPath(obj: any, path: string) {
-    return JsonPointer.get(obj, path, '.')
+    return JsonPointer.get(obj, path, ".");
 }
 
 export function compare(a, b): number {
@@ -90,4 +95,3 @@ export function compare(a, b): number {
     else if (a < b) return -1;
     else return 0;
 }
-

@@ -9,5 +9,6 @@
     (blur)="markAsTouched()"
     [readonly]="readonly()"
     [placeholder]="placeholder()"
+    [attr.autocomplete]="autocomplete()"
 />
-<mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+<span *errors="control().errors; control: control(); let message">{{ message }}</span>

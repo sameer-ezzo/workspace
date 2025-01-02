@@ -2,7 +2,18 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <input matInput [type]="type()" [formControl]="control()" [attr.name]="name()" [readonly]="readonly()" [placeholder]="placeholder()" [required]="required()" />
+    <input
+        #input
+        matInput
+        [type]="type()"
+        [value]="value()"
+        (input)="value.set(input.value)"
+        [formControl]="control()"
+        [attr.name]="name()"
+        [readonly]="readonly()"
+        [placeholder]="placeholder()"
+        [required]="required()"
+    />
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }

@@ -16,16 +16,15 @@ import { logger } from "./logger";
 export type DocumentIdType = string | number | mongoose.Types.ObjectId;
 
 export type WriteResult<T> = {
-    errors?: any[];
     _id: any;
     document?: T;
+    errors?: any[];
 };
 
 import toMongodb from "jsonpatch-to-mongodb";
 import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
 import { ObjectId } from "mongodb";
-import { MigrationsService } from "./migrations.svr";
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
     autoIndex: true,
@@ -163,7 +162,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         //     exclude.forEach((x) => (projection[x] = 0)); //make sure to exclude in nothing included
         // }
 
-        let model = await this.getModel(modelName);
+        const model = await this.getModel(modelName);
 
         if (id) {
             if (!model) return undefined as T;
@@ -193,7 +192,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = typeof path === "string" ? PathInfo.parse(path) : path;
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         let projection: any = {};
@@ -202,7 +201,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
 
         const model = await this.getModel(segments.collection);
-        const queryInfo = q ? this.queryParser.parse(<any>q, model) : null;
+        const queryInfo = q ? this.queryParser.parse(q, model) : null;
         const filter: any = queryInfo ? queryInfo.filter : {};
         const sort = queryInfo ? queryInfo.sort : {};
         const page = queryInfo ? +queryInfo.page : 1;
@@ -223,14 +222,18 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             pathInfo = PathInfo.parse(path);
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         const model = await this.getModel(pathInfo.collection);
         const queryInfo = q.length ? this.queryParser.parse(q) : null;
         const query: any = queryInfo ? queryInfo.filter : {};
 
-        if (pathInfo.id) query["_id"] = this.convertToModelId(pathInfo.id, "_id", model, `func(${f}) ${path} ${q}`);
+        if (pathInfo.id) {
+            const _id = this.convertToModelId(pathInfo.id, "_id", model, `func(${f}) ${path} ${q}`);
+            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+            query["_id"] = _id;
+        }
 
         switch (f) {
             case "count":
@@ -251,16 +254,18 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             pathInfo = PathInfo.parse(path);
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         const model = await this.getModel(pathInfo.collection);
         if (!model) return Promise.resolve([]);
-        const query = q ? this.queryParser.parse(<any>q, model) : ({} as any);
+        const query: any = q ? this.queryParser.parse(q, model) : {};
         const pipeline = [];
         let _id = undefined;
         if (pathInfo.id) {
             _id = this.convertToModelId(pathInfo.id, "_id", model, `agg ${path} ${q}`);
+            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+
             pipeline.push({ $match: { _id } });
             if (query.select) pipeline.push({ $project: query.select });
         } else {
@@ -270,14 +275,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             if (query.fields1) pipeline.push({ $addFields: query.fields1 });
             if (query.fields2) pipeline.push({ $addFields: query.fields2 });
-            if (query.fields3) pipeline.push({ $addFields: query.fields3 });
             if (query.lookups)
                 query.lookups.forEach((l: any) => {
                     l.from = this.prefix + l.from;
                     const unwind = l.unwind;
                     delete l.unwind;
                     pipeline.push({ $lookup: l });
-                    if (unwind) pipeline.push({ $unwind: "$" + l.as });
+                    if (unwind) pipeline.push({ $unwind: { path: "$" + l.as, preserveNullAndEmptyArrays: true } });
                 });
             if (query.lookupsMatch) {
                 query.lookupsMatch.forEach((l: any) => {
@@ -305,6 +309,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     });
                 });
             }
+            if (query.fields3) pipeline.push({ $addFields: query.fields3 });
             if (query.filter && query.filter.$and && query.filter.$and.length) pipeline.push({ $match: query.filter });
             if (query.sort) pipeline.push({ $sort: query.sort });
             if (query.select) pipeline.push({ $project: query.select });
@@ -327,18 +332,18 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         return <T[]>result;
     }
 
-    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<{ _id: ObjectId; result: WriteResult<T> }> {
+    public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<WriteResult<T>> {
         let segments: PathInfo;
         try {
             segments = typeof path === "string" ? PathInfo.parse(path) : path;
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         const model = await this.getModel(segments.collection);
         if (segments.projectionPath) {
             //push to array field
-            //if (!Array.isArray(oldData)) { throw { status: 400, body: "INVALID_POST" }; }
+            //if (!Array.isArray(oldData)) { throw new HttpException("INVALID_POST", HttpStatus.NOT_ACCEPTABLE); }
             const update = { $push: {} };
             if (segments.projectionPath) update.$push[segments.projectionPath] = newData;
             else update.$push = newData;
@@ -363,7 +368,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 ],
                 user,
             });
-            return { _id: newData._id, result: result };
+            return { _id: newData._id, document: result };
         } else {
             if (!newData._id) newData._id = await this.generateId();
             else {
@@ -382,11 +387,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 patches: [{ op: "add", path: "/", value: result }],
                 user,
             });
-            return { _id: newData._id, result };
+            return { _id: newData._id, document: result };
         }
     }
 
-    private generatePatches(value: any, currentPath: string = ""): Patch[] {
+    private _generatePatches(value: any, currentPath: string = ""): Patch[] {
         let patches: Patch[] = [];
 
         if (typeof value !== "object" || value === null) {
@@ -395,13 +400,13 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         } else if (Array.isArray(value)) {
             // Handle arrays
             value.forEach((item, index) => {
-                patches = patches.concat(this.generatePatches(item, `${currentPath}/${index}`));
+                patches = patches.concat(this._generatePatches(item, `${currentPath}/${index}`));
             });
         } else {
             // Handle objects
             for (const key in value) {
                 if (value.hasOwnProperty(key)) {
-                    patches = patches.concat(this.generatePatches(value[key], `${currentPath}/${key}`));
+                    patches = patches.concat(this._generatePatches(value[key], `${currentPath}/${key}`));
                 }
             }
         }
@@ -419,15 +424,16 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     ): Promise<WriteResult<T>> {
         const segments = path.split("/").filter((s) => s);
         if (segments.length !== 2) {
-            throw { status: 400, body: "INVALID_PATH_FOR_PATCH" };
+            throw new HttpException({ body: "INVALID_PATH_FOR_PATCH" }, HttpStatus.BAD_REQUEST);
         }
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
         const model = await this.getModel(collection);
         const doc = await model.findById(id).lean();
-        if (!doc) throw { status: 404, body: "NOT_FOUND" };
+        if (!doc) throw new HttpException({ body: "NOT_FOUND" }, HttpStatus.NOT_FOUND);
 
+        patches ??= [];
         const directPatches = patches.filter((p) => p.path === "/");
 
         let result;
@@ -437,7 +443,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const directPatch = directPatches[directPatches.length - 1];
             const lastDirectPatchIndex = patches.indexOf(directPatch);
             patches = patches.filter((p, i) => i > lastDirectPatchIndex);
-            const updatePatches = this.generatePatches(directPatch.value, "");
+            const updatePatches = this._generatePatches(directPatch.value, "");
             _directPatches.push(...updatePatches);
         }
 
@@ -459,25 +465,25 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
             const update = toMongodb(patches);
             result = await model.findOneAndUpdate({ _id: id }, update, {
-                upsert: true,
                 new: true,
             });
         }
 
-        if (result)
+        if (result) {
             this.broker.emit(`data-changed/${collection}/${id}`, {
                 path: `/${collection}/${id}`,
                 data: result,
                 patches,
                 user,
             });
+        }
 
-        return result;
+        return { _id: id, document: result };
     }
 
     toPatches<T = any>(path: string, value: any): { path: string; patches: Patch[] } {
         const segments = path.split("/").filter((s) => s);
-        if (segments.length < 2) throw { status: 400, body: "INVALID_DOCUMENT_PATH" };
+        if (segments.length < 2) throw new HttpException({ body: "INVALID_DOCUMENT_PATH" }, HttpStatus.BAD_REQUEST);
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
@@ -497,18 +503,30 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = PathInfo.parse(path);
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         const model = await this.getModel(segments.collection);
-        if (!model) throw { status: 400, body: "INVALID_PATH" };
+        if (!model) throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         if (!segments.id) return this.post(path, value, user);
 
         const doc = await model.findById(segments.id).lean();
         if (!doc) return this.post(path, value, user);
 
-        const { path: _path, patches } = this.toPatches(path, value);
-        return this.patch<T>(_path, patches, user);
+        if (segments.projectionPath) {
+            const document = await model.findByIdAndUpdate(segments.id, { $set: { [segments.projectionPath]: value } }, { new: true }).lean();
+            return { _id: segments.id, document } as WriteResult<T>;
+        } else {
+            const document = await model.findOneAndReplace({ _id: segments.id }, value, { new: true }).lean();
+            return { _id: segments.id, document } as WriteResult<T>;
+        }
+
+        // if (document)
+        //     this.broker.emit(`data-changed/${segments.collection}/${segments.id}`, {
+        //         path: `/${segments.collection}/${segments.id}`,
+        //         data: document,
+        //         user,
+        //     });
     }
 
     async delete<T = any>(path: string, user: any): Promise<WriteResult<T>> {
@@ -516,11 +534,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = PathInfo.parse(path);
         } catch (error) {
-            throw { status: 400, body: "INVALID_PATH" };
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
         }
 
         const model = await this.getModel(segments.collection);
-        if (!model) throw { status: 400, body: "INVALID_PATH" };
+        if (!model) throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
 
         if (segments.id) {
             if (segments.projectionPath) {
@@ -546,7 +564,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 });
                 return { _id: segments.id, ...result } as WriteResult<T>;
             }
-        } else throw { status: 400, body: "INVALID_PATH" };
+        } else throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
     }
 
     async inflate<T extends { _id: any }>(
@@ -611,8 +629,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             try {
                 return new mongoose.Types.ObjectId(value);
             } catch (error) {
-                logger.error(`convertToModelId: ${model.modelName}.${path}:${value} => ${instance}`, error);
-                return value;
+                return undefined;
             }
         return value;
     }

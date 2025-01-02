@@ -1,11 +1,7 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { Subscription, Observable, ReplaySubject, firstValueFrom, BehaviorSubject, of } from "rxjs";
-import { ClientDataSource } from "./client.data.source";
-import { filterNormalized } from "./filter.fun";
-import { Key, NormalizedItem, PageDescriptor, ProviderOptions, SortDescriptor, ITableDataSource, FilterDescriptor } from "./model";
-import { map } from "rxjs/operators";
-import { HttpServerDataSourceOptions } from "./http-server-data-source";
-import { EventEmitter, signal } from "@angular/core";
+import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource } from "./model";
+import { computed } from "@angular/core";
+import { patchState, signalStore, withState } from "@ngrx/signals";
 
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
@@ -15,104 +11,92 @@ export type DataAdapterDescriptor<TData = any> = {
     displayProperty?: Key<TData>;
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
-    options?: ProviderOptions<TData>;
-} & (
-    | ({ type: "server"; path: string; select?: string[] } | { type: "api"; path: string; select?: string[] })
-    | { type: "client"; data: TData[] | Promise<TData[]> | readonly TData[] }
-    | { type: "http"; url: string; httpOptions?: HttpServerDataSourceOptions }
-);
+    options?: DataLoaderOptions<TData>;
+} & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] });
 
-export class Normalizer<S = any, N = any> {
-    private _normalized$ = new BehaviorSubject<N[]>([]);
-    normalized$ = this._normalized$.asObservable();
-
-    readonly normalized = signal<N[]>([]);
-
-    private _src: S[];
-    get src(): S[] {
-        return this._src;
-    }
-    normalize: (item: S) => N;
-
-    constructor(public readonly data$: Observable<any[]>) {}
-
-    init(normalize: (item: S) => N) {
-        this.normalize = normalize;
-        this._sub = this.data$.subscribe((data) => {
-            this._src = data;
-            this.normalized.set(this._normalize(data));
-        });
-    }
-
-    _cache = new SmartMap<N>();
-    protected _normalize(data: S[]): N[] {
-        return (
-            data?.map((x) => {
-                let n = this._cache.get(x);
-                if (!n) {
-                    n = this.normalize(x);
-                    this._cache.set(x, n);
-                }
-                return n;
-            }) ?? []
-        );
-    }
-
-    private _sub: Subscription;
-    destroy() {
-        this._sub.unsubscribe();
-    }
+function DataAdapterStore<T>() {
+    return signalStore(
+        { protectedState: false },
+        withState({
+            loading: false,
+            autoRefresh: true,
+            data: [] as T[],
+            error: null as Error,
+            allDataLoaded: false,
+            page: { pageIndex: 0 } as PageDescriptor,
+            sort: null as SortDescriptor,
+            filter: {} as FilterDescriptor,
+            terms: [] as Term<T>[],
+        }),
+    );
 }
 
-export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
-    itemAdded = new EventEmitter<NormalizedItem<T>>();
-    itemRemoved = new EventEmitter<NormalizedItem<T>>();
-    itemUpdated = new EventEmitter<NormalizedItem<T>>();
-
+export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     constructor(
-        readonly dataSource: ITableDataSource<T>,
-        readonly keyProperty?: keyof T, // what if ['item1','item2',...] then no need for key, display,value and img
+        readonly dataSource: TableDataSource<T>,
+        readonly keyProperty?: keyof T,
         readonly displayProperty?: Key<T>,
         readonly valueProperty?: Key<T>,
         readonly imageProperty?: Key<T>,
-        readonly options?: ProviderOptions<T>,
+        options?: DataLoaderOptions<T>,
     ) {
-        super(dataSource.data$);
+        super();
 
-        if (options) {
-            if (options.page) this.dataSource.page = options.page;
-            else this.dataSource.page = { pageIndex: 0 };
-            if (options.filter) this.dataSource.filter = options.filter;
-            if (options.sort) this.dataSource.sort = options.sort;
-            if (options.terms) this.dataSource.terms = options.terms;
+        const _keyProperties = Array.isArray(keyProperty) ? keyProperty : keyProperty ? [keyProperty] : [];
+        const _valueProperties = Array.isArray(valueProperty) ? valueProperty : valueProperty ? [valueProperty] : [];
+        const _displayProperties = Array.isArray(displayProperty) ? displayProperty : displayProperty ? [displayProperty] : [];
+
+        const _initial = {
+            page: options?.page ?? { pageIndex: 0 },
+            sort: options?.sort,
+            filter: options?.filter,
+            terms: options?.terms ?? [..._displayProperties, ..._keyProperties, ..._valueProperties],
+            autoRefresh: options?.autoRefresh === false ? false : true,
+        };
+        patchState(this, _initial);
+    }
+
+    normalized = computed(() => this.data().map((x) => this.normalize(x)));
+
+    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<NormalizedItem<T>[]> {
+        const _options = { ...{ page: this.page(), filter: this.filter(), sort: this.sort(), terms: this.terms() }, ...options };
+        try {
+            patchState(this, { loading: true });
+            const items = await this.dataSource.load(_options);
+            patchState(this, { data: items, ..._options, loading: false });
+            return this.normalized();
+        } catch (error) {
+            patchState(this, { data: [], error, loading: false });
+            return [];
         }
-
-        this.init(this._normalizeItem);
-        this._sub2 = dataSource.data$.subscribe(() => (this._allNormalized = null));
     }
 
-    async create(value: Partial<T>): Promise<unknown> {
-        const res = await this.dataSource.create(value);
-        this.itemAdded.emit(this.normalize(res as T));
-        return res;
+    refresh() {
+        return this.load();
     }
 
-    async put(item: T, value: Partial<T>): Promise<unknown> {
-        const res = await this.dataSource.put(item, value);
-        this.itemUpdated.emit(this.normalize(res as T));
-        return res;
+    async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
+        const result = await this.dataSource.create(value);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
-    async patch(item: T, patches: Patch[]): Promise<unknown> {
-        const res = await this.dataSource.patch(item, patches);
-        this.itemUpdated.emit(this.normalize(res as T));
-        return res;
+    async put(item: T, value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
+        const result = await this.dataSource.put(item, value);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
-    async delete(item: T): Promise<unknown> {
-        const res = await this.dataSource.delete(item);
-        this.itemRemoved.emit(this.normalize(item));
-        return res;
+    async patch(item: T, patches: Patch[], opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
+        const result = await this.dataSource.patch(item, patches);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
+    }
+
+    async delete(item: T, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const result = await this.dataSource.delete(item);
+        if (opt.refresh || this.autoRefresh()) await this.refresh();
+        return result;
     }
 
     getKeysFromValue(value: Partial<T> | Partial<T>[]): (keyof T)[] {
@@ -121,35 +105,29 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
         return v.map((x) => this.extract(x, this.keyProperty, x));
     }
 
-    getItems(keys: (keyof T)[]): Observable<NormalizedItem<T>[]> {
-        //todo: What if keyProperty is undefined?
-        if (keys == null || !keys.length) return of([]);
+    async getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
+        if (!keys?.length) return [];
 
         const KEYS = Array.isArray(keys) ? keys : [keys];
         const normalized = this.normalized() ?? [];
         const itemsInAdapter: NormalizedItem<T>[] = [];
-        const itemsNotInAdapter: Key<T> = [];
+        const toBeLoaded: Key<T> = [];
         for (const key of KEYS) {
             const n = normalized.find((n) => n.key === key);
             if (n) itemsInAdapter.push(n);
-            else itemsNotInAdapter.push(key);
+            else toBeLoaded.push(key);
         }
-        if (itemsInAdapter.length === KEYS.length) return of(normalized.filter((n) => KEYS.includes(n.key)));
+        if (itemsInAdapter.length === KEYS.length) return itemsInAdapter;
 
-        return this.dataSource.getItems(itemsNotInAdapter, this.keyProperty).pipe(
-            map((items) => items.filter((x) => itemsInAdapter.findIndex((n) => n.key === x?.[this.keyProperty]) === -1)),
-            map((items) => items.map((i) => this.normalize(i))),
-            map((items) => items.concat(itemsInAdapter)),
-        );
+        const _items = await this.dataSource.getItems(toBeLoaded, this.keyProperty);
+        const _normalized = _items.map((i) => this.normalize(i));
+        const _dic = Object.fromEntries(_normalized.map((i) => [i.key, i]));
+        return KEYS.map((key) => {
+            return toBeLoaded.includes(key) ? _dic[key] : itemsInAdapter.find((i) => i.key === key);
+        }).filter((x) => x);
     }
 
-    _normalizeItem(item): NormalizedItem<T> {
-        // if (this.groups) {
-        //   for (let i = 0 i < this.groups.length i++) {
-        //     const n = this._normalize(this.groups[i].items)
-        //     normalized.push(...n)
-        //   }
-        // }
+    normalize(item: T): NormalizedItem<T> {
         if (!item)
             return {
                 key: null,
@@ -178,93 +156,13 @@ export class DataAdapter<T = any> extends Normalizer<T, NormalizedItem<T>> {
     extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {
         if (property && item) {
             if (Array.isArray(property)) {
-                if (property.length === 1) return this.__extract(item, property[0]);
+                if (property.length === 1) return JsonPointer.get(item, property[0] as string, ".");
                 const result: Partial<T> = {};
-                property.forEach((k) => (result[k] = this.__extract(item, k as string)));
+                property.forEach((k) => (result[k] = JsonPointer.get(item, k as string, ".")));
                 if (flatten) return Object.values(result).join(" ");
                 else return result;
-            } else return this.__extract(item, property as string) ?? item;
+            } else return JsonPointer.get(item, property as string, ".") ?? item;
         } else return fallback;
-    }
-
-    private __extract(item: any, property: any) {
-        if (property.indexOf(".") > -1) return JsonPointer.get(item, property.replaceAll(".", "/"));
-        else return item[property];
-    }
-
-    normalizeFilter(q: string) {
-        const filter: FilterDescriptor = {};
-        if (!q) {
-            filter.terms = [];
-            return filter;
-        }
-        const terms = q.split(" ").filter((x) => x);
-        terms.forEach((t) => {
-            if (t.indexOf(":") > 0) {
-                const [key, value] = t.split(":");
-                filter[key] = value;
-            } else {
-                if (!filter.terms) filter.terms = [];
-                filter.terms.push(t);
-            }
-        });
-        return filter;
-    }
-
-    private _sub2: Subscription;
-    override destroy() {
-        super.destroy();
-        this._sub2.unsubscribe();
-        if (this.dataSource.destroy) this.dataSource.destroy();
-    }
-
-    get page(): PageDescriptor {
-        return this.dataSource.page;
-    }
-    set page(page: PageDescriptor) {
-        this.dataSource.page = page;
-    }
-
-    get sort(): SortDescriptor {
-        return this.dataSource.sort;
-    }
-    set sort(sort: SortDescriptor) {
-        this.dataSource.sort = sort;
-    }
-
-    get filter(): FilterDescriptor {
-        return this.dataSource.filter;
-    }
-    set filter(filter: FilterDescriptor) {
-        this.dataSource.filter = filter;
-    }
-
-    _allNormalized: NormalizedItem<T>[];
-    refresh(force = true): Observable<NormalizedItem<T>[]> {
-        if (!force && this.dataSource.allDataLoaded()) {
-            if (!this._allNormalized) this._allNormalized = this.normalized();
-            const terms = this.options?.terms ?? [];
-            this.normalized.set(
-                filterNormalized(
-                    this._allNormalized,
-                    this.filter,
-                    this.sort,
-                    this.page,
-                    terms.map((t) => t.field),
-                ),
-            );
-            return this.normalized$;
-        } else {
-            return this.dataSource.init({
-                page: this.page,
-                sort: this.sort,
-                filter: this.filter,
-            });
-        }
-    }
-
-    public static fromKeys(keys: string[]): DataAdapter {
-        return new DataAdapter(new ClientDataSource(keys));
     }
 }
 

@@ -5,7 +5,7 @@ import { Observable, Subscription } from 'rxjs'
 
 
 @Pipe({
-    name: 'text', pure: false
+    name: 'text', pure: false, standalone: true
 })
 export class TextPipe implements OnDestroy {
     _rx: Observable<string>

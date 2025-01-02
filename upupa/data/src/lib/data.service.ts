@@ -1,5 +1,5 @@
-import { map, multicast, refCount, startWith } from "rxjs/operators";
-import { Injectable } from "@angular/core";
+import { map, multicast, refCount, shareReplay, startWith } from "rxjs/operators";
+import { afterNextRender, Injectable } from "@angular/core";
 import { Observable, ReplaySubject, interval, NEVER, combineLatest, firstValueFrom } from "rxjs";
 import { LocalService } from "./local.service";
 import { DataResult, DataConfig } from "./model";
@@ -32,7 +32,9 @@ export class DataService {
     private readonly cache = new CacheStore<DataListener>();
 
     constructor(public readonly api: ApiService) {
-        interval(10000).subscribe(() => this.recycleCache());
+        afterNextRender(() => {
+            interval(10000).subscribe(() => this.recycleCache());
+        });
     }
 
     //the path contains the filtering, sorting, page and selection
@@ -69,13 +71,24 @@ export class DataService {
                 }),
             );
 
-            //NEVER.pipe(startWith): to create a strem that only emits 1 and never complete
+            //NEVER.pipe(startWith): to create a stream that only emits 1 and never complete
             //multicast: share to prevent subscribers to activate api call with each subscription
             const stream = combineLatest([api$, NEVER.pipe(startWith(1))]).pipe(
                 map(([apiResult]) => apiResult),
                 multicast(subject),
                 refCount(),
             );
+
+            // const stream = new Observable<DataResult<T>>((observer) => {
+            //     try {
+            //         firstValueFrom(api$)
+            //             .then((x) => observer.next(x))
+            //             .catch((e) => observer.error(e));
+            //     } catch (error) {}
+            //     return () => {
+            //         console.log("unsubscribe from data stream");
+            //     };
+            // });
 
             //cache
             this.cache.set(path, { subject, stream, headers });
@@ -87,53 +100,38 @@ export class DataService {
         return this.fetch<ApiGetResult<T>>(path, query).pipe(map((x) => x.data));
     }
 
-    agg<T>(path: string, query?: QueryDescriptor) {
-        path = prefixPath(path);
-
-        if (query) {
-            const qs = Object.keys(query)
-                .map((k) => `${k}=${query[k]}`)
-                .join("&");
-            if (path.indexOf("?") > -1) path = path + "&" + qs;
-            else path = path + "?" + qs;
-        }
-
-        return this.api.agg<T>(path);
-    }
-
     async put(path: string, value: any): Promise<any> {
         path = prefixPath(path);
         let res = await this.api.put(path, value);
-        await this.refreshCache(path);
+        await this.refresh(path);
         return res;
     }
 
     async patch(path: string, patches: Patch[]) {
         path = prefixPath(path);
         let res = await this.api.patch(path, patches);
-        await this.refreshCache(path);
+        await this.refresh(path);
         return res;
     }
 
     async post<T>(path: string, value: T) {
         path = prefixPath(path);
         let res = await this.api.post(path, value);
-        await this.refreshCache(path);
+        await this.refresh(path);
         return res;
     }
 
     async delete(path: string) {
         path = prefixPath(path);
-        //TODO delete result + delete proper sync between local and api
         let res = await this.api.delete(path);
-        await this.refreshCache(path);
+        await this.refresh(path);
         return res;
     }
 
-    async refreshCache(path: string) {
+    async refresh(path: string) {
         path = prefixPath(path);
 
-        this.recycleCache(true);
+        this.recycleCache(); // remove unused subjects
         const subjects = this.cache.map();
         for (let i = 0; i < subjects.length; i++) {
             const mapItem = subjects[i];
@@ -162,16 +160,15 @@ export class DataService {
         }
     }
 
-    private recycleCache(force = false) {
-        const now = new Date();
+    private recycleCache() {
         this.cache
             .mapItems()
-            .filter((x) => !x.item.value.subject.observed && (force || now.getTime() - x.item.timestamp.getTime() > 10000))
+            .filter((x) => !x.item.value.subject.observed)
             .forEach((x) => {
                 x.item.value.subject.complete();
                 x.item.value.subject.unsubscribe();
                 this.cache.remove(x.key);
-                console.info(`${force} cleared`, x.key);
+                console.info(`Cache cleared`, x.key);
             });
     }
 }

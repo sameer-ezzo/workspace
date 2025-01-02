@@ -3,8 +3,10 @@
         <mat-label>{{ label() }}</mat-label>
     }
     <textarea
+        #input
         matInput
         [value]="value()"
+        (input)="value.set(input.value)"
         [formControl]="control()"
         [required]="required()"
         [readonly]="readonly()"

@@ -3,17 +3,20 @@ import { HttpClient } from "@angular/common/http";
 import { ApiDataSource, DataAdapter, DataService } from "@upupa/data";
 import { AuthService } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent, toTitleCase } from "@upupa/common";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions } from "../types";
 import { RoleFormComponent } from "../role-form/role-form.component";
 import { firstValueFrom } from "rxjs";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
+    standalone: true,
     selector: "roles-list",
     templateUrl: "./roles-list.component.html",
     styleUrls: ["./roles-list.component.css"],
+    imports: [DataTableComponent, TableHeaderComponent, MatBtnComponent],
 })
 export class RolesListComponent implements OnInit {
     focusedUser: any;
@@ -47,7 +50,7 @@ export class RolesListComponent implements OnInit {
         this.actions = (_options?.rowActions || defaultRolesListActions) as ActionDescriptor[];
 
         const select = [...new Set(["name"].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
-        const dataSource = new ApiDataSource<any>(this.data, "/role", select);
+        const dataSource = new ApiDataSource<any>(this.data, "/role?select=" + select.join(","));
 
         this.adapter = new DataAdapter(dataSource, "_id", "email", "_id", null, {
             page: { pageIndex: 0, pageSize: 15 },
@@ -90,15 +93,15 @@ export class RolesListComponent implements OnInit {
                         },
                     ],
                 } as any;
-                const dialogRef = this.dialog.openDialog(RoleFormComponent, { ...data });
+                const dialogRef = this.dialog.open(RoleFormComponent, { ...data });
                 const componentRef: ComponentRef<RoleFormComponent> = await firstValueFrom(dialogRef.afterAttached());
-                dialogRef.componentInstance.actionClick.subscribe((e) => {
-                    componentRef.instance.onAction(e);
-                });
+                // dialogRef.componentInstance.actionClick.subscribe((e) => {
+                //     componentRef.instance.onAction(e);
+                // });
 
                 const res = await firstValueFrom(dialogRef.afterClosed());
                 if (!res) return;
-                await this.data.refreshCache("/role");
+                await this.data.refresh("/role");
                 this.adapter.refresh();
                 break;
             }
@@ -113,7 +116,7 @@ export class RolesListComponent implements OnInit {
                 if (!res) return;
                 await this.data.delete(`/role/${role._id}`);
                 this.snack.openSuccess("Role deleted!");
-                await this.data.refreshCache("/role");
+                await this.data.refresh("/role");
                 this.adapter.refresh();
                 break;
             }

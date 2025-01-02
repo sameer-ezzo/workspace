@@ -1,10 +1,13 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, Optional, ElementRef, signal, input, computed, inject } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ViewChild, OnDestroy, OnChanges, ElementRef, signal, input, computed, inject } from "@angular/core";
 import { Subject, Subscription } from "rxjs";
 import { AuthService } from "@upupa/auth";
 import { takeUntil } from "rxjs/operators";
+import { CommonModule, NgStyle } from "@angular/common";
 
 @Component({
+    standalone: true,
     selector: "image",
+    imports: [CommonModule, NgStyle],
     templateUrl: "./image.component.html",
     styleUrls: ["./image.component.scss"],
     host: {

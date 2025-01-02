@@ -1,12 +1,13 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
-import { MetaContentBaseModel } from "../metadata";
+
 import { ContentMetadataConfig } from "./page-metadata.strategy";
-import { MetadataUpdateStrategy, updateHeaderTag } from "../metadata.service";
+import { MetadataUpdateStrategy, appendTagToHead } from "../metadata.service";
 import { DOCUMENT } from "@angular/common";
+import { TwitterCardMetadata } from "../models";
 
 export const TWITTER_CARD_CONFIG = new InjectionToken<TwitterCardConfig>("TWITTER_CARD_CONFIG");
 
-export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCard>, "imageLoading">;
+export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCardMetadata>, "imageLoading">;
 
 export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
     imageLoading: (config: { src?: string; size?: string }) => {
@@ -17,35 +18,13 @@ export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
     },
 };
 
-export type TwitterCard = MetaContentBaseModel & {
-    card?: "summary" | "summary_large_image" | "app" | "player"; // Standard Twitter Card types
-    imageAlt?: string;
-    site?: string;
-    creator?: string;
-    appName?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
-    appId?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
-    appUrl?: {
-        iphone?: string;
-        ipad?: string;
-        googleplay?: string;
-    };
-};
-
 @Injectable()
 export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> {
     readonly config = inject(TWITTER_CARD_CONFIG);
 
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => updateHeaderTag(this.dom, name, content, "meta", "name");
+    private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "name");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const fallback = metaFallback.fallback as any;

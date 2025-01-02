@@ -1,26 +1,21 @@
-import {
-    Component,
-    OnInit,
-    Input,
-    Output,
-    EventEmitter,
-    SimpleChanges,
-} from '@angular/core';
-import { AuthService } from '@upupa/auth';
-import { DataService } from '@upupa/data';
-import { Subscription } from 'rxjs';
-import { emailPattern } from '../patterns';
-import { FormControl, NgModel } from '@angular/forms';
-import { SnackBarService } from '@upupa/dialog';
-
+import { Component, OnInit, Input, Output, EventEmitter, SimpleChanges } from "@angular/core";
+import { AuthService } from "@upupa/auth";
+import { DataService } from "@upupa/data";
+import { Subscription } from "rxjs";
+import { emailPattern } from "../patterns";
+import { FormControl, NgModel } from "@angular/forms";
+import { SnackBarService } from "@upupa/dialog";
+import { ChangeUserPropComponent } from "../change-user-prop/change-user-prop.component";
 
 @Component({
-    selector: 'change-email',
-    templateUrl: './change-email.component.html',
+    standalone: true,
+    selector: "change-email",
+    templateUrl: "./change-email.component.html",
+    imports: [ChangeUserPropComponent],
 })
 export class ChangeEmailComponent {
-    @Input() appearance = 'fill';
-    @Input() name = 'email';
+    @Input() appearance = "fill";
+    @Input() name = "email";
     @Output() changed = new EventEmitter<boolean>();
 
     @Input() emailPattern = emailPattern;
@@ -28,7 +23,7 @@ export class ChangeEmailComponent {
     control = new FormControl();
 
     user: any;
-    email = '';
+    email = "";
     readonly = true;
     disabled = false;
     sub: Subscription;
@@ -36,7 +31,7 @@ export class ChangeEmailComponent {
     constructor(
         public data: DataService,
         public auth: AuthService,
-        public snack: SnackBarService
+        public snack: SnackBarService,
     ) {}
     ngOnInit() {
         this.sub = this.auth.user$.subscribe(async (u) => {
@@ -47,9 +42,8 @@ export class ChangeEmailComponent {
         });
     }
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['email']) {
-            if (this.readonly === false)
-                this.email = changes['email'].previousValue;
+        if (changes["email"]) {
+            if (this.readonly === false) this.email = changes["email"].previousValue;
         }
     }
 
@@ -72,12 +66,12 @@ export class ChangeEmailComponent {
         } catch (error) {
             if (error.status === 500) {
                 const e = error.error;
-                if (e.message.indexOf('duplicate key') > -1) {
-                    this.snack.openFailed('duplicate-email');
-                    emailInput?.control?.setErrors({ 'duplicate-email': true });
+                if (e.message.indexOf("duplicate key") > -1) {
+                    this.snack.openFailed("duplicate-email");
+                    emailInput?.control?.setErrors({ "duplicate-email": true });
                 }
             } else {
-                this.snack.openFailed('not-saved');
+                this.snack.openFailed("not-saved");
                 console.error(error);
             }
         } finally {

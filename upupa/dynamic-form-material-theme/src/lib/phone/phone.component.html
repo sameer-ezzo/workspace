@@ -31,7 +31,6 @@
             #input
             type="tel"
             [placeholder]="placeholder()"
-            [value]="number()"
             [value]="value()"
             (input)="onNumberInputChange($event, $event.target?.['value'])"
             (blur)="markAsTouched()"

@@ -42,7 +42,8 @@ import { takeUntil } from 'rxjs/operators';
 
 @Directive({
   selector: '[popoverTriggerFor]',
-  exportAs: 'popoverTrigger'
+  exportAs: 'popoverTrigger',
+  standalone: true,
 })
 export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disable-line:directive-class-suffix
 
@@ -240,7 +241,7 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     openPopover(): void {
         if (!this._popoverOpen && !this._halt) {
             this._createOverlay().attach(this._portal);
-    
+
             this._subscribeToBackdrop();
             this._subscribeToDetachments();
 
@@ -344,7 +345,7 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     private _setPopoverOpened(): void {
       if (!this._popoverOpen) {
         this._popoverOpen = true;
-        
+
         this.popoverOpened.next();
         this.opened.emit()
       }
@@ -354,7 +355,7 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     private _setPopoverClosed(): void {
       if (this._popoverOpen) {
         this._popoverOpen = false;
-        
+
         this.popoverClosed.next();
         this.closed.emit();
       }

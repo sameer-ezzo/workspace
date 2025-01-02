@@ -1,15 +1,13 @@
-import { Injector } from "@angular/core";
+import { effect, Injector, runInInjectionContext } from "@angular/core";
 import { DataAdapter, DataAdapterDescriptor, DataAdapterType } from "./datasource/data.adapter";
-import { ITableDataSource } from "./datasource/model";
-import { HttpClient } from "@angular/common/http";
 import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
 import { ClientDataSource } from "./datasource/client.data.source";
-import { HttpServerDataSource } from "./datasource/http-server-data-source";
 import { ApiDataSource } from "./datasource/api.data.source";
+import { TableDataSource } from "./datasource/model";
 
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
-    let dataSource: ITableDataSource;
+    let dataSource: TableDataSource;
 
     switch (descriptor.type) {
         case "client":
@@ -17,17 +15,18 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
             break;
         case "server":
         case "api":
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.select ?? []);
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path);
             descriptor.keyProperty ??= "_id" as any;
             descriptor.displayProperty ??= "name" as any;
-            break;
-        case "http":
-            const http = injector.get(HttpClient);
-            dataSource = new HttpServerDataSource(http, descriptor["url"], descriptor["httpOptions"]);
             break;
         default:
             throw unreachable("data adapter type:", descriptor);
     }
 
-    return new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, descriptor.options);
+    let adapter: DataAdapter<T>;
+    runInInjectionContext(injector, () => {
+        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, descriptor.options);
+    });
+
+    return adapter!;
 }

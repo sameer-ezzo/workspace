@@ -16,11 +16,14 @@ import { combineLatest, firstValueFrom, Subject } from 'rxjs';
 import { defaultVerifyCodeField } from '../default-values';
 import { DataService } from '@upupa/data';
 import { PromptService, SnackBarService } from '@upupa/dialog';
+import { TitleCasePipe } from '@angular/common';
 
-@Component({
+@Component({ 
+    standalone: true,
     selector: 'verify',
     templateUrl: './verify.component.html',
     styleUrls: ['./verify.component.scss'],
+    imports: [TitleCasePipe],
 })
 export class VerifyComponent {
     name = input<'phone' | 'email' | 'name'>('email'); //what is to be verified (email,phone)

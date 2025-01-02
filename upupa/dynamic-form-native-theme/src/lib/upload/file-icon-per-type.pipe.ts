@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { FileInfo } from '@noah-ark/common';
 
 
-@Pipe({ name: 'fileIcon' })
+@Pipe({ name: 'fileIcon', standalone: true })
 export class FileIconPerTypePipe implements PipeTransform {
     transform(value: any, ...args: any[]): string {
         return this._getFileType(value);

@@ -8,7 +8,7 @@
         [lazyLoadData]="false"
         [tableName]="name()"
         [columns]="columns()"
-        [adapter]="adapter()"
+        [adapter]="adapter"
         (itemAdded)="updateValueFromDataSource()"
         (itemRemoved)="updateValueFromDataSource()"
         (itemUpdated)="updateValueFromDataSource()"
@@ -24,6 +24,7 @@
                 [content]="template.content"
                 [injector]="template.injector"
                 [className]="template.class"
+                (attached)="onTableHeaderAttached($event)"
             ></portal>
         } @else {
             <ng-content class="table-header"></ng-content>

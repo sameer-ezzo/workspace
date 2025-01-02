@@ -1,17 +1,22 @@
-import { Component, DestroyRef, ElementRef, HostListener, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, output, signal } from "@angular/core";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
-import { AuthService } from "@upupa/auth";
 import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT } from "@angular/common";
+import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
+
+import { MatError, MatFormFieldModule } from "@angular/material/form-field";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { FilesViewerComponent } from "../file-viewer/file-viewer.component";
 
 type ViewType = "list" | "grid";
 @Component({
+    standalone: true,
     selector: "file-select",
     templateUrl: "./file-select.component.html",
     styleUrls: ["./file-select.component.scss"],
@@ -22,11 +27,11 @@ type ViewType = "list" | "grid";
             multi: true,
         },
     ],
-    exportAs: "fileSelect",
     host: {
         "[class]": "view()",
         "[attr.name]": "name()",
     },
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, MatFormFieldModule, MatIconModule, FilesViewerComponent],
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");
@@ -82,8 +87,14 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.markAsTouched();
     }
 
+    isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    clipboard? = this.isBrowser ? inject(ClipboardService) : undefined;
+
     private readonly host = inject(ElementRef);
-    constructor(public readonly uploadClient: UploadClient, private readonly clipboard: ClipboardService, public readonly dialog: DialogService) {
+    constructor(
+        public readonly uploadClient: UploadClient,
+        public readonly dialog: DialogService,
+    ) {
         super();
 
         this.base.set(new URL(uploadClient.baseUrl).origin + "/");
@@ -91,15 +102,15 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         effect(
             () => {
                 const v = this.value();
-                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null } as ViewerExtendedFileVm)));
+                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
             },
-            { allowSignalWrites: true }
+            { allowSignalWrites: true },
         );
 
-        this.clipboard.paste$
+        this.clipboard?.paste$
             .pipe(
                 filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
-                takeUntilDestroyed(this.destroyRef)
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(async (event) => {
                 // make sure this component is focused or active
@@ -186,7 +197,11 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.viewModel.update((v) => [...v, ...newFiles]);
     }
 
+
+    events = output<FileEvent>();
+
     viewerEventsHandler(e: FileEvent) {
+        this.events.emit(e)
         if (e.name === "remove") {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()

@@ -1,23 +1,26 @@
 import { DOCUMENT } from "@angular/common";
 import { inject, Injectable, InjectionToken } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
-import { PageMetadata } from "./metadata";
-import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
 
-export function updateHeaderTag(
+import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
+import { PageMetadata } from "./models";
+
+export function appendTagToHead(
     dom: Document,
     name: string,
     content: string | undefined,
     tagType: "title" | "meta" | "link" = "meta",
-    key: "rel" | "property" | "name" = "name"
+    key: "rel" | "property" | "name" = "name",
+    shouldRemoveExisting = true,
 ): void {
     if (tagType === "title") {
         dom.title = content ?? "";
         return;
     }
-    dom.querySelector(`${tagType}[${key}="${name}"]`)?.remove();
+    if (shouldRemoveExisting) dom.querySelector(`${tagType}[${key}="${name}"]`)?.remove();
     if (!content) return;
     const metaTag = dom.createElement(tagType);
+
     metaTag.setAttribute(key, name);
     if (tagType === "meta") {
         metaTag.setAttribute("content", content);
@@ -48,7 +51,14 @@ export class MetadataService {
     async listenForRouteChanges() {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
-                const meta = this.extractMetadataForRoute(event.snapshot) ?? {};
+                //accumulate metadata from child route up to the root route
+                const navigation = this.router.getCurrentNavigation();
+
+                const meta = { ...this.extractMetadataForRoute(event.snapshot), ...navigation.extras["meta"] };
+                navigation.extras["meta"] = meta;
+
+                //Only update metadata for the root route
+                if (event.snapshot.root !== event.snapshot.parent) return;
 
                 //TITLE
                 if (!meta.title && event.snapshot.title) meta.title = event.snapshot.title;

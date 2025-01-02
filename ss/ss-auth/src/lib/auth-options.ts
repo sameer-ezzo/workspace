@@ -1,4 +1,4 @@
-import { __secret } from "@ss/common";
+import { _env_secret } from "@ss/common";
 import { userSchemaFactory } from "./user.schema";
 
 export class AuthOptions {
@@ -12,7 +12,7 @@ export class AuthOptions {
     forceEmailVerification = false;
     forcePhoneVerification = false;
     sendWelcomeEmail = true;
-    secret = __secret();
+    secret = _env_secret();
 
     externalAuth?: Record<string, Record<string, string>> = {};
 

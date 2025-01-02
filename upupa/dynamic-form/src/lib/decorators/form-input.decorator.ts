@@ -12,18 +12,33 @@ import { TableHeaderComponent } from "@upupa/table";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
 
-function reflectFormMetadata(targetClass: Class): DynamicFormOptionsMetaData {
-    // const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
-
-    const options = createFormMetadata();
-    // if (parent && parent.constructor) Object.assign(options, reflectFormMetadata(parent));
-
-    return Object.assign(options, Reflect.getMetadata(FORM_METADATA_KEY, targetClass) ?? {});
+function _mergeMetadata(base: DynamicFormOptionsMetaData, override: DynamicFormOptionsMetaData): DynamicFormOptionsMetaData {
+    return {
+        fields: { ...base.fields, ...override.fields },
+        targets: { ...base.targets, ...override.targets },
+        groups: { ...base.groups, ...override.groups },
+        actions: override.actions?.length ? override.actions : base.actions,
+        locales: override.locales ?? base.locales,
+        conditions: override.conditions ?? base.conditions,
+        name: override.name ?? base.name,
+        preventDirtyUnload: override.preventDirtyUnload ?? base.preventDirtyUnload,
+        recaptcha: override.recaptcha ?? base.recaptcha,
+        theme: override.theme ?? base.theme,
+    };
 }
 
-function defineFormMetadata(targetClass: any, value: DynamicFormOptionsMetaData) {
-    let targetOptions = reflectFormMetadata(targetClass);
-    Reflect.defineMetadata(FORM_METADATA_KEY, { ...targetOptions, ...value }, targetClass);
+function reflectFormMetadata(targetClass: Class): DynamicFormOptionsMetaData {
+    const options = createFormMetadata();
+    return Object.assign(options, Reflect.getOwnMetadata(FORM_METADATA_KEY, targetClass) ?? {});
+}
+
+function defineFormMetadata(targetClass: any, metadata: DynamicFormOptionsMetaData) {
+    //const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
+    const existingMetadata = reflectFormMetadata(targetClass);
+    const currentMetadata = _mergeMetadata(existingMetadata, metadata);
+    const parentClass = Object.getPrototypeOf(targetClass);
+    const _metadata = parentClass ? _mergeMetadata(reflectFormMetadata(parentClass), currentMetadata) : currentMetadata;
+    Reflect.defineMetadata(FORM_METADATA_KEY, _metadata, targetClass);
 }
 
 function createFormMetadata(): DynamicFormOptionsMetaData {
@@ -58,7 +73,7 @@ function inferFieldInputType(property: any, propertyKey: string, field: Partial<
     else return "text";
 }
 
-export function formInput(opt?: Partial<FieldOptions>) {
+export function formInput(opt?: Partial<FieldOptions>, group?: FieldGroup) {
     return (property: any, propertyKey: string) => {
         const formMetadata = reflectFormMetadata(property.constructor) ?? createFormMetadata();
 
@@ -71,6 +86,10 @@ export function formInput(opt?: Partial<FieldOptions>) {
         if (opt.group) formMetadata.groups[propertyKey] = typeof opt.group === "string" ? { name: opt.group, template: "div" } : opt.group;
 
         defineFormMetadata(property.constructor, formMetadata);
+
+        if (group) {
+            inputGroup(group)(property, propertyKey);
+        }
     };
 }
 
@@ -169,21 +188,25 @@ export function formInputArray(
     tableViewModel: Class,
     config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false },
     options?: Partial<FieldOptions>,
+    group?: FieldGroup,
 ) {
-    return formInput({
-        ...options,
-        input: "table",
-        inputs: {
-            viewModel: tableViewModel,
-            tableHeaderComponent: {
-                component: TableHeaderComponent,
-                inputs: {
-                    showSearch: config?.showSearch ?? false,
-                    inlineEndSlot: config?.inlineEndSlot ?? [],
+    return formInput(
+        {
+            ...options,
+            input: "table",
+            inputs: {
+                viewModel: tableViewModel,
+                tableHeaderComponent: {
+                    component: TableHeaderComponent,
+                    inputs: {
+                        showSearch: config?.showSearch ?? false,
+                        inlineEndSlot: config?.inlineEndSlot ?? [],
+                    },
                 },
             },
         },
-    });
+        group,
+    );
 }
 
 function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>): Field {
@@ -274,7 +297,9 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             if (field["rows"]) field.inputs["rows"] = field["rows"];
             if (field["maxRows"]) field.inputs["maxRows"] = field["maxRows"];
             if (field["minSize"]) field.inputs["minSize"] = field["minSize"];
-
+            break;
+        case "form":
+            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
             break;
 
         default:

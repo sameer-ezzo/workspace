@@ -1,5 +1,5 @@
-import { Component, forwardRef, inject, input, computed, model, ComponentRef, Injector } from "@angular/core";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors, NgControl } from "@angular/forms";
+import { Component, forwardRef, inject, input, computed, model, ComponentRef } from "@angular/core";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from "@angular/forms";
 import { PortalComponent } from "@upupa/common";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormService } from "./dynamic-form.service";
@@ -24,7 +24,7 @@ import { ComponentType } from "@angular/cdk/portal";
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (fieldRef().text()) {
-            <paragraph [text]="fieldRef().text()" [renderer]="fieldRef().inputs()?.['renderer'] || 'markdown'"></paragraph>
+            <paragraph [text]="fieldRef().text()" [renderer]="paragraphType()"></paragraph>
         }
         @if (component()) {
             <portal [component]="component()" [class]="fieldRef().class()" [inputs]="fieldRef().inputs()" [outputs]="fieldRef().outputs()" (attached)="onAttached($event)">
@@ -44,7 +44,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
 
     fieldRef = input.required<FieldRef>();
     component = computed<ComponentType<any>>(() => this.formService.getControl(this.fieldRef().field.input, this.theme()).component);
-
+    paragraphType = computed<any>(() => this.fieldRef().inputs()?.["renderer"] || "markdown");
     classList = computed(() => {
         const fieldRef = this.fieldRef();
         const hidden = fieldRef.hidden() === true;
@@ -90,10 +90,11 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
         this.childAccessors = componentRef.injector.get(NG_VALUE_ACCESSOR, [], { optional: true, self: true }) as ControlValueAccessor[];
         this.childValidators = componentRef.injector.get(NG_VALIDATORS, [], { optional: true, self: true }) as Validator[];
 
+        this.fieldRef().attachedComponentRef.set(componentRef);
+
         for (const childValidator of this.childValidators) {
             childValidator.registerOnValidatorChange?.(this._onValidatorChange);
         }
-        if (this.childValidators.length) this._onValidatorChange?.();
 
         //replay calls to value accessor
         for (const childAccessor of this.childAccessors) {

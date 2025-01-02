@@ -9,7 +9,7 @@
 <data-table
     #dataTable
     [lazyLoadData]="false"
-    [adapter]="adapter()"
+    [adapter]="adapter"
     [columns]="columns()"
     (itemAdded)="updateValueFromDataSource()"
     (itemRemoved)="updateValueFromDataSource()"
@@ -25,6 +25,7 @@
             [content]="template.content"
             [injector]="template.injector"
             [className]="template.class"
+            (attached)="onTableHeaderAttached($event)"
         ></portal>
     } @else {
         <ng-content class="table-header"></ng-content>

@@ -14,7 +14,7 @@
         [preventDirtyUnload]="_vm.preventDirtyUnload"
         [theme]="_vm.theme"
         [conditions]="_vm.conditions"
-        (submit)="onSubmit()"
+        (submitted)="onSubmit()"
         [control]="control()"
     ></dynamic-form>
     <!-- [formGroup]="control()" -->
@@ -27,7 +27,7 @@
                 <mat-btn
                     [buttonDescriptor]="descriptor"
                     [loading]="submitting()"
-                    (onClick)="dynForm.ngSubmit()"
+                    (onClick)="dynForm.submit()"
                     [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
                 >
                 </mat-btn>

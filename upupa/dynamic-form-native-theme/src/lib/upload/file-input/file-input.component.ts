@@ -7,14 +7,14 @@ import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { FileSelectComponent } from "../file-select/file-select.component";
 
 import { AuthService } from "@upupa/auth";
-import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
+import { FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { DataComponentBase } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { DOCUMENT } from "@angular/common";
 
-@Component({
+@Component({ standalone: true,
     selector: "file-input",
     templateUrl: "./file-input.component.html",
     styleUrls: ["./file-input.component.scss"],
@@ -51,7 +51,6 @@ export class FileInputComponent extends DataComponentBase {
         public uploadClient: UploadClient,
         public data: DataService,
         public auth: AuthService,
-        public clipboard: ClipboardService,
         public dialog: DialogService,
     ) {
         super();

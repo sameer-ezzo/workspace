@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges, inject, Injector } from "@angular/core";
+import { Component, forwardRef, input, computed, Type, viewChild, effect, signal, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
@@ -19,23 +19,23 @@ import { Class } from "@noah-ark/common";
         },
         {
             provide: DataAdapter,
-            useFactory: (self: ArrayInputComponent) => self.adapter(),
+            useFactory: (self: ArrayInputComponent) => self.adapter,
             deps: [ArrayInputComponent],
         },
     ],
 })
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
-    dataTableEl = viewChild(DataTableComponent);
+    injector = inject(Injector);
     label = input("");
     readonly dataSource = new ClientDataSource<T>([]);
-    readonly adapter = signal(new DataAdapter<T>(this.dataSource));
+    readonly adapter = new DataAdapter<T>(this.dataSource);
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             let template = null;
             if (c instanceof Type) template = { component: c };
             else template = c;
-            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter() }] });
+            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter }], parent: this.injector });
             return template;
         },
     });
@@ -47,11 +47,11 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     });
 
     updateValueFromDataSource() {
-        this.handleUserInput(this.dataSource.all);
+        this.handleUserInput(this.dataSource.all());
     }
     ngOnChanges(changes: SimpleChanges) {
         if (changes["value"]) {
-            this.dataSource.all = this.value();
+            this.dataSource.all.set(this.value());
         }
     }
     override writeValue(value: T[]): void {
@@ -60,6 +60,12 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
         if (value && !Array.isArray(value)) {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
-        this.dataSource.all = value;
+        this.dataSource.all.set(value);
+        this.adapter.refresh();
+    }
+
+    tableHeaderComponentRef: ComponentRef<any>;
+    onTableHeaderAttached({ componentRef }) {
+        this.tableHeaderComponentRef = componentRef;
     }
 }

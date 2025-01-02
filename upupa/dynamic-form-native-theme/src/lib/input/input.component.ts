@@ -5,6 +5,7 @@ import { InputDefaults } from "../defaults";
 import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
 
 @Component({
+    standalone: true,
     selector: "form-input-field",
     templateUrl: "./input.component.html",
     styleUrls: ["./input.component.css"],
@@ -14,7 +15,7 @@ import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-f
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => InputComponent),
             multi: true,
-        }
+        },
     ],
 })
 export class InputComponent extends InputBaseComponent {
@@ -28,4 +29,5 @@ export class InputComponent extends InputBaseComponent {
     label = input("");
     hint = input("");
     readonly = input(false);
+    autocomplete = input("");
 }

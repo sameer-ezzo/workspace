@@ -36,11 +36,12 @@ import {
   UpupaDialogActionContext,
 } from '@upupa/dialog';
 
-@Component({
+@Component({ standalone: true,
   selector: 'cp-data-list',
   templateUrl: './data-list.component.html',
   styleUrls: ['./data-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
 export class DataListFilterComponent implements AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
@@ -160,7 +161,7 @@ export class DataListFilterComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.dataListResolverResult) {
-      this.ds.refreshCache(this.dataListResolverResult.path);
+      this.ds.refresh(this.dataListResolverResult.path);
       this.dataListResolverResult.adapter.destroy();
     }
   }
@@ -338,7 +339,7 @@ export class DataListFilterComponent implements AfterViewInit, OnDestroy {
       const dpath = (
         this.dataListResolverResult.adapter.dataSource as ServerDataSource<any>
       ).path;
-      await this.ds.refreshCache(dpath);
+      await this.ds.refresh(dpath);
       this.dataListResolverResult.adapter.refresh();
     } else {
       this.dataListResolverResult.adapter.refresh();
@@ -372,7 +373,7 @@ export class DataListFilterComponent implements AfterViewInit, OnDestroy {
               console.error(err);
             }
           }
-          await this.ds.refreshCache(path.path);
+          await this.ds.refresh(path.path);
           this.dataListResolverResult.adapter.refresh();
         }
         break;

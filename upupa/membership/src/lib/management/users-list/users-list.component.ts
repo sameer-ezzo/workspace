@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { DataService, ApiDataSource, DataAdapter } from "@upupa/data";
 import { AuthService, User } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent, EventBus, toTitleCase } from "@upupa/common";
-import { ColumnsDescriptor } from "@upupa/table";
+import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
 import { UserFormComponent } from "../user-form/user-form.component";
 import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { defaultUserListActions, defaultUserListColumns, defaultUserListHeaderActions, UsersManagementOptions } from "../types";
@@ -13,13 +13,17 @@ import { EditUserRolesComponent } from "../edit-user-roles/edit-user-roles.compo
 import { Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 import { DOCUMENT } from "@angular/common";
+import { MatIconModule } from "@angular/material/icon";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 type ModelType = { _id: string; email: string } & Partial<User>;
 
 @Component({
+    standalone: true,
     selector: "users-list",
     templateUrl: "./users-list.component.html",
     styleUrls: ["./users-list.component.scss"],
+    imports: [MatIconModule, DataTableComponent, MatBtnComponent, TableHeaderComponent],
 })
 export class UsersListComponent implements OnChanges, AfterViewInit {
     focusedUser: any;
@@ -71,12 +75,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
 
         this.userSelect = [...new Set(["_id", "email", ...Object.getOwnPropertyNames(this.columns ?? {})])];
 
-        this.usersDataSource = new ApiDataSource<ModelType>(this.data, "/user", this.userSelect);
-        if (this.adapter) {
-            this.adapter.destroy();
-            this.adapter = null;
-        }
-        if (this.adapter) this.adapter.destroy();
+        this.usersDataSource = new ApiDataSource<ModelType>(this.data, "/user?select=" + this.userSelect.join(","));
 
         this.adapter = new DataAdapter(this.usersDataSource, "_id", "email", "_id", null, {
             page: { pageIndex: 0, pageSize: 100 },
@@ -139,18 +138,23 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                     }
                 }
 
-                const dialogRef = this.dialog.openDialog(UserFormComponent, {
-                    title: toTitleCase(`${e.action.name} user`),
-                    inputs: {
-                        user: fullUser,
-                        mode,
-                        options: formOptions, // this should be FormOptions only
+                const dialogRef = this.dialog.open(
+                    {
+                        component: UserFormComponent,
+                        inputs: {
+                            // user: fullUser,
+                            //mode,
+                            // options: formOptions, // this should be FormOptions only
+                        },
                     },
-                });
+                    {
+                        title: toTitleCase(`${e.action.name} user`),
+                    },
+                );
                 const componentRef = await firstValueFrom(dialogRef.afterAttached());
-                dialogRef.componentInstance.actionClick.subscribe((e) => {
-                    componentRef.instance.onAction(e);
-                });
+                // dialogRef.componentInstance.actionClick.subscribe((e) => {
+                //     componentRef.instance.onAction(e);
+                // });
 
                 task = firstValueFrom(dialogRef.afterClosed());
                 break;
@@ -158,10 +162,12 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             case "change-user-roles": {
                 task = firstValueFrom(
                     this.dialog
-                        .openDialog(EditUserRolesComponent, {
-                            title: "Change User Roles",
-                            inputs: { user: users[0] },
-                        })
+                        .open(
+                            { component: EditUserRolesComponent, inputs: { user: users[0] } },
+                            {
+                                title: "Change User Roles",
+                            },
+                        )
                         .afterClosed(),
                 );
                 break;
@@ -169,10 +175,12 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             case "reset":
                 task = firstValueFrom(
                     this.dialog
-                        .openDialog(AdminUserPasswordRestComponent, {
-                            title: "Reset Password",
-                            inputs: { user: users[0] },
-                        })
+                        .open(
+                            { component: AdminUserPasswordRestComponent, inputs: { user: users[0] } },
+                            {
+                                title: "Reset Password",
+                            },
+                        )
                         .afterClosed(),
                 );
                 break;
@@ -187,7 +195,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                 ) {
                     await this.banUser(user._id, !user.disabled);
                     this.snack.openSuccess("User banned");
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
                 break;
@@ -202,7 +210,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
                 if (await this.confirm.openWarning(d)) {
                     await this.data.delete(`/user/${user._id}`);
                     this.snack.openSuccess("User deleted");
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
                 break;
@@ -217,7 +225,7 @@ export class UsersListComponent implements OnChanges, AfterViewInit {
             if (task) {
                 if (await task) {
                     this.snack.openSuccess();
-                    await this.data.refreshCache(`/user`);
+                    await this.data.refresh(`/user`);
                     await this.adapter.refresh();
                 }
             }

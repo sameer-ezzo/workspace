@@ -1,19 +1,22 @@
-import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, DestroyRef } from "@angular/core";
+import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, DestroyRef, PLATFORM_ID } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ThemePalette } from "@angular/material/core";
 import { DataService } from "@upupa/data";
 import { InputBaseComponent } from "@upupa/common";
 
 import { AuthService } from "@upupa/auth";
-import { ClipboardService, openFileDialog } from "@upupa/upload";
+import { openFileDialog } from "@upupa/upload";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { MatError } from "@angular/material/form-field";
 
 @Component({
+    standalone: true,
     selector: "local-file-input",
     templateUrl: "./local-file-input.component.html",
     styleUrls: ["./local-file-input.component.scss"],
+    imports: [MatError],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -44,9 +47,12 @@ export class LocalFileInputComponent extends InputBaseComponent implements OnCha
     uploadingProgress: number | null = null;
     access_token = null;
 
-    constructor(public data: DataService, private auth: AuthService, public clipboard: ClipboardService, public dialog: DialogService) {
-        super();
-    }
+    platform = inject(PLATFORM_ID);
+    isBrowser = isPlatformBrowser(this.platform);
+
+    data = inject(DataService);
+    auth = inject(AuthService);
+    dialog = inject(DialogService);
 
     ngOnChanges(changes: SimpleChanges): void {
         if (this.includeAccess() === true) {

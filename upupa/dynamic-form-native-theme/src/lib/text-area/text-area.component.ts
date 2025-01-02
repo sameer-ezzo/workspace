@@ -1,5 +1,5 @@
 import { Component, forwardRef, input } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { InputDefaults } from "../defaults";
 import { InputBaseComponent } from "@upupa/common";
 
@@ -7,6 +7,7 @@ const _defaultRows = 3;
 const _defaultMaxRows = 5;
 
 @Component({
+    standalone: true,
     selector: "form-text-area",
     templateUrl: "./text-area.component.html",
     styleUrls: ["./text-area.component.css"],
@@ -17,6 +18,7 @@ const _defaultMaxRows = 5;
             multi: true,
         },
     ],
+    imports: [FormsModule, ReactiveFormsModule],
 })
 export class TextAreaComponent extends InputBaseComponent<string> {
     inlineError = true;

@@ -13,7 +13,7 @@ import { DOCUMENT } from "@angular/common";
 
 const strgKey = "pref_paymentM";
 
-@Component({
+@Component({ standalone: true,
     selector: "payment-method",
     templateUrl: "./payment-method.component.html",
     styleUrls: ["./payment-method.component.scss"],

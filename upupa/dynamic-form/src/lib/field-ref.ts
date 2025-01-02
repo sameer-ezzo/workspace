@@ -3,13 +3,17 @@ import { FormGroup, FormControl } from "@angular/forms";
 import { Field } from "./types";
 import { createDataAdapter } from "@upupa/data";
 import { cloneDeep } from "lodash";
+import { DynamicComponent } from "@upupa/common";
 
-export class FieldRef {
+export class FieldRef<TCom = any> {
     readonly hidden!: WritableSignal<boolean>;
     readonly text!: WritableSignal<string | undefined>;
     readonly class!: WritableSignal<string | undefined>;
-    readonly inputs!: WritableSignal<any>;
-    readonly outputs!: WritableSignal<Record<string, (source: ComponentRef<any>, e: any) => void>>;
+    readonly inputs!: WritableSignal<DynamicComponent<TCom>["inputs"]>;
+    readonly outputs!: WritableSignal<DynamicComponent<TCom>["outputs"]>;
+    readonly models = new Map<string, ComponentRef<TCom>>();
+    readonly attachedComponentRef = signal<ComponentRef<TCom> | undefined>(undefined);
+
     constructor(
         readonly injector: Injector,
         readonly name: string,
@@ -25,7 +29,7 @@ export class FieldRef {
         this.outputs = signal(field.outputs ?? {});
     }
 
-    _handleInputs(_inputs: Record<string, any>) {
+    _handleInputs(_inputs: DynamicComponent<TCom>["inputs"]) {
         const inputs = cloneDeep(_inputs);
         if (inputs["adapter"] || !inputs["_adapter"]) return inputs; //if adapter is passed don't do anything
         const adapter = createDataAdapter(inputs["_adapter"], this.injector);

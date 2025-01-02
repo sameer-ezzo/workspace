@@ -77,7 +77,7 @@ export class PromptComponent implements DialogPortal<PromptComponent>, OnInit {
                     const action = { ...a, disabled: false };
                     if (a.type === "submit") action.disabled = this.valueFormControl.invalid;
                     return action;
-                })
+                }),
             );
         });
     }

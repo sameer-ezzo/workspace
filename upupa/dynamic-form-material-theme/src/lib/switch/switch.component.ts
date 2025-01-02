@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, effect, forwardRef, input, viewChild } from '@angular/core';
-import { FormControlDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatError, MatHint } from '@angular/material/form-field';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { ErrorsDirective, UtilsModule } from '@upupa/common';
-import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-theme';
+import { ChangeDetectionStrategy, Component, effect, forwardRef, input, viewChild } from "@angular/core";
+import { FormControlDirective, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { MatCheckbox } from "@angular/material/checkbox";
+import { MatError, MatHint } from "@angular/material/form-field";
+import { MatSlideToggle } from "@angular/material/slide-toggle";
+import { ErrorsDirective, UtilsModule } from "@upupa/common";
+import { ParagraphComponent, SwitchComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    selector: 'mat-form-switch-input',
-    templateUrl: './switch.component.html',
-    styleUrls: ['./switch.component.scss'],
+    selector: "mat-form-switch-input",
+    templateUrl: "./switch.component.html",
+    styleUrls: ["./switch.component.scss"],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -17,17 +17,17 @@ import { ParagraphComponent, SwitchComponent } from '@upupa/dynamic-form-native-
             multi: true,
         },
     ],
-    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule,ErrorsDirective],
+    imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule, ErrorsDirective],
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
-        '[class]': 'template()',
+        "[class]": "template()",
     },
 })
 export class MatSwitchComponent extends SwitchComponent {
-    class = '';
-    inputEl = viewChild.required<MatSlideToggle | MatCheckbox>('_inputElement');
-    override template = input<'checkbox' | 'toggle'>('checkbox');
+    class = "";
+    inputEl = viewChild.required<MatSlideToggle | MatCheckbox>("_inputElement");
+    override template = input<"checkbox" | "toggle">("checkbox");
 
     constructor() {
         super();

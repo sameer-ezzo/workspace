@@ -1,6 +1,6 @@
 import { RouteFeature } from "../routing/route-feature";
 import { ResolverRequest, contentResolver } from "../routing/route-resolver";
-import { PageMetadata } from "./metadata";
+import { PageMetadata } from "./models";
 
 /**
  * provide content the page as route.data = {content}.
@@ -21,10 +21,14 @@ export function withContent<TContent>(content: TContent): RouteFeature {
  * Also, this content object is passed to the meta function to help generate metadata derived from content.
  * @param contentFn dynamic content to be provided.
  */
-export function withResolveContent(url: (resolveRequest: ResolverRequest) => string, options?: { headers?: { [header: string]: string } }): RouteFeature {
+export function withResolveContent(
+    url: (resolveRequest: ResolverRequest) => string,
+    map = (response) => response,
+    options?: { headers?: { [header: string]: string } },
+): RouteFeature {
     return {
         name: "withResolveContent",
-        modify: () => ({ resolve: contentResolver(url, options) }),
+        modify: () => ({ resolve: contentResolver(url, map, options) }),
     };
 }
 
@@ -33,13 +37,13 @@ export function withResolveContent(url: (resolveRequest: ResolverRequest) => str
  * provide metadata for the page for meta data service to update the page header
  * @param pageData static metadata for the page
  */
-export function withPageMetadata(pageData: PageMetadata): RouteFeature;
+export function withPageMetadata(pageData: Partial<PageMetadata>): RouteFeature;
 /**
  * provide metadata for the page for meta data service to update the page header
  * @param pageDataFn dynamic metadata for the page
  */
-export function withPageMetadata<TContent = unknown>(pageDataFn: (content?: TContent) => PageMetadata): RouteFeature;
-export function withPageMetadata<TContent = unknown>(pageData: PageMetadata | ((content?: TContent) => PageMetadata)): RouteFeature {
+export function withPageMetadata<TContent = unknown>(pageDataFn: (content?: TContent) => Partial<PageMetadata>): RouteFeature;
+export function withPageMetadata<TContent = unknown>(pageData: Partial<PageMetadata> | ((content?: TContent) => Partial<PageMetadata>)): RouteFeature {
     return {
         name: "withPageMetadata",
         modify: () => {

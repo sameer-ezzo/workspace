@@ -1,10 +1,12 @@
 import { Component, inject, Injector, input, runInInjectionContext } from "@angular/core";
 import { Class } from "@noah-ark/common";
-import { ActionDescriptor } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent } from "@upupa/common";
 import { DataAdapter } from "@upupa/data";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { ITableCellTemplate } from "@upupa/table";
-import { editFormDialog } from "../helpers";
+import { openFormDialog, waitForOutput } from "../helpers";
+import { DialogConfig, DialogRef } from "@upupa/dialog";
+import { firstValueFrom } from "rxjs";
 
 @Component({
     standalone: true,
@@ -21,13 +23,45 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
     btn = input<ActionDescriptor>({ name: "edit", icon: "edit", variant: "icon" });
     formViewModel = input<Class>();
 
+    updateAdapter = input<boolean>(false);
+
     async edit() {
         // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
-            const result = await editFormDialog(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true });
-            this.adapter?.put(this.item(), result.submitResult);
-            this.adapter?.refresh(true);
+            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true, injector: this.injector });
+            const result = await firstValueFrom(dialogRef.afterClosed());
+            if (!result) return;
+            const { submitResult } = result;
+            if (result && this.updateAdapter()) {
+                await this.adapter.put(this.item(), submitResult);
+                this.adapter.refresh();
+            }
         });
     }
+}
+
+export function editButton<T = unknown>(
+    formViewModel: Class,
+    options?: {
+        descriptor?: Partial<ActionDescriptor>;
+        dialogOptions?: Partial<DialogConfig>;
+        updateAdapter?: boolean;
+    },
+): DynamicComponent {
+    options ??= {};
+    const defaultEditDescriptor: Partial<ActionDescriptor> = {
+        text: "Edit",
+        icon: "edit",
+        variant: "icon",
+        color: "accent",
+        type: "button",
+    };
+    const btn = { ...defaultEditDescriptor, ...options.descriptor };
+    const dialogOptions = { title: "Edit", ...options?.dialogOptions };
+
+    return {
+        component: EditButton<any, T>,
+        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options?.updateAdapter },
+    } as DynamicComponent<EditButton>;
 }

@@ -4,7 +4,6 @@ import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http"
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { ErrorsDirective, UtilsModule } from "@upupa/common";
-import { TranslationModule } from "@upupa/language";
 import { DataTableModule } from "@upupa/table";
 import { UploadModule } from "@upupa/upload";
 import { AddressComponent } from "./address-edit/address.component";
@@ -89,7 +88,22 @@ export const DF_NATIVE_THEME_INPUTS = {
     address: { component: AddressComponent },
 };
 
-const declarations = [
+const declarations = [];
+
+const imports = [
+    ...materialModules,
+    ParagraphComponent,
+    ArrayInputComponent,
+    UtilsModule,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    UploadModule,
+    DataTableModule,
+    ScrollingModule,
+    MatBtnComponent,
+    ErrorsDirective,
+
     PhoneInputComponent,
     TextAreaComponent,
     DateInputComponent,
@@ -117,22 +131,6 @@ const declarations = [
     HiddenComponent,
     RecaptchaComponent,
     RecaptchaDirective,
-];
-
-const imports = [
-    ...materialModules,
-    ParagraphComponent,
-    ArrayInputComponent,
-    UtilsModule,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    UploadModule,
-    TranslationModule,
-    DataTableModule,
-    ScrollingModule,
-    MatBtnComponent,
-    ErrorsDirective
 ];
 
 @NgModule({

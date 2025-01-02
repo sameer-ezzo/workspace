@@ -8,7 +8,7 @@ const addProtocolToURL = (url) => {
     return url;
 };
 
-@Pipe({ name: 'html' })
+@Pipe({ name: 'html' ,standalone: true})
 export class HtmlPipe implements PipeTransform {
     constructor(private _sanitizer: DomSanitizer) {}
 

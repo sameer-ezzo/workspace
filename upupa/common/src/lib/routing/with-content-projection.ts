@@ -11,7 +11,7 @@ import { createContentNodes } from "./create-content-nodes";
  * @param options
  * @returns
  */
-export function provideComponent(
+export function initializeComponent(
     component: Type<any>,
     options: {
         environmentInjector: EnvironmentInjector;
@@ -60,8 +60,8 @@ export function createContentNode(content: ContentNode, environmentInjector: Env
 
     // create component (and set inputs if necessary)
     let componentRef: ComponentRef<any>;
-    if ("component" in content) componentRef = provideComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
-    else componentRef = provideComponent(content, { environmentInjector });
+    if ("component" in content) componentRef = initializeComponent(content.component, { environmentInjector, inputs: content.inputs, projectableNodes: content.content });
+    else componentRef = initializeComponent(content, { environmentInjector });
 
     return componentRef.location.nativeElement;
 }

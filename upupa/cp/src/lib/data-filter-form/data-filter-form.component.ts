@@ -1,5 +1,5 @@
 import { Component, ViewChild, Input, ChangeDetectionStrategy, Output, EventEmitter } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, Field, Fieldset, FormScheme } from "@upupa/dynamic-form";
+import { DynamicFormComponent, DynamicFormModule, Field, FormScheme } from "@upupa/dynamic-form";
 import { InputBaseComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
 import { ReplaySubject, debounceTime } from "rxjs";
@@ -60,7 +60,7 @@ export function formSchemeToDynamicFormFilter(scheme: FormScheme): ToFilterDescr
 
     function fromField(field: Field, value: any, path: string): { [path: string]: string } {
         if (value === null || value === undefined) return { [path]: undefined };
-        const { _adapter, adapter } = field.inputs;
+        const { _adapter, adapter } = field.inputs as any;
         let p = path;
         let v = value;
         const res = { [p]: v };
