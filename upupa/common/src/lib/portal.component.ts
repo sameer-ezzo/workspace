@@ -14,8 +14,9 @@ import {
     input,
     output,
     EffectRef,
-    ModelSignal,
     runInInjectionContext,
+    effect,
+    signal,
 } from "@angular/core";
 import { Subscription } from "rxjs";
 import { createContentNodes } from "./routing/create-content-nodes";
@@ -43,7 +44,7 @@ export class PortalComponent<TCom = any> {
     class = input<string>();
     inputs = input<DynamicComponent<TCom>["inputs"]>();
     outputs = input<DynamicComponent<TCom>["outputs"]>();
-    models = input<DynamicComponent<TCom>["models"]>();
+    bindings = input<DynamicComponent<TCom>["bindings"]>();
     content = input<ContentNode[][]>(undefined);
     injector = input<Injector>();
     _injector = inject(Injector);
@@ -51,7 +52,7 @@ export class PortalComponent<TCom = any> {
     attached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
     detached = output<{ componentRef: ComponentRef<any>; componentMirror: ComponentMirror<any> }>();
 
-    _modelEffectRefs: EffectRef[] = [];
+    _bindingRefs: EffectRef[] = [];
     _outputSubs: Subscription[] = [];
 
     ngOnChanges(changes: SimpleChanges) {
@@ -67,7 +68,7 @@ export class PortalComponent<TCom = any> {
             outputs: this.outputs() ?? _template?.outputs,
             class: this.class() ?? _template?.class,
             injector: this.injector() ?? _template?.injector ?? this._injector,
-            models: this.models() ?? _template?.models,
+            bindings: this.bindings() ?? _template?.bindings,
         };
 
         if (changes["component"] || changes["content"] || changes["template"]) {
@@ -90,26 +91,43 @@ export class PortalComponent<TCom = any> {
             this.setInputs(template.inputs ?? {});
         }
 
-        if (changes["models"] && !changes["models"].firstChange) {
-            this.subscribeToModel(template.models ?? {});
+        if (changes["bindings"] && !changes["bindings"].firstChange) {
+            this.applyBindings(template.bindings ?? {});
         }
     }
 
-    subscribeToModel(models: DynamicComponent["models"]) {
-        this.unsubscribeModel();
+    applyBindings(bindings: DynamicComponent["bindings"]) {
+        this.removeBindings();
         runInInjectionContext(this.injector(), () => {
-            for (const [key, model] of Object.entries(models ?? {})) {
-                const componentModel = this.componentRef.instance[key] as ModelSignal<any>;
-                if ("set" in componentModel) {
-                    const effectRef = signalLink(model, componentModel);
-                    this._modelEffectRefs.push(effectRef);
+            for (const [key, _externalSignal] of Object.entries(bindings ?? {})) {
+                const internalSignal = this.componentRef.instance[key];
+                const externalSignal = () => _externalSignal.call(this.componentRef.instance);
+                if ("set" in internalSignal) {
+                    // model signal
+
+                    const effectRef = signalLink(externalSignal, internalSignal);
+                    this._bindingRefs.push(effectRef);
+                } else {
+                    // input signal
+                    this.componentRef.setInput(key, externalSignal());
+                    const inputWrapper = signal(internalSignal());
+                    const ref = effect(() => {
+                        const value = inputWrapper();
+                        this.componentRef.setInput(key, value);
+                    });
+                    const effectRef = signalLink(
+                        () => externalSignal.call(this.componentRef.instance),
+                        () => inputWrapper.call(this.componentRef.instance),
+                    );
+                    this._bindingRefs.push(effectRef);
+                    this._bindingRefs.push(ref);
                 }
             }
         });
     }
 
-    unsubscribeModel() {
-        for (const effectRef of this._modelEffectRefs) {
+    removeBindings() {
+        for (const effectRef of this._bindingRefs) {
             effectRef.destroy();
         }
     }
@@ -130,7 +148,7 @@ export class PortalComponent<TCom = any> {
 
         this.subscribeToOutputs(template.outputs ?? {});
         this.setInputs(template.inputs ?? {});
-        this.subscribeToModel(template.models ?? {});
+        // this.applyBindings(template.bindings ?? {});
 
         this.attached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }

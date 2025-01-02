@@ -1,4 +1,4 @@
-import { Type, Injector, ComponentRef, InputSignal, OutputRef, ModelSignal, WritableSignal } from "@angular/core";
+import { Type, Injector, ComponentRef, InputSignal, OutputRef, Signal, ModelSignal } from "@angular/core";
 import { ContentNode } from "./routing/content-node";
 
 export type DynamicTemplate<C = any> = Type<C> | DynamicComponent<C>;
@@ -7,9 +7,7 @@ type ComponentInput<T> = InputSignal<T>;
 type ComponentOutput<T> = OutputRef<T>;
 
 export type ComponentInputs<TCom> = { [K in keyof TCom as TCom[K] extends ComponentInput<any> ? K : never]: TCom[K] extends ComponentInput<infer TInput> ? TInput : never };
-export type ComponentModels<TCom> = {
-    [K in keyof TCom as TCom[K] extends ModelSignal<any> ? K : never]: TCom[K] extends ModelSignal<infer TInput> ? WritableSignal<TInput> : never;
-};
+export type ComponentInputSignals<TCom> = { [K in keyof TCom as TCom[K] extends ComponentInput<any> ? K : never]: TCom[K] extends ComponentInput<infer TInput> ? () => Signal<TInput> : never };
 export type ComponentOutputHandler<TCom, TEvent = any> = (source: ComponentRef<TCom>, e: TEvent) => void | Promise<void>;
 export type ComponentOutputs<TCom> = {
     [K in keyof TCom as TCom[K] extends ComponentOutput<any> ? K : never]: TCom[K] extends ComponentOutput<infer TOutput> ? TOutput : never;
@@ -39,7 +37,7 @@ export type DynamicComponent<TCom = any> = {
     /**
      * @description a record object of models to bind to component models
      */
-    models?: Partial<ComponentModels<TCom>>;
+    bindings?: Partial<ComponentInputSignals<TCom>>;
 };
 
 export function component(template: DynamicTemplate): DynamicComponent {

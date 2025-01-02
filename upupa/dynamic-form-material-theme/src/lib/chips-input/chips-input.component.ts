@@ -10,6 +10,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { NormalizedItem } from "@upupa/data";
 
 @Component({
     standalone: true,
@@ -38,12 +39,13 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
     separatorKeysCodes = input([ENTER, COMMA]);
 
     canAdd = input(true);
-    adding = output<any>({ alias: "add" });
+    adding = output<NormalizedItem<T>>({ alias: "add" });
     autoComplete = input(true);
 
-    async add(value: string) {
+    async add(value: any) {
         if (!value || !this.canAdd()) return;
         const adapter = this.adapter();
+
         const valueProperty = adapter.valueProperty;
         const chip = valueProperty
             ? Array.isArray(valueProperty)

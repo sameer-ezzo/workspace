@@ -1,10 +1,10 @@
 import { KeyValue } from "@angular/common";
-import { Component, input, Input, InputSignal } from "@angular/core";
+import { Component, computed, input, Input, InputSignal, SimpleChanges } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";
 import { DynamicPipe } from "./dynamic.pipe";
-import { RouterModule } from "@angular/router";
+import { ActivatedRoute, Params, QueryParamsHandling, RouterLink, RouterModule, UrlTree } from "@angular/router";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
     value?: InputSignal<TValue>;
@@ -47,6 +47,51 @@ export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href
     };
 }
 
+export type LinkRouterCellInputs = {
+    target?: string | undefined;
+    queryParams?: Params | null | undefined;
+    fragment?: string | undefined;
+    queryParamsHandling?: QueryParamsHandling | null | undefined;
+    state?: { [k: string]: any } | undefined;
+    info?: unknown;
+    relativeTo?: ActivatedRoute | null | undefined;
+    preserveFragment: boolean;
+    skipLocationChange: boolean;
+    replaceUrl: boolean;
+    routerLink: string | any[] | UrlTree | null | undefined;
+    routerLinkActive: string | string[] | undefined;
+    routerLinkActiveOptions?: { exact: boolean; ignoreQueryParams: boolean } | undefined;
+};
+@Component({
+    standalone: true,
+    imports: [RouterModule],
+
+    template: `
+        <a
+            [routerLink]="routerLink().routerLink"
+            [target]="routerLink().target"
+            [queryParams]="routerLink().queryParams"
+            [fragment]="routerLink().fragment"
+            [queryParamsHandling]="routerLink().queryParamsHandling"
+            [state]="routerLink().state"
+            [info]="routerLink().info"
+            [relativeTo]="routerLink().relativeTo"
+            [preserveFragment]="routerLink().preserveFragment"
+            [skipLocationChange]="routerLink().skipLocationChange"
+            [replaceUrl]="routerLink().replaceUrl"
+            [routerLinkActive]="routerLink().routerLinkActive ?? ''"
+            [routerLinkActiveOptions]="routerLink().routerLinkActiveOptions ?? { exact: true, ignoreQueryParams: true }"
+            >{{ text() }}</a
+        >
+    `,
+})
+export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTemplate<TValue> {
+    textFn = input<(ref: RouterLinkCellTemplate) => string>();
+    routerLinkFn = input<(ref: RouterLinkCellTemplate) => LinkRouterCellInputs>();
+    text = computed(() => (this.textFn ? this.textFn()(this) : this.value()) ?? "");
+    routerLink = computed<LinkRouterCellInputs>(() => (this.routerLinkFn()(this) ?? {}) as LinkRouterCellInputs);
+}
+
 @Component({
     standalone: true,
     imports: [RouterModule],
@@ -63,6 +108,9 @@ export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<
     textProp = input.required<keyof TValue>();
     href = input<(value: TValue) => string>();
     value = input<TValue>();
+    ngOnChanges(changes: SimpleChanges) {
+        console.log(changes);
+    }
 }
 
 export function nameCell() {

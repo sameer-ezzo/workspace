@@ -1,4 +1,5 @@
-import { inject, signal, effect, WritableSignal, EffectRef } from "@angular/core";
+import { inject, signal, effect, WritableSignal, EffectRef, Signal } from "@angular/core";
+import { SIGNAL } from "@angular/core/primitives/signals";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { map } from "rxjs";
@@ -116,18 +117,26 @@ export function queryParam(paramName: string) {
     return result;
 }
 
-export function signalLink<T = unknown>(main: WritableSignal<T>, branch: WritableSignal<T>): EffectRef {
+type MaybeWritableSignal<T> = Signal<T> | WritableSignal<T>;
+
+export function signalLink<T = unknown>(_main: MaybeWritableSignal<T>, _branch: MaybeWritableSignal<T>, options?: { mainToBranch: boolean; branchToMain: boolean }): EffectRef;
+export function signalLink<T = unknown>(_main: () => MaybeWritableSignal<T>, _branch: () => MaybeWritableSignal<T>, options?: { mainToBranch: boolean; branchToMain: boolean }): EffectRef;
+export function signalLink<T = unknown>(_main: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>), _branch: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>), options = { mainToBranch: true, branchToMain: true }): EffectRef {
+    const main = SIGNAL in _main ? _main : _main();
+    const branch = SIGNAL in _branch ? _branch : _branch();
+
     //order of effects matters so fill the derived signal first then bypass first write on base signal
-    const ref1 = effect(() => branch.set(main()), { allowSignalWrites: true });
-    const ref2 = effect(() => main.set(branch()), { allowSignalWrites: true });
+    const ref1 = options.mainToBranch && "set" in branch ? effect(() => branch.set(main()), { allowSignalWrites: true }) : undefined;
+    const ref2 = options.branchToMain && "set" in main ? effect(() => main.set(branch()), { allowSignalWrites: true }) : undefined;
 
     return {
         destroy() {
-            ref1.destroy();
-            ref2.destroy();
+            ref1?.destroy();
+            ref2?.destroy();
         },
     };
 }
+
 export function signalBranch<T = unknown>(main: WritableSignal<T>) {
     const branch = signal(main());
     signalLink(main, branch);

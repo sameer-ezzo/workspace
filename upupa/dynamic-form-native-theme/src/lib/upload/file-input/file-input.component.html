@@ -1,7 +1,7 @@
 <!-- <div (blur)="control?.markAsTouched()">
     <mat-label *ngIf="label">{{label }}</mat-label>
     <ng-container *ngIf="dataAdapter | async as adap">
-        <file-viewer [value]="adap.normalized$ | async" (action)="onAction($event)" [menuActions]="actions" [view]="'list'" [base]="base" [includeAccess]="includeAccess"></file-viewer>
+        <file-viewer [value]="adap.normalized()" (action)="onAction($event)" [menuActions]="actions" [view]="'list'" [base]="base" [includeAccess]="includeAccess"></file-viewer>
     </ng-container>
 
     <div [class.ng-dirty]="control.dirty" style="display: flex; align-items: center; margin-bottom: 1rem;">

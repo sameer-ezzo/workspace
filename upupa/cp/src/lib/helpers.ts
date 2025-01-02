@@ -81,7 +81,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
             ...formActions.map((descriptor) =>
                 provideComponent({
                     component: MatBtnComponent,
-                    inputs: { descriptor },
+                    inputs: { buttonDescriptor: descriptor },
                     outputs: {
                         onClick: async () => {
                             if (descriptor.type === "submit") {

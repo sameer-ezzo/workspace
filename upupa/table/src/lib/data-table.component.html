@@ -74,6 +74,8 @@
                                 "
                                 [injector]="getRowInjector(element)"
                                 [outputs]="template['outputs']"
+                                [bindings]="template['bindings']"
+                                [class]="template['class']"
                             ></portal>
                         } @empty {
                             <cell-template [value]="element.item | jpointer: column.key" [item]="element" [element]="element.item" [column]="column"></cell-template>

@@ -13,7 +13,7 @@ import { injectFormViewModel } from "../data-form-with-view-model/data-form-with
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (onClick)="create()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (onClick)="create()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
