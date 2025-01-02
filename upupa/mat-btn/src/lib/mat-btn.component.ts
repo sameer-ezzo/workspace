@@ -17,19 +17,19 @@ export class MatBtnComponent {
     onClick = output<ActionEvent>();
 
     loading = input(false);
-    descriptor = input.required<ActionDescriptor>();
+    buttonDescriptor = input.required<ActionDescriptor>();
     disabled = input(false);
-    isDisabled = computed(() => this.disabled() || this.descriptor().disabled);
-    variant = computed(() => this.descriptor().variant ?? "button");
+    isDisabled = computed(() => this.disabled() || this.buttonDescriptor().disabled);
+    variant = computed(() => this.buttonDescriptor().variant ?? "button");
     color = computed(() => {
         const validColors = ["primary", "accent", "warn"];
-        const descriptorColor = this.descriptor().color ?? "";
+        const descriptorColor = this.buttonDescriptor().color ?? "";
         if (!validColors.includes(descriptorColor)) console.warn(`Invalid color: ${descriptorColor}`);
         return descriptorColor;
     });
 
     icon = computed(() => {
-        const descriptor = this.descriptor();
+        const descriptor = this.buttonDescriptor();
         let icon = descriptor.icon;
         if (descriptor.variant === "icon" && !icon) icon = "circle";
         return icon;
@@ -44,7 +44,7 @@ export class MatBtnComponent {
 
         this.onClick.emit({
             ...event,
-            action: this.descriptor(),
+            action: this.buttonDescriptor(),
             data: this.data(),
             context: this.context(),
         } as ActionEvent);

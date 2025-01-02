@@ -32,6 +32,6 @@
 
 <div class="toolbar footer">
     @for (descriptor of dialogActions(); track i; let i = $index) {
-        <mat-btn class="action {{ descriptor.name || '' }}" [tabIndex]="i" (onClick)="onAction($event)" [descriptor]="descriptor"></mat-btn>
+        <mat-btn class="action {{ descriptor.name || '' }}" [tabIndex]="i" (onClick)="onAction($event)" [buttonDescriptor]="descriptor"></mat-btn>
     }
 </div>

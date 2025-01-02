@@ -9,17 +9,17 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
     element?: InputSignal<{ item: TRow }>;
     item?: InputSignal<TRow>;
     dataIndex?: InputSignal<number>;
-    descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
+    column?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
 
 @Component({
     selector: "cell-template",
     template: `
-        @if (descriptor().value.pipe) {
-            @if (descriptor().value.pipe["pipe"]) {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
+        @if (column().value.pipe) {
+            @if (column().value.pipe["pipe"]) {
+                <div [innerHTML]="value() | dynamic: column().value.pipe['pipe'] : column().value.pipe['args']"></div>
             } @else {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
+                <div [innerHTML]="value() | dynamic: column().value.pipe"></div>
             }
         } @else {
             {{ value() }}
@@ -30,7 +30,7 @@ export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
     value = input.required();
     element = input.required<NormalizedItem<T>>();
     item = input.required<T>();
-    descriptor = input<KeyValue<string, ColumnDescriptor>>();
+    column = input<KeyValue<string, ColumnDescriptor>>();
 }
 
 export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href?: (x: T) => string): DynamicComponent {

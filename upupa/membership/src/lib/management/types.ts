@@ -1,9 +1,10 @@
 import { DatePipe } from "@angular/common";
 import { Condition } from "@noah-ark/expression-engine";
-import { ActionDescriptor } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent } from "@upupa/common";
 import { Field, FormScheme } from "@upupa/dynamic-form";
 import { ColumnsDescriptor } from "@upupa/table";
 import { defaultEmailField, userFullNameField, userNameField } from "../default-values";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 export const defaultRolesListHeaderActions: ActionDescriptor[] = [{ variant: "stroked", header: true, name: "create", icon: "person_add", text: "Create", color: "primary" }];
 export const defaultRolesListActions: ActionDescriptor[] = [
@@ -12,7 +13,7 @@ export const defaultRolesListActions: ActionDescriptor[] = [
 ];
 export const defaultUserListActions: ActionDescriptor[] = [
     // { variant: 'button', text: 'Ban user', name: 'ban', icon: 'block', menu: true, color: 'warn' },
-    { variant: "icon", name: "edit", icon: "edit" },
+    { variant: "icon", name: "edit", icon: "edit", component: MatBtnComponent },
     { path: "auth", action: "Impersonate User", variant: "icon", name: "impersonate", icon: "supervised_user_circle" },
     { path: "auth", variant: "icon", text: "Reset password", name: "reset", icon: "password", menu: true },
     { path: "auth", action: "Change User Roles", variant: "icon", text: "Change roles", name: "change-user-roles", icon: "switch_access_shortcut_add", menu: true },
@@ -54,6 +55,18 @@ export const defaultUserListColumns: ColumnsDescriptor = {
     email: { header: "Email" },
     roles: { header: "User Roles", sortDisabled: true },
     lastLogin: { header: "Last Sign in", pipe: { pipe: DatePipe, args: ["medium"] } },
+    actions: {
+        header: " ",
+        class: "actions",
+        sortDisabled: true,
+        template: defaultUserListActions.map(
+            (a) =>
+                ({
+                    component: MatBtnComponent,
+                    inputs: { buttonDescriptor: a },
+                }) as DynamicComponent,
+        ),
+    },
 };
 
 export const defaultRolesListColumns: ColumnsDescriptor = {

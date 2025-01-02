@@ -9,7 +9,7 @@ import { editFormDialog } from "../helpers";
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (onClick)="edit()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (onClick)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {

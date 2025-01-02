@@ -18,7 +18,7 @@ function merge<T, X>(a: Partial<T>, b: Partial<T>): Partial<T & X> {
     selector: "inline-button",
     imports: [MatBtnComponent],
     standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
