@@ -6,27 +6,50 @@ export type SnackbarConfig = { callbackName?: string; callback?: () => void } & 
 export class SnackBarService {
     constructor(private snack: MatSnackBar) {}
     openSuccess(message: string = "success", config?: SnackbarConfig) {
-        if (config && config.callback) {
-            return this.openAction(message, config.callbackName ?? "undo", () => config.callback(), config);
-        } else return this.snack.open(message, null, { duration: 3000, verticalPosition: "top" });
+        const defaultConfig: MatSnackBarConfig = {
+            duration: 3000,
+            verticalPosition: "top"
+        };
+
+        if (config?.callback) {
+            return this.openAction(message, config.callbackName ?? "undo", () => config.callback(), {
+                ...defaultConfig,
+                ...config
+            });
+        }
+        return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
     openFailed(message: string = "failed", error?: any, config?: SnackbarConfig) {
-        if (config && config.callback) {
-            return this.openAction(
-                message,
-                config.callbackName ?? "snkbar-failed-msg",
-                () => {
-                    config.callback();
-                },
-                config,
-            );
-        } else return this.snack.open(message, null, { duration: 5000, politeness: "assertive", verticalPosition: "top", panelClass: ["error"] });
+        const defaultConfig: MatSnackBarConfig = {
+            duration: 5000,
+            politeness: "assertive",
+            verticalPosition: "top",
+            panelClass: ["error"]
+        };
+
+        if (config?.callback) {
+            return this.openAction(message, config.callbackName ?? "snkbar-failed-msg", () => config.callback(), {
+                ...defaultConfig,
+                ...config
+            });
+        }
+        return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
-    openWarning(message: string = "warning", error: any = null) {
-        return this.snack.open(message, null, { duration: 5000, politeness: "assertive", verticalPosition: "top", panelClass: ["warning"] });
+    openWarning(message: string = "warning", error: any = null, config?: MatSnackBarConfig) {
+        const defaultConfig: MatSnackBarConfig = {
+            duration: 5000,
+            politeness: "assertive",
+            verticalPosition: "top",
+            panelClass: ["warning"]
+        };
+        return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
-    openInfo(message: string) {
-        return this.snack.open(message, null, { duration: 3000, verticalPosition: "top" });
+    openInfo(message: string, config?: MatSnackBarConfig) {
+        const defaultConfig: MatSnackBarConfig = {
+            duration: 3000,
+            verticalPosition: "top"
+        };
+        return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
     openConfirm(message: string, onConfirmed: () => void) {
         return this.openAction(message, "yes", () => {

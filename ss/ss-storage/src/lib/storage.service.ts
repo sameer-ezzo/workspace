@@ -122,7 +122,7 @@ export async function saveStreamToTmp(path: string, file: PostedFile): Promise<F
 @Injectable()
 export class StorageService {
     constructor(private data: DataService) {
-        // this.data.addModel('storage', fileSchema).then(() => { })
+        // this.data.addModel('storage', FileSchema).then(() => { })
     }
 
     async saveToDb(f: File, principle: any) {
