@@ -1,43 +1,68 @@
-import { Component, Input, Output, EventEmitter, inject, ViewChild, signal } from "@angular/core";
+import { Component, inject, signal, model, output, viewChild, input } from "@angular/core";
 import { AuthService } from "@upupa/auth";
-import { ActionDescriptor } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultForgotPasswordFormFields } from "../default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { FormControl } from "@angular/forms";
+import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 
 @Component({
     standalone: true,
     selector: "forgot-password-form",
     templateUrl: "./forgot-password-form.component.html",
     styleUrls: ["./forgot-password-form.component.scss"],
-    imports: [CollectorComponent],
+    imports: [CollectorComponent, PortalComponent],
 })
 export class ForgotPasswordFormComponent {
     control = new FormControl();
-    @ViewChild("loginForm") loginForm: CollectorComponent;
+    loginForm = viewChild<CollectorComponent>("loginForm");
     private readonly auth = inject(AuthService);
     loading = signal(false);
     error: string;
-    @Output() success = new EventEmitter();
-    @Output() fail = new EventEmitter();
+    success = output<any>();
+    fail = output<any>();
 
-    @Input() model: { email: string; phone?: string } & Record<string, unknown> = { email: "" };
-    @Input() submitBtn: ActionDescriptor = { name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised" };
-    @Input() fields: FormScheme = defaultForgotPasswordFormFields;
-    @Input() conditions: Condition[] = [];
+    model = model<{ email: "" }>();
+    submitBtn = input<ActionDescriptor>();
+    fields = input<FormScheme>(defaultForgotPasswordFormFields);
+    conditions = input<Condition[]>([]);
+    externalLinks = input<DynamicComponent>({ component: MembershipFormExternalLinksComponent, inputs: { links: [{ text: "Login", routerLink: ["../login"] }] } });
+
+    _submitBtn = signal<ActionDescriptor>({ name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised", disabled: true } as ActionDescriptor);
 
     async send() {
         this.loading.set(true);
-
+        this.disableSubmit();
         try {
-            await this.auth.forgotPassword(this.model.email, this.model);
-            this.success.emit();
+            const value = { ...this.model() };
+            const res = await this.auth.forgotPassword(value.email, value);
+            this.success.emit(res);
         } catch (error) {
-            this.fail.emit();
+            const err = this.handleError(error);
+            console.error(err);
+            this.fail.emit(err);
         } finally {
             this.loading.set(false);
+            this.enableSubmit();
         }
+    }
+
+    enableSubmit() {
+        this._submitBtn.set({ ...this._submitBtn(), disabled: false } as ActionDescriptor);
+    }
+    disableSubmit() {
+        this._submitBtn.set({ ...this._submitBtn(), disabled: true } as ActionDescriptor);
+    }
+
+    handleError(e) {
+        let err = e.error ?? e;
+        if (err.statusCode === 400) {
+            if (e.message === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
+            else if (e.message === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
+            else if (e.message === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
+        }
+        return err;
     }
 }
 

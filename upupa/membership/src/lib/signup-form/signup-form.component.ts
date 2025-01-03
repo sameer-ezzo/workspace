@@ -1,50 +1,54 @@
-import { Component, Input, Output, EventEmitter, ViewChild, inject, signal } from "@angular/core";
+import { Component, Output, inject, signal, input, model, output, viewChild } from "@angular/core";
 import { AuthService } from "@upupa/auth";
-import { ActionDescriptor } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultSignupFormFields } from "../default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { FormControl } from "@angular/forms";
+import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
+import { JsonPipe } from "@angular/common";
 
 @Component({
     standalone: true,
     selector: "signup-form",
     styleUrls: ["./signup-form.component.scss"],
     templateUrl: "./signup-form.component.html",
-    imports: [CollectorComponent],
+    imports: [CollectorComponent, PortalComponent, JsonPipe],
 })
 export class SignUpFormComponent {
-    @ViewChild("signupForm") signupForm: CollectorComponent;
-    loading = signal<boolean>(false);
     public readonly auth: AuthService = inject(AuthService);
 
+    signupForm = viewChild<CollectorComponent>("signupForm");
+
     control = new FormControl();
-    @Output() success = new EventEmitter();
-    @Output() fail = new EventEmitter();
+    success = Output();
+    fail = output();
 
-    @Input() model: any = {};
-    @Input() submitBtn: ActionDescriptor = { name: "signup", type: "submit", text: "Signup", color: "primary", variant: "raised" };
-    @Input() fields: FormScheme = defaultSignupFormFields;
-    @Input() conditions: Condition[] = [];
+    loading = signal<boolean>(false);
+    value = model<any>();
+    submitBtn = input<ActionDescriptor>({ name: "signup", type: "submit", text: "Signup", color: "primary", variant: "raised" });
+    fields = input<FormScheme>(defaultSignupFormFields);
 
-    async signup(model) {
-        if (this.signupForm.canGoNext()) {
-            this.signupForm.next();
+    conditions = input<Condition[]>([]);
+    externalLinks = input<DynamicComponent>({ component: MembershipFormExternalLinksComponent, inputs: { links: [{ text: "Login", routerLink: ["../login"] }] } });
+
+    async signup() {
+        const collector = this.signupForm();
+        if (collector.canGoNext()) {
+            collector.next();
             return;
         }
-
+        const value = collector.value() as any;
         try {
-            this.model = model;
             this.loading.set(true);
-            if (!this.model.username) this.model.username = this.model.email; //auto save email as username if not provided
+            if (!value.username) value.username = value.email; //auto save email as username if not provided
 
-            const user: any = { ...this.model };
+            const user: any = { ...value };
             delete user.password;
             delete user.confirmPassword;
-            let value = user;
 
-            let res = await this.auth.signup(value, this.model.password);
-            let res2 = await this.auth.signin({ email: user.email, password: this.model.password });
+            const res = await this.auth.signup(user, value.password);
+            const res2 = await this.auth.signin({ email: value.email, password: value.password });
             this.success.emit(res);
         } catch (error) {
             this.fail.emit(error);

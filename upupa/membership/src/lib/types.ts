@@ -1,9 +1,11 @@
-import { ActivatedRoute, Router } from "@angular/router";
 import { FormScheme, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { LanguageService } from "@upupa/language";
-import { defaultForgotPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
+import { defaultForgotPasswordFormFields, defaultResetPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
 import { Condition } from "@noah-ark/expression-engine";
-import { AuthService, PasswordStrength } from "@upupa/auth";
+import { PasswordStrength } from "@upupa/auth";
+import { ComponentRef, inject } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
+import { SnackBarService } from "@upupa/dialog";
+import { Router } from "@angular/router";
 
 export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {
@@ -32,182 +34,98 @@ export type GoogleIDPOptions = {
         logo_alignment: "left";
     };
 };
-type MembershipProvider<T = Function> = {
-    deps?: any[];
-    useFactory: (...args: any[]) => T;
-};
+export type Idp =
+    | { name: "google"; options: GoogleIDPOptions }
+    | { name: "facebook"; options: unknown }
+    | { name: "github"; options: unknown }
+    | { name: "twitter"; options: unknown }
+    | { name: "linkedin"; options: unknown }
+    | { name: "microsoft"; options: unknown }
+    | { name: "apple"; options: unknown };
 
-export type PageNavigationLinkProvider = MembershipProvider<PageNavigationLink[]>;
-export type InitialValueFactoryProvider = MembershipProvider<(...args: []) => Record<string, unknown>>;
-export type FormHandlerProvider = MembershipProvider<(...args: []) => void>;
+export type FormHandler<T = any> = (instance: ComponentRef<T>["instance"], ...args: any[]) => Promise<void> | void;
 
 export class BaseMembershipFormOptions {
+    hostClass?: string;
+
     fields: FormScheme;
     conditions?: Condition[];
 
-    logo?: string;
-    title?: string;
-    subTitle?: string;
-    hostClass?: string;
+    // these handler are called inside injected context
+    on_success?: FormHandler;
+    on_error?: FormHandler;
 
-    links?: PageNavigationLinkProvider;
-    external_links?: PageNavigationLinkProvider;
-    initial_value_factory?: InitialValueFactoryProvider;
-    on_success?: FormHandlerProvider;
-    on_failed?: FormHandlerProvider;
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        this.fields = fields ?? {};
+        this.conditions = conditions ?? [];
+        this.on_success = on_success;
+        this.on_error = on_error;
+    }
 }
-
-export const defaultOnSuccessProvider: FormHandlerProvider = {
-    deps: [Router, ActivatedRoute, AuthService],
-    useFactory: (router: Router, route: ActivatedRoute) => {
-        return (...args: []) => {
-            const { redirect } = route.snapshot.queryParams;
-            if (!redirect) return router.navigateByUrl("/");
-            const urlSegments = redirect.split("/").filter((segment) => segment);
-            return router.navigate(["/", ...urlSegments]);
-        };
-    },
-};
-export const defaultSignupOnSuccessProvider = { ...defaultOnSuccessProvider };
-export const defaultLoginOnSuccessProvider = { ...defaultOnSuccessProvider };
-export const defaultForgotPasswordOnSuccessProvider = {
-    ...defaultOnSuccessProvider,
-};
-export const defaultVerifyOnSuccessProvider = { ...defaultOnSuccessProvider };
-
-export const defaultOnFailedProvider: FormHandlerProvider = {
-    useFactory: () => {
-        return () => {
-            return;
-        };
-    },
-};
-
-export const defaultSignupOnFailedProvider = { ...defaultOnFailedProvider };
-export const defaultLoginOnFailedProvider = { ...defaultOnFailedProvider };
-export const defaultForgotPasswordOnFailedProvider = {
-    ...defaultOnFailedProvider,
-};
-export const defaultVerifyOnFailedProvider = { ...defaultOnFailedProvider };
-
-export const defaultInitialValueFactoryProvider: InitialValueFactoryProvider = {
-    deps: [LanguageService, ActivatedRoute],
-    useFactory: (language: LanguageService, route: ActivatedRoute) => {
-        return () => {
-            const qps = route.snapshot.queryParams;
-            return {
-                language: language.language || language.defaultLang,
-                ...qps,
-            } as Record<string, unknown>;
-        };
-    },
-};
-export const defaultSignupInitialValueFactoryProvider = {
-    ...defaultInitialValueFactoryProvider,
-};
-export const defaultLoginFormInitialValueFactoryProvider = {
-    ...defaultInitialValueFactoryProvider,
-};
-export const defaultForgotPasswordInitialValueFactoryProvider = {
-    ...defaultInitialValueFactoryProvider,
-};
-export const defaultVerifyInitialValueFactoryProvider = {
-    ...defaultInitialValueFactoryProvider,
-};
-
-export const defaultExternalLinksProvider = {
-    useFactory: () => {
-        return [] as PageNavigationLink[];
-    },
-};
-export const defaultSignupExternalLinksProvider = {
-    ...defaultExternalLinksProvider,
-};
-export const defaultLoginExternalLinksProvider = {
-    ...defaultExternalLinksProvider,
-};
-export const defaultForgotPasswordExternalLinksProvider = {
-    ...defaultExternalLinksProvider,
-};
-export const defaultVerifyExternalLinksProvider = {
-    ...defaultExternalLinksProvider,
-};
-
-export const defaultLinksProvider = {
-    useFactory: () => {
-        return [] as PageNavigationLink[];
-    },
-};
-export const defaultVerifyLinksProvider = { ...defaultLinksProvider };
-
-export const defaultSignupLinksProvider = {
-    useFactory: (): PageNavigationLink[] => {
-        return [
-            {
-                label: "Already have an account?",
-                text: "Sign in",
-                url: `../login`,
-            },
-        ] as PageNavigationLink[];
-    },
-};
-export const defaultForgotPasswordLinksProvider = {
-    ...defaultSignupLinksProvider,
-};
-export const defaultLoginLinksProvider = {
-    useFactory: (): PageNavigationLink[] => {
-        return [
-            {
-                label: "Forgot password?",
-                text: "Reset password",
-                url: `../forgot-password`,
-            },
-            {
-                label: "Don't have account?",
-                text: "Create new one",
-                url: `../signup`,
-            },
-        ] as PageNavigationLink[];
-    },
-};
 
 export class MembershipSignupOptions extends BaseMembershipFormOptions {
     passwordStrength?: PasswordStrength = new PasswordStrength();
-    override title = "Signup";
-    override fields: FormScheme = defaultSignupFormFields;
-    override links = defaultSignupLinksProvider;
-    override external_links = defaultSignupExternalLinksProvider;
-    override on_success = defaultSignupOnSuccessProvider;
-    override on_failed = defaultSignupOnFailedProvider;
-    override initial_value_factory = defaultSignupInitialValueFactoryProvider;
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        super(fields ?? defaultSignupFormFields, conditions, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
+    }
+}
+
+export function loginSuccessHandler(instance, response) {
+    const router = inject(Router);
+    const route = inject(ActivatedRoute);
+    const { redirect, redirectTo } = route.snapshot.queryParams ?? {};
+    const redirectUrl = redirect ?? redirectTo ?? "/";
+    router.navigateByUrl(decodeURIComponent(redirectUrl));
+}
+
+export function loginErrorHandler(instance, error) {
+    const snack = inject(SnackBarService);
+    snack.openFailed(error.message);
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
-    override title = "Sign in";
-    override fields: FormScheme = reflectFormViewModelType(LoginFormViewModel).fields;
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        const { fields: fs, conditions: cnds } = reflectFormViewModelType(LoginFormViewModel);
+        on_success = on_success ?? loginSuccessHandler;
+        on_error = on_error ?? loginErrorHandler;
+        super(fields ?? fs, conditions ?? cnds, on_success, on_error);
+    }
+}
 
-    override links = defaultLoginLinksProvider;
-    override external_links = defaultLoginExternalLinksProvider;
-    override on_success = defaultLoginOnSuccessProvider;
-    override on_failed = defaultLoginOnFailedProvider;
-    override initial_value_factory = defaultLoginFormInitialValueFactoryProvider;
+export function forgotPasswordSuccessHandler(instance, response) {
+    const snack = inject(SnackBarService);
+    snack.openSuccess(`Reset password link sent to ${response.email}`);
+    const router = inject(Router);
+    router.navigate(["/"]);
+}
+
+export function forgotPasswordErrorHandler(instance, error) {
+    const snack = inject(SnackBarService);
+    const router = inject(Router);
+    const route = inject(ActivatedRoute);
+    snack
+        .openFailed(error.message)
+        .afterDismissed()
+        .subscribe(() => {
+            router.navigate(["/"], { relativeTo: route });
+        });
 }
 export class MembershipForgotPasswordOptions extends BaseMembershipFormOptions {
-    override title = "Forgot password";
-    override fields: FormScheme = defaultForgotPasswordFormFields;
-    override links = defaultForgotPasswordLinksProvider;
-    override external_links = defaultForgotPasswordExternalLinksProvider;
-    override on_success = defaultForgotPasswordOnSuccessProvider;
-    override on_failed = defaultForgotPasswordOnFailedProvider;
-    override initial_value_factory = defaultForgotPasswordInitialValueFactoryProvider;
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        on_success = on_success ?? forgotPasswordSuccessHandler;
+        on_error = on_error ?? forgotPasswordErrorHandler;
+        super(fields ?? defaultForgotPasswordFormFields, conditions, on_success, on_error);
+    }
+}
+
+export class MembershipResetPasswordOptions extends BaseMembershipFormOptions {
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        super(fields ?? defaultResetPasswordFormFields, conditions, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
+    }
 }
 export class MembershipVerifyOptions extends BaseMembershipFormOptions {
-    override title = "Verify";
-    override fields: FormScheme = defaultVerifyFormFields;
-    override links = defaultVerifyLinksProvider;
-    override external_links = defaultVerifyExternalLinksProvider;
-    override on_success = defaultVerifyOnSuccessProvider;
-    override on_failed = defaultVerifyOnFailedProvider;
-    override initial_value_factory = defaultVerifyInitialValueFactoryProvider;
+    constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
+        super(fields ?? defaultVerifyFormFields, conditions, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
+    }
 }
 
 export class MembershipOptions {
@@ -217,6 +135,7 @@ export class MembershipOptions {
     login = new MembershipLoginOptions();
     signup = new MembershipSignupOptions();
     forgotPassword?: MembershipForgotPasswordOptions = new MembershipForgotPasswordOptions();
+    resetPassword?: MembershipResetPasswordOptions = new MembershipResetPasswordOptions();
     verify = new MembershipVerifyOptions();
     idPs?: Record<IdpName, any>;
 }

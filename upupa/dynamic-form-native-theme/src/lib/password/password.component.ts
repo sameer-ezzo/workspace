@@ -1,5 +1,5 @@
-import { Component, forwardRef, model, input } from "@angular/core";
-import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator } from "@angular/forms";
+import { Component, forwardRef, model, input, inject, InputSignal } from "@angular/core";
+import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator, FormBuilder } from "@angular/forms";
 
 import { PasswordStrength, generatePassword, verifyPassword } from "@upupa/auth";
 import { InputComponent } from "../input/input.component";
@@ -23,61 +23,58 @@ import { InputComponent } from "../input/input.component";
     ],
 })
 export class PasswordInputComponent extends InputComponent implements Validator {
-    override type = input("password");
-
     confirmPwd = null;
-    confirmControl: FormControl<string> = new FormControl<string>("");
+    confirmControl = new FormControl("");
 
-    showConfirmPasswordInput = input(false);
+    showConfirmPasswordInput = input(true);
     showPassword = model(false);
     canGenerateRandomPassword = input(false);
-    passwordStrength = input<PasswordStrength>(new PasswordStrength());
+    passwordStrength = input<PasswordStrength, PasswordStrength>(new PasswordStrength(), { transform: (v) => v ?? new PasswordStrength() });
     override autocomplete = input<"current-password" | "new-password">("new-password");
-
-    changeTouchedStatus(ctrl: AbstractControl) {
-        if (this.showConfirmPasswordInput() !== true) this.markAsTouched();
-        else {
-            if (this.confirmControl.touched) this.markAsTouched();
-            else ctrl.markAsUntouched();
-        }
+    checkValidity() {
+        if (!this.control().touched) return;
+        this.validate(this.control());
+        this.control().updateValueAndValidity();
     }
-
+    changeTouchedStatus() {
+        this.control().markAsTouched();
+        this.confirmControl.markAsTouched();
+    }
     generateRandomPassword() {
-        this.value.set(generatePassword(this.passwordStrength()));
-        this.confirmControl.setValue(this.value(), {
-            emitEvent: false,
-            onlySelf: true,
-            emitModelToViewChange: true,
-        });
+        const password = generatePassword(this.passwordStrength());
+        this.value.set(password);
+        this.confirmControl.setValue(password);
+        this.propagateChange();
     }
 
     validate(control: AbstractControl) {
-        if (!this.control() || this.control().untouched) return null;
+        const password = control.value;
+        const confirm = this.confirmControl.value;
+        if (this.showConfirmPasswordInput() === true) {
+            if (password !== confirm) return { "Password and confirm password do not match": true };
+        }
 
-        if (this.showConfirmPasswordInput() === true && this.confirmControl.touched) if (control.value !== this.confirmControl.value) return { "not-matched": true };
-
-        if (!this.passwordStrength) return null;
-        const passwordStrength = this.passwordStrength;
+        const strength = this.passwordStrength();
+        if (!strength) return null;
         const validations = [];
         const result = verifyPassword(control.value);
-        for (const k in passwordStrength) {
-            const message = "passwrd-" + k;
+        for (const k in strength) {
             const current = result[k];
-            const required = passwordStrength[k];
+            const required = strength[k];
             if (Array.isArray(required)) {
                 if (required[0] > current)
                     validations.push({
-                        message: message + "-min",
+                        message: "Password should have at least " + required[0] + " " + k,
                         current,
                         required: required[0],
                     });
                 if (required[1] < current)
                     validations.push({
-                        message: message + "-max",
+                        message: "Password should have at most " + required[1] + " " + k,
                         current,
                         required: required[1],
                     });
-            } else if (required > current) validations.push({ message, current, required });
+            } else if (required > current) validations.push({ message: "Password should have at least " + required + " " + k, current, required });
         }
 
         if (validations.length === 0) return null;

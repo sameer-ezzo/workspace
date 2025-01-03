@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, forwardRef, inject, input, Input, output, Output, SimpleChanges, viewChild } from "@angular/core";
+import { Component, computed, forwardRef, inject, input, model, output, signal, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { ActionDescriptor, InputBaseComponent, UtilsModule } from "@upupa/common";
@@ -16,6 +16,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
     imports: [DynamicFormComponent, CommonModule, UtilsModule, MatBtnComponent],
     templateUrl: "./collector.component.html",
     styleUrls: ["./collector.component.scss"],
+    exportAs: "collector",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,70 +30,49 @@ import { MatBtnComponent } from "@upupa/mat-btn";
         },
     ],
 })
-export class CollectorComponent extends InputBaseComponent<any> {
+export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
     form = computed(() => this.dynamicForm().control());
-    @Output() submit = new EventEmitter();
-    @Output() action = new EventEmitter<ActionDescriptor>();
-    @Output() activePageChange = new EventEmitter<number>();
-    fieldValueChange = output<ExtendedValueChangeEvent<any>>();
+    valid = computed(() => this.dynamicForm().control().valid);
+    touched = computed(() => this.dynamicForm().control().touched);
+    submit = output<T>();
+    action = output<ActionDescriptor>();
+    activePageChange = output<number>();
+    fieldValueChange = output<ExtendedValueChangeEvent<T>>();
 
     collectStyle = input<CollectStyle>("linear");
 
     fields = input.required<FormScheme>();
-    @Input() conditions: Condition[];
-    @Input() actions: ActionsDescriptor;
-    _activePage = 0;
-    @Input()
-    get activePage() {
-        return this._activePage;
-    }
-    set activePage(value: number) {
-        this._activePage = value;
-        this.showFieldsOfPage();
-        this.activePageChange.emit(this._activePage);
-    }
+    conditions = input<Condition[]>([]);
+    actions = input<ActionsDescriptor>();
 
-    @Input() submitBtn: ActionDescriptor = {
+    activePage = model<number>();
+
+    submitBtn = input<ActionDescriptor>({
         name: "submit",
         type: "submit",
         variant: "stroked",
         text: "Submit",
         color: "primary",
-    };
-    @Input() nextBtn: ActionDescriptor = {
+    });
+    nextBtn = input<ActionDescriptor>({
         name: "next",
         type: "button",
         text: "Next",
-    };
-    @Input() prevBtn: ActionDescriptor = {
+    });
+    prevBtn = input<ActionDescriptor>({
         name: "prev",
         type: "button",
         text: "Previous",
-    };
+    });
 
     private formFieldsInfo = new Map<Field, { index: number; page: number }>();
 
-    private _focusedField: Field;
-    @Input()
-    public get focusedField(): Field {
-        return this._focusedField;
-    }
-    public set focusedField(v: Field) {
-        if (this._focusedField === v) return;
-        this._focusedField = v;
-        if (this.pages?.length === 0) this.populatePagesInFields();
-
-        this.activePage = v ? this.formFieldsInfo.get(v).page : null;
-        // setTimeout(() => {
-        //     const element = this.document.getElementById(v.name);
-        //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
-        // }, 300);
-    }
-
     pages: FormPage[] = [];
-    _pageInvalid = true;
-    loading = false;
+    _pageInvalid = signal(false);
+    loading = signal(false);
+    focusedField = input<Field>();
+    design = input<FormDesign>();
 
     get controls() {
         return this.dynamicForm().graph;
@@ -107,37 +87,20 @@ export class CollectorComponent extends InputBaseComponent<any> {
         return this.pages.length;
     }
 
-    private _design: FormDesign;
-    @Input()
-    public get design(): FormDesign {
-        return this._design;
-    }
-    public set design(v: FormDesign) {
-        this._design = v;
-        this._applyFormDesign(v);
-    }
     private readonly document = inject(DOCUMENT);
 
-    private _applyFormDesign(design: FormDesign) {
-        if (design.bgImage?.url) this.document.documentElement.style.setProperty("--bg-img-url", design.bgImage.url);
-        if (design.bgColor) this.document.documentElement.style.setProperty("--bg-color", design.bgColor);
-        if (design.textColor) this.document.documentElement.style.setProperty("--field-text-color", design.textColor);
-        if (design.valueColor) this.document.documentElement.style.setProperty("--field-value-color", design.valueColor);
-        if (design.buttonsColor) this.document.documentElement.style.setProperty("--button-color", design.buttonsColor);
-
-        if (design.headerFont) {
-            loadFontFace(this.document, this.design.headerFont.font.family);
-            this.document.documentElement.style.setProperty("--header-font-family", this.design.headerFont.font.family);
-        }
-        if (design.paragraphFont) {
-            loadFontFace(this.document, this.design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-family", this.design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-size", this.design.paragraphFont.size || "22pt");
-        }
-    }
-
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes["fields"]) this.populatePagesInFields();
+        if (changes["design"]) applyFormDesign(this.design(), this.document.documentElement);
+        if (changes["fields"] || changes["focusedField"]) {
+            if (this.pages?.length === 0) this.populatePagesInFields();
+            const v = this.focusedField();
+            this.activePage.set(v ? this.formFieldsInfo.get(v).page : null);
+            // setTimeout(() => {
+            //     const element = this.document.getElementById(v.name);
+            //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
+            // }, 300);
+        }
+        if (changes["activePage"]) this.showFieldsOfPage();
     }
 
     populatePagesInFields() {
@@ -153,27 +116,24 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     _checkPageInvalid(pageIndex: number) {
-        if (pageIndex < 0 || pageIndex > this.pages.length - 1) {
-            this._pageInvalid = false;
-            return;
-        }
+        if (pageIndex < 0 || pageIndex > this.pages.length - 1) return this._pageInvalid.set(false);
 
         const page = this.pages[pageIndex];
-        this._pageInvalid = Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true);
+        if (page?.fields) this._pageInvalid.set(Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true));
     }
 
     showFieldsOfPage() {
         const fields = this.fields();
 
-        if (this.activePage > -1) {
+        if (this.activePage() > -1) {
             Object.values(fields).forEach((f: any) => {
                 const info = this.formFieldsInfo[f.name];
-                const hidden = info && info.page !== this.activePage;
+                const hidden = info && info.page !== this.activePage();
                 f.inputs ??= {};
                 f.inputs["hidden"] = hidden;
             });
         }
-        this._checkPageInvalid(this.activePage);
+        this._checkPageInvalid(this.activePage());
     }
 
     async actionClicked(action: ActionDescriptor) {
@@ -181,27 +141,27 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     async onSubmit() {
-        this.loading = true;
-        this._checkPageInvalid(this.activePage);
-        if (!this._pageInvalid) this.submit.emit(this.value());
-        this.loading = false;
+        this.loading.set(true);
+        this._checkPageInvalid(this.activePage());
+        if (!this._pageInvalid()) this.submit.emit(this.value());
+        this.loading.set(false);
     }
 
     canGoNext() {
-        return !this._pageInvalid && this.activePage < this.totalPages - 1;
+        return !this._pageInvalid() && this.activePage() < this.totalPages - 1;
     }
 
     canGoPrev() {
-        return this.activePage > 0;
+        return this.activePage() > 0;
     }
 
     next() {
         this.dynamicForm().control().markAsTouched();
-        if (this.canGoNext()) this.activePage++;
+        if (this.canGoNext()) this.activePage.update((a) => a + 1);
     }
 
     prev() {
-        if (this.canGoPrev()) this.activePage--;
+        if (this.canGoPrev()) this.activePage.update((a) => a - 1);
     }
 }
 
@@ -223,4 +183,22 @@ function loadFontFace(doc, family: string) {
     const newStyle = doc.createElement("style");
     newStyle.appendChild(doc.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
     doc.head.appendChild(newStyle);
+}
+
+function applyFormDesign(design: FormDesign, el: HTMLElement) {
+    if (design.bgImage?.url) el.style.setProperty("--bg-img-url", design.bgImage.url);
+    if (design.bgColor) el.style.setProperty("--bg-color", design.bgColor);
+    if (design.textColor) el.style.setProperty("--field-text-color", design.textColor);
+    if (design.valueColor) el.style.setProperty("--field-value-color", design.valueColor);
+    if (design.buttonsColor) el.style.setProperty("--button-color", design.buttonsColor);
+
+    if (design.headerFont) {
+        loadFontFace(this.document, design.headerFont.font.family);
+        el.style.setProperty("--header-font-family", design.headerFont.font.family);
+    }
+    if (design.paragraphFont) {
+        loadFontFace(this.document, design.paragraphFont.font.family);
+        el.style.setProperty("--paragraph-font-family", design.paragraphFont.font.family);
+        el.style.setProperty("--paragraph-font-size", design.paragraphFont.size || "22pt");
+    }
 }

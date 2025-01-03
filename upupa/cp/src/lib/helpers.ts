@@ -1,11 +1,11 @@
-import { Component, input, inject, Type, Injector, ComponentRef, OutputEmitterRef, runInInjectionContext, output, OutputRef } from "@angular/core";
+import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output } from "@angular/core";
 import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
-import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService, DialogWrapperComponent } from "@upupa/dialog";
+import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
-import { DataAdapter, DataService } from "@upupa/data";
+import { DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
@@ -14,7 +14,7 @@ import { NgControl } from "@angular/forms";
     selector: "inline-button",
     imports: [MatBtnComponent],
     standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (click)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
@@ -81,9 +81,9 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
             ...formActions.map((descriptor) =>
                 provideComponent({
                     component: MatBtnComponent,
-                    inputs: { descriptor },
+                    inputs: { buttonDescriptor: descriptor },
                     outputs: {
-                        onClick: async () => {
+                        click: async () => {
                             if (descriptor.type === "submit") {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 componentInstance.submit();

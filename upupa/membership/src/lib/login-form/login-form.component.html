@@ -1,1 +1,8 @@
-<collector #loginForm [fields]="fields()" [conditions]="conditions()" [submitBtn]="submitBtn()" (submit)="signin()" [(value)]="value"> </collector>
+<collector #loginForm [fields]="formFields()" [conditions]="conditions()" [submitBtn]="submitBtn()" (submit)="signin()" [(value)]="value"> </collector>
+@if (externalLinks()) {
+    <div class="external-links">
+        <portal [template]="externalLinks()"></portal>
+    </div>
+} @else {
+    <ng-content select="links"></ng-content>
+}

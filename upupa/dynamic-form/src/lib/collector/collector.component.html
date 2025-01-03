@@ -1,10 +1,10 @@
-@if (design?.bgImage?.url) {
+@if (design()?.bgImage?.url) {
     <div
         class="cbgi"
-        [ngStyle]="{ 'background-image': 'url(' + design.bgImage.url + ')' }"
-        [style.background-position]="design.bgImage.position"
-        [style.background-repeat]="design.bgImage.repeat"
-        [style.background-size]="design.bgImage.size"
+        [ngStyle]="{ 'background-image': 'url(' + design().bgImage.url + ')' }"
+        [style.background-position]="design().bgImage.position"
+        [style.background-repeat]="design().bgImage.repeat"
+        [style.background-size]="design().bgImage.size"
     ></div>
 }
 <div class="qs-wrapper">
@@ -13,25 +13,24 @@
         #dynForm
         [fields]="fields()"
         [(value)]="value"
-        [conditions]="conditions"
+        [conditions]="conditions()"
         [name]="name()"
         (submit)="onSubmit()"
-        (fieldValueChange)="fieldValueChange.emit($event)"
-        (valueChange)="_checkPageInvalid(activePage); propagateChange()"
+        (fieldValueChange)="_checkPageInvalid(activePage()); propagateChange(); fieldValueChange.emit($event)"
     >
     </dynamic-form>
 </div>
 <div class="form-actions">
-    @if (nextBtn && canGoNext()) {
-        <mat-btn [descriptor]="nextBtn" (onClick)="next()"></mat-btn>
+    @if (nextBtn() && canGoNext()) {
+        <mat-btn [buttonDescriptor]="nextBtn()" (click)="next()"></mat-btn>
     }
-    @if (prevBtn && canGoPrev()) {
-        <mat-btn [descriptor]="prevBtn" (onClick)="prev()"></mat-btn>
+    @if (prevBtn() && canGoPrev()) {
+        <mat-btn [buttonDescriptor]="prevBtn()" (click)="prev()"></mat-btn>
     }
-    @if (submitBtn) {
-        <mat-btn [disabled]="_pageInvalid || loading || (form().invalid && form().touched)" [descriptor]="submitBtn" (onClick)="onSubmit()"></mat-btn>
+    @if (submitBtn()) {
+        <mat-btn [disabled]="_pageInvalid() || loading() || (form().invalid && form().touched)" [buttonDescriptor]="submitBtn()" (click)="onSubmit()"></mat-btn>
     }
-    @for (act of actions; track act) {
-        <mat-btn [descriptor]="act" (onClick)="actionClicked(act)"></mat-btn>
+    @for (act of actions(); track act) {
+        <mat-btn [buttonDescriptor]="act" (click)="actionClicked(act)"></mat-btn>
     }
 </div>

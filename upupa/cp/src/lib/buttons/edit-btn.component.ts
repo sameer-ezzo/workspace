@@ -4,14 +4,14 @@ import { ActionDescriptor, DynamicComponent } from "@upupa/common";
 import { DataAdapter } from "@upupa/data";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { ITableCellTemplate } from "@upupa/table";
-import { openFormDialog, waitForOutput } from "../helpers";
-import { DialogConfig, DialogRef } from "@upupa/dialog";
+import { openFormDialog } from "../helpers";
+import { DialogConfig } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (onClick)="edit()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (click)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {

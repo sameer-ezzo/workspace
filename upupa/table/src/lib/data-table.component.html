@@ -37,45 +37,48 @@
             </td>
         </ng-container>
 
-        @for (descriptor of _properties | keyvalue; track descriptor.key; let i = $index) {
-            <ng-container matColumnDef="{{ descriptor.key }}" [sticky]="descriptor.value?.sticky === 'start'" [stickyEnd]="descriptor.value?.sticky === 'end'">
+        @for (column of _properties | keyvalue; track column.key; let i = $index) {
+            <ng-container matColumnDef="{{ column.key }}" [sticky]="column.value?.sticky === 'start'" [stickyEnd]="column.value?.sticky === 'end'">
                 <th
                     mat-header-cell
                     *matHeaderCellDef
-                    [mat-sort-header]="descriptor.value.sortId || descriptor.key"
-                    [arrowPosition]="descriptor.value?.sortArrowPosition || 'after'"
-                    [disabled]="descriptor.value?.sortDisabled === true"
-                    [class.none]="descriptor.value?.visible === false"
-                    [ngStyle]="{ width: descriptor.value?.width + 'px' }"
-                    [ngClass]="descriptor.value.class"
+                    [mat-sort-header]="column.value.sortId || column.key"
+                    [arrowPosition]="column.value?.sortArrowPosition || 'after'"
+                    [disabled]="column.value?.sortDisabled === true"
+                    [class.none]="column.value?.visible === false"
+                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngClass]="column.value.class"
                 >
-                    {{ descriptor.value.header || descriptor.key }}
+                    {{ column.value.header || column.key }}
                 </th>
                 <td
                     mat-cell
                     *matCellDef="let element; let dataIndex = dataIndex"
-                    [class.none]="descriptor.value?.visible === false"
-                    [ngStyle]="{ width: descriptor.value?.width + 'px' }"
-                    [ngClass]="descriptor.value.class"
+                    [class.none]="column.value?.visible === false"
+                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngClass]="column.value.class"
                 >
-                    <div [ngClass]="descriptor.value.class">
-                        @for (template of descriptor.value.template ?? []; track $index) {
+                    <div [ngClass]="column.value.class">
+                        @for (template of column.value.template ?? []; track colIdx; let colIdx = $index) {
                             <portal
                                 [component]="template['component']"
                                 [inputs]="
                                     merge(template.inputs, {
-                                        value: element.item | jpointer: descriptor.key,
+                                        value: element.item | jpointer: column.key,
                                         item: element.item,
                                         element,
-                                        descriptor,
+                                        row: element,
+                                        column,
                                         dataIndex,
                                     })
                                 "
                                 [injector]="getRowInjector(element)"
                                 [outputs]="template['outputs']"
+                                [bindings]="template['bindings']"
+                                [class]="template['class']"
                             ></portal>
                         } @empty {
-                            <cell-template [value]="element.item | jpointer: descriptor.key" [item]="element" [element]="element.item" [descriptor]="descriptor"></cell-template>
+                            <cell-template [value]="element.item | jpointer: column.key" [item]="element" [element]="element.item" [column]="column"></cell-template>
                         }
                     </div>
                 </td>
