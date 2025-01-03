@@ -1,17 +1,17 @@
 import { KeyValue } from "@angular/common";
-import { Component, input, Input, InputSignal } from "@angular/core";
+import { Component, computed, input, Input, InputSignal, SimpleChanges } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";
 import { DynamicPipe } from "./dynamic.pipe";
-import { RouterModule } from "@angular/router";
+import { ActivatedRoute, Params, QueryParamsHandling, RouterLink, RouterModule, UrlTree } from "@angular/router";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
     value?: InputSignal<TValue>;
     element?: InputSignal<{ item: TRow }>;
     item?: InputSignal<TRow>;
     dataIndex?: InputSignal<number>;
-    descriptor?: InputSignal<KeyValue<string, ColumnDescriptor>>;
+    column?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
 
 @Component({
@@ -19,11 +19,11 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
     selector: "cell-template",
     imports: [DynamicPipe],
     template: `
-        @if (descriptor().value.pipe) {
-            @if (descriptor().value.pipe["pipe"]) {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe['pipe'] : descriptor().value.pipe['args']"></div>
+        @if (column().value.pipe) {
+            @if (column().value.pipe["pipe"]) {
+                <div [innerHTML]="value() | dynamic: column().value.pipe['pipe'] : column().value.pipe['args']"></div>
             } @else {
-                <div [innerHTML]="value() | dynamic: descriptor().value.pipe"></div>
+                <div [innerHTML]="value() | dynamic: column().value.pipe"></div>
             }
         } @else {
             {{ value() }}
@@ -34,7 +34,7 @@ export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
     value = input.required();
     element = input.required<NormalizedItem<T>>();
     item = input.required<T>();
-    descriptor = input<KeyValue<string, ColumnDescriptor>>();
+    column = input<KeyValue<string, ColumnDescriptor>>();
 }
 
 export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href?: (x: T) => string): DynamicComponent {
@@ -45,6 +45,51 @@ export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href
             href,
         },
     };
+}
+
+export type LinkRouterCellInputs = {
+    target?: string | undefined;
+    queryParams?: Params | null | undefined;
+    fragment?: string | undefined;
+    queryParamsHandling?: QueryParamsHandling | null | undefined;
+    state?: { [k: string]: any } | undefined;
+    info?: unknown;
+    relativeTo?: ActivatedRoute | null | undefined;
+    preserveFragment: boolean;
+    skipLocationChange: boolean;
+    replaceUrl: boolean;
+    routerLink: string | any[] | UrlTree | null | undefined;
+    routerLinkActive: string | string[] | undefined;
+    routerLinkActiveOptions?: { exact: boolean; ignoreQueryParams: boolean } | undefined;
+};
+@Component({
+    standalone: true,
+    imports: [RouterModule],
+
+    template: `
+        <a
+            [routerLink]="routerLink().routerLink"
+            [target]="routerLink().target"
+            [queryParams]="routerLink().queryParams"
+            [fragment]="routerLink().fragment"
+            [queryParamsHandling]="routerLink().queryParamsHandling"
+            [state]="routerLink().state"
+            [info]="routerLink().info"
+            [relativeTo]="routerLink().relativeTo"
+            [preserveFragment]="routerLink().preserveFragment"
+            [skipLocationChange]="routerLink().skipLocationChange"
+            [replaceUrl]="routerLink().replaceUrl"
+            [routerLinkActive]="routerLink().routerLinkActive ?? ''"
+            [routerLinkActiveOptions]="routerLink().routerLinkActiveOptions ?? { exact: true, ignoreQueryParams: true }"
+            >{{ text() }}</a
+        >
+    `,
+})
+export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTemplate<TValue> {
+    textFn = input<(ref: RouterLinkCellTemplate) => string>();
+    routerLinkFn = input<(ref: RouterLinkCellTemplate) => LinkRouterCellInputs>();
+    text = computed(() => (this.textFn ? this.textFn()(this) : this.value()) ?? "");
+    routerLink = computed<LinkRouterCellInputs>(() => (this.routerLinkFn()(this) ?? {}) as LinkRouterCellInputs);
 }
 
 @Component({
@@ -63,6 +108,9 @@ export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<
     textProp = input.required<keyof TValue>();
     href = input<(value: TValue) => string>();
     value = input<TValue>();
+    ngOnChanges(changes: SimpleChanges) {
+        console.log(changes);
+    }
 }
 
 export function nameCell() {

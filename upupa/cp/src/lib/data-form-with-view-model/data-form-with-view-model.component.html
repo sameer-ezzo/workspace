@@ -25,14 +25,14 @@
         @for (descriptor of actions(); track descriptor.name) {
             @if (descriptor.type == "submit") {
                 <mat-btn
-                    [descriptor]="descriptor"
+                    [buttonDescriptor]="descriptor"
                     [loading]="submitting()"
                     (click)="dynForm.submit()"
                     [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
                 >
                 </mat-btn>
             } @else {
-                <mat-btn [descriptor]="descriptor" (click)="onAction($event)"></mat-btn>
+                <mat-btn [buttonDescriptor]="descriptor" (click)="onAction($event)"></mat-btn>
             }
         }
     </div>

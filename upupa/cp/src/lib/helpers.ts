@@ -14,7 +14,7 @@ import { NgControl } from "@angular/forms";
     selector: "inline-button",
     imports: [MatBtnComponent],
     standalone: true,
-    template: ` <mat-btn [descriptor]="buttonDescriptor()" (click)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (onClick)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
@@ -81,7 +81,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
             ...formActions.map((descriptor) =>
                 provideComponent({
                     component: MatBtnComponent,
-                    inputs: { descriptor },
+                    inputs: { buttonDescriptor: descriptor },
                     outputs: {
                         click: async () => {
                             if (descriptor.type === "submit") {

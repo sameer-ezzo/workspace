@@ -19,24 +19,23 @@ import { Class } from "@noah-ark/common";
         },
         {
             provide: DataAdapter,
-            useFactory: (self: ArrayInputComponent) => self.adapter(),
+            useFactory: (self: ArrayInputComponent) => self.adapter,
             deps: [ArrayInputComponent],
         },
     ],
 })
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);
-    dataTableEl = viewChild(DataTableComponent);
     label = input("");
     readonly dataSource = new ClientDataSource<T>([]);
-    readonly adapter = signal(new DataAdapter<T>(this.dataSource));
+    readonly adapter = new DataAdapter<T>(this.dataSource);
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             let template = null;
             if (c instanceof Type) template = { component: c };
             else template = c;
-            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter() }], parent: this.injector });
+            template.injector = Injector.create({ providers: [{ provide: DataAdapter, useFactory: () => this.adapter }], parent: this.injector });
             return template;
         },
     });
@@ -62,6 +61,7 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
         this.dataSource.all.set(value);
+        this.adapter.refresh();
     }
 
     tableHeaderComponentRef: ComponentRef<any>;

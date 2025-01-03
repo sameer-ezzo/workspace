@@ -11,7 +11,7 @@ import { firstValueFrom } from "rxjs";
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (click)="edit()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (click)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {

@@ -13,6 +13,8 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatButtonModule } from "@angular/material/button";
+import { FileEvent } from "../viewer-file.vm";
+import { FileUploadService } from "../file-upload.service";
 
 const valueProperty = [
     "_id",
@@ -74,7 +76,21 @@ export class FileBrowserComponent {
     value = model<FileInfo[]>([]);
     disabled = model(false);
 
+    public fileUploader = inject(FileUploadService);
 
+    async onFileEvent(event: FileEvent) {
+        if (event.name === "remove") {
+            if('path' in event.file) {
+                try{
+                    await this.fileUploader.uploadClient.delete(event.file.path);
+                }
+                catch(e){
+                    if(e.status !== 404) throw e
+
+                }
+            }
+        }
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['path']) {

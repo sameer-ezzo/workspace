@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, signal } from "@angular/core";
+import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, output, signal } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
@@ -197,7 +197,11 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.viewModel.update((v) => [...v, ...newFiles]);
     }
 
+
+    events = output<FileEvent>();
+
     viewerEventsHandler(e: FileEvent) {
+        this.events.emit(e)
         if (e.name === "remove") {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()

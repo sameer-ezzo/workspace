@@ -5,7 +5,7 @@ import { Component } from "@angular/core";
 import { fromEvent } from "rxjs";
 import { debounceTime, startWith } from "rxjs/operators";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser, JsonPipe } from "@angular/common";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";

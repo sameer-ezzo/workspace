@@ -12,18 +12,33 @@ import { TableHeaderComponent } from "@upupa/table";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
 
-function reflectFormMetadata(targetClass: Class): DynamicFormOptionsMetaData {
-    // const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
-
-    const options = createFormMetadata();
-    // if (parent && parent.constructor) Object.assign(options, reflectFormMetadata(parent));
-
-    return Object.assign(options, Reflect.getMetadata(FORM_METADATA_KEY, targetClass) ?? {});
+function _mergeMetadata(base: DynamicFormOptionsMetaData, override: DynamicFormOptionsMetaData): DynamicFormOptionsMetaData {
+    return {
+        fields: { ...base.fields, ...override.fields },
+        targets: { ...base.targets, ...override.targets },
+        groups: { ...base.groups, ...override.groups },
+        actions: override.actions?.length ? override.actions : base.actions,
+        locales: override.locales ?? base.locales,
+        conditions: override.conditions ?? base.conditions,
+        name: override.name ?? base.name,
+        preventDirtyUnload: override.preventDirtyUnload ?? base.preventDirtyUnload,
+        recaptcha: override.recaptcha ?? base.recaptcha,
+        theme: override.theme ?? base.theme,
+    };
 }
 
-function defineFormMetadata(targetClass: any, value: DynamicFormOptionsMetaData) {
-    let targetOptions = reflectFormMetadata(targetClass);
-    Reflect.defineMetadata(FORM_METADATA_KEY, { ...targetOptions, ...value }, targetClass);
+function reflectFormMetadata(targetClass: Class): DynamicFormOptionsMetaData {
+    const options = createFormMetadata();
+    return Object.assign(options, Reflect.getOwnMetadata(FORM_METADATA_KEY, targetClass) ?? {});
+}
+
+function defineFormMetadata(targetClass: any, metadata: DynamicFormOptionsMetaData) {
+    //const parent = targetClass.prototype ? Object.getPrototypeOf(targetClass.prototype)?.constructor : null;
+    const existingMetadata = reflectFormMetadata(targetClass);
+    const currentMetadata = _mergeMetadata(existingMetadata, metadata);
+    const parentClass = Object.getPrototypeOf(targetClass);
+    const _metadata = parentClass ? _mergeMetadata(reflectFormMetadata(parentClass), currentMetadata) : currentMetadata;
+    Reflect.defineMetadata(FORM_METADATA_KEY, _metadata, targetClass);
 }
 
 function createFormMetadata(): DynamicFormOptionsMetaData {

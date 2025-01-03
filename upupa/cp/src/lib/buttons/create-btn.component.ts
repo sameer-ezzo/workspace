@@ -12,7 +12,7 @@ import { reflectFormViewModelType } from "@upupa/dynamic-form";
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (click)="create()" [descriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (click)="create()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
@@ -45,6 +45,7 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
 
 export function createButton<T = unknown>(
     formViewModel: Class,
+    value = new formViewModel(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -64,6 +65,6 @@ export function createButton<T = unknown>(
 
     return {
         component: CreateButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter },
+        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter, item: value },
     } as DynamicComponent<CreateButton>;
 }

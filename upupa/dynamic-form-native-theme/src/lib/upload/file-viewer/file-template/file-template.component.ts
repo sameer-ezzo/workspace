@@ -22,6 +22,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatBtnComponent } from "@upupa/mat-btn";
+import { SnackBarService } from "@upupa/dialog";
 
 const actions = [
     (item: File | FileInfo) =>
@@ -30,12 +31,15 @@ const actions = [
             variant: "icon",
             text: "Download",
             icon: "get_app",
+            menu: true
         }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
             name: "copy_url",
             variant: "icon",
+            text: 'Copy Url',
             icon: "content_copy",
+            menu: true
         }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
@@ -43,6 +47,7 @@ const actions = [
             variant: "icon",
             text: "Remove",
             icon: "delete",
+            menu: true
         }) as ActionDescriptor,
 ];
 // class="file hoverable" [class.loading]="fileVm.uploadTask"
@@ -141,20 +146,23 @@ export class FileTemplateComponent {
         f.actions = acs.filter((a: ActionDescriptor) => a.menu !== true);
         f.menuActions = acs.filter((a: ActionDescriptor) => a.menu === true);
     }
-
-    onMenuAction(ad: ActionDescriptor, item: ViewerExtendedFileVm) {
+    snack = inject(SnackBarService)
+    async onMenuAction(ad: ActionDescriptor, item: ViewerExtendedFileVm) {
         if (ad.name === "copy_url") {
             const file = item.file as FileInfo;
             // const at = `?access_token=${this.auth.get_token()}`;
             const fileUrl = `${file.path}`;
             navigator.clipboard.writeText(fileUrl);
+            this.snack.openInfo('Url copied to clipboard.')
         }
         if (ad.name === "download") this.downloadFile();
         else if (ad.name === "remove") {
             if (this.stream()) {
                 this.stream().cancel();
                 this.events.emit({ name: "cancelUpload", file: item.file } as CancelUploadFileEvent);
-            } else this.events.emit({ name: "remove", file: item.file } as RemoveFileEvent);
+            } else {
+                this.events.emit({ name: "remove", file: item.file } as RemoveFileEvent)
+            };
         }
         // this.action.emit({ action: ad, data: [item.file] });
     }

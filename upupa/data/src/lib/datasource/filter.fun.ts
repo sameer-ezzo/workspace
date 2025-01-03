@@ -50,17 +50,39 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     let result = all;
     if (!result) return [];
     //FILTER
-    const term = filter?.search?.toLocaleLowerCase();
-    if (term) {
+    const search = filter?.search?.toLocaleLowerCase();
+    const query = Object.entries(filter ?? {}).filter(([k]) => k !== "search");
+    if (search || query.length) {
         result = all.filter((item) => {
-            const itemTerm: string =
-                typeof item !== "object"
-                    ? item + ""
-                    : terms
-                          .map((t) => getByPath(item, t.field as string))
-                          .join("{}")
-                          .trim();
-            return itemTerm.toLocaleLowerCase().indexOf(term) > -1;
+            if (typeof item !== "object") {
+                if (search) {
+                    const itemTerm = item + "";
+                    if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
+                }
+            } else {
+                if (search) {
+                    const itemTerm = terms
+                        .map((t) => getByPath(item, t.field as string))
+                        .join("{}")
+                        .trim();
+                    if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
+                }
+
+                if (query.length) {
+                    for (const [field, q] of query) {
+                        if (field === "search") continue;
+                        const itemValue = getByPath(item, field);
+                        if (q == null && itemValue == null) return true;
+                        if (typeof q === "string") {
+                            if (itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1) return true;
+                        }
+                        if (typeof q === "number") {
+                            if (itemValue === q) return true;
+                        }
+                    }
+                }
+            }
+            return false;
         });
     }
 

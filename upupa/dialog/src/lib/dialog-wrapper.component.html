@@ -21,8 +21,10 @@
     <portal [template]="template()" (attached)="onAttached($event)"></portal>
 </div>
 
-<div class="toolbar footer">
-    @for (template of footer(); track i; let i = $index) {
-        <portal [template]="template"></portal>
-    }
-</div>
+@if (footer()) {
+    <div class="toolbar footer">
+        @for (template of footer(); track i; let i = $index) {
+            <portal [template]="template"></portal>
+        }
+    </div>
+}

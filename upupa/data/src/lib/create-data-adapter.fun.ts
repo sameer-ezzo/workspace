@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from "@angular/core";
+import { effect, Injector, runInInjectionContext } from "@angular/core";
 import { DataAdapter, DataAdapterDescriptor, DataAdapterType } from "./datasource/data.adapter";
 import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
