@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
-import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult, AuthorizeContext } from "@noah-ark/common";
+import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult } from "@noah-ark/common";
 import { _isSuperAdmin, authorize, evaluatePermission, matchPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 

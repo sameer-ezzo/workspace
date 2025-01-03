@@ -89,25 +89,22 @@ export function generatePassword(pwdStrength?: PasswordStrength): string {
 }
 
 export function verifyPassword(password: string) {
+    password ??= "";
     const result: { [group: string]: number; length?: number; other?: number } = {};
     let found = 0;
-    for (let g in charsGroups) result[g] = 0;
-    if (password != null) {
-        for (let c of password) {
-            for (let g in charsGroups) {
-                if (charsGroups[g].indexOf(c) > -1) {
-                    result[g]++;
-                    found++;
-                    break;
-                }
+    for (const g in charsGroups) result[g] = 0;
+
+    for (const c of password.slice()) {
+        for (const g in charsGroups) {
+            if (charsGroups[g].indexOf(c) > -1) {
+                result[g]++;
+                found++;
+                break;
             }
         }
-        result.length = password.length;
-        result.other = result.length - found;
-    } else {
-        result.length = 0;
-        result.other = 0;
     }
+    result.length = password.length;
+    result.other = result.length - found;
 
     return result;
 }
