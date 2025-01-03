@@ -1,12 +1,9 @@
-<collector
-    #signupForm
-    [submitBtn]="submitBtn"
-    [fields]="fields"
-    (submit)="signup(model)"
-    [(value)]="model"
->
-</collector>
-<!-- [nextBtn]="nextBtn"
-    [prevBtn]="prevBtn" 
-    [collectStyle]="formStyle"
-[design]="design" -->
+{{ value() | json }}
+<collector #loginForm [fields]="fields()" [conditions]="conditions()" [submitBtn]="submitBtn()" (submit)="signup()" [(value)]="value"> </collector>
+@if (externalLinks()) {
+    <div class="external-links">
+        <portal [template]="externalLinks()"></portal>
+    </div>
+} @else {
+    <ng-content select="links"></ng-content>
+}

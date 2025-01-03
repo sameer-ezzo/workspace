@@ -16,6 +16,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
     imports: [DynamicFormComponent, CommonModule, UtilsModule, MatBtnComponent],
     templateUrl: "./collector.component.html",
     styleUrls: ["./collector.component.scss"],
+    exportAs: "collector",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -29,13 +30,15 @@ import { MatBtnComponent } from "@upupa/mat-btn";
         },
     ],
 })
-export class CollectorComponent extends InputBaseComponent<any> {
+export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
     form = computed(() => this.dynamicForm().control());
-    submit = output();
+    valid = computed(() => this.dynamicForm().control().valid);
+    touched = computed(() => this.dynamicForm().control().touched);
+    submit = output<T>();
     action = output<ActionDescriptor>();
     activePageChange = output<number>();
-    fieldValueChange = output<ExtendedValueChangeEvent<any>>();
+    fieldValueChange = output<ExtendedValueChangeEvent<T>>();
 
     collectStyle = input<CollectStyle>("linear");
 
@@ -66,8 +69,10 @@ export class CollectorComponent extends InputBaseComponent<any> {
     private formFieldsInfo = new Map<Field, { index: number; page: number }>();
 
     pages: FormPage[] = [];
-    _pageInvalid = signal(true);
+    _pageInvalid = signal(false);
     loading = signal(false);
+    focusedField = input<Field>();
+    design = input<FormDesign>();
 
     get controls() {
         return this.dynamicForm().graph;
@@ -81,35 +86,12 @@ export class CollectorComponent extends InputBaseComponent<any> {
     get totalPages() {
         return this.pages.length;
     }
-    focusedField = input<Field>();
-
-    design = input<FormDesign>();
 
     private readonly document = inject(DOCUMENT);
 
-    private _applyFormDesign(design: FormDesign) {
-        if (design.bgImage?.url) this.document.documentElement.style.setProperty("--bg-img-url", design.bgImage.url);
-        if (design.bgColor) this.document.documentElement.style.setProperty("--bg-color", design.bgColor);
-        if (design.textColor) this.document.documentElement.style.setProperty("--field-text-color", design.textColor);
-        if (design.valueColor) this.document.documentElement.style.setProperty("--field-value-color", design.valueColor);
-        if (design.buttonsColor) this.document.documentElement.style.setProperty("--button-color", design.buttonsColor);
-
-        if (design.headerFont) {
-            loadFontFace(this.document, design.headerFont.font.family);
-            this.document.documentElement.style.setProperty("--header-font-family", design.headerFont.font.family);
-        }
-        if (design.paragraphFont) {
-            loadFontFace(this.document, design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-family", design.paragraphFont.font.family);
-            this.document.documentElement.style.setProperty("--paragraph-font-size", design.paragraphFont.size || "22pt");
-        }
-    }
-
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes["design"]) this._applyFormDesign(this.design());
-        if (changes["fields"]) this.populatePagesInFields();
-        if (changes["activePage"]) this.showFieldsOfPage();
-        if (changes["focusedField"]) {
+        if (changes["design"]) applyFormDesign(this.design(), this.document.documentElement);
+        if (changes["fields"] || changes["focusedField"]) {
             if (this.pages?.length === 0) this.populatePagesInFields();
             const v = this.focusedField();
             this.activePage.set(v ? this.formFieldsInfo.get(v).page : null);
@@ -118,6 +100,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
             //     if (this.dynamicForm) this.dynamicForm.scrollToElement(element, true);
             // }, 300);
         }
+        if (changes["activePage"]) this.showFieldsOfPage();
     }
 
     populatePagesInFields() {
@@ -133,10 +116,7 @@ export class CollectorComponent extends InputBaseComponent<any> {
     }
 
     _checkPageInvalid(pageIndex: number) {
-        if (pageIndex < 0 || pageIndex > this.pages.length - 1) {
-            this._pageInvalid.set(false);
-            return;
-        }
+        if (pageIndex < 0 || pageIndex > this.pages.length - 1) return this._pageInvalid.set(false);
 
         const page = this.pages[pageIndex];
         if (page?.fields) this._pageInvalid.set(Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true));
@@ -163,12 +143,12 @@ export class CollectorComponent extends InputBaseComponent<any> {
     async onSubmit() {
         this.loading.set(true);
         this._checkPageInvalid(this.activePage());
-        if (!this._pageInvalid) this.submit.emit(this.value());
+        if (!this._pageInvalid()) this.submit.emit(this.value());
         this.loading.set(false);
     }
 
     canGoNext() {
-        return !this._pageInvalid && this.activePage() < this.totalPages - 1;
+        return !this._pageInvalid() && this.activePage() < this.totalPages - 1;
     }
 
     canGoPrev() {
@@ -203,4 +183,22 @@ function loadFontFace(doc, family: string) {
     const newStyle = doc.createElement("style");
     newStyle.appendChild(doc.createTextNode(`@font-face {font-family: " + ${family} + "src: url('" + ${fontUri} + "')}`));
     doc.head.appendChild(newStyle);
+}
+
+function applyFormDesign(design: FormDesign, el: HTMLElement) {
+    if (design.bgImage?.url) el.style.setProperty("--bg-img-url", design.bgImage.url);
+    if (design.bgColor) el.style.setProperty("--bg-color", design.bgColor);
+    if (design.textColor) el.style.setProperty("--field-text-color", design.textColor);
+    if (design.valueColor) el.style.setProperty("--field-value-color", design.valueColor);
+    if (design.buttonsColor) el.style.setProperty("--button-color", design.buttonsColor);
+
+    if (design.headerFont) {
+        loadFontFace(this.document, design.headerFont.font.family);
+        el.style.setProperty("--header-font-family", design.headerFont.font.family);
+    }
+    if (design.paragraphFont) {
+        loadFontFace(this.document, design.paragraphFont.font.family);
+        el.style.setProperty("--paragraph-font-family", design.paragraphFont.font.family);
+        el.style.setProperty("--paragraph-font-size", design.paragraphFont.size || "22pt");
+    }
 }
