@@ -1,7 +1,6 @@
-import { Component, inject, HostBinding } from "@angular/core";
+import { Component, inject, HostBinding, model, Injector, runInInjectionContext } from "@angular/core";
 import { MembershipSignupOptions } from "../types";
-import { SIGNUP_OPTIONS, SIGNUP_ON_SUCCESS_TOKEN, SIGNUP_ON_FAILED_TOKEN, SIGNUP_INITIAL_VALUE_FACTORY_TOKEN, SIGNUP_LINKS_TOKEN, SIGNUP_EXTERNAL_LINKS_TOKEN } from "../di.token";
-import { PageNavigationComponent } from "../page-navigation/page-navigation.component";
+import { SIGNUP_OPTIONS } from "../di.token";
 import { SignUpFormComponent } from "../signup-form/signup-form.component";
 
 @Component({
@@ -9,24 +8,23 @@ import { SignUpFormComponent } from "../signup-form/signup-form.component";
     selector: "signup",
     styleUrls: ["./signup.component.scss"],
     templateUrl: "./signup.component.html",
-    imports: [PageNavigationComponent, SignUpFormComponent],
+    imports: [SignUpFormComponent],
 })
 export class SignUpComponent {
     @HostBinding("class") readonly class = "account-page-wrapper signup-page";
     readonly options: MembershipSignupOptions = inject(SIGNUP_OPTIONS);
+    model = model();
 
-    private readonly onSuccessHandler = inject(SIGNUP_ON_SUCCESS_TOKEN, { optional: true });
-    private readonly onFailedHandler = inject(SIGNUP_ON_FAILED_TOKEN, { optional: true }) ?? (() => {});
-    readonly initialValueFactory = inject(SIGNUP_INITIAL_VALUE_FACTORY_TOKEN, { optional: true }) ?? (() => ({}));
-    model = this.initialValueFactory() as any;
-    readonly links = inject(SIGNUP_LINKS_TOKEN, { optional: true });
-    readonly external_links = inject(SIGNUP_EXTERNAL_LINKS_TOKEN, { optional: true });
-
+    private readonly injector = inject(Injector);
     onSuccess(value: any) {
-        this.onSuccessHandler?.();
+        if (this.options.on_success) {
+            runInInjectionContext(this.injector, () => this.options.on_success(this, value));
+        }
     }
 
-    onFailed(value: any) {
-        this.onFailedHandler?.();
+    onFailed(err: any) {
+        if (this.options.on_error) {
+            runInInjectionContext(this.injector, () => this.options.on_error(this, err));
+        }
     }
 }

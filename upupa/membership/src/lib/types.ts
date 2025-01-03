@@ -2,7 +2,10 @@ import { FormScheme, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { defaultForgotPasswordFormFields, defaultResetPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { PasswordStrength } from "@upupa/auth";
-import { ComponentRef } from "@angular/core";
+import { ComponentRef, inject } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
+import { SnackBarService } from "@upupa/dialog";
+import { Router } from "@angular/router";
 
 export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {
@@ -66,15 +69,51 @@ export class MembershipSignupOptions extends BaseMembershipFormOptions {
         super(fields ?? defaultSignupFormFields, conditions, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
     }
 }
+
+export function loginSuccessHandler(instance, response) {
+    const router = inject(Router);
+    const route = inject(ActivatedRoute);
+    const { redirect, redirectTo } = route.snapshot.queryParams ?? {};
+    const redirectUrl = redirect ?? redirectTo ?? "/";
+    router.navigateByUrl(decodeURIComponent(redirectUrl));
+}
+
+export function loginErrorHandler(instance, error) {
+    const snack = inject(SnackBarService);
+    snack.openFailed(error.message);
+}
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
     constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
         const { fields: fs, conditions: cnds } = reflectFormViewModelType(LoginFormViewModel);
-        super(fields ?? fs, conditions ?? cnds, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
+        on_success = on_success ?? loginSuccessHandler;
+        on_error = on_error ?? loginErrorHandler;
+        super(fields ?? fs, conditions ?? cnds, on_success, on_error);
     }
+}
+
+export function forgotPasswordSuccessHandler(instance, response) {
+    const snack = inject(SnackBarService);
+    snack.openSuccess(`Reset password link sent to ${response.email}`);
+    const router = inject(Router);
+    router.navigate(["/"]);
+}
+
+export function forgotPasswordErrorHandler(instance, error) {
+    const snack = inject(SnackBarService);
+    const router = inject(Router);
+    const route = inject(ActivatedRoute);
+    snack
+        .openFailed(error.message)
+        .afterDismissed()
+        .subscribe(() => {
+            router.navigate(["/"], { relativeTo: route });
+        });
 }
 export class MembershipForgotPasswordOptions extends BaseMembershipFormOptions {
     constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
-        super(fields ?? defaultForgotPasswordFormFields, conditions, on_success ?? ((ref) => {}), on_error ?? ((ref) => {}));
+        on_success = on_success ?? forgotPasswordSuccessHandler;
+        on_error = on_error ?? forgotPasswordErrorHandler;
+        super(fields ?? defaultForgotPasswordFormFields, conditions, on_success, on_error);
     }
 }
 

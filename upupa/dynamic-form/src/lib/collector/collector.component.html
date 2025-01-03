@@ -16,8 +16,7 @@
         [conditions]="conditions()"
         [name]="name()"
         (submit)="onSubmit()"
-        (fieldValueChange)="fieldValueChange.emit($event)"
-        (valueChange)="_checkPageInvalid(activePage()); propagateChange()"
+        (fieldValueChange)="_checkPageInvalid(activePage()); propagateChange(); fieldValueChange.emit($event)"
     >
     </dynamic-form>
 </div>
@@ -29,7 +28,7 @@
         <mat-btn [buttonDescriptor]="prevBtn()" (click)="prev()"></mat-btn>
     }
     @if (submitBtn()) {
-        <mat-btn [buttonDescriptor]="_pageInvalid() || loading() || (form().invalid && form().touched)" [descriptor]="submitBtn()" (click)="onSubmit()"></mat-btn>
+        <mat-btn [disabled]="_pageInvalid() || loading() || (form().invalid && form().touched)" [buttonDescriptor]="submitBtn()" (click)="onSubmit()"></mat-btn>
     }
     @for (act of actions(); track act) {
         <mat-btn [buttonDescriptor]="act" (click)="actionClicked(act)"></mat-btn>

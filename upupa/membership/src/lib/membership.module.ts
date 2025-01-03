@@ -1,70 +1,7 @@
-import { NgModule, ModuleWithProviders, Provider, makeEnvironmentProviders } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { CommonModule } from "@angular/common";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { makeEnvironmentProviders } from "@angular/core";
 
-import { SignUpComponent } from "./signup/signup.component";
-import { ForgotPasswordComponent } from "./forgot-password/forgot-password.component";
-import { VerifyComponent } from "./verify/verify.component";
-
-import { UtilsModule } from "@upupa/common";
-import { ProfileComponent } from "./profile/profile.component";
-import { LoginComponent } from "./login/login.component";
-import { RouterModule } from "@angular/router";
-import { ChangeAvatarComponent } from "./change-avatar/change-avatar.component";
-import { ChangePhoneComponent } from "./change-phone/change-phone.component";
-import { ChangeEmailComponent } from "./change-email/change-email.component";
-import { MatMenuModule } from "@angular/material/menu";
-import { MembershipRoutingModule } from "./membership-routing.module";
-import { DynamicFormModule } from "@upupa/dynamic-form";
-import {
-    FORGOT_PASSWORD_EXTERNAL_LINKS_TOKEN,
-    FORGOT_PASSWORD_INITIAL_VALUE_FACTORY_TOKEN,
-    FORGOT_PASSWORD_LINKS_TOKEN,
-    FORGOT_PASSWORD_ON_FAILED_TOKEN,
-    FORGOT_PASSWORD_ON_SUCCESS_TOKEN,
-    FORGOT_PASSWORD_OPTIONS,
-    IdPs_OPTIONS,
-    LOG_IN_EXTERNAL_LINKS_TOKEN,
-    LOG_IN_INITIAL_VALUE_FACTORY_TOKEN,
-    LOG_IN_LINKS_TOKEN,
-    LOG_IN_ON_FAILED_TOKEN,
-    LOG_IN_ON_SUCCESS_TOKEN,
-    LOG_IN_OPTIONS,
-    MEMBERSHIP_OPTIONS,
-    RESET_PASSWORD_OPTIONS,
-    SIGNUP_EXTERNAL_LINKS_TOKEN,
-    SIGNUP_INITIAL_VALUE_FACTORY_TOKEN,
-    SIGNUP_LINKS_TOKEN,
-    SIGNUP_ON_FAILED_TOKEN,
-    SIGNUP_ON_SUCCESS_TOKEN,
-    SIGNUP_OPTIONS,
-    VERIFY_EXTERNAL_LINKS_TOKEN,
-    VERIFY_INITIAL_VALUE_FACTORY_TOKEN,
-    VERIFY_LINKS_TOKEN,
-    VERIFY_ON_FAILED_TOKEN,
-    VERIFY_ON_SUCCESS_TOKEN,
-    VERIFY_OPTIONS,
-} from "./di.token";
-import {
-    BaseMembershipFormOptions,
-    MembershipForgotPasswordOptions,
-    MembershipLoginOptions,
-    MembershipOptions,
-    MembershipResetPasswordOptions,
-    MembershipSignupOptions,
-    MembershipVerifyOptions,
-} from "./types";
-import { PageNavigationComponent } from "./page-navigation/page-navigation.component";
-import { ChangeUserPropComponent } from "./change-user-prop/change-user-prop.component";
-import { ResetPasswordComponent } from "./reset-password/reset-password.component";
-
-import { SignUpFormComponent } from "./signup-form/signup-form.component";
-import { ForgotPasswordFormComponent } from "./forgot-password-form/forgot-password-form.component";
-import { ResetPasswordFormComponent } from "./reset-password-form/reset-password-form.component";
-import { IdpButtonDirective } from "./idp-button.directive";
+import { FORGOT_PASSWORD_OPTIONS, LOG_IN_OPTIONS, RESET_PASSWORD_OPTIONS, SIGNUP_OPTIONS } from "./di.token";
+import { MembershipForgotPasswordOptions, MembershipLoginOptions, MembershipOptions, MembershipResetPasswordOptions, MembershipSignupOptions } from "./types";
 
 // const optionsProviders = <T extends BaseMembershipFormOptions>(form: "LOG_IN" | "SIGNUP" | "FORGOT_PASSWORD" | "VERIFY", options: T): Provider[] => {
 //     const providers = {
@@ -198,16 +135,43 @@ const components = [];
 //     }
 // }
 
+/**
+ * Provides the login options for the login component.
+ *
+ * @param options - Partial login options to override the default settings.
+ * @returns An array of providers for the login options.
+ */
 export function provideLogin(options?: Partial<MembershipLoginOptions>) {
     const opts = { ..._defaultMembershipOptions.login, ...options };
     return makeEnvironmentProviders([{ provide: LOG_IN_OPTIONS, useValue: opts }]);
 }
-
+/**
+ * Provides the sign up options for the sign up component.
+ *
+ * @param options - Partial sign up options to override the default settings.
+ * @returns An array of providers for the sign up options.
+ */
+export function provideSignup(options?: Partial<MembershipSignupOptions>) {
+    const opts = { ..._defaultMembershipOptions.signup, ...options };
+    return makeEnvironmentProviders([{ provide: SIGNUP_OPTIONS, useValue: opts }]);
+}
+/**
+ * Provides the forgot password options for the forgot password component.
+ *
+ * @param options - Partial forgot password options to override the default settings.
+ * @returns An array of providers for the forgot password options.
+ */
 export function provideForgotPassword(options?: Partial<MembershipForgotPasswordOptions>) {
     const opts = { ..._defaultMembershipOptions.forgotPassword, ...options };
     return makeEnvironmentProviders([{ provide: FORGOT_PASSWORD_OPTIONS, useValue: opts }]);
 }
 
+/**
+ * Provides the reset password options for the reset password component.
+ *
+ * @param options - Partial reset password options to override the default settings.
+ * @returns An array of providers for the reset password options.
+ */
 export function provideResetPassword(options?: Partial<MembershipResetPasswordOptions>) {
     const opts = { ..._defaultMembershipOptions.resetPassword, ...options };
     return makeEnvironmentProviders([{ provide: RESET_PASSWORD_OPTIONS, useValue: opts }]);

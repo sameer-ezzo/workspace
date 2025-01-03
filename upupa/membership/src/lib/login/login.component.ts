@@ -12,8 +12,6 @@ import { IdpName, MembershipLoginOptions } from "../types";
 import { ActivatedRoute, Router } from "@angular/router";
 
 import { AuthService } from "@upupa/auth";
-
-import { PageNavigationComponent } from "../page-navigation/page-navigation.component";
 import { CommonModule } from "@angular/common";
 import { LoginFormComponent } from "../login-form/login-form.component";
 
@@ -22,7 +20,7 @@ import { LoginFormComponent } from "../login-form/login-form.component";
     selector: "login",
     styleUrls: ["./login.component.scss"],
     templateUrl: "./login.component.html",
-    imports: [LoginFormComponent, PageNavigationComponent, CommonModule],
+    imports: [LoginFormComponent, CommonModule],
     host: { class: "account-page-wrapper login-page" },
 })
 export class LoginComponent implements OnInit, AfterViewInit {

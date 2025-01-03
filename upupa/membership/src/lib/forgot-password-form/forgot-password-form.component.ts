@@ -1,17 +1,18 @@
-import { Component, Input, inject, signal, model, output, viewChild, SimpleChanges, effect } from "@angular/core";
+import { Component, inject, signal, model, output, viewChild, input } from "@angular/core";
 import { AuthService } from "@upupa/auth";
-import { ActionDescriptor } from "@upupa/common";
-import { CollectorComponent, ExtendedValueChangeEvent, FormScheme } from "@upupa/dynamic-form";
+import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
+import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultForgotPasswordFormFields } from "../default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { FormControl } from "@angular/forms";
+import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 
 @Component({
     standalone: true,
     selector: "forgot-password-form",
     templateUrl: "./forgot-password-form.component.html",
     styleUrls: ["./forgot-password-form.component.scss"],
-    imports: [CollectorComponent],
+    imports: [CollectorComponent, PortalComponent],
 })
 export class ForgotPasswordFormComponent {
     control = new FormControl();
@@ -23,17 +24,19 @@ export class ForgotPasswordFormComponent {
     fail = output<any>();
 
     model = model<{ email: "" }>();
-    @Input() submitBtn: ActionDescriptor = { name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised" };
-    @Input() fields: FormScheme = defaultForgotPasswordFormFields;
-    @Input() conditions: Condition[] = [];
+    submitBtn = input<ActionDescriptor>();
+    fields = input<FormScheme>(defaultForgotPasswordFormFields);
+    conditions = input<Condition[]>([]);
+    externalLinks = input<DynamicComponent>({ component: MembershipFormExternalLinksComponent, inputs: { links: [{ text: "Login", routerLink: ["../login"] }] } });
 
-    submittedValue: any;
+    _submitBtn = signal<ActionDescriptor>({ name: "submit", type: "submit", text: "Submit", color: "primary", variant: "raised", disabled: true } as ActionDescriptor);
+
     async send() {
         this.loading.set(true);
-
+        this.disableSubmit();
         try {
-            this.submittedValue = this.model();
-            const res = await this.auth.forgotPassword(this.submittedValue.email, this.submittedValue);
+            const value = { ...this.model() };
+            const res = await this.auth.forgotPassword(value.email, value);
             this.success.emit(res);
         } catch (error) {
             const err = this.handleError(error);
@@ -41,42 +44,23 @@ export class ForgotPasswordFormComponent {
             this.fail.emit(err);
         } finally {
             this.loading.set(false);
+            this.enableSubmit();
         }
     }
 
-    onValueChange(e: ExtendedValueChangeEvent<{ email: string }>) {
-        const value = e.value;
-        console.log("value changed", value, this.submittedValue);
-
-        if (!this.#timeoutHandler) return this.enableSubmit();
-
-        const email = value.email.trim().toLocaleLowerCase();
-        const submittedEmail = (this.submittedValue?.email ?? "").trim().toLocaleLowerCase();
-        console.log(email === submittedEmail, email, submittedEmail);
-
-        if (email === submittedEmail) return;
-
-        this.submittedValue = null;
-        clearTimeout(this.#timeoutHandler);
-        this.enableSubmit();
-    }
     enableSubmit() {
-        this.submitBtn = { ...this.submitBtn, disabled: false };
+        this._submitBtn.set({ ...this._submitBtn(), disabled: false } as ActionDescriptor);
     }
     disableSubmit() {
-        this.submitBtn = { ...this.submitBtn, disabled: true };
+        this._submitBtn.set({ ...this._submitBtn(), disabled: true } as ActionDescriptor);
     }
-    #timeoutHandler: any;
+
     handleError(e) {
         let err = e.error ?? e;
         if (err.statusCode === 400) {
             if (e.message === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
             else if (e.message === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
-            else if (e.message === "ALREADY_SENT") {
-                err = { message: "Reset password link already sent", code: 400 };
-                this.disableSubmit();
-                this.#timeoutHandler = setTimeout(() => this.enableSubmit(), 60000);
-            }
+            else if (e.message === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
         }
         return err;
     }

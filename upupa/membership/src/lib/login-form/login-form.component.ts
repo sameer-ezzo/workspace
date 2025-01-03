@@ -8,6 +8,7 @@ import { FormControl } from "@angular/forms";
 import { Principle } from "@noah-ark/common";
 import { CommonModule } from "@angular/common";
 import { LoginExternalLinksComponent } from "./login-external-links.component";
+import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 
 @Component({
     standalone: true,
@@ -51,7 +52,15 @@ export class LoginFormComponent {
     );
     conditions = input<Condition[]>([]);
 
-    externalLinks = input<DynamicComponent>({ component: LoginExternalLinksComponent });
+    externalLinks = input<DynamicComponent>({
+        component: MembershipFormExternalLinksComponent,
+        inputs: {
+            links: [
+                { text: "Forgot password?", routerLink: ["../forgot-password"] },
+                { text: "Sign up", routerLink: ["../signup"] },
+            ],
+        },
+    });
 
     stage = signal<"check-user" | "fill-password">("check-user");
     formFields = computed(() => {
@@ -76,7 +85,7 @@ export class LoginFormComponent {
             const value = this.value();
             const res = await this.auth.checkUser(value.email);
             console.log(res);
-            
+
             if (!res.canLogin) throw new Error("INVALID_ATTEMPT");
             this.stage.set("fill-password");
             return;

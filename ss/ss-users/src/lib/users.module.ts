@@ -40,7 +40,7 @@ export class UsersModule implements OnModuleInit {
         return {
             global: true,
             module: UsersModule,
-            imports: [AuthModule, RulesModule, DataModule, CommonModule, EventEmitterModule],
+            imports: [AuthModule, RulesModule, DataModule, CommonModule, EventEmitterModule.forRoot({ wildcard: true })],
             providers: [...providers, { provide: "USERS_OPTIONS", useValue: options }],
             controllers: [UsersController],
         };
