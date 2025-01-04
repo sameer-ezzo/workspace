@@ -1,17 +1,10 @@
-<input type="hidden" [formControl]="control()" />
-@if (label()) {
-    <fieldset>
+<fieldset>
+    @if (label()) {
         <legend>{{ label() }}</legend>
-        <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
-    </fieldset>
-} @else {
-    <ng-container *ngTemplateOutlet="htmlEditorTemplate"></ng-container>
-}
-
-<ng-template #htmlEditorTemplate>
+    }
     <div #editor></div>
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
-</ng-template>
+</fieldset>

@@ -16,7 +16,7 @@ export * from "./lib/error.pipe";
 
 export * from "./lib/models/models";
 export * from "./lib/event.bus";
-export * from "./lib/gateway/gateway.service";
+// export * from "./lib/gateway/gateway.service";
 
 export * from "./lib/input-base.component";
 export * from "./lib/html.pipe";

@@ -53,8 +53,6 @@ import { MatExpansionModule } from "@angular/material/expansion";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 
-
-
 @Pipe({
     name: "orderedKeyValue",
     pure: true,
@@ -269,16 +267,16 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 if (this.options.enableLogs === true) console.log(`${this.name()}:${path} valueChanges`, ee);
                 this.fieldValueChange.emit(ee);
             } else if (e instanceof PristineChangeEvent) {
-                this.control().markAsPristine();
+                if (!this.control().pristine) this.control().markAsPristine();
             } else if (e instanceof TouchedChangeEvent) {
-                this.control().markAsTouched();
+                if (!this.control().touched) this.control().markAsTouched();
             } else if (e instanceof StatusChangeEvent) {
                 // if (e.status === "VALID") this.control().setErrors(null);
                 // else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
                 // else if (e.status === "PENDING") this.control().setErrors({ pending: true });
 
-                if (this.form.enabled) this.control().enable();
-                else this.control().disable();
+                if (this.form.enabled && this.control().disabled) this.control().enable();
+                if (!this.form.enabled && this.control().enabled) this.control().disable();
             } else if (e instanceof FormResetEvent) {
                 this.control().reset();
                 this._patches.clear();
@@ -304,7 +302,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         }
         if (changes["value"]) {
             this._patches.clear();
-            this.form.patchValue(this.value(),{emitEvent:false});
+            this.form.patchValue(this.value(), { emitEvent: false });
             this.propagateChange();
         }
 

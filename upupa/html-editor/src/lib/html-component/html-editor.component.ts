@@ -50,15 +50,13 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
     editor: DecoupledEditor;
     el = inject(ElementRef<HTMLElement>);
     editorElement = viewChild<ElementRef<HTMLTextAreaElement>>("editor");
-    constructor() {
-        super();
-        effect(async () => {
-            if (!this.isBrowser) return;
 
-            const el = this.editorElement();
-            if (!el) return;
-            await this._initEditor();
-        });
+    async ngAfterViewInit() {
+        if (!this.isBrowser) return;
+
+        const el = this.editorElement();
+        if (!el) return;
+        await this._initEditor();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -95,10 +93,10 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
             parent.appendChild(toolbar);
             parent.appendChild(editableElement);
             this.uploadAdapterPlugin(editor);
-            editor.setData(this.control().value ?? "");
+            editor.setData(this.value() ?? "");
 
             editor.model.document.on("change:data", () => {
-                this.control().setValue(editor.getData());
+                this.handleUserInput(editor.getData());
             });
             this.editor = editor;
         } catch (error) {

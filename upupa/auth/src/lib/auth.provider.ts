@@ -3,10 +3,10 @@ import { AUTH_OPTIONS } from "./di.token";
 import { AuthOptions } from "./auth-options";
 import { HTTP_INTERCEPTORS } from "@angular/common/http";
 import { AuthInterceptor } from "./auth.interceptor";
-import { FormScheme } from "@upupa/dynamic-form";
-import { defaultLoginFormFields, LoginFormComponent } from "@upupa/membership";
+// import { FormScheme } from "@upupa/dynamic-form";
+// import { defaultLoginFormFields, LoginFormComponent } from "@upupa/membership";
 import { ActivatedRoute, Router } from "@angular/router";
-import { SnackBarService } from "@upupa/dialog";
+// import { SnackBarService } from "@upupa/dialog";
 import { DynamicComponent } from "@upupa/common";
 
 export type AuthProvider = Omit<Provider, "provide">;
@@ -27,11 +27,11 @@ export function default_success_login(instance, response) {
 }
 
 export function default_error_login(instance, error) {
-    instance.injector.get(SnackBarService).openFailed(error.message);
+    // instance.injector.get(SnackBarService).openFailed(error.message);
 }
 
 const defaultUsernameAndPasswordOptions = {
-    fields: defaultLoginFormFields,
+    fields: {}, //defaultLoginFormFields,
     on_success: default_success_login,
     on_error: default_error_login,
 };
@@ -46,15 +46,15 @@ const defaultUsernameAndPasswordOptions = {
  * @param options.on_error - The callback function to be executed on login error.
  * @returns An AuthProvider object configured with the specified options.
  */
-export function withEmailAndPassword(options: { fields?: FormScheme; on_success?: any; on_error?: any } = defaultUsernameAndPasswordOptions): AuthProvider {
-    options.fields = options.fields ?? defaultLoginFormFields;
+export function withEmailAndPassword(options: { fields?: any; on_success?: any; on_error?: any } = defaultUsernameAndPasswordOptions): AuthProvider {
+    options.fields = options.fields; //?? defaultLoginFormFields;
     options.on_success = options.on_success ?? default_success_login;
     options.on_error = options.on_error ?? default_error_login;
     return {
         useValue: {
             name: "email-and-password",
             template: {
-                component: LoginFormComponent,
+                component: null, //LoginFormComponent,
                 content: [[`<h3 class="header">Login</h3>`]],
                 inputs: {
                     fields: options.fields,
@@ -63,7 +63,7 @@ export function withEmailAndPassword(options: { fields?: FormScheme; on_success?
                     success: options.on_success,
                     error: options.on_error,
                 },
-            } as DynamicComponent<LoginFormComponent>,
+            }, //as DynamicComponent<LoginFormComponent>,
         },
     } as AuthProvider;
 }
