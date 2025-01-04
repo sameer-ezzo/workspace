@@ -1,11 +1,8 @@
-import { Input, EventEmitter, Output, ElementRef, inject, AfterViewInit, Directive, NgZone, PLATFORM_ID, LOCALE_ID } from "@angular/core";
-import { loadScript } from "./load-script.func";
+import { ElementRef, inject, Directive, PLATFORM_ID, input, SimpleChanges, computed, output, Injector } from "@angular/core";
 
-import { AuthService } from "@upupa/auth";
+import { IdPsOptions } from "@upupa/auth";
 import { IdpName } from "./types";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
-
-declare let google: any;
+import { isPlatformBrowser } from "@angular/common";
 
 @Directive({
     selector: "[idp-button]",
@@ -13,69 +10,29 @@ declare let google: any;
     standalone: true,
 })
 export class IdpButtonDirective {
-    private readonly locale = inject(LOCALE_ID);
     private readonly platformId = inject(PLATFORM_ID);
     private readonly host = inject(ElementRef).nativeElement;
 
-    private _idp: any;
-    @Input()
-    public get idp(): any {
-        return this._idp;
-    }
-    public set idp(value: any) {
-        if (!value) return;
-        this._idp = value;
-        this.init(this.idp);
-    }
+    idp = input.required<Partial<IdPsOptions>>();
+    idpName = computed(() => this.idp().name as IdpName);
+    idpOptions = computed(() => this.idp().options);
 
-    @Output() success = new EventEmitter<any>();
+    state = output<{ state: "initialized" } | { state: "initializing" } | { state: "error"; error: any }>();
+    success = output<any>();
 
-    initializedFor = null as IdpName;
-    initializingFor = null as IdpName;
-
-    private async init(idp: any) {
-        if (this.initializingFor === idp.idpName) return;
-        if (this.initializedFor === idp.idpName) return;
-
-        if (idp.idpName === "google") {
-            this.initializingFor = idp.idpName;
-            await this.initializeGoogleSignIn();
-            this.initializedFor = idp.idpName;
-            this.initializingFor = null;
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes["idp"]) {
+            this.init();
         }
     }
-
-    private readonly auth = inject(AuthService);
-    private readonly zone = inject(NgZone);
-    private readonly doc = inject(DOCUMENT);
-    async initializeGoogleSignIn() {
-        await loadScript(this.doc, "https://accounts.google.com/gsi/client");
-
-        const options = {
-            client_id: this.idp.clientId,
-            ...this.idp.attributes,
-        };
-        if (this.idp.attributes.ux_mode === "popup")
-            options["callback"] = async (e) => {
-                this.zone.run(async () => {
-                    try {
-                        const res = await this.auth.signin_Google({ token: e.credential });
-                        this.success.emit(res);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                });
-            };
-
-        google.accounts.id.initialize(options);
-        const browserLocale = (this.locale ?? "en").split("-")[0];
-        google.accounts.id.renderButton(this.host, {
-            theme: "outline",
-            size: "large",
-            locale: browserLocale,
-            ...this.idp.customize,
-        });
-
-        google.accounts.id.prompt();
+    private readonly injector = inject(Injector);
+    private async init() {
+        if (!isPlatformBrowser(this.platformId)) return;
+        if (this.idpName() === "google") {
+            // runInInjectionContext(this.injector, () => {
+            //     const google = new GoogleIdProvider(this.host, this.idp() as unknown as IdPsOptions<"google">);
+            // });
+        }
+        throw new Error(`IdP ${this.idpName()} is not supported`);
     }
 }

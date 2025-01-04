@@ -137,7 +137,7 @@ export class MembershipOptions {
     forgotPassword?: MembershipForgotPasswordOptions = new MembershipForgotPasswordOptions();
     resetPassword?: MembershipResetPasswordOptions = new MembershipResetPasswordOptions();
     verify = new MembershipVerifyOptions();
-    idPs?: Record<IdpName, any>;
+    idPs?: Partial<Record<IdpName, any>>;
 }
 
 export type PageNavigationLink = {

@@ -1,6 +1,4 @@
-import { Component, inject, Injector, runInInjectionContext } from "@angular/core";
-import { FORGOT_PASSWORD_ON_FAILED_TOKEN, FORGOT_PASSWORD_ON_SUCCESS_TOKEN, FORGOT_PASSWORD_OPTIONS } from "../di.token";
-import { MembershipForgotPasswordOptions } from "../types";
+import { Component, inject, Injector } from "@angular/core";
 import { ForgotPasswordFormComponent } from "../forgot-password-form/forgot-password-form.component";
 import { CommonModule } from "@angular/common";
 
@@ -12,18 +10,18 @@ import { CommonModule } from "@angular/common";
     imports: [ForgotPasswordFormComponent, CommonModule],
 })
 export class ForgotPasswordComponent {
-    readonly options: MembershipForgotPasswordOptions = inject(FORGOT_PASSWORD_OPTIONS);
+    // readonly options: MembershipForgotPasswordOptions = inject(FORGOT_PASSWORD_OPTIONS);
 
     private readonly injector = inject(Injector);
     onSuccess(value: any) {
-        if (this.options.on_success) {
-            runInInjectionContext(this.injector, () => this.options.on_success(this, value));
-        }
+        // if (this.options.on_success) {
+        //     runInInjectionContext(this.injector, () => this.options.on_success(this, value));
+        // }
     }
 
     onFailed(e: any) {
-        if (this.options.on_error) {
-            runInInjectionContext(this.injector, () => this.options.on_error(this, e));
-        }
+        // if (this.options.on_error) {
+        //     runInInjectionContext(this.injector, () => this.options.on_error(this, e));
+        // }
     }
 }

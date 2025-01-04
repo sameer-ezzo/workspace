@@ -14,7 +14,6 @@ import { DataModule } from "@upupa/data";
 import { DataTableModule } from "@upupa/table";
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { AuthModule } from "@upupa/auth";
 import { RuleFormComponent } from "./rule-form/rule-form.component";
 import { PermissionsPageComponent } from "./permissions-page/permissions-page.component";
 import { PermissionsSideBarComponent } from "./permissions-side-bar/permissions-side-bar.component";
@@ -41,7 +40,6 @@ const imports = [
     PermissionsRoutingModule,
     UtilsModule,
     DynamicFormModule,
-    AuthModule,
     MatExpansionModule,
     DataTableModule,
     MatProgressBarModule,

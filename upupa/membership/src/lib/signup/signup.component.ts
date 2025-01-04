@@ -1,6 +1,5 @@
 import { Component, inject, HostBinding, model, Injector, runInInjectionContext } from "@angular/core";
 import { MembershipSignupOptions } from "../types";
-import { SIGNUP_OPTIONS } from "../di.token";
 import { SignUpFormComponent } from "../signup-form/signup-form.component";
 
 @Component({
@@ -11,20 +10,19 @@ import { SignUpFormComponent } from "../signup-form/signup-form.component";
     imports: [SignUpFormComponent],
 })
 export class SignUpComponent {
-    @HostBinding("class") readonly class = "account-page-wrapper signup-page";
-    readonly options: MembershipSignupOptions = inject(SIGNUP_OPTIONS);
+
     model = model();
 
     private readonly injector = inject(Injector);
     onSuccess(value: any) {
-        if (this.options.on_success) {
-            runInInjectionContext(this.injector, () => this.options.on_success(this, value));
-        }
+        // if (this.options.on_success) {
+        //     runInInjectionContext(this.injector, () => this.options.on_success(this, value));
+        // }
     }
 
     onFailed(err: any) {
-        if (this.options.on_error) {
-            runInInjectionContext(this.injector, () => this.options.on_error(this, err));
-        }
+        // if (this.options.on_error) {
+        //     runInInjectionContext(this.injector, () => this.options.on_error(this, err));
+        // }
     }
 }

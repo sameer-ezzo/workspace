@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
-import { delayWhen, filter, switchMap, tap, take } from "rxjs/operators";
-import { AUTH_BASE_TOKEN, DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN } from "./di.token";
+import { delayWhen } from "rxjs/operators";
+import { AUTH_OPTIONS } from "./di.token";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router, ActivationEnd } from "@angular/router";
@@ -57,16 +57,16 @@ export class AuthService {
     //     switchMap((x) => this.user$),
     // );
 
-    private readonly _passwordPolicy = inject(DEFAULT_PASSWORD_POLICY_PROVIDER_TOKEN);
-    get passwordPolicy() {
-        return Object.freeze(this._passwordPolicy);
-    }
-
     private readonly localStorage = inject(LocalStorageService);
-    public readonly baseUrl = inject(AUTH_BASE_TOKEN);
+    public readonly options = inject(AUTH_OPTIONS);
+    public readonly baseUrl = this.options.base_url;
     public readonly router = inject(Router);
     public readonly httpAuthorized = inject(HttpClient);
     public readonly deviceService = inject(DeviceService);
+
+    get passwordPolicy() {
+        return Object.freeze(this.options.password_policy);
+    }
 
     constructor() {
         const user = this.jwt(this.get_token());

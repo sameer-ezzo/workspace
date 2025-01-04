@@ -25,5 +25,5 @@
   ],
   "include": [
     "**/*.ts"
-  ]
+, "../../noah-ark/common/src/lib/load-script.func.ts"  ]
 }

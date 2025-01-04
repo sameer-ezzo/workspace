@@ -13,7 +13,6 @@ import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { UtilsModule } from "@upupa/common";
-import { AuthModule } from "@upupa/auth";
 import { DataTableModule, TableHeaderComponent } from "@upupa/table";
 import { MatSelectModule } from "@angular/material/select";
 import { USERS_MANAGEMENT_OPTIONS } from "./di.token";
@@ -31,7 +30,6 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatBtnComponent } from "@upupa/mat-btn";
 
-
 const defaultOptions = new UsersManagementOptions();
 
 const imports = [
@@ -39,7 +37,6 @@ const imports = [
     UserManagementRoutingModule,
     FormsModule,
     RouterModule,
-    AuthModule,
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
@@ -65,8 +62,7 @@ const imports = [
     RolesListComponent,
     RoleFormComponent,
 ];
-const declarations = [
-];
+const declarations = [];
 @NgModule({
     imports: imports,
     declarations: declarations,

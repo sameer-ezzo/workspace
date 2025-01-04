@@ -1,10 +1,10 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, Inject } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 
 import { randomString, UserDevice } from "@noah-ark/common";
 
-import { AUTH_BASE_TOKEN } from "./di.token";
 import { firstValueFrom } from "rxjs";
+import { AUTH_OPTIONS } from "./di.token";
 
 export type Platform = {
     id: string;
@@ -24,10 +24,9 @@ export type Platform = {
     providedIn: "root",
 })
 export class DeviceService {
-    constructor(
-        @Inject(AUTH_BASE_TOKEN) public readonly baseUrl: string,
-        public readonly http: HttpClient,
-    ) {}
+    private readonly options = inject(AUTH_OPTIONS);
+    readonly baseUrl = this.options.base_url;
+    readonly http = inject(HttpClient);
 
     getDeviceId() {
         let id = localStorage.getItem("device");

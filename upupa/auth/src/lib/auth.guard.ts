@@ -2,7 +2,6 @@ import { Injectable, Injector } from "@angular/core";
 import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild, ActivatedRoute } from "@angular/router";
 import { Observable } from "rxjs";
 import { AuthService } from "./auth.service";
-import { DEFAULT_FORBIDDEN_PROVIDER_TOKEN, DEFAULT_LOGIN_PROVIDER_TOKEN } from "./di.token";
 import { Principle } from "@noah-ark/common";
 
 @Injectable({ providedIn: "root" })
@@ -34,22 +33,14 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     }
 
     reject(user: Principle | undefined): boolean {
-        if (user) {
-            const forbiddenUrl = this.injector.get(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, "/forbidden") as string;
-            this.router.navigateByUrl(forbiddenUrl ?? "");
-        } else {
-            const signInUrl = this.injector.get(DEFAULT_LOGIN_PROVIDER_TOKEN, "/login", { optional: true }) as string;
-            console.log("REJECTING USER", user, 'REDIRECTING TO', signInUrl);
-            this.router.navigateByUrl(signInUrl);
-        }
+        // if (user) {
+        //     const forbiddenUrl = this.injector.get(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, "/forbidden") as string;
+        //     this.router.navigateByUrl(forbiddenUrl ?? "");
+        // } else {
+        //     const signInUrl = this.injector.get(DEFAULT_LOGIN_PROVIDER_TOKEN, "/login", { optional: true }) as string;
+        //     console.log("REJECTING USER", user, 'REDIRECTING TO', signInUrl);
+        //     this.router.navigateByUrl(signInUrl);
+        // }
         return false;
     }
 }
-
-// export function FusionAuthGuard(loggedIn: boolean, redirect: string): CanActivateFn {
-//   return () => {
-//     const fusionAuthService = inject(FusionAuthService);
-//     const router = inject(Router);
-//     return fusionAuthService.isLoggedIn() === loggedIn || router.createUrlTree([redirect]);
-//   }
-// }

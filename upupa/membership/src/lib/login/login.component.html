@@ -1,14 +1,12 @@
-<h2>Login</h2>
-@if (options.fields) {
-    <login-form
-        (success)="onSuccess($event)"
-        (resetPassword)="onResetPassword($event)"
-        (fail)="onFailed($event)"
-        [value]="value()"
-        [fields]="options.fields"
-        [conditions]="options.conditions"
-    ></login-form>
-}
+<portal [template]="form.template"></portal>
 
-<!-- content projection for external login providers -->
-<ng-content select="idps"></ng-content>
+<div class="idps-container">
+    @if (form && idps.length) {
+        <h3>Or log in with</h3>
+    }
+    <div class="idps">
+        @for (idp of idps; track idp.name) {
+            <portal [template]="idp.template"></portal>
+        }
+    </div>
+</div>

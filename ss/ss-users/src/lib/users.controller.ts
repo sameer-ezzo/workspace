@@ -11,7 +11,7 @@ import { DataChangedEvent, DataService } from "@ss/data";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { Axios } from "axios";
 import { logger } from "./logger";
-import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
+import { Auth, AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
 import { UsersOptions } from "./types";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
@@ -468,6 +468,7 @@ export class UsersController {
         } else throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
     }
 
+    @Authorize({ by: "anonymous", access: "grant" })
     @EndPoint({
         http: { method: "POST", path: "check-user" },
         operation: "Check User",

@@ -1,5 +1,5 @@
 import { Component, inject, signal, output, viewChild, model, input, computed } from "@angular/core";
-import { AuthModule, AuthService, Credentials } from "@upupa/auth";
+import { AuthService, Credentials } from "@upupa/auth";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
@@ -7,7 +7,6 @@ import { Condition } from "@noah-ark/expression-engine";
 import { FormControl } from "@angular/forms";
 import { Principle } from "@noah-ark/common";
 import { CommonModule } from "@angular/common";
-import { LoginExternalLinksComponent } from "./login-external-links.component";
 import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 
 @Component({
@@ -15,7 +14,7 @@ import { MembershipFormExternalLinksComponent } from "../membership-form-externa
     selector: "login-form",
     styleUrls: ["./login-form.component.scss"],
     templateUrl: "./login-form.component.html",
-    imports: [CollectorComponent, AuthModule, CommonModule, PortalComponent],
+    imports: [CollectorComponent, CommonModule, PortalComponent],
 })
 export class LoginFormComponent {
     loginForm = viewChild<CollectorComponent>("loginForm");

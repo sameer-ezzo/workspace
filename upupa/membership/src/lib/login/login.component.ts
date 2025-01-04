@@ -1,72 +1,64 @@
-import { AfterViewInit, Component, OnInit, inject, model } from "@angular/core";
-import {
-    IdPs_OPTIONS,
-    LOG_IN_EXTERNAL_LINKS_TOKEN,
-    LOG_IN_INITIAL_VALUE_FACTORY_TOKEN,
-    LOG_IN_LINKS_TOKEN,
-    LOG_IN_ON_FAILED_TOKEN,
-    LOG_IN_ON_SUCCESS_TOKEN,
-    LOG_IN_OPTIONS,
-} from "../di.token";
-import { IdpName, MembershipLoginOptions } from "../types";
+import { AfterViewInit, Component, Injector, OnInit, inject, input, model, runInInjectionContext } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { AuthService } from "@upupa/auth";
+import { AUTH_IDPs, AuthService } from "@upupa/auth";
 import { CommonModule } from "@angular/common";
 import { LoginFormComponent } from "../login-form/login-form.component";
+import { IdpButtonDirective } from "../idp-button.directive";
+import { PortalComponent } from "@upupa/common";
 
 @Component({
     standalone: true,
     selector: "login",
     styleUrls: ["./login.component.scss"],
     templateUrl: "./login.component.html",
-    imports: [LoginFormComponent, CommonModule],
+    imports: [LoginFormComponent, IdpButtonDirective, CommonModule, PortalComponent],
     host: { class: "account-page-wrapper login-page" },
 })
 export class LoginComponent implements OnInit, AfterViewInit {
-    readonly options: MembershipLoginOptions = inject(LOG_IN_OPTIONS);
-    readonly idps_options: Record<string, any> = inject(IdPs_OPTIONS, { optional: true });
-    private readonly onSuccessHandler = inject(LOG_IN_ON_SUCCESS_TOKEN, { optional: true });
-    private readonly onFailedHandler = inject(LOG_IN_ON_FAILED_TOKEN, { optional: true }) ?? (() => {});
-    readonly initialValueFactory = inject(LOG_IN_INITIAL_VALUE_FACTORY_TOKEN, { optional: true }) ?? (() => ({ email: "", password: "", rememberMe: false }));
-
-    readonly links = inject(LOG_IN_LINKS_TOKEN, { optional: true }) ?? [];
-    external_links = inject(LOG_IN_EXTERNAL_LINKS_TOKEN, { optional: true }) ?? [];
-
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly auth = inject(AuthService);
+    private readonly _idps = inject(AUTH_IDPs, { optional: true }) ?? [];
 
-    value = model(this.initialValueFactory() as any);
-
-    idps: { text: string; idpName?: IdpName; clientId: string }[] = null;
+    on_success = input<(self: LoginComponent, value: any) => void>();
+    form = this._idps.find((idp) => idp.name === "email-and-password");
+    idps = this._idps.filter((idp) => idp.name !== "email-and-password");
+    value = model<any>();
+    injector = inject(Injector);
 
     ngOnInit(): void {
-        this.idps = Object.entries(this.idps_options ?? {}).map(([key, value]) => {
-            return { text: key, ...value };
-        });
+        console.log("idps", this.idps);
 
-        this.external_links = this.external_links.concat(
-            this.idps.map((idp) => {
-                return {
-                    ...idp,
-                    label: `Login with ${idp.text}`,
-                    idpName: idp.text as IdpName,
-                } as any;
-            }),
-        );
+        // this.idps = Object.entries(this.idps_options ?? {}).map(([key, value]) => {
+        //     return { text: key, ...value };
+        // });
+        // this.external_links = this.external_links.concat(
+        //     this.idps.map((idp) => {
+        //         return {
+        //             ...idp,
+        //             label: `Login with ${idp.text}`,
+        //             idpName: idp.text as IdpName,
+        //         } as any;
+        //     }),
+        // );
     }
     ngAfterViewInit(): void {}
 
-    onExternalLinkClick(link: { clientId: string }) {}
+    idpLoginSuccess(idp, e) {
+        const cb = this.on_success();
+        if (cb && typeof cb === "function") {
+            runInInjectionContext(this.injector, () => cb(this, { idp, e }));
+        }
+    }
 
     async onSuccess(value: any) {
-        const onSuccessHandler = await this.onSuccessHandler;
-        if (typeof onSuccessHandler === "function") onSuccessHandler();
+        // const onSuccessHandler = await this.onSuccessHandler;
+        // if (typeof onSuccessHandler === "function") onSuccessHandler();
     }
 
     onFailed(value: any) {
-        this.onFailedHandler?.();
+        // this.onFailedHandler?.();
     }
 
     async onResetPassword(payload: { reset_token: string }) {

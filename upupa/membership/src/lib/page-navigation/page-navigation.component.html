@@ -1,6 +1,6 @@
 @for(item of links; track item.url){
 @if(item.idpName?.length > 0){
-<div idp-button [idp]="item" (success)="success.emit($event)"></div>
+<!-- <div idp-button [idp]="item" (success)="success.emit($event)"></div> -->
 }
 @else if(item.emit === true){
 <a class="link {{item.class}}" href="javascript:;" (click)="onLinkClick.emit(item)">{{item.label}}</a>

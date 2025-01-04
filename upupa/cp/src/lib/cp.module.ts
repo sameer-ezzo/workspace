@@ -1,7 +1,7 @@
 import { ModuleWithProviders, NgModule } from "@angular/core";
 import { CommonModule, DOCUMENT } from "@angular/common";
 import { CP_OPTIONS, USER_PICTURE_RESOLVER } from "./di.token";
-import { AuthModule, AuthService } from "@upupa/auth";
+import { AuthService } from "@upupa/auth";
 import { DataModule, DataService } from "@upupa/data";
 import { DynamicFormModule } from "@upupa/dynamic-form";
 import { DataTableModule } from "@upupa/table";
@@ -46,7 +46,6 @@ const userImageProvider = {
         MatSidenavModule,
         RouterModule,
         MaterialModulesModule,
-        AuthModule,
         LanguageModule,
         DataModule,
         DynamicFormNativeThemeModule,

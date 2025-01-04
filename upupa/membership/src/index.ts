@@ -1,6 +1,5 @@
 export * from './lib/types';
 export * from './lib/default-values';
-export * from './lib/membership.module';
 export * from './lib/verify/verify.component';
 export * from './lib/profile/profile.component';
 export * from './lib/forgot-password/forgot-password.component';

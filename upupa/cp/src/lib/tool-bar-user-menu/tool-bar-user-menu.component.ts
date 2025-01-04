@@ -1,7 +1,7 @@
 import { Component, inject, Input } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
-import { AuthService, DEFAULT_LOGIN_PROVIDER_TOKEN } from "@upupa/auth";
+import { AuthService } from "@upupa/auth";
 import { SideBarItem } from "../side-bar-group-item";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { USER_PICTURE_RESOLVER } from "../di.token";
@@ -24,7 +24,6 @@ import { MatButtonModule } from "@angular/material/button";
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarItem[];
     readonly userImageResolver = inject(USER_PICTURE_RESOLVER) as Observable<string>;
-    signInUrl = inject(DEFAULT_LOGIN_PROVIDER_TOKEN) as string;
 
     public readonly auth = inject(AuthService);
     private readonly bus = inject(EventBus);
@@ -37,13 +36,7 @@ export class ToolbarUserMenuComponent {
     );
     impersonated$ = this.u$.pipe(map((u) => u?.claims?.["imps"] || undefined));
     navigateToLogin() {
-        const url = this.signInUrl || "/";
-        const [path, qpsStr] = url.split("?");
-        const qps = new URLSearchParams(qpsStr);
-        this.router.navigate(
-            path.split("/").filter((s) => s.length),
-            { queryParams: Object.fromEntries(qps) },
-        );
+        // todo: navigate to login
     }
     umcClicked(e) {
         e = e.action;

@@ -60,27 +60,29 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
                     if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
                 }
             } else {
+                let searchMatch = true;
                 if (search) {
                     const itemTerm = terms
                         .map((t) => getByPath(item, t.field as string))
                         .join("{}")
                         .trim();
-                    if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
+                    searchMatch = itemTerm.toLocaleLowerCase().indexOf(search) > -1;
                 }
 
                 if (query.length) {
                     for (const [field, q] of query) {
                         if (field === "search") continue;
                         const itemValue = getByPath(item, field);
-                        if (q == null && itemValue == null) return true;
-                        if (typeof q === "string") {
-                            if (itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1) return true;
+                        if (q == null && itemValue == null) return true && searchMatch;
+                        if (typeof q === "string" && q.length > 0) {
+                            if (itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1) return true && searchMatch;
                         }
                         if (typeof q === "number") {
-                            if (itemValue === q) return true;
+                            if (itemValue === q) return true && searchMatch;
                         }
                     }
                 }
+                return searchMatch;
             }
             return false;
         });

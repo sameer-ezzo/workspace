@@ -1,0 +1,12 @@
+.idps-container {
+    display: block;
+    margin-block-start: 2rem;
+
+    .idps {
+        display: flex;
+        justify-content: center;
+        & > *:last-child {
+            margin-inline-end: 1rem;
+        }
+    }
+}
