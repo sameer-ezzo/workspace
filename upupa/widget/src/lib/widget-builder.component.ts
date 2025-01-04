@@ -123,7 +123,7 @@ export class WidgetBuilderComponent implements OnChanges {
                 footer: [
                     provideComponent({
                         component: MatBtnComponent,
-                        inputs: { descriptor: { text: "Select", name: "select" } },
+                        inputs: { buttonDescriptor: { text: "Select", name: "select" } },
                         outputs: {
                             click: async () => {
                                 const widgetSelector = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
@@ -166,7 +166,7 @@ export class WidgetBuilderComponent implements OnChanges {
                 footer: [
                     provideComponent({
                         component: MatBtnComponent,
-                        inputs: { descriptor: { text: "Select", name: "select" } },
+                        inputs: { buttonDescriptor: { text: "Select", name: "select" } },
                         outputs: {
                             click: async () => {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);

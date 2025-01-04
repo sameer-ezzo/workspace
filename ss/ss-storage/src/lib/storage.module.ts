@@ -14,7 +14,7 @@ import { Schema } from "mongoose";
 export class StorageModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
-        // await this.data.addModel('storage', fileSchema);
+        // await this.data.addModel('storage', FileSchema);
     }
     static register(
         options: { dbName: string; storageSchema: Schema; prefix?: string } = {

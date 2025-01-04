@@ -30,10 +30,10 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
         }
     `,
 })
-export class DefaultTableCellTemplate<T = any> implements ITableCellTemplate {
-    value = input.required();
-    element = input.required<NormalizedItem<T>>();
-    item = input.required<T>();
+export class DefaultTableCellTemplate<TValue = any, TRow = any> implements ITableCellTemplate<TValue, TRow> {
+    value = input.required<TValue>();
+    element = input.required<NormalizedItem<TRow>>();
+    item = input.required<TRow>();
     column = input<KeyValue<string, ColumnDescriptor>>();
 }
 

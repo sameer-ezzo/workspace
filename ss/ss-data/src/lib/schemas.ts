@@ -1,6 +1,6 @@
 //Todo rami
 // import userSchema from "./auth/user.schema";
-// import fileSchema from "./storage/schema";
+// import FileSchema from "./storage/schema";
 import changeSchema from "./change-schema";
 import { Schema, Model } from "mongoose";
 // import tagSchema from "./auth/tag.schema";
@@ -8,7 +8,7 @@ import { Schema, Model } from "mongoose";
 const collections: { [name: string]: { schema: Schema, model?: Model<any>, exclude?: string[] } } = {
     // "user": { schema: userSchema, exclude: ["attempts", "passwordHash", "securityCode"] },
     // "tag": { schema: tagSchema },
-    // "storage": { schema: fileSchema },
+    // "storage": { schema: FileSchema },
     // "change": { schema: changeSchema },
 }
 

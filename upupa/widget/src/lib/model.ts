@@ -52,7 +52,7 @@ export function deMaterializeWidget(widget: MaterializedWidget): Widget {
         template: {
             selector: widget.template.selector,
             inputs: widget.template.inputs,
-            models: widget.template.models,
+            bindings: widget.template.bindings,
             outputs: widget.template.outputs,
             class: widget.template.class,
         },

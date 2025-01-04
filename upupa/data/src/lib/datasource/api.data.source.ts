@@ -18,7 +18,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         return this.url ? this.url.pathname : this.path;
     }
     private get queryParams() {
-        return this.url ? Object.fromEntries(this.url.searchParams) : {};
+        return this.url ? Object.fromEntries(this.url.searchParams as any) : {};
     }
     constructor(
         private readonly dataService: DataService,
