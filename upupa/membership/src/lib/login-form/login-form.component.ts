@@ -8,13 +8,14 @@ import { FormControl } from "@angular/forms";
 import { Principle } from "@noah-ark/common";
 import { CommonModule } from "@angular/common";
 import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
+import { defaultLoginFormFields } from "../default-values";
 
 @Component({
     standalone: true,
     selector: "login-form",
     styleUrls: ["./login-form.component.scss"],
     templateUrl: "./login-form.component.html",
-    imports: [CollectorComponent, CommonModule, PortalComponent],
+    imports: [CollectorComponent, CommonModule, PortalComponent]
 })
 export class LoginFormComponent {
     loginForm = viewChild<CollectorComponent>("loginForm");
@@ -41,6 +42,7 @@ export class LoginFormComponent {
         {},
         {
             transform: (fields) => {
+                if(!fields) fields = defaultLoginFormFields;
                 if (fields["email"]) fields["email"].inputs["autocomplete"] = "username";
                 if (fields["username"]) fields["username"].inputs["autocomplete"] = "username";
                 if (fields["password"]) fields["password"].inputs["autocomplete"] = "current-password";

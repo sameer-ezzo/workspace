@@ -12,6 +12,7 @@ import { analyzePassword } from "./password-strength-policy";
 import { DeviceService } from "./device.service";
 import { LocalStorageService } from "./local-storage.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { AUTH_IDPs, IdPName, IdProviderOptions } from "./idps";
 
 export const TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
@@ -60,6 +61,16 @@ export class AuthService {
     private readonly localStorage = inject(LocalStorageService);
     public readonly options = inject(AUTH_OPTIONS);
     public readonly baseUrl = this.options.base_url;
+    readonly authIdPs = inject(AUTH_IDPs,{optional:true}) ?? [];
+    get IdProviders(): IdPName[] {
+        return this.authIdPs.map((x) => x.IdpName);
+    }
+    getProviderByName(providerName: IdPName): any {
+        const idp = this.authIdPs.find((x) => x.IdpName === providerName);
+        if (!idp) throw new Error(`Provider ${providerName} not found`);
+        return idp;
+    }
+
     public readonly router = inject(Router);
     public readonly httpAuthorized = inject(HttpClient);
     public readonly deviceService = inject(DeviceService);
@@ -194,7 +205,7 @@ export class AuthService {
         }
         this._token$.next(tokens?.access_token);
     }
-    async signin_Google(user) {
+    async signin_Google(user: { token: string }) {
         const res = await this._doHttpFetch(`${this.baseUrl}/google-auth`, user);
         this.setTokens(res);
         const principle = this.jwt(res.access_token);
@@ -210,6 +221,30 @@ export class AuthService {
         return principle;
     }
 
+    async signinWithProvider<Name extends IdPName>(provider: Name): Promise<Principle | { type: "reset-pwd"; reset_token: string }> {
+        const idp = this.getProviderByName(provider);
+
+        try {
+            const e = await idp.signin();
+            const auth_token = await this._doHttpFetch(`${this.baseUrl}/${provider}-auth`, { token: e.credential });
+
+            if (!auth_token) throw "UNDEFINED_TOKEN";
+            if ("reset_token" in auth_token) {
+                const jwt = this.jwt(auth_token.reset_token);
+                if (jwt?.t === "rst") return { type: "reset-pwd", reset_token: auth_token.reset_token };
+                else throw "INVALID_TOKEN_TYPE";
+            } else {
+                const jwt = this.jwt(auth_token.access_token);
+                this.setTokens(auth_token);
+                this.triggerNext(jwt);
+                return jwt as Principle;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+
+        return null;
+    }
     async signin(credentials: Credentials & { rememberMe?: boolean }): Promise<Principle | { type: "reset-pwd"; reset_token: string }> {
         const authRequestBody: Record<string, string | any> = { grant_type: "password", password: credentials.password, device: undefined };
 
