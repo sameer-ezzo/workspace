@@ -1,8 +1,8 @@
-import { inject, Provider, provideAppInitializer, EnvironmentProviders, PLATFORM_ID, LOCALE_ID, APP_INITIALIZER } from "@angular/core";
+import { Provider, EnvironmentProviders } from "@angular/core";
 import { AUTH_IDPs, IdProviderOptions } from "../types";
 import { GOOGLE_ID_PROVIDER_OPTIONS, GoogleIdProviderService } from "./google-id-provider.service";
 import { loadScript } from "@noah-ark/common";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser } from "@angular/common";
 
 export type GoogleIdProviderOptions = {
     /*
@@ -104,7 +104,7 @@ This field determines if the upgraded One Tap UX should be enabled on browsers t
              */
               ux_mode: "redirect";
               /*
-           This attribute is the URI of your login endpoint. 
+           This attribute is the URI of your login endpoint.
            The value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client, which you configured in the Google Cloud console and must conform to Redirect URI validation rules.
            This attribute may be omitted if the current page is your login page, in which case the credential is posted to this page by default.
           */
