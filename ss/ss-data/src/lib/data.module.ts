@@ -13,7 +13,6 @@ import tagSchema from "./tag.schema";
 import changeSchema from "./change-schema";
 import { MigrationsService } from "./migrations.svr";
 
-
 const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions("DB_DEFAULT", {
     retryAttempts: 5,
     retryDelay: 5000,
@@ -77,12 +76,8 @@ function extractMongooseFeatures(options: DataOptions[]) {
             Object.getOwnPropertyNames(models).map((modelName) => {
                 const model = models[modelName] as unknown as ModelDefinitionInfo;
                 const schemaObj = model.schema?.obj ?? {};
-                const schemaOptions = model.schema?.["options"] ?? {};
-                const schema = new mongoose.Schema(schemaObj, {
-                    strict: false,
-                    timestamps: true,
-                    ...schemaOptions,
-                });
+                const schemaOptions = { strict: false, timestamps: true, ...(model.options ?? {}), ...model.schema?.["options"] };
+                const schema = new mongoose.Schema(schemaObj, schemaOptions);
                 if ((model.exclude ?? []).length) {
                     schema.set("toJSON", {
                         transform: function (doc: any, ret: any) {
@@ -112,7 +107,7 @@ function extractMongooseRoot(options: DataOptions[]) {
         delete opts.prefix;
         return MongooseModule.forRoot(databaseInfo.uri, {
             ...opts,
-            connectionName: dbName
+            connectionName: dbName,
         });
     }) as any;
 }
