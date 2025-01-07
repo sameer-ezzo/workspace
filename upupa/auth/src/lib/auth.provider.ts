@@ -3,11 +3,8 @@ import { AUTH_OPTIONS } from "./di.token";
 import { AuthOptions } from "./auth-options";
 import { HTTP_INTERCEPTORS } from "@angular/common/http";
 import { AuthInterceptor } from "./auth.interceptor";
-// import { FormScheme } from "@upupa/dynamic-form";
-// import { defaultLoginFormFields, LoginFormComponent } from "@upupa/membership";
 import { ActivatedRoute, Router } from "@angular/router";
-// import { SnackBarService } from "@upupa/dialog";
-import { DynamicComponent } from "@upupa/common";
+
 
 export type AuthProvider = Omit<Provider, "provide">;
 
@@ -54,7 +51,7 @@ export function withEmailAndPassword(options: { fields?: any; on_success?: any; 
         useValue: {
             name: "email-and-password",
             template: {
-                component: null, //LoginFormComponent,
+                // component: LoginFormComponent,
                 content: [[`<h3 class="header">Login</h3>`]],
                 inputs: {
                     fields: options.fields,
@@ -63,7 +60,7 @@ export function withEmailAndPassword(options: { fields?: any; on_success?: any; 
                     success: options.on_success,
                     error: options.on_error,
                 },
-            }, //as DynamicComponent<LoginFormComponent>,
+            },// as DynamicComponent<LoginFormComponent>,
         },
     } as AuthProvider;
 }

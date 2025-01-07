@@ -1,12 +1,17 @@
-<portal [template]="form.template"></portal>
-
-<div class="idps-container">
-    @if (form && idps.length) {
-        <h3>Or log in with</h3>
-    }
-    <div class="idps">
-        @for (idp of idps; track idp.name) {
-            <portal [template]="idp.template"></portal>
+@if (emailAndPasswordProvider()) {
+    <login-form [fields]="fields()" (success)="onSuccess($event)" (fail)="onFailed($event)"></login-form>
+}
+@if (idps().length) {
+    <div class="idps-container">
+        @if (emailAndPasswordProvider()) {
+            <h3>Or log in with</h3>
         }
+        <div class="idps">
+            @for (idp of idps(); track idp) {
+                @if (idp.name === "google") {
+                    <google-id-provider [idp]="idp.provider" (success)="onSuccess($event)"></google-id-provider>
+                }
+            }
+        </div>
     </div>
-</div>
+}
