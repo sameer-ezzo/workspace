@@ -5,15 +5,14 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
-import { DataService } from "@upupa/data";
+import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
-
 @Component({
     selector: "inline-button",
-    imports: [MatBtnComponent],
     standalone: true,
+    imports: [MatBtnComponent],
     template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (click)="onClick($event)"></mat-btn> `,
     styles: [],
 })
@@ -191,6 +190,10 @@ async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any
     }
 }
 
+export function deleteValueFromAdapter(item: any) {
+    const adapter = inject(DataAdapter);
+    return adapter.delete(item, { refresh: true });
+}
 export function deleteValueFromApi(path: string) {
     const ds = inject(DataService);
     return ds.delete(path);
