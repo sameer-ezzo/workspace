@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { TranslateService } from "@upupa/language";
-import { ActionEvent, ErrorPipe } from "@upupa/common";
+import { ActionEvent } from "@upupa/common";
 import { firstValueFrom } from "rxjs";
 import { MatError, MatFormField, MatFormFieldAppearance, MatHint } from "@angular/material/form-field";
 import { SnackBarService } from "@upupa/dialog";
@@ -19,7 +19,7 @@ import { FormsModule } from "@angular/forms";
             }
         `,
     ],
-    imports: [FormsModule, MatFormField, ErrorPipe, MatHint, MatError],
+    imports: [FormsModule, MatFormField, MatHint, MatError],
 })
 export class AdminResetPasswordComponent {
     loading = false;

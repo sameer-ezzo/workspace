@@ -7,7 +7,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatSelectModule } from "@angular/material/select";
 
-import { ErrorPipe } from "./error.pipe";
 
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -22,7 +21,6 @@ import { PortalComponent } from "./portal.component";
 const declarations = [];
 
 const imports = [
-    ErrorPipe,
     FocusDirective,
     HtmlPipe,
     OnlyNumberDirective,

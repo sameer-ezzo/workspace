@@ -6,14 +6,14 @@ import { MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/fo
 import { firstValueFrom } from "rxjs";
 import { SnackBarService } from "@upupa/dialog";
 import { FormsModule } from "@angular/forms";
-import { ErrorPipe } from "@upupa/common";
+
 
 @Component({
     standalone: true,
     selector: "change-password",
     templateUrl: "./change-password.component.html",
     styleUrls: ["./change-password.component.css"],
-    imports: [FormsModule, MatFormFieldModule, ErrorPipe],
+    imports: [FormsModule, MatFormFieldModule],
 })
 export class ChangePasswordComponent {
     loading = false;
