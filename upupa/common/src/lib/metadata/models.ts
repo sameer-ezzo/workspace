@@ -250,17 +250,18 @@ export interface SchemaOrgMetadata {
     localBusiness: LocalBusiness;
     product: Product;
     event: Event;
+    service: any;
 }
 
 export interface PageMetadata {
-    title: string;
-    description: string;
-    keywords: string;
-    author: string;
-    canonicalUrl: string;
-    image: string;
-    twitter: Partial<TwitterCardMetadata>;
-    og: Partial<OpenGraphMetadata>;
-    schema: Partial<SchemaOrgMetadata>;
-    externalLinks: { rel: HTMLLinkElement["href"]; href: string }[];
+    title?: string;
+    description?: string;
+    keywords?: string;
+    author?: string;
+    canonicalUrl?: string;
+    image?: string;
+    twitter?: Partial<TwitterCardMetadata>;
+    og?: Partial<OpenGraphMetadata>;
+    schema?: Partial<SchemaOrgMetadata>;
+    externalLinks?: { rel: HTMLLinkElement["href"]; href: string }[];
 }
