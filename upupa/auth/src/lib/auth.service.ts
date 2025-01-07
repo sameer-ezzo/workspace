@@ -61,7 +61,7 @@ export class AuthService {
     private readonly localStorage = inject(LocalStorageService);
     public readonly options = inject(AUTH_OPTIONS);
     public readonly baseUrl = this.options.base_url;
-    readonly authIdPs = inject(AUTH_IDPs) ?? [];
+    readonly authIdPs = inject(AUTH_IDPs,{optional:true}) ?? [];
     get IdProviders(): IdPName[] {
         return this.authIdPs.map((x) => x.IdpName);
     }
