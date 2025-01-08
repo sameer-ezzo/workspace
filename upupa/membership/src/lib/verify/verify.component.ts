@@ -1,40 +1,31 @@
-import {
-    Component,
-    Input,
-    Output,
-    EventEmitter,
-    input,
-    output,
-    model,
-} from '@angular/core';
-import { AuthService } from '@upupa/auth';
-import { TranslateService } from '@upupa/language';
-import { ErrorService } from '@upupa/common';
-import { FormDesign, FormScheme } from '@upupa/dynamic-form';
-import { ActivatedRoute } from '@angular/router';
-import { combineLatest, firstValueFrom, Subject } from 'rxjs';
-import { defaultVerifyCodeField } from '../default-values';
-import { DataService } from '@upupa/data';
-import { PromptService, SnackBarService } from '@upupa/dialog';
-import { TitleCasePipe } from '@angular/common';
+import { Component, input, output, model } from "@angular/core";
+import { AuthService } from "@upupa/auth";
+import { TranslateService } from "@upupa/language";
+import { FormDesign, FormScheme } from "@upupa/dynamic-form";
+import { ActivatedRoute } from "@angular/router";
+import { combineLatest, firstValueFrom, Subject } from "rxjs";
+import { defaultVerifyCodeField } from "../default-values";
+import { DataService } from "@upupa/data";
+import { PromptService, SnackBarService } from "@upupa/dialog";
+import { TitleCasePipe } from "@angular/common";
 
-@Component({ 
+@Component({
     standalone: true,
-    selector: 'verify',
-    templateUrl: './verify.component.html',
-    styleUrls: ['./verify.component.scss'],
+    selector: "verify",
+    templateUrl: "./verify.component.html",
+    styleUrls: ["./verify.component.scss"],
     imports: [TitleCasePipe],
 })
 export class VerifyComponent {
-    name = input<'phone' | 'email' | 'name'>('email'); //what is to be verified (email,phone)
-    value = model(''); //the value to be verifild (test@example.com) ...
+    name = input<"phone" | "email" | "name">("email"); //what is to be verified (email,phone)
+    value = model(""); //the value to be verifild (test@example.com) ...
     enableEdit = input(true);
     // appearance = 'outline';
 
-    type = input<'code' | 'token'>('code');
+    type = input<"code" | "token">("code");
 
     // code: string;
-    token = input('');
+    token = input("");
 
     //verificatio msg info
     // @Input('verify-link') verifyLink: string;
@@ -54,38 +45,35 @@ export class VerifyComponent {
 
     editValueForm: FormScheme = {
         value: {
-            input: 'text',
-            inputs: { label: '', placeholder: '' },
-            validations: [{ name: 'required' }],
+            input: "text",
+            inputs: { label: "", placeholder: "" },
+            validations: [{ name: "required" }],
         },
     };
 
     design: FormDesign = {
-        verticalAlignment: 'center',
-        horizontalAlignment: 'center',
+        verticalAlignment: "center",
+        horizontalAlignment: "center",
     } as FormDesign;
 
     destroy = new Subject<void>();
     constructor(
         public auth: AuthService,
-        private errorservice: ErrorService,
         private route: ActivatedRoute,
         private data: DataService,
         private snack: SnackBarService,
         private prompt: PromptService,
-        public translator: TranslateService
+        public translator: TranslateService,
     ) {}
     async ngOnInit(): Promise<void> {
         try {
-            const [ps, qps] = await firstValueFrom(
-                combineLatest([this.route.params, this.route.queryParams])
-            );
+            const [ps, qps] = await firstValueFrom(combineLatest([this.route.params, this.route.queryParams]));
             // this.name ??= ps['name'] ?? 'email';
             // this.type = qps['token'] ? 'token' : 'code';
             this.value = qps[this.name()] ?? this.auth.user[this.name()];
 
-            if (this.type() === 'token') {
-                this.token = qps['token'];
+            if (this.type() === "token") {
+                this.token = qps["token"];
                 await this.verify();
             }
         } catch (error) {
@@ -95,7 +83,7 @@ export class VerifyComponent {
 
     formValueChange(v) {
         this.model = v;
-        this.token = this.model['code'];
+        this.token = this.model["code"];
     }
     ngOnDestroy(): void {
         this.destroy.next();
@@ -109,16 +97,16 @@ export class VerifyComponent {
                 method: this.type(),
                 id: this.auth.user.sub,
             });
-            this.snack.openSuccess('sent');
+            this.snack.openSuccess("sent");
             this.codeSent.emit();
         } catch (error) {
             if (error.status === 400) {
                 const e = error.json();
-                if (e.msg === 'ALREADY_SENT') {
-                    this.snack.openFailed('code-already-sent');
+                if (e.msg === "ALREADY_SENT") {
+                    this.snack.openFailed("code-already-sent");
                     //const expire = e.expire; TODO
                 } else this.snack.openFailed(e.msg);
-            } else this.snack.openFailed('CODE_NOT_SENT');
+            } else this.snack.openFailed("CODE_NOT_SENT");
             this.codeNotSent.emit(error);
         } finally {
             this.loading = false;
@@ -128,8 +116,8 @@ export class VerifyComponent {
     async verify() {
         try {
             this.loading = true;
-            if (this.type() !== 'code' && this.type() !== 'token') {
-                this.snack.openWarning('token-type-error');
+            if (this.type() !== "code" && this.type() !== "token") {
+                this.snack.openWarning("token-type-error");
                 return;
             }
 
@@ -143,9 +131,8 @@ export class VerifyComponent {
             this.success.emit(true);
             this.snack.openSuccess();
         } catch (error) {
-            const e = this.errorservice.normalize(error);
-            this.fail.emit(e);
-            this.snack.openFailed(e.message);
+            this.fail.emit(error);
+            this.snack.openFailed(error);
         } finally {
             this.loading = false;
         }
@@ -156,15 +143,13 @@ export class VerifyComponent {
             value: this.value(),
             placeholder: this.name(),
             required: true,
-            yes: 'submit',
-            no: 'cancel',
+            yes: "submit",
+            no: "cancel",
         });
 
         if (value && value !== this.value) {
             try {
-                await this.data.patch(`/user/${this.auth.user.sub}`, [
-                    { path: this.name(), value, op: 'replace' },
-                ]);
+                await this.data.patch(`/user/${this.auth.user.sub}`, [{ path: this.name(), value, op: "replace" }]);
                 await this.auth.refresh();
                 this.value = value;
 

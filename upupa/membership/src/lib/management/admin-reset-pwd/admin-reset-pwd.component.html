@@ -3,11 +3,11 @@
         <mat-form-field class="full-width" [appearance]="appearance">
             <input matInput #passwordInput="ngModel" [(ngModel)]="password" name="password" type="password" placeholder="New password " required minlength="6" />
             <mat-hint align="end">{{password?.length}}</mat-hint>
-            <mat-error>{{passwordInput.errors|error}}</mat-error>
+            <!-- <mat-error>{{passwordInput.errors|error}}</mat-error> -->
         </mat-form-field>
         <mat-form-field class="full-width" [appearance]="appearance">
             <input matInput #confirmPasswordInput="ngModel" [(ngModel)]="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password " required />
-            <mat-error>{{confirmPasswordInput.errors|error}}</mat-error>
+            <!-- <mat-error>{{confirmPasswordInput.errors|error}}</mat-error> -->
         </mat-form-field>
     </fieldset>
     <!-- <div mat-dialog-actions style="padding: .5rem 1rem;">
