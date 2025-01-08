@@ -71,7 +71,7 @@ export class GoogleIdProviderButton {
     imports: [LoginFormComponent, GoogleIdProviderButton, MatButtonModule, CommonModule],
     host: { class: "login-page" },
 })
-export class LoginComponent implements OnInit, AfterViewInit {
+export class LoginComponent implements AfterViewInit {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     readonly auth = inject(AuthService);
@@ -94,9 +94,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     value = model<any>();
     injector = inject(Injector);
 
-    ngOnInit(): void {
-        console.log("idps", this.idps());
-    }
     ngAfterViewInit(): void {}
 
     idpLogin(idp: IdPName) {

@@ -1,4 +1,4 @@
-import { Component, output, input, computed } from "@angular/core";
+import { Component, output, input, computed, Host, HostListener } from "@angular/core";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -12,9 +12,12 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     templateUrl: "./mat-btn.component.html",
     imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, MatProgressSpinnerModule],
     standalone: true,
+    host: {
+        "[attr.disabled]": "isDisabled()",
+    },
 })
 export class MatBtnComponent {
-    click = output<ActionEvent>();
+    click = output<ActionEvent | any>();
 
     loading = input(false);
     buttonDescriptor = input.required<ActionDescriptor>();
@@ -41,7 +44,7 @@ export class MatBtnComponent {
     async onAction(event: Event) {
         event.preventDefault();
         event.stopPropagation();
-
+        if (this.isDisabled()) return;
         this.click.emit({
             ...event,
             action: this.buttonDescriptor(),
