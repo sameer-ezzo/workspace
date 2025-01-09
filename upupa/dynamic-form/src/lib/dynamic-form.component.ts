@@ -79,6 +79,16 @@ export class ExtendedValueChangeEvent<T = any> {
     ) {}
 }
 
+export class DynamicFormInitializedEvent<T = any> {
+    get path() {
+        return this.source?.path ?? "/";
+    }
+    constructor(
+        public readonly value: T,
+        public readonly graph: FormGraph,
+        public readonly source?: FieldRef,
+    ) {}
+}
 export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     const graph = inject<FormGraph>(FORM_GRAPH, { host: true }); // make sure to only load graph of the current form (not a parent provided one)
     const result = graph.get(path);
@@ -171,7 +181,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     value = model(undefined);
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
-
+    initialized = output<DynamicFormInitializedEvent<T>>();
     submitted = output<T>();
     preventDirtyUnload = input(false);
 
@@ -295,6 +305,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
             this._patches.clear();
             this.graph = this._builder.build(this.form, scheme, this.value(), "/");
+            this.initialized.emit(new DynamicFormInitializedEvent(this.value(), this.graph));
 
             //handlers
             this.subs?.forEach((s) => s.unsubscribe());

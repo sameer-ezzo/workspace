@@ -8,7 +8,7 @@
         <div style="display: flex; align-items: center" #menuTrigger="matMenuTrigger" [matMenuTriggerFor]="menu">
             @if (userImageResolver | async; as userImage) {
                 @if (userImage) {
-                    <img [src]="userImage" (error)="handelImageError($event)" [attr.alt]="auth.user.name || auth.user.email" />
+                    <img [src]="userImage" (error)="handelImageError($event)" [attr.alt]="auth.userSignal().name || auth.userSignal().email" />
                     <mat-icon style="flex: 0 0 25px">expand_more</mat-icon>
                 } @else {
                     <mat-icon style="flex: 0 0 25px">person</mat-icon>

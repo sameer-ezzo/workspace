@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, Signal, inject } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
@@ -13,6 +13,7 @@ import { DeviceService } from "./device.service";
 import { LocalStorageService } from "./local-storage.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { AUTH_IDPs, IdPName, IdProviderOptions } from "./idps";
+import { toSignal } from "@angular/core/rxjs-interop";
 
 export const TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
@@ -34,9 +35,10 @@ export const REFRESH_TOKEN = "refresh_token";
 export class AuthService {
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
     refreshed$ = new Subject<number>();
-    user?: Principle;
     private _user$ = new ReplaySubject<Principle>(1);
     user$ = this._user$.asObservable();
+    userSignal: Signal<Principle> = toSignal(this._user$);
+    user: Principle = null;
 
     private _token$ = new Subject<string>();
     token$ = this._token$.asObservable();
@@ -61,7 +63,7 @@ export class AuthService {
     private readonly localStorage = inject(LocalStorageService);
     public readonly options = inject(AUTH_OPTIONS);
     public readonly baseUrl = this.options.base_url;
-    readonly authIdPs = inject(AUTH_IDPs,{optional:true}) ?? [];
+    readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
     get IdProviders(): IdPName[] {
         return this.authIdPs.map((x) => x.IdpName);
     }

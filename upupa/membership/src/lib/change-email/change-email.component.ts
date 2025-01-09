@@ -58,7 +58,7 @@ export class ChangeEmailComponent {
 
         this.disabled = true;
         try {
-            await this.data.put(`/user/${this.user.sub}/email`, this.email);
+            await this.data.put(`/user/${this.user().sub}/email`, this.email);
             await this.auth.refresh();
             this.snack.openSuccess();
             this.changed.emit(true);

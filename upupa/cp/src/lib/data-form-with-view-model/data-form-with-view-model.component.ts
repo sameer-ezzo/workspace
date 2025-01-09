@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, InjectionToken } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { DynamicFormComponent, DynamicFormInitializedEvent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { _defaultControl, ActionEvent, deepAssign } from "@upupa/common";
@@ -19,8 +19,6 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
     const models = injectFormViewModels();
     return models.find((x) => x.__proto__.constructor === _class);
 }
-
-
 
 @Component({
     selector: "data-form",
@@ -105,6 +103,13 @@ export class DataFormComponent<T = any> {
         }
     }
 
+    onInitialized(e: DynamicFormInitializedEvent) {
+        const vm = this.value() as any;
+        if (!("onInit" in vm && typeof vm["onInit"] === "function")) return;
+        runInInjectionContext(this._injector(), async () => {
+            await vm["onInit"](e);
+        });
+    }
     onValueChange(e: any) {
         const vm = this.value();
         runInInjectionContext(this._injector(), async () => {

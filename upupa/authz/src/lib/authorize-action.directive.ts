@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, Input, OnChanges, Renderer2, SimpleChanges } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input } from "@angular/core";
 import { Permission, Principle } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,19 +19,19 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     private readonly cdRef = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef)
     private readonly authorizeService = inject(AuthorizationService)
-    @Input() action: string;
-    @Input() path: string;
-    @Input() user: Principle = this.auth.user;
+    readonly action = input<string>(undefined);
+    readonly path = input<string>(undefined);
+    readonly user = input<Principle>(this.auth.user);
 
-    @Input() disableDenied = true;
-    @Input() hideDenied = false;
+    readonly disableDenied = input(true);
+    readonly hideDenied = input(false);
 
 
 
     initialized = false
     ngOnChanges(changes: SimpleChanges) {
         if (this.initialized) {
-            this._authorize(this.path, this.action, this.user)
+            this._authorize(this.path(), this.action(), this.user())
         }
     }
 
@@ -46,16 +46,16 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
         this.authorizeService.rules$.pipe(
             takeUntilDestroyed(this.destroyRef)
         ).subscribe(rules => {
-            this._authorize(this.path, this.action, this.user);
+            this._authorize(this.path(), this.action(), this.user());
             this.initialized = true;
         });
     }
     private deny(el: HTMLElement) {
 
-        if (this.disableDenied === true) if ('disabled' in el) this.renderer.setProperty(el, 'disabled', true);
+        if (this.disableDenied() === true) if ('disabled' in el) this.renderer.setProperty(el, 'disabled', true);
         else this.renderer.setStyle(el, 'display', 'none');
 
-        if (this.hideDenied === true) {
+        if (this.hideDenied() === true) {
             this.renderer.setStyle(el, 'display', 'none');
         }
         this.cdRef.detectChanges();
