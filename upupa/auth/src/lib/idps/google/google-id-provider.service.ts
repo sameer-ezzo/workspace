@@ -30,7 +30,8 @@ export class GoogleIdProviderService implements IdProviderService<"google"> {
 
     private readonly zone = inject(NgZone);
     private readonly options = inject(GOOGLE_ID_PROVIDER_OPTIONS);
-    private readonly locale = (inject(LOCALE_ID) ?? isPlatformBrowser(inject(PLATFORM_ID))) ? navigator.language : null;
+    private readonly locale =
+        (inject(LOCALE_ID, { optional: true }) ?? isPlatformBrowser(inject(PLATFORM_ID))) ? (typeof navigator !== "undefined" ? navigator.language : null) : null;
     private credentials: any = null;
 
     private readonly doc = inject(DOCUMENT);
