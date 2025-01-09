@@ -30,12 +30,11 @@ export class GoogleIdProviderService implements IdProviderService<"google"> {
 
     private readonly zone = inject(NgZone);
     private readonly options = inject(GOOGLE_ID_PROVIDER_OPTIONS);
-    private readonly locale =
-        (inject(LOCALE_ID, { optional: true }) ?? isPlatformBrowser(inject(PLATFORM_ID))) ? (typeof navigator !== "undefined" ? navigator.language : null) : null;
-    private credentials: any = null;
-
     private readonly doc = inject(DOCUMENT);
     private readonly platformId = inject(PLATFORM_ID);
+    private readonly locale = (inject(LOCALE_ID, { optional: true }) ?? isPlatformBrowser(this.platformId)) ? (typeof navigator !== "undefined" ? navigator.language : null) : null;
+    private credentials: any = null;
+
     constructor() {}
 
     async render(el: HTMLElement, cb: (e) => void): Promise<any> {
@@ -61,11 +60,13 @@ export class GoogleIdProviderService implements IdProviderService<"google"> {
             client_id: googleOptions.client_id,
             ...googleOptions.attributes,
             callback: (response: any) => {
-                cb
-                    ? cb(response)
-                    : this.zone.run(() => {
-                          this.credentials = response;
-                      });
+                if (cb) {
+                    cb(response);
+                } else {
+                    this.zone.run(() => {
+                        this.credentials = response;
+                    });
+                }
             },
         };
 
