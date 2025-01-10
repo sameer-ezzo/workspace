@@ -1,14 +1,15 @@
-import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output } from "@angular/core";
+import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef } from "@angular/core";
 import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
 import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 @Component({
     selector: "inline-button",
     standalone: true,
@@ -163,6 +164,21 @@ export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K
             resolve(e);
         });
     });
+}
+
+export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(output: K, instance: TCom = this): Observable<TOut[K]> {
+    const emitter = instance[output as any] as OutputEmitterRef<TOut[K]>;
+    if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
+    const destroyRef = instance["injector"]?.get(DestroyRef);
+    const sub = new ReplaySubject<TOut[K]>(1);
+    emitter.subscribe((e) => sub.next(e));
+
+    const stream$ = destroyRef ? sub.pipe(takeUntilDestroyed(destroyRef)) : sub;
+    stream$.subscribe({
+        next: (e) => console.log(`Output ${output as any} emitted`, e),
+        complete: () => console.log(`Output ${output as any} completed`),
+    });
+    return stream$;
 }
 
 function readInput(input: string, instance = this) {

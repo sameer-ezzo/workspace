@@ -1,58 +1,62 @@
-dynamic-form > form {
-    display: flex;
-    width: 100%;
-    //  height: 100%;
-    flex-direction: column;
-    position: relative;
-
-    .field {
+:host {
+    display: block;
+    & > form {
         display: block;
-    }
-    .field.hidden-input,
-    .field.hidden {
-        display: none;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
-    }
-
-    input[type="submit"] {
-        margin-block-start: -1rem;
-    }
-
-    .field:not(.hidden-input) {
-        margin-block-end: 0.25rem;
-    }
-
-    .field.hidden-input ~ field:not(.hidden-input) {
-        margin-block-start: 0rem;
-    }
-
-    .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
-        display: none !important;
-    }
-
-    fieldset {
-        legend {
-            color: var(--mdc-outlined-text-field-label-text-color);
+        & > .form-container {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            position: relative;
         }
-        &:hover {
+
+        .field {
+            display: block;
+        }
+        .field.hidden-input,
+        .field.hidden {
+            display: none;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 0 !important;
+        }
+
+        input[type="submit"] {
+            margin-block-start: -1rem;
+        }
+
+        .field:not(.hidden-input) {
+            margin-block-end: 0.25rem;
+        }
+
+        .field.hidden-input ~ field:not(.hidden-input) {
+            margin-block-start: 0rem;
+        }
+
+        .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+            display: none !important;
+        }
+
+        fieldset {
             legend {
-                color: var(--mdc-outlined-text-field-hover-label-text-color);
+                color: var(--mdc-outlined-text-field-label-text-color);
             }
-        }
-        &:not(:disabled) {
-            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-outline-color);
-        }
-        &:disabled {
-            border: 1px solid var(--mdc-outlined-text-field-disabled-outline-color);
-        }
-        &:not(:disabled):hover {
-            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-hover-outline-color);
-        }
+            &:hover {
+                legend {
+                    color: var(--mdc-outlined-text-field-hover-label-text-color);
+                }
+            }
+            &:not(:disabled) {
+                border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-outline-color);
+            }
+            &:disabled {
+                border: 1px solid var(--mdc-outlined-text-field-disabled-outline-color);
+            }
+            &:not(:disabled):hover {
+                border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-hover-outline-color);
+            }
 
-        border-radius: var(--mdc-outlined-text-field-container-shape);
-        padding: 1rem;
-        // margin: 1rem 0;
+            border-radius: var(--mdc-outlined-text-field-container-shape);
+            padding: 1rem;
+        }
     }
 }

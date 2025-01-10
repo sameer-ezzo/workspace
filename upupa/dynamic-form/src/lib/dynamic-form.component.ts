@@ -100,7 +100,7 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     templateUrl: "./dynamic-form.component.html",
     styleUrls: ["./dynamic-form.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    encapsulation: ViewEncapsulation.None,
+    // encapsulation: ViewEncapsulation.None,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
