@@ -1,0 +1,29 @@
+:host {
+    display: block;
+    margin-block-end: 2rem;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-outline-color);
+    border-radius: var(--mdc-outlined-text-field-container-shape);
+    &:focus-within {
+        border-color: var(--mdc-outlined-text-field-focus-outline-color);
+        legend {
+            color: var(--mdc-outlined-text-field-focus-label-text-color);
+        }
+    }
+
+    &:hover {
+        legend {
+            color: var(--mdc-outlined-text-field-hover-label-text-color);
+        }
+    }
+    legend {
+        color: var(--mdc-outlined-text-field-label-text-color);
+        padding-inline: 0.35rem;
+    }
+}

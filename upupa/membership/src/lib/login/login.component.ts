@@ -7,6 +7,7 @@ import { LoginFormComponent } from "../login-form/login-form.component";
 import { MatButtonModule } from "@angular/material/button";
 import { FormScheme } from "@upupa/dynamic-form";
 import { defaultLoginFormFields } from "../default-values";
+import { loginErrorHandler, loginSuccessHandler } from "../types";
 
 @Component({
     standalone: true,
@@ -78,8 +79,8 @@ export class LoginComponent implements AfterViewInit {
 
     fields = input<FormScheme>(defaultLoginFormFields);
     providers = input<IdPName[]>(this.auth.IdProviders);
-    on_success = input<(self: LoginComponent, value: any) => void>();
-    on_error = input<(self: LoginComponent, value: any) => void>();
+    on_success = input<(self: LoginComponent, value: any) => void>(loginSuccessHandler);
+    on_error = input<(self: LoginComponent, value: any) => void>(loginErrorHandler);
 
     emailAndPasswordProvider = computed(() => this.providers().find((p) => p === "email-and-password"));
     idps = computed(() =>

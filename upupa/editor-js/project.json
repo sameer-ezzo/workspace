@@ -1,0 +1,44 @@
+{
+  "name": "upupa-editor-js",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/workspace/upupa/editor-js/src",
+  "prefix": "raptor7-workspace",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "options": {
+        "tsConfig": "libs/workspace/upupa/editor-js/tsconfig.lib.json",
+        "project": "libs/workspace/upupa/editor-js/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/workspace/upupa/editor-js/tsconfig.lib.prod.json"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/workspace/upupa/editor-js/src/**/*.ts",
+          "libs/workspace/upupa/editor-js/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/workspace/upupa/editor-js"
+      ],
+      "options": {
+        "jestConfig": "libs/workspace/upupa/editor-js/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [
+    "framework:angular",
+    "type:library"
+  ]
+}

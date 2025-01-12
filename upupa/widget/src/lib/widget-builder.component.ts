@@ -2,7 +2,7 @@ import { Component, computed, inject, model, viewChild, ViewEncapsulation, input
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { PortalComponent, provideComponent } from "@upupa/common";
-import { DialogService } from "@upupa/dialog";
+import { DialogConfig, DialogService } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
 import { WidgetSettingsComponent } from "./widget-settings.component";
@@ -71,13 +71,15 @@ export class InputsViewModel {
     template: `
         <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
             @for (widget of materializedWidgets(); track widget.id) {
-                <gridstack-item [options]="widget">
-                    <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
-                        <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings(widget.id)"><mat-icon>settings</mat-icon></button>
-                        <h3>{{ widget.title }}</h3>
-                        <div style="flex: 1"></div>
-                        <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove(widget.id)"><mat-icon>clear</mat-icon></button>
-                    </div>
+                <gridstack-item [options]="widget" (tap)="setFocused(widget)">
+                    @if (!hideHeader()) {
+                        <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
+                            <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings(widget.id)"><mat-icon>settings</mat-icon></button>
+                            <h3>{{ widget.title }}</h3>
+                            <div style="flex: 1"></div>
+                            <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove(widget.id)"><mat-icon>clear</mat-icon></button>
+                        </div>
+                    }
                     <portal [template]="widget.template"></portal>
                 </gridstack-item>
             }
@@ -91,6 +93,13 @@ export class WidgetBuilderComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });
     gridOptions = model<GridStackOptions>(DEFAULT_GRID_OPTIONS);
 
+    hideHeader = input(false);
+    dialogOptions = input<DialogConfig>();
+    focused = model<Widget | null>(null);
+    setFocused(widget: Widget) {
+        console.log("Focused widget", widget);
+        this.focused.set(widget);
+    }
     value = model<Widget[]>([]);
     disabled = model<boolean>(false);
     materializedWidgets = computed<MaterializedWidget[]>(() => {
@@ -120,6 +129,7 @@ export class WidgetBuilderComponent implements OnChanges {
         const dialogRef = this.dialog.open(
             { component: WidgetBlueprintSelectorComponent, inputs: { blueprints: this.blueprints() } },
             {
+                ...this.dialogOptions(),
                 footer: [
                     provideComponent({
                         component: MatBtnComponent,

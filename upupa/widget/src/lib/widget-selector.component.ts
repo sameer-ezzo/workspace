@@ -1,8 +1,9 @@
-import { Component, input, computed, model } from "@angular/core";
+import { Component, input, computed, model, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { FormsModule } from "@angular/forms";
 import { WidgetBlueprint } from "./model";
+import { DialogRef } from "@upupa/dialog";
 
 @Component({
     selector: "widget-selector",
@@ -32,6 +33,9 @@ import { WidgetBlueprint } from "./model";
             background: none;
         }
 
+        .title {
+            margin: 0;
+        }
         .selected {
             outline: #0078d4;
             outline-width: 2px;
@@ -48,14 +52,16 @@ import { WidgetBlueprint } from "./model";
         <div class="widget-selector">
             @let _blueprint = selectedBlueprint();
             @for (blueprint of displayedWidgets(); track blueprint.id) {
-                <div class="widget-option" [class.selected]="_blueprint === blueprint" (click)="selectedBlueprint.set(blueprint)">
-                    <div style="display: flex; gap: 0.5rem; align-items: center; border-bottom: 1px dashed #e5e7eb;">
+                <div class="widget-option" [class.selected]="_blueprint === blueprint" (click)="selectedBlueprint.set(blueprint)" (dblclick)="dialogRef.close(blueprint)">
+                    <div style="display: flex; gap: 0.5rem; align-items: center" [style.border-bottom]="blueprint.description ? '1px dashed #e5e7eb' : 'none'">
                         @if (blueprint.icon) {
                             <mat-icon>{{ blueprint.icon }}</mat-icon>
                         }
-                        <h3>{{ blueprint.title }}</h3>
+                        <h3 class="title">{{ blueprint.title }}</h3>
                     </div>
-                    <p>{{ blueprint.description }}</p>
+                    @if (blueprint.description) {
+                        <p>{{ blueprint.description }}</p>
+                    }
                 </div>
             }
         </div>
@@ -63,7 +69,7 @@ import { WidgetBlueprint } from "./model";
 })
 export class WidgetBlueprintSelectorComponent {
     blueprints = input<WidgetBlueprint[]>();
-
+    readonly dialogRef = inject(DialogRef);
     searchQuery = model<string>("");
     selectedBlueprint = model<WidgetBlueprint | null>(null);
 
