@@ -1,5 +1,5 @@
 <form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form" [name]="name()" [attr.id]="name()" >
-    <mat-accordion>
+    <mat-accordion class="form-container">
         @for (record of fields() | orderedKeyValue; track $index) {
             @let fieldName = record.key;
 

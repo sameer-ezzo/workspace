@@ -2,24 +2,23 @@
 @if (label()) {
     <label style="margin-block: 0.5rem 1rem">{{ label() }}</label>
 }
-<div class="form-wrapper">
-    @let _vm = viewModel();
+@let _vm = viewModel();
 
-    <dynamic-form
-        #dynForm
-        [(value)]="value"
-        [fields]="_vm.fields"
-        (fieldValueChange)="onValueChange($event)"
-        (initialized)="onInitialized($event)"
-        [name]="formName()"
-        [preventDirtyUnload]="_vm.preventDirtyUnload"
-        [theme]="_vm.theme"
-        [conditions]="_vm.conditions"
-        (submitted)="onSubmit()"
-        [control]="control()"
-    ></dynamic-form>
-    <!-- [formGroup]="control()" -->
-</div>
+<dynamic-form
+    class="form-wrapper"
+    #dynForm
+    [(value)]="value"
+    [fields]="_vm.fields"
+    (fieldValueChange)="onValueChange($event)"
+    (initialized)="onInitialized($event)"
+    [name]="formName()"
+    [preventDirtyUnload]="_vm.preventDirtyUnload"
+    [theme]="_vm.theme"
+    [conditions]="_vm.conditions"
+    (submitted)="onSubmit()"
+    [control]="control()"
+></dynamic-form>
+<!-- [formGroup]="control()" -->
 
 @if (actions()?.length) {
     <div class="toolbar footer">
