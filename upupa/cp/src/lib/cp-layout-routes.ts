@@ -17,6 +17,7 @@ export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
+    loginUrl?: string;
 };
 
 export function provideLayoutRoute(config: Route & LayoutConfig, ...features: RouteFeature[]): Route {
@@ -30,6 +31,7 @@ export function withLayoutComponent(config: LayoutConfig): RouteFeature {
             component: config.layout ?? CpLayoutComponent,
             data: {
                 logo: config.logo,
+                loginUrl: config.loginUrl,
             },
             providers: [
                 Array.isArray(config.sidebar)

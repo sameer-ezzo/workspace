@@ -36,6 +36,7 @@ export class LoginFormComponent {
         color: "primary",
         variant: "raised",
     });
+
     // https://www.chromium.org/developers/design-documents/form-styles-that-chromium-understands/
     // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
     fields = input<FormScheme, FormScheme>(

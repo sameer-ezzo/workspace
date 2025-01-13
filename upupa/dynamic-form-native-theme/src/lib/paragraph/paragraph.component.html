@@ -5,9 +5,9 @@
     @case ("html") {
         <p [innerHTML]="text() | html"></p>
     }
-    @case ("editor-js") {
+    <!-- @case ("editor-js") {
         <editor-js-input [value]="text()" [readOnly]="true"></editor-js-input>
-    }
+    } -->
     @default {
         <p>{{ text() }}</p>
     }

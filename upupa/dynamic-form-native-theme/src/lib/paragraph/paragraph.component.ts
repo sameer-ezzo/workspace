@@ -2,14 +2,14 @@ import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, comp
 import { UntypedFormControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
-import { EditorJsInputComponent } from "@upupa/editor-js";
+// import { EditorJsInputComponent } from "@upupa/editor-js";
 
 @Component({
     selector: "paragraph",
     templateUrl: "./paragraph.component.html",
     styleUrls: ["./paragraph.component.scss"],
     standalone: true,
-    imports: [UtilsModule, MarkdownPipe, EditorJsInputComponent],
+    imports: [UtilsModule, MarkdownPipe],
 })
 export class ParagraphComponent {
     control = input<UntypedFormControl>();

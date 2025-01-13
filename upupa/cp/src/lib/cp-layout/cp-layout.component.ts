@@ -32,6 +32,7 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
     encapsulation: ViewEncapsulation.None,
 })
 export class CpLayoutComponent {
+    loginUrl = input("/login");
     drawer = viewChild(MatDrawer);
     sidebar = input();
     cp_side_bar_items = inject(CP_SIDE_BAR_ITEMS);

@@ -60,19 +60,19 @@ $border-radius: 2px;
         box-sizing: border-box;
     }
     dynamic-form.collector-dform {
-        width: 100%;
-        margin: auto;
-        display: flex;
-        box-sizing: border-box;
-        form {
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-        }
-        form > div {
-            border-radius: $border-radius;
-            color: var(--field-text-color) !important;
-        }
+        // width: 100%;
+        // margin: auto;
+        // display: flex;
+        // box-sizing: border-box;
+        // form {
+        //     padding: 0;
+        //     margin: 0;
+        //     box-sizing: border-box;
+        // }
+        // form > div {
+        //     border-radius: $border-radius;
+        //     color: var(--field-text-color) !important;
+        // }
     }
     dynamic-form.collector-dform .mat-form-field {
         width: 100%;
