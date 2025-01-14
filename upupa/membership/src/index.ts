@@ -5,7 +5,7 @@ export * from './lib/profile/profile.component';
 export * from './lib/forgot-password/forgot-password.component';
 export * from './lib/forgot-password-form/forgot-password-form.component';
 export * from './lib/login/login.component';
-export * from './lib/login-form/login-form.component';
+// export * from './lib/login-form/login-form.component';
 export * from './lib/signup/signup.component';
 export * from './lib/signup-form/signup-form.component';
 export * from './lib/reset-password/reset-password.component';

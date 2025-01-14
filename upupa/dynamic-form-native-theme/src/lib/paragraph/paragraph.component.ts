@@ -1,7 +1,8 @@
-import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, inject, input, signal } from "@angular/core";
+import { Component, ElementRef, Input, OnChanges, Renderer2, SimpleChanges, computed, inject, input, signal } from "@angular/core";
 import { UntypedFormControl } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
+// import { EditorJsInputComponent } from "@upupa/editor-js";
 
 @Component({
     selector: "paragraph",
@@ -12,8 +13,13 @@ import { HtmlPipe, MarkdownPipe, UtilsModule } from "@upupa/common";
 })
 export class ParagraphComponent {
     control = input<UntypedFormControl>();
-    text = input<string>();
+    text = input<string | any>();
     renderer = input<"markdown" | "html" | "none">("none");
+
+    rendererC = computed(() => {
+        if (typeof this.text() === "string") return this.renderer();
+        return "editor-js";
+    });
     // renderedText = signal<string>();
     private readonly _sanitizer = inject(DomSanitizer);
     private readonly host = inject(ElementRef);

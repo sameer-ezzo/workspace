@@ -90,7 +90,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     private readonly document = inject(DOCUMENT);
 
     async ngOnChanges(changes: SimpleChanges) {
-        if (changes["design"]) applyFormDesign(this.design(), this.document.documentElement);
+        if (changes["design"]) applyFormDesign(this.document, this.design(), this.document.documentElement);
         if (changes["fields"] || changes["focusedField"]) {
             if (this.pages?.length === 0) this.populatePagesInFields();
             const v = this.focusedField();
@@ -185,7 +185,7 @@ function loadFontFace(doc, family: string) {
     doc.head.appendChild(newStyle);
 }
 
-function applyFormDesign(design: FormDesign, el: HTMLElement) {
+function applyFormDesign(document: Document, design: FormDesign, el: HTMLElement) {
     if (design.bgImage?.url) el.style.setProperty("--bg-img-url", design.bgImage.url);
     if (design.bgColor) el.style.setProperty("--bg-color", design.bgColor);
     if (design.textColor) el.style.setProperty("--field-text-color", design.textColor);
@@ -193,11 +193,11 @@ function applyFormDesign(design: FormDesign, el: HTMLElement) {
     if (design.buttonsColor) el.style.setProperty("--button-color", design.buttonsColor);
 
     if (design.headerFont) {
-        loadFontFace(this.document, design.headerFont.font.family);
+        loadFontFace(document, design.headerFont.font.family);
         el.style.setProperty("--header-font-family", design.headerFont.font.family);
     }
     if (design.paragraphFont) {
-        loadFontFace(this.document, design.paragraphFont.font.family);
+        loadFontFace(document, design.paragraphFont.font.family);
         el.style.setProperty("--paragraph-font-family", design.paragraphFont.font.family);
         el.style.setProperty("--paragraph-font-size", design.paragraphFont.size || "22pt");
     }

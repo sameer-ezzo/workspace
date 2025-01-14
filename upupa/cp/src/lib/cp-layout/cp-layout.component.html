@@ -7,7 +7,7 @@
         }
         <img [src]="logo()" class="logo" />
         <span class="spacer"></span>
-        <toolbar-user-menu [commands]="userMenuCommands()"></toolbar-user-menu>
+        <toolbar-user-menu [commands]="userMenuCommands()" [loginUrl]="loginUrl()"></toolbar-user-menu>
     </mat-toolbar>
     <mat-drawer-container autosize [dir]="languageService.dir$ | async" style="flex: 1">
         @if (sideBarItems() | async; as sItems) {

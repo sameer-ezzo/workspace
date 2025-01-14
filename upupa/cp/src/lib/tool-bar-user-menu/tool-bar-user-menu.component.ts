@@ -1,4 +1,4 @@
-import { Component, inject, Input } from "@angular/core";
+import { Component, inject, input, Input } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
@@ -6,7 +6,7 @@ import { SideBarItem } from "../side-bar-group-item";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { USER_PICTURE_RESOLVER } from "../di.token";
 import { getUserInitialsImage } from "../user-image.service";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { MatIconModule } from "@angular/material/icon";
 import { CommonModule, DOCUMENT } from "@angular/common";
 import { MatDividerModule } from "@angular/material/divider";
@@ -17,7 +17,7 @@ import { MatButtonModule } from "@angular/material/button";
 @Component({
     selector: "toolbar-user-menu",
     standalone: true,
-    imports: [CommonModule, MatIconModule, MatDividerModule, AuthorizeModule, MatMenuModule, MatButtonModule],
+    imports: [CommonModule, MatIconModule, MatDividerModule, AuthorizeModule, MatMenuModule, MatButtonModule, RouterLink],
     templateUrl: "./tool-bar-user-menu.component.html",
     styleUrls: ["./tool-bar-user-menu.component.scss"],
 })
@@ -27,7 +27,7 @@ export class ToolbarUserMenuComponent {
 
     public readonly auth = inject(AuthService);
     private readonly bus = inject(EventBus);
-    private readonly router = inject(Router);
+    loginUrl = input("/login");
 
     u$ = this.auth.user$.pipe(takeUntilDestroyed());
     userName$ = this.u$.pipe(
@@ -35,9 +35,7 @@ export class ToolbarUserMenuComponent {
         map((u) => u.name ?? u.email?.substring(0, u.email.indexOf("@"))),
     );
     impersonated$ = this.u$.pipe(map((u) => u?.claims?.["imps"] || undefined));
-    navigateToLogin() {
-        // todo: navigate to login
-    }
+
     umcClicked(e) {
         e = e.action;
         if (e.handler) e.handler({ action: e, data: null });

@@ -37,7 +37,7 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
     placeholder = input("");
     label = input("");
     hint = input("");
-    mode = input<"classic" | "document">("classic");
+    mode = input<"classic" | "document">("document");
 
     config: EditorConfig;
 
@@ -61,7 +61,8 @@ export class HtmlEditorComponent extends InputBaseComponent<string> {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["value"]) {
-            this.editor?.setData(this.value() ?? "");
+            // this.editor?.setData(this.value() ?? "");
+            this.control().setValue(this.value());
         }
     }
 
