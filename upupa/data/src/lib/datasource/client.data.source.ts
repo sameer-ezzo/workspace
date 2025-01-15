@@ -39,16 +39,16 @@ export class ClientDataSource<T = any> extends TableDataSource<T, Partial<T>> {
 
     override put(item: T, value: Partial<T>) {
         const key = this.all().indexOf(item);
-        this.all[key] = value as T;
+        this.all.update((v) => v.map((x, i) => (i === key ? (value as T) : x)));
         return Promise.resolve(value);
     }
 
     override patch(item: T, patches: Patch[]) {
         const key = this.all().indexOf(item);
-        let _item = this.all[key];
+        let _item = this.all()[key];
         if (typeof _item !== "object") _item = {} as T;
         JsonPatch.patch(_item, patches);
-        this.all[key] = _item as T;
+        this.all.update((v) => v.map((x, i) => (i === key ? _item : x)));
         return Promise.resolve(_item);
     }
 
