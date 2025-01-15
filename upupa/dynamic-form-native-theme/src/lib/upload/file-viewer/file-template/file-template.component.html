@@ -1,262 +1,264 @@
 @let fileVm = vm();
-@let file = fileVm.file;
-@let _stream = stream();
+@if (fileVm) {
+    @let file = fileVm.file;
+    @let _stream = stream();
 
-<div class="checkbox">
-    @if (selectable()) {
-        <!-- <mat-checkbox
+    <div class="checkbox">
+        @if (selectable()) {
+            <!-- <mat-checkbox
                     #chkBox
                     [checked]="selectionModel.isSelected(file._id)"
                     (change)="selectionModel.toggle(file._id); changed.emit(selectionModel.selected)"
                 ></mat-checkbox> -->
-    }
-</div>
-
-<image class="thumb flex centered selection contained" [src]="imageSrc()" [includeAccess]="includeAccess()" [alt]="fileVm.fileName"> </image>
-
-<div class="name">
-    {{ fileVm.fileName }}
-    @if (_stream?.progress$ | async; as progress) {
-        <br />
-        <div class="progress">
-            <strong> {{ progress }}% </strong>
-        </div>
-    }
-    @if (error(); as error) {
-        <br />
-        <small style="color: red">
-            {{ error.message }}
-        </small>
-    }
-</div>
-<div class="size">
-    @if (file) {
-        {{ file.size | fileSize }}
-    }
-</div>
-<div class="date">
-    {{ fileVm['date'] | date: dateFormat() }}
-</div>
-
-@if (fileVm.actions.length || fileVm.menuActions.length) {
-    <div class="actions hover-container">
-        @for (a of fileVm.actions; track $index) {
-            <mat-btn class="action onhover" (click)="onMenuAction(a, fileVm)" [buttonDescriptor]="a"></mat-btn>
-        }
-        @if (fileVm.menuActions?.length > 0) {
-            <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-                @for (a of fileVm.menuActions; track a) {
-                    <button type="button" mat-menu-item (click)="onMenuAction(a, fileVm)">
-                        @if (a.icon) {
-                            <mat-icon>{{ a.icon }}</mat-icon>
-                        }
-                        {{ a.text }}
-                    </button>
-                }
-            </mat-menu>
         }
     </div>
-}
 
-<ng-template #errorPlaceholderTemplate>
-    <svg
-        xmlns:dc="http://purl.org/dc/elements/1.1/"
-        xmlns:cc="http://creativecommons.org/ns#"
-        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-        xmlns:svg="http://www.w3.org/2000/svg"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 256 256"
-        version="1.1"
-    >
-        <g>
-            <path
-                id="path870"
-                d="M 32,48 V 207.9236"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: miter;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                id="path874"
-                d="M 224,96 V 208"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                id="path880"
-                d="m 64,16 h 80"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                id="path882"
-                d="M 64,240 H 192"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: miter;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-                d="m 224,208 c 0.0874,15.98169 -16,32 -32,32"
-                id="path886"
-            />
-            <path
-                transform="scale(-1,1)"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-                d="m -32,208 c -10e-7,16 -16,32 -32,32"
-                id="path886-3"
-            />
-            <path
-                transform="scale(-1)"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-                d="M -32,-47.976784 C -32,-32 -48,-16.356322 -63.999997,-16.000002"
-                id="path886-3-6"
-            />
-            <path
-                id="path933"
-                d="M 223.91257,96.071779 144,16"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                transform="scale(-1,1)"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-                d="m -144,64 c -0.0492,15.912926 -16.06452,31.999995 -32,32"
-                id="path886-5"
-            />
-            <path
-                id="path950"
-                d="M 144,64 V 16"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                id="path952"
-                d="m 176,96 h 48"
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 15.9923439;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                    stroke-opacity: 1;
-                "
-            />
-            <path
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 16;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-opacity: 1;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                "
-                d="m 64,208 48,-64"
-                id="path827"
-            />
-            <path
-                style="
-                    fill: none;
-                    stroke: #000000;
-                    stroke-width: 16;
-                    stroke-linecap: round;
-                    stroke-linejoin: round;
-                    stroke-opacity: 1;
-                    stroke-miterlimit: 4;
-                    stroke-dasharray: none;
-                "
-                d="m 64,144 48,64"
-                id="path829"
-            />
-        </g>
-    </svg>
-</ng-template>
+    <image class="thumb flex centered selection contained" [src]="imageSrc()" [includeAccess]="includeAccess()" [alt]="fileVm.fileName"> </image>
+
+    <div class="name">
+        {{ fileVm.fileName }}
+        @if (_stream?.progress$ | async; as progress) {
+            <br />
+            <div class="progress">
+                <strong> {{ progress }}% </strong>
+            </div>
+        }
+        @if (error(); as error) {
+            <br />
+            <small style="color: red">
+                {{ error.message }}
+            </small>
+        }
+    </div>
+    <div class="size">
+        @if (file) {
+            {{ file.size | fileSize }}
+        }
+    </div>
+    <div class="date">
+        {{ fileVm["date"] | date: dateFormat() }}
+    </div>
+
+    @if (fileVm.actions.length || fileVm.menuActions.length) {
+        <div class="actions hover-container">
+            @for (a of fileVm.actions; track $index) {
+                <mat-btn class="action onhover" (click)="onMenuAction(a, fileVm)" [buttonDescriptor]="a"></mat-btn>
+            }
+            @if (fileVm.menuActions?.length > 0) {
+                <button class="action onhover" type="button" mat-icon-button [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    @for (a of fileVm.menuActions; track a) {
+                        <button type="button" mat-menu-item (click)="onMenuAction(a, fileVm)">
+                            @if (a.icon) {
+                                <mat-icon>{{ a.icon }}</mat-icon>
+                            }
+                            {{ a.text }}
+                        </button>
+                    }
+                </mat-menu>
+            }
+        </div>
+    }
+
+    <ng-template #errorPlaceholderTemplate>
+        <svg
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:cc="http://creativecommons.org/ns#"
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 256 256"
+            version="1.1"
+        >
+            <g>
+                <path
+                    id="path870"
+                    d="M 32,48 V 207.9236"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: miter;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    id="path874"
+                    d="M 224,96 V 208"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    id="path880"
+                    d="m 64,16 h 80"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    id="path882"
+                    d="M 64,240 H 192"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: miter;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                    d="m 224,208 c 0.0874,15.98169 -16,32 -32,32"
+                    id="path886"
+                />
+                <path
+                    transform="scale(-1,1)"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                    d="m -32,208 c -10e-7,16 -16,32 -32,32"
+                    id="path886-3"
+                />
+                <path
+                    transform="scale(-1)"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                    d="M -32,-47.976784 C -32,-32 -48,-16.356322 -63.999997,-16.000002"
+                    id="path886-3-6"
+                />
+                <path
+                    id="path933"
+                    d="M 223.91257,96.071779 144,16"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    transform="scale(-1,1)"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                    d="m -144,64 c -0.0492,15.912926 -16.06452,31.999995 -32,32"
+                    id="path886-5"
+                />
+                <path
+                    id="path950"
+                    d="M 144,64 V 16"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    id="path952"
+                    d="m 176,96 h 48"
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 15.9923439;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                        stroke-opacity: 1;
+                    "
+                />
+                <path
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 16;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-opacity: 1;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                    "
+                    d="m 64,208 48,-64"
+                    id="path827"
+                />
+                <path
+                    style="
+                        fill: none;
+                        stroke: #000000;
+                        stroke-width: 16;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-opacity: 1;
+                        stroke-miterlimit: 4;
+                        stroke-dasharray: none;
+                    "
+                    d="m 64,144 48,64"
+                    id="path829"
+                />
+            </g>
+        </svg>
+    </ng-template>
+}
