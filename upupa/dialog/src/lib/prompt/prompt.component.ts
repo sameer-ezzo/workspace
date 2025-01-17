@@ -7,8 +7,9 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators } from "@angular/forms";
 
 import { ActionDescriptor } from "@upupa/common";
-import { MatBtnComponent } from "../../../../mat-btn/src/lib/mat-btn.component";
+
 import { DialogRef } from "../dialog-ref";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
     selector: "prompt",
@@ -29,7 +30,7 @@ import { DialogRef } from "../dialog-ref";
         `,
     ],
     standalone: true,
-    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule, MatBtnComponent],
+    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
 export class PromptComponent implements OnInit {
     promptText = input("Please enter value");

@@ -23,15 +23,15 @@
 </div>
 <div class="form-actions">
     @if (nextBtn() && canGoNext()) {
-        <mat-btn [buttonDescriptor]="nextBtn()" (click)="next()"></mat-btn>
+        <mat-btn [buttonDescriptor]="nextBtn()" (action)="next()"></mat-btn>
     }
     @if (prevBtn() && canGoPrev()) {
-        <mat-btn [buttonDescriptor]="prevBtn()" (click)="prev()"></mat-btn>
+        <mat-btn [buttonDescriptor]="prevBtn()" (action)="prev()"></mat-btn>
     }
     @if (submitBtn()) {
-        <mat-btn [disabled]="_pageInvalid() || loading() || (form().invalid && form().touched)" [buttonDescriptor]="submitBtn()" (click)="onSubmit()"></mat-btn>
+        <mat-btn [disabled]="_pageInvalid() || loading() || (form().invalid && form().touched)" [buttonDescriptor]="submitBtn()" (action)="onSubmit()"></mat-btn>
     }
     @for (act of actions(); track act) {
-        <mat-btn [buttonDescriptor]="act" (click)="actionClicked(act)"></mat-btn>
+        <mat-btn [buttonDescriptor]="act" (action)="actionClicked(act)"></mat-btn>
     }
 </div>

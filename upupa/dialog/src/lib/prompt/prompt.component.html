@@ -27,5 +27,5 @@
     </mat-form-field>
 }
 @if (submitBtn()) {
-    <mat-btn [buttonDescriptor]="submitBtn()" [disabled]="valueFormControl.invalid" (click)="submit()"></mat-btn>
+    <mat-btn [buttonDescriptor]="submitBtn()" [disabled]="valueFormControl.invalid" (action)="submit()"></mat-btn>
 }

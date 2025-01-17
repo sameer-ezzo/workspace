@@ -311,4 +311,9 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     merge(obj1: any, obj2: any) {
         return { ...obj1, ...obj2 };
     }
+
+
+    trackByFn(index, item) {
+        return item.key;
+    }
 }
