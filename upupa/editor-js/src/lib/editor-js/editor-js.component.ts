@@ -52,17 +52,17 @@ declare let Delimiter: any;
     ],
     host: {
         "[attr.id]": "id",
+        "[class]": "classList()",
     },
 })
 export class EditorJsInputComponent extends InputBaseComponent<OutputData> implements OnChanges, AfterViewInit, OnDestroy {
     readOnly = input(false);
-    licenseKey = input("GPL", { transform: (x: string) => (x || "GPL").toUpperCase() });
     placeholder = input("");
     label = input("");
     hint = input("");
     mode = input<"classic" | "document">("document");
     uploadPath = input("/editor-js-assets");
-
+    classList = computed(() => (this.readOnly() ? "readonly" : ""));
     private readonly uploadClient = inject(UploadClient);
     private readonly auth = inject(AuthService);
 
@@ -85,13 +85,17 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     }
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
-        if (changes["placeholder"] || changes["tools"] || changes["readonly"]) {
+        if (changes["placeholder"] || changes["tools"]) {
             this.editor = await this._init(true);
         }
 
         if (changes["value"]) {
             this.control().setValue(this.value());
-            this.editor?.render(this.value());
+            // this.editor?.blocks.render(this.value());
+        }
+        if (changes["readOnly"]) {
+            // this.editor?.readOnly(this.readOnly());
+            this.editor?.readOnly.toggle(this.readOnly());
         }
     }
 

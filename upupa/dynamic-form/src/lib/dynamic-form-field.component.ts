@@ -24,7 +24,7 @@ import { ComponentType } from "@angular/cdk/portal";
     imports: [PortalComponent, DynamicFormNativeThemeModule],
     template: `
         @if (fieldRef().text()) {
-            <paragraph [text]="fieldRef().text()" [renderer]="paragraphType()"></paragraph>
+            <paragraph [text]="fieldRef().text()" [renderer]="textRenderer()"></paragraph>
         }
         @if (component()) {
             <portal [component]="component()" [class]="fieldRef().class()" [inputs]="fieldRef().inputs()" [outputs]="fieldRef().outputs()" (attached)="onAttached($event)">
@@ -44,7 +44,7 @@ export class DynamicFormFieldComponent implements ControlValueAccessor, Validato
 
     fieldRef = input.required<FieldRef>();
     component = computed<ComponentType<any>>(() => this.formService.getControl(this.fieldRef().field.input, this.theme()).component);
-    paragraphType = computed<any>(() => this.fieldRef().inputs()?.["renderer"] || "markdown");
+    textRenderer = computed<any>(() => this.fieldRef().inputs()?.["renderer"]);
     classList = computed(() => {
         const fieldRef = this.fieldRef();
         const hidden = fieldRef.hidden() === true;
