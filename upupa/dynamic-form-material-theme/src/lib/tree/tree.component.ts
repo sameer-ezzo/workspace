@@ -1,11 +1,11 @@
-import { Component, Input, forwardRef, SimpleChanges } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, forwardRef, SimpleChanges } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { DataAdapter, NormalizedItem } from '@upupa/data';
-import { HierarchicalNode } from './hierarchy';
-import { map } from 'rxjs/operators';
-import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { NestedTreeControl } from "@angular/cdk/tree";
+import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { HierarchicalNode } from "./hierarchy";
+import { map } from "rxjs/operators";
+import { MatTreeNestedDataSource } from "@angular/material/tree";
 
 /*
 TODO:
@@ -15,12 +15,13 @@ if drag drop were to be added:
 
 */
 
-@Component({ standalone: true,
-    selector: 'mat-form-tree-input',
-    templateUrl: './tree.component.html',
-    styleUrls: ['./tree.component.css'],
+@Component({
+    standalone: true,
+    selector: "mat-form-tree-input",
+    templateUrl: "./tree.component.html",
+    styleUrls: ["./tree.component.css"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatTreeComponent), multi: true }],
-    exportAs: 'TreeInput',
+    exportAs: "TreeInput",
 })
 export class MatTreeComponent {
     treeControl = new NestedTreeControl<HierarchicalNode>((node) => node.children, { trackBy: (node) => node.key });
@@ -35,7 +36,7 @@ export class MatTreeComponent {
     @Input() hierarchyType!: string;
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['adapter']) {
+        if (changes["adapter"]) {
             // if (this.hierarchyType === 'children') this.hierarchy = new HierarchyByChildren(this.adapter)
             // else this.hierarchy = new HeirarchyByParent(this.adapter);
             // this.adapter.normalized$.pipe(map((data) => data.map((x) => this.normalizeHierarchy(null, x, 0)))).subscribe((n) => (this.dataSource.data = n));
@@ -47,7 +48,7 @@ export class MatTreeComponent {
         node.level = level;
         node.parent = parent;
         node.expandable = normalized.item?.children?.length > 0;
-        normalized['children'] = node.expandable ? normalized.item.children.map((x) => this.normalizeHierarchy(node, this.adapter.normalize(x), level + 1)) : [];
+        normalized["children"] = node.expandable ? normalized.item.children.map((x) => this.normalizeHierarchy(node, this.adapter.normalize(x), level + 1)) : [];
         return normalized as HierarchicalNode;
     }
 }

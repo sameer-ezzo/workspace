@@ -14,7 +14,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
     selector: "inline-button",
     standalone: true,
     imports: [MatBtnComponent],
-    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (click)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
@@ -83,7 +83,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
                     component: MatBtnComponent,
                     inputs: { buttonDescriptor: descriptor },
                     outputs: {
-                        click: async () => {
+                        action: async () => {
                             if (descriptor.type === "submit") {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 componentInstance.submit();

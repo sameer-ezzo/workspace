@@ -25,7 +25,6 @@ export type DialogConfig = MatDialogConfig & {
     footer?: DynamicTemplate[];
 
     hideCloseButton?: boolean;
-    canEscape?: boolean;
 
     closingClasses?: string[];
     closeTimeout?: number;
@@ -40,7 +39,6 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
     closeTimeout: 400,
     closingClasses: [],
     hideCloseButton: false,
-    canEscape: true,
 };
 
 @Injectable({ providedIn: "root" })

@@ -1,6 +1,6 @@
 @let d = buttonDescriptor();
 @switch (variant()) {
-    @case ('raised') {
+    @case ("raised") {
         <button
             authAction
             [path]="d['path']"
@@ -25,7 +25,7 @@
             {{ d.text }}
         </button>
     }
-    @case ('flat') {
+    @case ("flat") {
         <button
             authAction
             [path]="d['path']"
@@ -50,7 +50,7 @@
             {{ d.text }}
         </button>
     }
-    @case ('stroked') {
+    @case ("stroked") {
         <button
             authAction
             [path]="d['path']"
@@ -76,7 +76,7 @@
             {{ d.text }}
         </button>
     }
-    @case ('icon') {
+    @case ("icon") {
         <button
             authAction
             [path]="d['path']"
@@ -102,7 +102,7 @@
             }
         </button>
     }
-    @case ('fab') {
+    @case ("fab") {
         <button
             authAction
             [path]="d['path']"
@@ -128,7 +128,7 @@
             }
         </button>
     }
-    @case ('mini-fab') {
+    @case ("mini-fab") {
         <button
             authAction
             [path]="d['path']"

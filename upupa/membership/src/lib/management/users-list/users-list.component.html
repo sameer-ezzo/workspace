@@ -2,7 +2,7 @@
     <!-- [actions]="actions" [templates]="_templates" [headerActions]="headerActions" (action)="onAction($event)"-->
     <data-table name="users-list" [(focusedItem)]="focusedUser" [adapter]="adapter" [columns]="columns">
         <table-header class="table-header">
-            <mat-btn [buttonDescriptor]="{ name: 'create', text:'Create' }" (click)="onAction($event)"></mat-btn>
+            <mat-btn [buttonDescriptor]="{ name: 'create', text:'Create' }" (action)="onAction($event)"></mat-btn>
         </table-header>
     </data-table>
 }

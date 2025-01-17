@@ -1,5 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, WritableSignal } from "@angular/core";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { Component, OnInit, DestroyRef, inject, input, model } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 
 import { MatDialogModule } from "@angular/material/dialog";
@@ -7,11 +6,10 @@ import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators } from "@angular/forms";
 
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { startWith } from "rxjs";
-import { DialogWrapperComponent } from "../dialog-wrapper.component";
-import { ActionDescriptor, ActionEvent } from "@upupa/common";
-import { DialogPortal } from "../dialog.service";
+import { ActionDescriptor } from "@upupa/common";
+
+import { DialogRef } from "../dialog-ref";
+import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
     selector: "prompt",
@@ -24,77 +22,52 @@ import { DialogPortal } from "../dialog.service";
                 width: 100%;
                 box-sizing: border-box;
                 padding: 1rem;
+
+                mat-btn {
+                    align-self: flex-end;
+                }
             }
         `,
     ],
     standalone: true,
-    imports: [MatDialogModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
+    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
-export class PromptComponent implements DialogPortal<PromptComponent>, OnInit {
-    promptText = "Please enter value";
-    promptTitle = "Prompt";
-    promptNoButton = "No";
-    promptYesButton = "Yes";
-    placeholder = "";
+export class PromptComponent implements OnInit {
+    promptText = input("Please enter value");
+    promptNoButton = input("No");
+    promptYesButton = input("Yes");
+    placeholder = input("");
+    submitBtn = input<ActionDescriptor>({ name: "submit", text: "Submit", type: "submit", color: "primary", variant: "raised" });
 
-    type = "text";
-    required = false;
-    dialogRef?: MatDialogRef<DialogWrapperComponent<PromptComponent>>;
-    dialogActions?: WritableSignal<ActionDescriptor[]>;
+    type = input("text");
+    required = input(false);
 
-    appearance: MatFormFieldAppearance = "outline";
+    appearance = input<MatFormFieldAppearance>("outline");
     valueFormControl = new UntypedFormControl("", []);
-    view: "input" | "textarea" = "input";
+    view = input<"input" | "textarea">("input");
+    value = model<string | number>("");
     private readonly destroyRef = inject(DestroyRef);
-    private readonly data = inject(MAT_DIALOG_DATA, { optional: true });
 
     ngOnInit(): void {
-        const data = this.data;
-        if (data.appearance !== undefined) {
-            this.appearance = data.appearance;
-        }
-        if (data.text !== undefined) {
-            this.promptText = data.text;
-        }
-        if (data.placeholder !== undefined) {
-            this.placeholder = data.placeholder;
-        }
-        this.view = data.view === "textarea" ? "textarea" : "input";
-        this.required = data.required === true;
-
         const validators = this.required ? [Validators.required] : [];
-        this.type = data.type ?? "text";
-        if (data.type !== null) {
-            if (this.type === "number") this.valueFormControl = new FormControl<number>(+(data.value || "0"), [...validators]);
-            else if (this.type === "email") this.valueFormControl = new FormControl<string>(data.value || "", [...validators, Validators.email]);
-            else this.valueFormControl = new FormControl<string>(data.value || "", [...validators]);
-        }
-        this.valueFormControl.updateValueAndValidity();
 
-        this.valueFormControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef), startWith(null)).subscribe((v) => {
-            this.dialogActions.set(
-                this.dialogActions().map((a) => {
-                    const action = { ...a, disabled: false };
-                    if (a.type === "submit") action.disabled = this.valueFormControl.invalid;
-                    return action;
-                }),
-            );
-        });
+        if (this.type() === "number") this.valueFormControl = new FormControl<number>(+(this.value() ?? 0), [...validators]);
+        else if (this.type() === "email") this.valueFormControl = new FormControl<string>(this.value() as string, [...validators, Validators.email]);
+        else this.valueFormControl = new FormControl<string>(this.value() as string, [...validators]);
+
+        this.valueFormControl.updateValueAndValidity();
     }
 
     enterAction(e) {
         e.stopPropagation();
         e.preventDefault();
-        const submitAction = this.dialogActions().find((a) => a.type === "submit");
-        if (submitAction && e.key === "Enter") {
-            this.onAction({ action: submitAction, data: undefined });
+        if (this.submitBtn() && e.key === "Enter") {
+            this.submit();
         }
     }
-    async onAction(e: ActionEvent) {
-        const dialogRef = e.context?.dialogRef ?? this.dialogRef;
-        if (e.action.type === "submit") {
-            if (this.valueFormControl.invalid) return;
-            dialogRef.close(this.valueFormControl.value);
-        } else dialogRef.close();
+    private readonly dialogRef = inject(DialogRef);
+    async submit() {
+        if (this.valueFormControl.invalid) return;
+        this.dialogRef.close(this.valueFormControl.value);
     }
 }
