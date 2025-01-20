@@ -1,9 +1,13 @@
-import { Route, Routes } from "@angular/router";
-import { DynamicComponent } from "../dynamic-component";
+import { ResolveFn, Route, Routes } from "@angular/router";
+import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
 
 export type NamedRoute = Route & { name: string };
-export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component"> & { component: DynamicComponent<T> };
+export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component" | "resolve"> & {
+    component: DynamicComponent<T>;
+    resolve: { [key in keyof ComponentInputs<T>]?: ResolveFn<unknown> } & Record<string, ResolveFn<unknown>>;
+    data: { [key in keyof ComponentInputs<T>]?: any } & Record<string, any>;
+};
 
 /**
  * RouteFeature is a modifier function that takes a route object and returns a modified route object. The resulted route will be merged with the original route object, so only the properties to be mixed.
