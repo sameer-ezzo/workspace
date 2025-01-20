@@ -71,7 +71,7 @@ export class InputsViewModel {
     template: `
         <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
             @for (widget of materializedWidgets(); track widget.id) {
-                <gridstack-item [options]="widget" (tap)="setFocused(widget)">
+                <gridstack-item [options]="widget" (click)="setFocused(widget)">
                     @if (!hideHeader()) {
                         <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
                             <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings(widget.id)"><mat-icon>settings</mat-icon></button>
@@ -135,7 +135,7 @@ export class WidgetBuilderComponent implements OnChanges {
                         component: MatBtnComponent,
                         inputs: { buttonDescriptor: { text: "Select", name: "select" } },
                         outputs: {
-                            click: async () => {
+                            action: async () => {
                                 const widgetSelector = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 dialogRef.close(widgetSelector.selectedBlueprint());
                             },
@@ -178,7 +178,7 @@ export class WidgetBuilderComponent implements OnChanges {
                         component: MatBtnComponent,
                         inputs: { buttonDescriptor: { text: "Select", name: "select" } },
                         outputs: {
-                            click: async () => {
+                            action: async () => {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
                                 dialogRef.close({ settings: componentInstance.settings(), inputs: componentInstance.inputs() });
                             },

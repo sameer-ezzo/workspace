@@ -39,7 +39,6 @@ export const defaultCreateUserFromScheme: FormScheme = {
         name: "forceChangePwd",
         inputs: {
             template: "checkbox",
-            renderer: "none",
             label: "Force change password",
         },
     } as Field,

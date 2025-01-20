@@ -2,16 +2,10 @@
     display: block;
     & > form {
         display: block;
-        & > .form-container {
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-            position: relative;
-        }
 
-        .field {
-            display: block;
-        }
+        // .field {
+        //     display: block;
+        // }
         .field.hidden-input,
         .field.hidden {
             display: none;
@@ -20,21 +14,21 @@
             height: 0 !important;
         }
 
-        input[type="submit"] {
-            margin-block-start: -1rem;
-        }
+        // input[type="submit"] {
+        //     margin-block-start: -1rem;
+        // }
 
-        .field:not(.hidden-input) {
-            margin-block-end: 0.25rem;
-        }
+        // .field:not(.hidden-input) {
+        //     margin-block-end: 0.25rem;
+        // }
 
         .field.hidden-input ~ field:not(.hidden-input) {
             margin-block-start: 0rem;
         }
 
-        .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
-            display: none !important;
-        }
+        // .mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+        //     display: none !important;
+        // }
 
         fieldset {
             legend {

@@ -1,5 +1,5 @@
 import { KeyValue } from "@angular/common";
-import { Component, computed, input, Input, InputSignal, SimpleChanges } from "@angular/core";
+import { Component, computed, input, Input, InputSignal, SimpleChanges, WritableSignal } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";

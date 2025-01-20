@@ -2,6 +2,7 @@ import { Sort } from "@angular/material/sort";
 import { PageEvent } from "@angular/material/paginator";
 import { Patch } from "@noah-ark/json-patch";
 import { signalStore, withState } from "@ngrx/signals";
+import { WritableSignal } from "@angular/core";
 
 export type PageDescriptor = Partial<PageEvent>;
 export type SortDescriptor = Sort;
@@ -22,7 +23,16 @@ export declare type DataLoaderOptions<T> = {
  * It can be a single key of T or an array of keys of T.
  */
 export type Key<T> = keyof T | (keyof T)[];
-export type NormalizedItem<T = any> = { key: any; item: T; display: Partial<T>; value: Partial<T>; image?: Partial<T>; defaultSearchTerm?: string; disabled?: boolean };
+export type NormalizedItem<T = any> = {
+    id: string
+    key: any;
+    item: T;
+    display: Partial<T>;
+    value: Partial<T>;
+    image?: Partial<T>;
+    defaultSearchTerm?: string;
+    disabled?: boolean;
+};
 
 export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "date" | "boolean" };
 

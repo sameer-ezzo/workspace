@@ -1,4 +1,4 @@
-import { inject, signal, effect, WritableSignal, EffectRef, Signal } from "@angular/core";
+import { inject, signal, effect, WritableSignal, EffectRef, Signal, Injector } from "@angular/core";
 import { SIGNAL } from "@angular/core/primitives/signals";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Params, Router } from "@angular/router";
@@ -20,9 +20,9 @@ export function getRouteSegments(route: ActivatedRoute): { segment: string; conf
     if (parent) return [...segments, ...getRouteSegments(parent)];
     return segments;
 }
-export function routeParams() {
-    const router = inject(Router);
-    const route = inject(ActivatedRoute);
+export function routeParams(injector = inject(Injector)) {
+    const router = injector.get(Router);
+    const route = injector.get(ActivatedRoute);
     const params = toSignal(route.params);
     const result = signal<Params>(params());
     effect(() => result.set(params()), { allowSignalWrites: true });
@@ -42,9 +42,9 @@ export function routeParams() {
     return result;
 }
 
-export function routeParam(paramName: string) {
-    const router = inject(Router);
-    const route = inject(ActivatedRoute);
+export function routeParam(paramName: string, injector = inject(Injector)) {
+    const router = injector.get(Router);
+    const route = injector.get(ActivatedRoute);
     const result = signal<string>(route.snapshot.params[paramName]);
     const params = toSignal(route.params.pipe(map((x) => x[paramName])));
     effect(() => result.set(params()), { allowSignalWrites: true });
@@ -60,9 +60,9 @@ export function routeParam(paramName: string) {
     return result;
 }
 
-export function fragment(): WritableSignal<string> {
-    const router = inject(Router);
-    const route = inject(ActivatedRoute);
+export function fragment(injector = inject(Injector)) {
+    const router = injector.get(Router);
+    const route = injector.get(ActivatedRoute);
     const result = signal<string>(route.snapshot.fragment);
     const fragment = toSignal(route.fragment);
 
@@ -81,9 +81,9 @@ export function fragment(): WritableSignal<string> {
     return result;
 }
 
-export function queryParams() {
-    const router = inject(Router);
-    const route = inject(ActivatedRoute);
+export function queryParams(injector = inject(Injector)) {
+    const router = injector.get(Router);
+    const route = injector.get(ActivatedRoute);
     const queryParams = toSignal(route.queryParams);
     const result = signal<Params>(queryParams());
 
@@ -100,9 +100,9 @@ export function queryParams() {
     return queryParams;
 }
 
-export function queryParam(paramName: string) {
-    const router = inject(Router);
-    const route = inject(ActivatedRoute);
+export function queryParam(paramName: string, injector = inject(Injector)) {
+    const router = injector.get(Router);
+    const route = injector.get(ActivatedRoute);
     const queryParam = toSignal(route.queryParams.pipe(map((x) => x[paramName])));
     const result = signal<string>(queryParam());
     effect(() => result.set(queryParam()), { allowSignalWrites: true });
@@ -120,8 +120,16 @@ export function queryParam(paramName: string) {
 type MaybeWritableSignal<T> = Signal<T> | WritableSignal<T>;
 
 export function signalLink<T = unknown>(_main: MaybeWritableSignal<T>, _branch: MaybeWritableSignal<T>, options?: { mainToBranch: boolean; branchToMain: boolean }): EffectRef;
-export function signalLink<T = unknown>(_main: () => MaybeWritableSignal<T>, _branch: () => MaybeWritableSignal<T>, options?: { mainToBranch: boolean; branchToMain: boolean }): EffectRef;
-export function signalLink<T = unknown>(_main: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>), _branch: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>), options = { mainToBranch: true, branchToMain: true }): EffectRef {
+export function signalLink<T = unknown>(
+    _main: () => MaybeWritableSignal<T>,
+    _branch: () => MaybeWritableSignal<T>,
+    options?: { mainToBranch: boolean; branchToMain: boolean },
+): EffectRef;
+export function signalLink<T = unknown>(
+    _main: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>),
+    _branch: MaybeWritableSignal<T> | (() => MaybeWritableSignal<T>),
+    options = { mainToBranch: true, branchToMain: true },
+): EffectRef {
     const main = SIGNAL in _main ? _main : _main();
     const branch = SIGNAL in _branch ? _branch : _branch();
 

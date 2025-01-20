@@ -1,8 +1,8 @@
 import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term } from "./model";
 import { filter } from "./filter.fun";
 
-import { JsonPatch, Patch } from "@noah-ark/json-patch";
-import { signal } from "@angular/core";
+import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
+import { computed, signal } from "@angular/core";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -21,9 +21,20 @@ export function compare(a, b): number {
     else return 0;
 }
 
-export class ClientDataSource<T = any> extends TableDataSource<T, Partial<T>> {
+export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
     all = signal<T[]>([]);
-    constructor(all: T[]) {
+    entries = computed(() => {
+        const map = new Map<R, T>();
+        for (const item of this.all()) {
+            const key = this._key(item);
+            map.set(key, item);
+        }
+        return map;
+    });
+    constructor(
+        all: T[],
+        public key: string | ((item: T) => R) = (item) => item as unknown as R,
+    ) {
         super();
         this.all.set(all);
     }
@@ -37,23 +48,35 @@ export class ClientDataSource<T = any> extends TableDataSource<T, Partial<T>> {
         return Promise.resolve(value);
     }
 
+    _key(item: T) {
+        return typeof this.key === "string" ? JsonPointer.get(item, this.key) : this.key(item);
+    }
+
     override put(item: T, value: Partial<T>) {
-        const key = this.all().indexOf(item);
-        this.all[key] = value as T;
+        const key = this._key(item);
+        const entries = this.entries();
+        const ref = entries.get(key);
+        // this.all.update((v) => v.map((x) => (x === ref ? (value as T) : x)));
+        this.all.set(this.all().map((x) => (x === ref ? (value as T) : x)));
+
         return Promise.resolve(value);
     }
 
     override patch(item: T, patches: Patch[]) {
-        const key = this.all().indexOf(item);
-        let _item = this.all[key];
-        if (typeof _item !== "object") _item = {} as T;
-        JsonPatch.patch(_item, patches);
-        this.all[key] = _item as T;
-        return Promise.resolve(_item);
+        const key = this._key(item);
+        const entries = this.entries();
+        let ref = entries.get(key);
+        if (typeof ref !== "object") ref = {} as T;
+        JsonPatch.patch(ref, patches);
+        this.all.update((v) => v.map((x) => (x === ref ? (ref as T) : x)));
+        return Promise.resolve(ref);
     }
 
     override delete(item: T) {
-        this.all.update((all) => all.filter((x) => x !== item));
+        const key = this._key(item);
+        const entries = this.entries();
+        const ref = entries.get(key);
+        this.all.update((v) => v.filter((x) => x !== ref));
         return Promise.resolve(item);
     }
 

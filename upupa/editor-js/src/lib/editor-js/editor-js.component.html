@@ -1,10 +1,14 @@
-<fieldset>
-    @if (label()) {
-        <legend>{{ label() }}</legend>
-    }
+@if (readOnly()) {
     <div #editor></div>
-    @if (hint()) {
-        <span>{{ hint() }}</span>
-    }
-    <span *errors="control().errors; control: control(); let message">{{ message }}</span>
-</fieldset>
+} @else {
+    <fieldset>
+        @if (label()) {
+            <legend>{{ label() }}</legend>
+        }
+        <div #editor></div>
+        @if (hint()) {
+            <span>{{ hint() }}</span>
+        }
+        <span *errors="control().errors; control: control(); let message">{{ message }}</span>
+    </fieldset>
+}

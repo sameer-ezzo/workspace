@@ -12,7 +12,7 @@ import { reflectFormViewModelType } from "@upupa/dynamic-form";
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (click)="create()" [buttonDescriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (action)="create()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {

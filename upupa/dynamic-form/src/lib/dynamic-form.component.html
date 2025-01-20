@@ -1,4 +1,4 @@
-<form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form" [name]="name()" [attr.id]="name()" >
+<form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form" [name]="name()" [attr.id]="name()">
     <mat-accordion class="form-container">
         @for (record of fields() | orderedKeyValue; track $index) {
             @let fieldName = record.key;
@@ -58,11 +58,11 @@
         <p style="display: none"></p>
     } @else if (field.input === "paragraph") {
         <paragraph
-            [attr.name]="fieldName + '-text'"
-            class="{{ input }}-input-text {{ fieldName }}-container-text"
+            [attr.name]="fieldName"
+            class="{{ input }}-input {{ fieldName }}-container"
             [class.hidden]="fieldRef.hidden() === true"
             [text]="fieldRef.text()"
-            [renderer]="fieldRef.inputs()?.['renderer'] || 'markdown'"
+            [renderer]="fieldRef.inputs()?.['renderer']"
         ></paragraph>
     } @else {
         <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formControl]="control"></field>
@@ -79,7 +79,7 @@
     @let input = field.input;
 
     @if (input === "paragraph" || fieldRef.text()) {
-        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer'] || 'markdown'"></paragraph>
+        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer']"></paragraph>
     }
     @for (record of field.items | orderedKeyValue; track $index) {
         @let _fieldName = record.key;

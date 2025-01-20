@@ -5,6 +5,7 @@ import { DOCUMENT } from "@angular/common";
 import { RuleFormComponent } from "../rule-form/rule-form.component";
 import { PermissionsSideBarComponent } from "../permissions-side-bar/permissions-side-bar.component";
 import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
     standalone: true,
@@ -12,7 +13,7 @@ import { MatIconModule } from "@angular/material/icon";
     templateUrl: "./permissions-page.component.html",
     styleUrls: ["./permissions-page.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RuleFormComponent, PermissionsSideBarComponent, MatIconModule],
+    imports: [RuleFormComponent, PermissionsSideBarComponent, MatButtonModule, MatIconModule],
 })
 export class PermissionsPageComponent {
     nodes = signal<NodeModel[]>([]);

@@ -27,12 +27,12 @@
                 <mat-btn
                     [buttonDescriptor]="descriptor"
                     [loading]="submitting()"
-                    (click)="dynForm.submit()"
+                    (action)="dynForm.submit()"
                     [disabled]="this.submitting() || (dynForm.invalid && (dynForm.dirty || dynForm.touched))"
                 >
                 </mat-btn>
             } @else {
-                <mat-btn [buttonDescriptor]="descriptor" (click)="onAction($event)"></mat-btn>
+                <mat-btn [buttonDescriptor]="descriptor" (action)="onAction($event)"></mat-btn>
             }
         }
     </div>

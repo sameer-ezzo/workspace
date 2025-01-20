@@ -6,13 +6,14 @@ import { RulePermissionsTableComponent } from "../rule-permissions-table/rule-pe
 import { MatIconModule } from "@angular/material/icon";
 import { TitleCasePipe } from "@angular/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
     standalone: true,
     selector: "rule-form",
     templateUrl: "./rule-form.component.html",
     styleUrls: ["./rule-form.component.scss"],
-    imports: [RulePermissionsTableComponent, MatIconModule, TitleCasePipe, MatProgressBarModule],
+    imports: [RulePermissionsTableComponent, MatIconModule, MatButtonModule, TitleCasePipe, MatProgressBarModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RuleFormComponent {

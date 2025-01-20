@@ -17,6 +17,8 @@
         [matSortDirection]="adapter().sort()?.direction"
         [matSortActive]="adapter().sort()?.active"
         (matSortChange)="onSortData($event)"
+
+        [trackBy]="trackByFn">
     >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
@@ -24,7 +26,7 @@
                     <mat-checkbox
                         (change)="toggleSelectAll()"
                         [checked]="sns.length >= adapter().normalized()?.length"
-                        [indeterminate]="sns.length && sns.length !== adapter().normalized()?.length"
+                        [indeterminate]="sns.length > 0 && sns.length !== adapter().normalized()?.length"
                     >
                     </mat-checkbox>
                 }

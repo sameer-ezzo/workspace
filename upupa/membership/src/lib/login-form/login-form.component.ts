@@ -15,7 +15,7 @@ import { defaultLoginFormFields } from "../default-values";
     selector: "login-form",
     styleUrls: ["./login-form.component.scss"],
     templateUrl: "./login-form.component.html",
-    imports: [CollectorComponent, CommonModule, PortalComponent]
+    imports: [CollectorComponent, CommonModule, PortalComponent],
 })
 export class LoginFormComponent {
     loginForm = viewChild<CollectorComponent>("loginForm");
@@ -43,7 +43,7 @@ export class LoginFormComponent {
         {},
         {
             transform: (fields) => {
-                if(!fields) fields = defaultLoginFormFields;
+                if (!fields) fields = defaultLoginFormFields;
                 if (fields["email"]) fields["email"].inputs["autocomplete"] = "username";
                 if (fields["username"]) fields["username"].inputs["autocomplete"] = "username";
                 if (fields["password"]) fields["password"].inputs["autocomplete"] = "current-password";
@@ -64,34 +64,9 @@ export class LoginFormComponent {
         },
     });
 
-    stage = signal<"check-user" | "fill-password">("check-user");
-    formFields = computed(() => {
-        const fields = this.fields();
-        const stage = this.stage();
-        if (stage === "check-user") {
-            return {
-                email: fields["email"],
-            };
-        } else {
-            return {
-                ...fields,
-            };
-        }
-    });
     async signin() {
         this.error = null;
         this.loading.set(true);
-
-        const stage = this.stage();
-        if (stage === "check-user") {
-            const value = this.value();
-            const res = await this.auth.checkUser(value.email);
-            console.log(res);
-
-            if (!res.canLogin) throw new Error("INVALID_ATTEMPT");
-            this.stage.set("fill-password");
-            return;
-        }
 
         try {
             const res = await this.auth.signin(this.value() as Credentials);

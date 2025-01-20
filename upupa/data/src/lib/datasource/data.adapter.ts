@@ -1,12 +1,14 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource } from "./model";
 import { computed } from "@angular/core";
-import { patchState, signalStore, withState } from "@ngrx/signals";
 
+import { patchState, signalStore, withState } from "@ngrx/signals";
+import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
 export type DataAdapterDescriptor<TData = any> = {
     type: DataAdapterType;
+
     keyProperty?: keyof TData;
     displayProperty?: Key<TData>;
     valueProperty?: Key<TData>;
@@ -17,10 +19,11 @@ export type DataAdapterDescriptor<TData = any> = {
 function DataAdapterStore<T>() {
     return signalStore(
         { protectedState: false },
+        withEntities<NormalizedItem<T>>(),
         withState({
             loading: false,
             autoRefresh: true,
-            data: [] as T[],
+            // data: [] as T[],
             error: null as Error,
             allDataLoaded: false,
             page: { pageIndex: 0 } as PageDescriptor,
@@ -28,6 +31,7 @@ function DataAdapterStore<T>() {
             filter: {} as FilterDescriptor,
             terms: [] as Term<T>[],
         }),
+        // withSelectedEntity(),
     );
 }
 
@@ -41,7 +45,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         options?: DataLoaderOptions<T>,
     ) {
         super();
-
+        
         const _keyProperties = Array.isArray(keyProperty) ? keyProperty : keyProperty ? [keyProperty] : [];
         const _valueProperties = Array.isArray(valueProperty) ? valueProperty : valueProperty ? [valueProperty] : [];
         const _displayProperties = Array.isArray(displayProperty) ? displayProperty : displayProperty ? [displayProperty] : [];
@@ -56,17 +60,19 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         patchState(this, _initial);
     }
 
-    normalized = computed(() => this.data().map((x) => this.normalize(x)));
+    normalized = computed(() => this.entities());
 
     async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<NormalizedItem<T>[]> {
         const _options = { ...{ page: this.page(), filter: this.filter(), sort: this.sort(), terms: this.terms() }, ...options };
         try {
             patchState(this, { loading: true });
             const items = await this.dataSource.load(_options);
-            patchState(this, { data: items, ..._options, loading: false });
-            return this.normalized();
+            patchState(this, { ..._options, loading: false });
+            patchState(this, setAllEntities(items.map((x) => this.normalize(x))));
+            return this.entities();
         } catch (error) {
-            patchState(this, { data: [], error, loading: false });
+            patchState(this, { error, loading: false });
+            patchState(this, setAllEntities([]));
             return [];
         }
     }
@@ -77,24 +83,36 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
     async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.create(value);
+
+        const n = this.normalize(result);
+        patchState(this, setEntity(n));
+
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
 
     async put(item: T, value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.put(item, value);
+        const n = this.normalize(result);
+        patchState(this, setEntity(n));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
 
     async patch(item: T, patches: Patch[], opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.patch(item, patches);
+
+        const n = this.normalize(result);
+        patchState(this, updateEntity({ id: n.id, changes: n }));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
 
     async delete(item: T, opt: { refresh: boolean } = { refresh: this.autoRefresh() }): Promise<unknown> {
+        const id = this.normalize(item).id;
+        const n = this.entities().find((x) => x.id === id);
         const result = await this.dataSource.delete(item);
+        patchState(this, removeEntities([n.id]));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
@@ -109,11 +127,11 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         if (!keys?.length) return [];
 
         const KEYS = Array.isArray(keys) ? keys : [keys];
-        const normalized = this.normalized() ?? [];
+        const normalized = this.entities() ?? [];
         const itemsInAdapter: NormalizedItem<T>[] = [];
         const toBeLoaded: Key<T> = [];
         for (const key of KEYS) {
-            const n = normalized.find((n) => n.key === key);
+            const n = normalized.find((n) => n.id === key);
             if (n) itemsInAdapter.push(n);
             else toBeLoaded.push(key);
         }
@@ -130,6 +148,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     normalize(item: T): NormalizedItem<T> {
         if (!item)
             return {
+                id: null,
                 key: null,
                 display: null,
                 value: null,
@@ -138,6 +157,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
+        const id = `${key}`;
 
         const display = this.extract(item, this.displayProperty, item, true);
         let valueProperty = Array.isArray(this.valueProperty) ? [this.keyProperty, ...this.valueProperty] : [this.keyProperty, this.valueProperty];
@@ -150,7 +170,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         else if (valueProps.length === 1) value = valueProps[0] ? item[valueProps[0]] : item; //to handle keyProperty = null (take the item itself as a key)
 
         const image = this.extract(item, this.imageProperty, undefined);
-        return { key, display, value, image, item };
+        return { id, key, display, value, image, item: item };
     }
 
     extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {

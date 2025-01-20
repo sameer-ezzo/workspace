@@ -1,14 +1,18 @@
-@switch (rendererC()) {
+@switch (renderer()) {
     @case ("markdown") {
         <p [innerHTML]="text() | markdown | html"></p>
     }
     @case ("html") {
         <p [innerHTML]="text() | html"></p>
     }
-    <!-- @case ("editor-js") {
-        <editor-js-input [value]="text()" [readOnly]="true"></editor-js-input>
-    } -->
-    @default {
+    @case ("none") {
         <p>{{ text() }}</p>
+    }
+    @default {
+        @if (rendererTemplate()) {
+            <portal [template]="rendererTemplate()"></portal>
+        } @else {
+            text() | json
+        }
     }
 }

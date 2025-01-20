@@ -7,6 +7,6 @@
     </p>
 </div>
 <div class="footer">
-    <mat-btn [buttonDescriptor]="discardButton()" (click)="dialogRef.close(false)"></mat-btn>
-    <mat-btn [buttonDescriptor]="confirmButton()" (click)="dialogRef.close(true)"></mat-btn>
+    <mat-btn [buttonDescriptor]="discardButton()" (action)="dialogRef.close(false)"></mat-btn>
+    <mat-btn [buttonDescriptor]="confirmButton()" (action)="dialogRef.close(true)"></mat-btn>
 </div>

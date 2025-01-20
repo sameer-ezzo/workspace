@@ -11,7 +11,7 @@ import { firstValueFrom } from "rxjs";
 @Component({
     standalone: true,
     selector: "edit-btn",
-    template: ` <mat-btn (click)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
+    template: ` <mat-btn (action)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
 export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
@@ -35,7 +35,7 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
             const { submitResult } = result;
             if (result && this.updateAdapter()) {
                 await this.adapter.put(this.item(), submitResult);
-                this.adapter.refresh();
+                // this.adapter.refresh();
             }
         });
     }

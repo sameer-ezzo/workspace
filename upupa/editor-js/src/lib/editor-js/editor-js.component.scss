@@ -1,6 +1,12 @@
 :host {
     display: block;
-    margin-block-end: 2rem;
+}
+::ng-deep {
+    .readonly {
+        .ce-block__content {
+            margin-inline: 0;
+        }
+    }
 }
 
 fieldset {
@@ -25,5 +31,15 @@ fieldset {
     legend {
         color: var(--mdc-outlined-text-field-label-text-color);
         padding-inline: 0.35rem;
+    }
+}
+::ng-deep {
+    .codex-editor.codex-editor--rtl {
+        .ce-toolbar__actions {
+            left: auto !important;
+            right: -60px !important;
+            padding-right: 0 !important;
+            padding-left: 5px;
+        }
     }
 }
