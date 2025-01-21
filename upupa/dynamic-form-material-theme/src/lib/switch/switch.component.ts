@@ -19,13 +19,10 @@ import { ParagraphComponent, SwitchComponent } from "@upupa/dynamic-form-native-
     ],
     imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule, ErrorsDirective],
     standalone: true,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: {
-        "[class]": "template()",
-    },
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatSwitchComponent extends SwitchComponent {
-    class = "";
+
     inputEl = viewChild.required<MatSlideToggle | MatCheckbox>("_inputElement");
     override template = input<"checkbox" | "toggle">("checkbox");
 

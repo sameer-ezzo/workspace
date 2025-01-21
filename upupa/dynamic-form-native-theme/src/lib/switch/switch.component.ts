@@ -20,7 +20,7 @@ import { DynamicComponent } from "@upupa/common";
     imports: [FormsModule, ReactiveFormsModule, MatSlideToggleModule, MatCheckboxModule],
 })
 export class SwitchComponent extends InputComponent {
-    template = input<"checkbox" | "toggle">("toggle");
-    renderer = input<"markdown" | "html" | "none">("none");
+    template = input<"checkbox" | "toggle", "checkbox" | "toggle">("toggle", { transform: (v) => v ?? "toggle" });
+    renderer = input<"markdown" | "html" | "none", "markdown" | "html" | "none">("none", { transform: (v) => v ?? "none" });
     rendererTemplate = input<DynamicComponent>(null);
 }
