@@ -2,8 +2,7 @@ import { Component, input, model, SimpleChanges, OnChanges, computed } from "@an
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Widget, WidgetBlueprint } from "./model";
-import { DataFormComponent } from "@upupa/cp";
-import { formInput } from "@upupa/dynamic-form";
+import { DataFormComponent, formInput } from "@upupa/dynamic-form";
 import { FormsModule } from "@angular/forms";
 
 export class WidgetSettingsForm {
