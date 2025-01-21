@@ -1,10 +1,10 @@
 import { Inject, Injectable, Type, inject } from '@angular/core';
 import { ValidatorFn } from '@angular/forms';
 
-import { Field, Validator } from './types';
+import { DynamicComponentMapper, DynamicComponentMapping, Field, Validator } from './types';
 import { _mergeFields } from './dynamic-form.helper';
 import { DEFAULT_THEME_NAME, DYNAMIC_COMPONENT_MAPPER, DYNAMIC_FORM_OPTIONS } from './di.token';
-import { DynamicComponentMapper, DynamicComponentMapping } from './types/types';
+
 import { unreachable } from '@noah-ark/common';
 
 @Injectable({

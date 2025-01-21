@@ -1,11 +1,12 @@
 import { DatePipe } from "@angular/common";
 import { inject } from "@angular/core";
-import { column, editButton } from "@upupa/cp";
+import { editButton } from "@upupa/cp";
 import { DataAdapter, DataService } from "@upupa/data";
 import { formInput } from "@upupa/dynamic-form";
 import { EmailColumnCellComponent } from "./email-column-cell.component";
 import { ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserButton } from "./users-list-actions.component";
 import { DialogRef } from "@upupa/dialog";
+import { column } from "@upupa/table";
 
 export class CreateUserFromViewModel {
     @formInput({ input: "hidden" })

@@ -9,7 +9,6 @@ export * from "./lib/filter.types";
 export * from "./lib/user-image.service";
 export * from "./lib/data-filter-form/data-filter-form.component";
 export * from "./lib/tool-bar-user-menu/tool-bar-user-menu.component";
-export * from "./lib/dbI18n.pipe";
 export * from "./lib/cp-layout-routes";
 
 export * from "./lib/decorators/decorator.types";

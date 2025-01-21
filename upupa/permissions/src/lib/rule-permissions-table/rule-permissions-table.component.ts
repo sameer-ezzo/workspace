@@ -3,14 +3,14 @@ import { DataAdapter, ClientDataSource } from "@upupa/data";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { AccessType, AuthorizeMessage, Rule, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
-import { ColumnsDescriptor, DataTableComponent, DefaultTableCellTemplate, reflectTableViewModel } from "@upupa/table";
+import { column, ColumnsDescriptor, DataTableComponent, DefaultTableCellTemplate, reflectTableViewModel } from "@upupa/table";
 import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
 import { PromptService, SnackBarService } from "@upupa/dialog";
 import { MatIconModule } from "@angular/material/icon";
 import { FormsModule } from "@angular/forms";
 import { CommonModule, JsonPipe, TitleCasePipe } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
-import { column } from "@upupa/cp";
+
 import { toSignal } from "@angular/core/rxjs-interop";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatBtnComponent } from "@upupa/mat-btn";
@@ -133,15 +133,15 @@ export class ByCellTemplateComponent extends DefaultTableCellTemplate {
                     }
                 }
                 @case ("phone") {
-                    <input #perValueInput [value]="item().value" placeholder="Enter valid user phone number" type="{{ item().by }}" />
-                    <div *ngIf="item().value !== perValueInput.value">
+                    <input #perValueInput [value]="item().value" placeholder="Enter valid user {{ item().by }} address" type="{{ item().by }}" />
+                    @if (item().value !== perValueInput.value) {
                         <button mat-icon-button (click)="changeValue(item(), perValueInput)">
                             <mat-icon>check</mat-icon>
                         </button>
                         <button mat-icon-button (click)="perValueInput.value = item().value">
                             <mat-icon>undo</mat-icon>
                         </button>
-                    </div>
+                    }
                 }
                 @case ("claim") {
                     {{ item().value | json }}

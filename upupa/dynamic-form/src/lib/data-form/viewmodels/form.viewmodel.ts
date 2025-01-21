@@ -1,5 +1,5 @@
 import { ValidationErrors } from "@angular/forms";
-import { DynamicFormInitializedEvent, ExtendedValueChangeEvent } from "@upupa/dynamic-form";
+import { DynamicFormInitializedEvent, ExtendedValueChangeEvent } from "../../dynamic-form.component";
 
 export type SubmitResult<R = any> = { submitResult?: R; error?: any };
 

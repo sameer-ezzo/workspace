@@ -1,5 +1,4 @@
-import { Component, inject, HostBinding, model, Injector, runInInjectionContext } from "@angular/core";
-import { MembershipSignupOptions } from "../types";
+import { Component, inject, model, Injector } from "@angular/core";
 import { SignUpFormComponent } from "../signup-form/signup-form.component";
 
 @Component({

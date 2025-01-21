@@ -6,7 +6,6 @@ import { MatFormFieldControl, MatFormFieldModule } from "@angular/material/form-
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { ErrorsDirective } from "@upupa/common";
-import { PasswordInput } from "./pwd.input.component";
 import { PasswordInputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
@@ -23,6 +22,6 @@ import { PasswordInputComponent } from "@upupa/dynamic-form-native-theme";
         },
         { provide: MatFormFieldControl, useExisting: MatPasswordInputComponent },
     ],
-    imports: [PasswordInput, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatIconModule, MatButtonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatIconModule, MatButtonModule],
 })
 export class MatPasswordInputComponent extends PasswordInputComponent {}

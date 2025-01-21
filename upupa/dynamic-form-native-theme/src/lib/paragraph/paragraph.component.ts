@@ -1,7 +1,6 @@
-import { Component, InjectionToken, SimpleChanges, computed, inject, input } from "@angular/core";
+import { Component, InjectionToken, computed, inject, input } from "@angular/core";
 import { UntypedFormControl } from "@angular/forms";
 import { DynamicComponent, HtmlPipe, MarkdownPipe, PortalComponent, UtilsModule } from "@upupa/common";
-// import { EditorJsInputComponent } from "@upupa/editor-js";
 
 export const PARAGRAPH_RENDERER_TEMPLATE = new InjectionToken<"markdown" | "html" | "none" | DynamicComponent>("PARAGRAPH_RENDERER_TEMPLATE");
 @Component({
