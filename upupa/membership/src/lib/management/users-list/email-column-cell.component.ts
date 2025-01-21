@@ -4,6 +4,7 @@ import { DefaultTableCellTemplate } from "@upupa/table";
 
 @Component({
     selector: "email-column-cell",
+    standalone: true,
     imports: [MatIconModule],
     template: `
         <span>

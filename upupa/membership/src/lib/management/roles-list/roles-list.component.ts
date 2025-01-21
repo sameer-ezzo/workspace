@@ -40,8 +40,8 @@ export type RolesTableConfig = {
     tableHeaderComponent?: DynamicComponent;
 };
 
-export function provideRolesTable(route: Omit<Route, "component"> & RolesTableConfig): Route {
-    return provideRoute(route, withRolesTable(route));
+export function provideRolesTable(route: Omit<Route, "component"> & RolesTableConfig,...features:RouteFeature[]): Route {
+    return provideRoute(route, withRolesTable(route),...features);
 }
 export function withRolesTable(config?: Partial<RolesTableConfig>): RouteFeature {
     const tableComponent = {

@@ -11,8 +11,8 @@ export type UsersTableConfig = {
     tableHeaderComponent?: DynamicComponent;
 };
 
-export function provideUsersTable(route: Omit<Route, "component"> & UsersTableConfig): Route {
-    return provideRoute(route, withUsersTable(route));
+export function provideUsersTable(route: Omit<Route, "component"> & UsersTableConfig,...features:RouteFeature[]): Route {
+    return provideRoute(route, withUsersTable(route),...features);
 }
 export function withUsersTable(config?: Partial<UsersTableConfig>): RouteFeature {
     const tableComponent = {

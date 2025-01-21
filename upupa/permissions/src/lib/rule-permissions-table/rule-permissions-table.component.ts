@@ -17,6 +17,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
     selector: "info-cell-template",
+    standalone: true,
     imports: [MatIconModule, MatTooltipModule],
     template: `
         @if (item().builtIn === true) {
@@ -28,6 +29,7 @@ export class InfoCellTemplateComponent extends DefaultTableCellTemplate {}
 @Component({
     selector: "access-cell-template",
     imports: [TitleCasePipe, FormsModule],
+    standalone: true,
     template: `
         @if (item().builtIn === true) {
             {{ item().access | titlecase }}
@@ -59,6 +61,7 @@ export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
 @Component({
     selector: "by-cell-template",
     imports: [FormsModule],
+    standalone: true,
     template: ` @if (item().builtIn === true) {
             {{ permissionType(item().by).display }}
         } @else {
@@ -102,6 +105,7 @@ export class ByCellTemplateComponent extends DefaultTableCellTemplate {
 }
 @Component({
     selector: "value-cell-template",
+    standalone: true,
     imports: [MatIconModule, MatButtonModule, FormsModule, JsonPipe],
     template: `
         @if (item().builtIn === true) {
@@ -171,6 +175,7 @@ export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
 @Component({
     selector: "selectors-cell-template",
     imports: [MatIconModule, MatButtonModule, JsonPipe],
+    standalone: true,
     template: `
         <div style="display: flex; align-items: center; overflow: hidden; max-width: 300px">
             <span>
@@ -224,6 +229,7 @@ export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
 
 @Component({
     selector: "delete-permission-button",
+    standalone: true,
     imports: [MatBtnComponent],
     template: ` <mat-btn [buttonDescriptor]="btn" (action)="deletePermission()" [disabled]="item().builtIn"></mat-btn> `,
 })

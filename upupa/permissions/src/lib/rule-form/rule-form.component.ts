@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, resource, signal, SimpleChanges } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal, SimpleChanges } from "@angular/core";
 import { Rule } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
 import { RulePermissionsTableComponent } from "../rule-permissions-table/rule-permissions-table.component";
