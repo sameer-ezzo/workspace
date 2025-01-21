@@ -1,5 +1,5 @@
-import { UtilsModule, PortalComponent } from "@upupa/common";
-import { ModuleWithProviders, NgModule, Provider } from "@angular/core";
+import { UtilsModule, PortalComponent, provideRoute, DynamicComponent, RouteFeature } from "@upupa/common";
+import { ModuleWithProviders, NgModule, Provider, Type } from "@angular/core";
 
 import {
     CommonModule,
@@ -23,7 +23,7 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { FormsModule } from "@angular/forms";
-import { RouterModule } from "@angular/router";
+import { Route, RouterModule } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -47,8 +47,10 @@ import { DATA_TABLE_OPTIONS, DataTableOptions } from "./di.tokens";
 import { ActionDescriptorComponent, MatBtnComponent } from "@upupa/mat-btn";
 import { TableColumnSelectorPipe } from "./table-column-selector.pipe";
 
-
 import { TableHeaderComponent } from "./table-header.component";
+import { DataListComponent } from "./data-list/data-list.component";
+import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
+import { Class } from "@noah-ark/common";
 
 const pipes = [
     DatePipe,
@@ -125,4 +127,34 @@ export class DataTableModule {
             ],
         };
     }
+}
+
+export type TableConfig<T = unknown> = {
+    viewModel: new (...args: any[]) => T;
+    dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
+    tableHeaderComponent?: Type<any> | DynamicComponent;
+};
+export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
+    return {
+        name: "withTableComponent",
+        modify: () => ({
+            component: DataListComponent,
+            data: {
+                viewModel: config.viewModel,
+                dataAdapter: config.dataAdapter,
+                tableHeaderComponent: config.tableHeaderComponent,
+            },
+        }),
+    };
+}
+
+export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>, ...features: RouteFeature[]): Route {
+    return provideRoute(config, withTableComponent(config), ...features);
+}
+
+export function withTableHeader(showSearch: boolean, ...inlineEndSlot: (DynamicComponent | Class)[]): DynamicComponent {
+    return {
+        component: TableHeaderComponent,
+        inputs: { showSearch, inlineEndSlot: inlineEndSlot.map((c) => ("component" in c ? c : { component: c })) },
+    };
 }

@@ -11,9 +11,6 @@ export * from "./lib/data-filter-form/data-filter-form.component";
 export * from "./lib/tool-bar-user-menu/tool-bar-user-menu.component";
 export * from "./lib/dbI18n.pipe";
 export * from "./lib/cp-layout-routes";
-export * from "./lib/data-list-with-inputs/data-list-with-inputs.component";
-export * from "./lib/data-form-with-view-model/data-form-with-view-model.component";
-export * from "./lib/data-form-with-view-model/viewmodels/form.viewmodel";
 
 export * from "./lib/decorators/decorator.types";
 export * from "./lib/decorators/scheme.router.decorator";

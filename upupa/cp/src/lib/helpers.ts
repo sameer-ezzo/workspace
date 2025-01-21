@@ -4,10 +4,9 @@ import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarSe
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
-import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 @Component({

@@ -13,7 +13,7 @@ export const userSchemaFactory = (idType: UserSchemaIdType) => {
             _id: { type: idType === "String" ? String : mongoose.Schema.Types.ObjectId },
 
             username: { type: String, required: true, index: true, unique: true },
-
+            name: { type: String, default: undefined }, // Full name
             passwordHash: String,
             securityCode: String,
             forceChangePwd: { type: Boolean, default: undefined },

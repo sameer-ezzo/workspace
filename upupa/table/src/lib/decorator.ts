@@ -22,13 +22,13 @@ export type DataListViewModelInputs = {
     queryParams: DataListViewModelQueryParam[];
 };
 
-export function resolveDataListInputsFor(target: any): DataListViewModelInputs {
+export function reflectTableViewModel(target: any): DataListViewModelInputs {
     return Reflect.getMetadata(dataListInputsMetadataKey, target) ?? {};
 }
 
 export const setDataListMetadataFor = (target: any, value: Record<string, unknown>) => {
-    let targetMeta = resolveDataListInputsFor(target);
+    let targetMeta = reflectTableViewModel(target);
     const parent = target.prototype ? Object.getPrototypeOf(target.prototype)?.constructor : null;
-    if (parent && parent.constructor) targetMeta = { ...resolveDataListInputsFor(parent), ...targetMeta };
+    if (parent && parent.constructor) targetMeta = { ...reflectTableViewModel(parent), ...targetMeta };
     Reflect.defineMetadata(dataListInputsMetadataKey, { ...targetMeta, ...value }, target);
 };

@@ -1,7 +1,7 @@
 <data-table
     #dataTable
-    [adapter]="vm()?.dataAdapter"
-    [columns]="vm()?.columns"
+    [adapter]="dataAdapter()"
+    [columns]="columns()"
     (selectionChange)="onSelectionChange($event)"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"

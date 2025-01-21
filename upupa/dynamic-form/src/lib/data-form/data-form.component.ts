@@ -24,8 +24,8 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
     selector: "data-form",
     standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule, MatProgressSpinnerModule],
-    templateUrl: "./data-form-with-view-model.component.html",
-    styleUrls: ["./data-form-with-view-model.component.scss"],
+    templateUrl: "./data-form.component.html",
+    styleUrls: ["./data-form.component.scss"],
     providers: [
         {
             provide: DynamicFormComponent,

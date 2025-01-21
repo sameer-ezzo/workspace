@@ -12,7 +12,6 @@ import { MaterialModulesModule } from "./material-modules.module";
 import { RouterModule } from "@angular/router";
 import { UtilsModule } from "@upupa/common";
 import { MatSidenavModule } from "@angular/material/sidenav";
-import { UsersManagementModule } from "@upupa/membership";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { TagsModule, TagsPipe } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
@@ -53,8 +52,6 @@ const userImageProvider = {
         DataTableModule.forRoot([TagsPipe, DbI18nPipe]),
         UploadModule,
         PopoverModule,
-        UsersManagementModule,
-        // MembershipModule,
         TagsModule,
         AuthorizeModule,
         PermissionsModule,

@@ -16,7 +16,6 @@ import { STORAGE_BASE } from "./di.token";
 import { ImageComponent } from "./image.component/image.component";
 import { FileSizePipe } from "./file-size.pipe";
 import { MatTableModule } from "@angular/material/table";
-import { ThumbsGridComponent } from "./thumbs-grid/thumbs-grid.component";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { UtilsModule } from "@upupa/common";
@@ -27,7 +26,6 @@ const declarations = [];
     declarations,
     imports: [
         FileSizePipe,
-        ThumbsGridComponent,
         ImageComponent,
         CommonModule,
         MatIconModule,

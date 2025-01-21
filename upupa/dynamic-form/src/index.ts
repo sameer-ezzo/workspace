@@ -26,3 +26,6 @@ export * from "./lib/dynamic-form-inputs";
 
 export * from "./lib/field-ref";
 export * from "./lib/decorators/decorators.types";
+export * from "./lib/data-form/viewmodels/form.viewmodel";
+export * from "./lib/data-form/data-form.component";
+export * from "./lib/providers";

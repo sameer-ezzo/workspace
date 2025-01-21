@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { toTitleCase } from "@upupa/common";
-import { ColumnDescriptor, resolveDataListInputsFor, setDataListMetadataFor } from "@upupa/table";
+import { ColumnDescriptor, reflectTableViewModel, setDataListMetadataFor } from "@upupa/table";
 import { DatePipe } from "@angular/common";
 import { DataAdapterDescriptor, DataAdapterType, DataLoaderOptions } from "@upupa/data";
 import { Type } from "@angular/core";
@@ -11,7 +11,7 @@ export function queryParam(param?: string) {
     return function (target: any, propertyKey: string) {
         const paramName = param ?? propertyKey;
 
-        const inputs = resolveDataListInputsFor(target.constructor);
+        const inputs = reflectTableViewModel(target.constructor);
         const queryParams = inputs?.queryParams ?? [];
         queryParams.push({ param: paramName ?? propertyKey, propertyKey });
         setDataListMetadataFor(target.constructor, { ...inputs, queryParams });
@@ -19,7 +19,7 @@ export function queryParam(param?: string) {
 }
 export function column(options: ColumnDescriptor = { visible: true }) {
     return function (target: any, propertyKey: string) {
-        const inputs = resolveDataListInputsFor(target.constructor);
+        const inputs = reflectTableViewModel(target.constructor);
         const columns = !inputs?.columns ? [] : Array.isArray(inputs.columns) ? Array.from(inputs.columns) : Object.entries(inputs.columns);
 
         const text = options.header ?? toTitleCase(propertyKey);

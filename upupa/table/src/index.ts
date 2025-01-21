@@ -11,3 +11,4 @@ export * from './lib/types';
 export * from './lib/table-column-selector.pipe';
 export * from './lib/table-header.component';
 export * from './lib/decorator';
+export * from "./lib/data-list/data-list.component";

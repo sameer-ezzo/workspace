@@ -1,11 +1,11 @@
-import { Component, Input } from "@angular/core";
+import { Component, inject, input, Input, model, SimpleChanges } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { User } from "@upupa/auth";
 import { ActionEvent } from "@upupa/common";
 import { DynamicFormComponent, Field, FormScheme, checkboxField, hiddenField } from "@upupa/dynamic-form";
 import { UsersService } from "../users.service";
 import { passwordField } from "../../default-values";
-import { DialogWrapperComponent } from "@upupa/dialog";
+import { DialogRef, DialogWrapperComponent } from "@upupa/dialog";
 import { MatButtonModule } from "@angular/material/button";
 
 @Component({
@@ -16,6 +16,9 @@ import { MatButtonModule } from "@angular/material/button";
     imports: [DynamicFormComponent, MatButtonModule],
 })
 export class AdminUserPasswordRestComponent {
+    users = inject(UsersService);
+    dialogRef = inject(DialogRef);
+
     formScheme: FormScheme = {
         email: hiddenField("email"),
         new_password: { ...passwordField, inputs: { label: "New Password" } } as Field,
@@ -23,35 +26,21 @@ export class AdminUserPasswordRestComponent {
     };
 
     loading: boolean;
-    private _user: User | { email: string };
-    @Input()
-    public get user(): User | { email: string } {
-        return this._user;
+    user = input.required<User | { email: string }>();
+    value = model({ email: "", new_password: "", forceChangePwd: true });
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['user']) {
+            this.value.set({ ...this.value(), email: this.user().email });
+        }
     }
-    public set user(v: User | { email: string }) {
-        this._user = v;
-        this.value.email = v.email;
-    }
-
-    value = { email: "", new_password: "", forceChangePwd: true };
-
-    constructor(public users: UsersService) {}
-
-    dialogRef: MatDialogRef<DialogWrapperComponent>;
-    async onAction(e: ActionEvent, dialogRef: MatDialogRef<DialogWrapperComponent>) {
-        if (e.action.name === "reset") {
-            const res = await this.reset();
-            dialogRef.close(res);
-        } else dialogRef.close(null);
-    }
-
     discard() {
         this.dialogRef?.close();
     }
     async reset() {
         try {
             this.loading = true;
-            const { result } = await this.users.adminResetPwd(this.value);
+            const { result } = await this.users.adminResetPwd(this.value());
             this.dialogRef.close(result);
         } catch (err) {
             console.error(err);

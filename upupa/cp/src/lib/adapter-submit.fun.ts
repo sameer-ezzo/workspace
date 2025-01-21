@@ -3,7 +3,7 @@ import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import { DataAdapter } from "@upupa/data";
 import { SnackBarService, DialogRef, SnackbarConfig } from "@upupa/dialog";
 import { FriendlyError, friendlyError } from "./friendly-error";
-import { SubmitResult } from "./data-form-with-view-model/viewmodels/form.viewmodel";
+import { SubmitResult } from "../../../dynamic-form/src/lib/data-form/viewmodels/form.viewmodel";
 
 export function navigateTo(commands: string[], extras?: NavigationExtras) {
     const _router = inject(Router);

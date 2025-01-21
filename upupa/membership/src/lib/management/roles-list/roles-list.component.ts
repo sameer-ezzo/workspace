@@ -4,7 +4,6 @@ import { ApiDataSource, DataAdapter, DataService } from "@upupa/data";
 import { AuthService } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent, toTitleCase } from "@upupa/common";
 import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
-import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
 import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions } from "../types";
 import { RoleFormComponent } from "../role-form/role-form.component";
 import { firstValueFrom } from "rxjs";
@@ -23,7 +22,6 @@ export class RolesListComponent implements OnInit {
     constructor(
         public data: DataService,
         @Optional()
-        @Inject(USERS_MANAGEMENT_OPTIONS)
         private options: UsersManagementOptions,
         public http: HttpClient,
         public auth: AuthService,
