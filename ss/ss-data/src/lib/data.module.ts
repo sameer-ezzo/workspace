@@ -103,7 +103,7 @@ function extractMongooseFeatures(options: DataOptions[]) {
 }
 // import { MongoMemoryServer } from "mongodb-memory-server";
 function extractMongooseRoot(options: DataOptions[]) {
-    return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions, inMemory }) => {
+    return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
         const opts = { ...connectionOptions };
         delete opts.prefix;
         // if (inMemory) {
