@@ -32,6 +32,7 @@ export class PromptService {
                             view: o.view,
                             value: o.value,
                             submitBtn: o.submitBtn,
+                            rows: o.rows,
                         },
                     },
                     {
@@ -59,4 +60,5 @@ export class PromptOptions {
     type?: string;
     required?: boolean;
     submitBtn?: ActionDescriptor = { name: "submit", text: "Submit", type: "submit", color: "primary", variant: "raised" };
+    rows?: number = 10;
 }

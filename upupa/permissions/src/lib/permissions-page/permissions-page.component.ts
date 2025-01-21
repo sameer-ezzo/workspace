@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, model, signal } from "@angular/core";
 import { PermissionsService } from "../permissions.service";
 import { NodeModel } from "../node-model";
 import { DOCUMENT } from "@angular/common";
@@ -6,6 +6,7 @@ import { RuleFormComponent } from "../rule-form/rule-form.component";
 import { PermissionsSideBarComponent } from "../permissions-side-bar/permissions-side-bar.component";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @Component({
     standalone: true,
@@ -13,19 +14,35 @@ import { MatButtonModule } from "@angular/material/button";
     templateUrl: "./permissions-page.component.html",
     styleUrls: ["./permissions-page.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RuleFormComponent, PermissionsSideBarComponent, MatButtonModule, MatIconModule],
+    imports: [RuleFormComponent, MatProgressBarModule, PermissionsSideBarComponent, MatButtonModule, MatIconModule],
 })
 export class PermissionsPageComponent {
-    nodes = signal<NodeModel[]>([]);
-    constructor(private permissionsService: PermissionsService) {
-        this.permissionsService.getRules().then((x) => {
-            this.nodes.set(x);
-            this.focused.set(x[0]);
-        });
+    nodes = model<NodeModel[]>([]);
+    private permissionsService = inject(PermissionsService);
+    ngOnInit() {
+        this.getRules();
+    }
+
+    async getRules() {
+        this.loading.set(true);
+        try {
+            const rules = await this.permissionsService.getRules();
+            this.updateViewModel(rules);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            this.loading.set(false);
+        }
     }
 
     focused = signal<NodeModel>(null);
     private readonly doc = inject(DOCUMENT);
+    loading = signal(false);
+    private updateViewModel(rules: NodeModel[]) {
+        this.nodes.set(rules);
+        this.focused.set(rules[0]);
+    }
+
     async export() {
         const permissions = await this.permissionsService.getRules(true);
         const json = JSON.stringify(permissions, null, 2);
@@ -54,6 +71,16 @@ export class PermissionsPageComponent {
             };
         });
         const permissions = JSON.parse(permissionsStr as string);
-        await this.permissionsService.restorePermissions(permissions);
+        const keys = Object.keys(permissions);
+        if (!keys.length) return;
+        this.loading.set(true);
+        try {
+            const rules = await this.permissionsService.restorePermissions(permissions);
+            this.updateViewModel(rules);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            this.loading.set(false);
+        }
     }
 }
