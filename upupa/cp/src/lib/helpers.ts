@@ -48,7 +48,7 @@ export function readValueFromApi<T = any>(path: string) {
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
-function isFormViewmodelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
+function isFormViewModelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
     return "viewModelType" in vm;
 }
 
@@ -60,7 +60,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     const _injector = context?.injector ?? inject(Injector);
     const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
     const dialog = injector.get(DialogService);
-    const _mirror = isFormViewmodelMirror(vm) ? vm : reflectFormViewModelType(vm);
+    const _mirror = isFormViewModelMirror(vm) ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
     const v = await value;

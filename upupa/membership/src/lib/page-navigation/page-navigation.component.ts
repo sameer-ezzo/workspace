@@ -1,13 +1,12 @@
 import { Component, Input, EventEmitter, Output } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { IdpButtonDirective } from "../idp-button.directive";
 
 @Component({
     standalone: true,
     selector: "page-navigation",
     templateUrl: "./page-navigation.component.html",
     styleUrls: ["./page-navigation.component.scss"],
-    imports: [RouterLink, IdpButtonDirective],
+    imports: [RouterLink],
 })
 export class PageNavigationComponent {
     private _links: any[];

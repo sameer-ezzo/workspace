@@ -1,3 +1,4 @@
+
 import { Type } from "@angular/core";
 import { DynamicComponent } from "@upupa/common";
 

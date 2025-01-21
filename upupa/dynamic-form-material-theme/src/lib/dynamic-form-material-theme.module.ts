@@ -27,7 +27,7 @@ import { MatSwitchComponent } from "./switch/switch.component";
 import { MatArrayInputComponent } from "./array/array-input.component";
 import { MatTextAreaComponent } from "./text-area/text-area.component";
 import { MatTreeComponent } from "./tree/tree.component";
-import { EmailValidator } from "@upupa/dynamic-form";
+
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from "@angular/material/form-field";
 
 export const DF_MATERIAL_THEME_INPUTS = {
@@ -49,7 +49,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
         component: MatInputComponent,
         field: {
             inputs: { type: "email" },
-            validations: [{ name: "email" } as EmailValidator],
+            validations: [{ name: "email" }],
         },
     },
     date: { component: MatDateInputComponent },

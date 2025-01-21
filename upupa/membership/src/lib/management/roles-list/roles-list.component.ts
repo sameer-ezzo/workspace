@@ -1,11 +1,11 @@
 import { inject, Type } from "@angular/core";
 import { Route } from "@angular/router";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
-import { column, createButton, deleteButton, editButton } from "@upupa/cp";
+import {  createButton, deleteButton, editButton } from "@upupa/cp";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DialogRef } from "@upupa/dialog";
 import { DynamicFormInitializedEvent, formInput, OnSubmit } from "@upupa/dynamic-form";
-import { DataListComponent, withTableHeader } from "@upupa/table";
+import { column, DataListComponent, withTableHeader } from "@upupa/table";
 
 export class RoleListViewModel implements OnSubmit {
     @formInput({ input: "text", label: "Id" })

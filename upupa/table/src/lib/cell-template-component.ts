@@ -1,10 +1,10 @@
 import { KeyValue } from "@angular/common";
-import { Component, computed, input, Input, InputSignal, SimpleChanges, WritableSignal } from "@angular/core";
+import { Component, computed, input, InputSignal, SimpleChanges } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";
 import { DynamicPipe } from "./dynamic.pipe";
-import { ActivatedRoute, Params, QueryParamsHandling, RouterLink, RouterModule, UrlTree } from "@angular/router";
+import { ActivatedRoute, Params, QueryParamsHandling, RouterModule, UrlTree } from "@angular/router";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
     value?: InputSignal<TValue>;

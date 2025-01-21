@@ -4,13 +4,7 @@ import { Observable } from "rxjs";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import { CP_SIDE_BAR_ITEMS } from "./di.token";
 import { SideBarGroup, SideBarViewModel } from "./side-bar-group-item";
-import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
-import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
-import { DataListComponent } from "../../../table/src/lib/data-list/data-list.component";
-import { Class } from "@noah-ark/common";
-import { DataFormComponent, FormViewModelMirror } from "@upupa/dynamic-form";
-import { FormGroup } from "@angular/forms";
-import { TableHeaderComponent } from "@upupa/table";
+import { provideRoute, RouteFeature } from "@upupa/common";
 
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
