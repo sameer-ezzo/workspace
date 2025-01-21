@@ -75,6 +75,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         width: "90%",
         maxWidth: "750px",
         maxHeight: "95vh",
+        disableClose: true,
         ...context?.dialogOptions,
         footer: [
             ...formActions.map((descriptor) =>
