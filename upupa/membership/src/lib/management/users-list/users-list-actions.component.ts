@@ -150,7 +150,6 @@ export class BanUserButton extends DefaultTableCellTemplate {
     readonly confirm = inject(ConfirmService);
 
     btn = computed(() => {
-        console.log("this.item().disabled", this.item().disabled);
         const disabled = this.item().disabled;
         if (!disabled) return { variant: "icon", text: "Ban user", name: "ban", icon: "block", color: "warn" } as ActionDescriptor;
         else return { variant: "icon", text: "Unban user", name: "unban", icon: "check_circle", color: "accent" } as ActionDescriptor;

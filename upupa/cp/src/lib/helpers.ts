@@ -174,10 +174,11 @@ export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K exte
     emitter.subscribe((e) => sub.next(e));
 
     const stream$ = destroyRef ? sub.pipe(takeUntilDestroyed(destroyRef)) : sub;
-    stream$.subscribe({
-        next: (e) => console.log(`Output ${output as any} emitted`, e),
-        complete: () => console.log(`Output ${output as any} completed`),
-    });
+    // test if the stream$ is becoming a memory leak (should print completed)
+    // stream$.subscribe({
+    //     next: (e) => console.log(`Output ${output as any} emitted`, e),
+    //     complete: () => console.log(`Output ${output as any} completed`),
+    // });
     return stream$;
 }
 
