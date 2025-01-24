@@ -1,131 +1,76 @@
-import { Component, OnInit, Input, Output, EventEmitter, Inject, Optional, ComponentRef } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { ApiDataSource, DataAdapter, DataService } from "@upupa/data";
-import { AuthService } from "@upupa/auth";
-import { ActionDescriptor, ActionEvent, toTitleCase } from "@upupa/common";
-import { ColumnsDescriptor, DataTableComponent, TableHeaderComponent } from "@upupa/table";
-import { USERS_MANAGEMENT_OPTIONS } from "../di.token";
-import { UsersManagementOptions, defaultRolesListActions, defaultRolesListColumns, defaultRolesListHeaderActions } from "../types";
-import { RoleFormComponent } from "../role-form/role-form.component";
-import { firstValueFrom } from "rxjs";
-import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
-import { MatBtnComponent } from "@upupa/mat-btn";
+import { inject, Type } from "@angular/core";
+import { Route } from "@angular/router";
+import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
+import {  createButton, deleteButton, editButton } from "@upupa/cp";
+import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
+import { DialogRef } from "@upupa/dialog";
+import { DynamicFormInitializedEvent, formInput, OnSubmit } from "@upupa/dynamic-form";
+import { column, DataListComponent, withTableHeader } from "@upupa/table";
 
-@Component({
-    standalone: true,
-    selector: "roles-list",
-    templateUrl: "./roles-list.component.html",
-    styleUrls: ["./roles-list.component.css"],
-    imports: [DataTableComponent, TableHeaderComponent, MatBtnComponent],
-})
-export class RolesListComponent implements OnInit {
-    focusedUser: any;
-    constructor(
-        public data: DataService,
-        @Optional()
-        @Inject(USERS_MANAGEMENT_OPTIONS)
-        private options: UsersManagementOptions,
-        public http: HttpClient,
-        public auth: AuthService,
-        public snack: SnackBarService,
-        public confirm: ConfirmService,
-        public dialog: DialogService,
-    ) {}
+export class RoleListViewModel implements OnSubmit {
+    @formInput({ input: "text", label: "Id" })
+    @column({ header: "Id" })
+    _id: string;
 
-    @Input() primary: string;
-    @Input() accent: string;
+    @formInput({ input: "text", label: "Name" })
+    @column({ header: "Name" })
+    name: string;
 
-    @Input() columns: ColumnsDescriptor;
-    @Input() headerActions: ActionDescriptor[];
-    @Input() actions: ActionDescriptor[];
-    @Output() action = new EventEmitter<ActionEvent>();
+    @column({ header: " ", class: "actions", template: [editButton(RoleListViewModel), deleteButton()] })
+    actions: any;
 
-    @Input() adapter: DataAdapter<any>;
-    loading = false;
-
-    ngOnInit() {
-        const _options = this.options.lists?.roles;
-        this.columns = _options?.columns || defaultRolesListColumns;
-        this.headerActions = (_options?.headerActions || defaultRolesListHeaderActions) as ActionDescriptor[];
-        this.actions = (_options?.rowActions || defaultRolesListActions) as ActionDescriptor[];
-
-        const select = [...new Set(["name"].concat(...Object.keys(this.columns)))]; // ['name', 'email', 'phone', 'username', 'claims', 'emailVerified', 'phoneVerified'];
-        const dataSource = new ApiDataSource<any>(this.data, "/role?select=" + select.join(","));
-
-        this.adapter = new DataAdapter(dataSource, "_id", "email", "_id", null, {
-            page: { pageIndex: 0, pageSize: 15 },
-            sort: { active: "date", direction: "desc" },
-            terms: [{ field: "email", type: "like" }],
-        });
-        this.adapter.refresh();
-    }
-
-    async onAction(e: ActionEvent) {
-        this.action.emit(e);
-        if (e.action === null) return;
-
-        this.loading = true;
-        let task: Promise<any>;
-        const roles = e.data;
-        const role = roles?.length ? roles[0] : null;
-
-        switch (e.action.name) {
-            case "create":
-            case "edit": {
-                const data = {
-                    inputs: { role: role },
-                    title: `${toTitleCase(e.action.name)} Role`,
-                    dialogActions: [
-                        {
-                            name: "cancel",
-                            type: "button",
-                            text: "Discard",
-                            variant: "stroked",
-                        },
-                        {
-                            path: "api/role",
-                            Action: e.action.name === "edit" ? "Update" : "Create",
-                            variant: "raised",
-                            type: "submit",
-                            name: "submit",
-                            text: "Submit",
-                            color: "primary",
-                        },
-                    ],
-                } as any;
-                const dialogRef = this.dialog.open(RoleFormComponent, { ...data });
-                const componentRef: ComponentRef<RoleFormComponent> = await firstValueFrom(dialogRef.afterAttached());
-                // dialogRef.componentInstance.actionClick.subscribe((e) => {
-                //     componentRef.instance.onAction(e);
-                // });
-
-                const res = await firstValueFrom(dialogRef.afterClosed());
-                if (!res) return;
-                await this.data.refresh("/role");
-                this.adapter.refresh();
-                break;
-            }
-            case "delete": {
-                const res = await this.confirm.openWarning({
-                    title: "Delete role",
-                    confirmText: "Do you really want to delete this role permanently?",
-                    yes: "Delete it",
-                    no: "Keep it",
-                });
-
-                if (!res) return;
-                await this.data.delete(`/role/${role._id}`);
-                this.snack.openSuccess("Role deleted!");
-                await this.data.refresh("/role");
-                this.adapter.refresh();
-                break;
-            }
+    onInit(e: DynamicFormInitializedEvent) {
+        if (this._id) {
+            const idRef = e.graph.get("/_id");
+            idRef.inputs.set({ ...idRef.inputs(), readonly: true }); // prevent editing of id when editing a record
         }
     }
-
-    async banUser(id: string, lock = true) {
-        const baseUrl = this.auth.baseUrl;
-        await firstValueFrom(this.http.post(`${baseUrl}/lock`, { id, lock }));
-        return true;
+    async onSubmit(): Promise<{ submitResult: RoleListViewModel }> {
+        const adapter = inject(DataAdapter);
+        const dialogRef = inject(DialogRef);
+        await adapter.put(this, { _id: this._id, name: this.name });
+        dialogRef.close({ submitResult: this });
+        return { submitResult: this };
     }
+}
+
+export type RolesTableConfig = {
+    viewModel?: Type<RoleListViewModel>;
+    dataAdapter?: DataAdapterDescriptor;
+    tableHeaderComponent?: DynamicComponent;
+};
+
+export function provideRolesTable(route: Omit<Route, "component"> & RolesTableConfig,...features:RouteFeature[]): Route {
+    return provideRoute(route, withRolesTable(route),...features);
+}
+export function withRolesTable(config?: Partial<RolesTableConfig>): RouteFeature {
+    const tableComponent = {
+        component: DataListComponent,
+        inputs: {
+            viewModel: config?.viewModel ?? RoleListViewModel,
+            dataAdapter: config?.dataAdapter ?? {
+                type: "api",
+                path: `role?select=_id,name`,
+                keyProperty: "_id",
+                displayProperty: "name",
+                options: {
+                    page: { pageIndex: 0, pageSize: 100 },
+                    sort: { active: "date", direction: "desc" },
+                    terms: [
+                        { field: "_id", type: "like" },
+                        { field: "name", type: "like" },
+                    ],
+                },
+            },
+            tableHeaderComponent: config?.tableHeaderComponent ?? withTableHeader(true, createButton(RoleListViewModel)),
+        },
+    } as DynamicComponent<DataListComponent>;
+
+    return {
+        name: "withRolesTable",
+        modify: () => ({
+            component: tableComponent.component,
+            data: tableComponent.inputs,
+        }),
+    };
 }

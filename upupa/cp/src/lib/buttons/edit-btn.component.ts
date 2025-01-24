@@ -33,7 +33,7 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
             const result = await firstValueFrom(dialogRef.afterClosed());
             if (!result) return;
             const { submitResult } = result;
-            if (result && this.updateAdapter()) {
+            if (result && this.updateAdapter()) {               
                 await this.adapter.put(this.item(), submitResult);
                 // this.adapter.refresh();
             }

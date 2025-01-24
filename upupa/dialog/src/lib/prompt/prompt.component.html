@@ -9,6 +9,7 @@
             [formControl]="valueFormControl"
             [required]="required()"
             (keydown.enter)="enterAction($event)"
+            [rows]="rows()"
         ></textarea>
     </mat-form-field>
 } @else {

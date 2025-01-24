@@ -1,11 +1,13 @@
 import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, InjectionToken } from "@angular/core";
-import { DynamicFormComponent, DynamicFormInitializedEvent, DynamicFormModule, FORM_GRAPH, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
 import { _defaultControl, ActionEvent, deepAssign } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { FormViewModelMirror, reflectFormViewModelType } from "../decorators/form-input.decorator";
+import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GRAPH } from "../dynamic-form.component";
 
 export const FORM_VIEW_MODEL = new InjectionToken<any>("FORM_VIEW_MODEL");
 
@@ -23,9 +25,9 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
 @Component({
     selector: "data-form",
     standalone: true,
-    imports: [CommonModule, MatBtnComponent, DynamicFormModule, ReactiveFormsModule, MatProgressSpinnerModule],
-    templateUrl: "./data-form-with-view-model.component.html",
-    styleUrls: ["./data-form-with-view-model.component.scss"],
+    imports: [CommonModule, MatBtnComponent, DynamicFormComponent, ReactiveFormsModule, MatProgressSpinnerModule],
+    templateUrl: "./data-form.component.html",
+    styleUrls: ["./data-form.component.scss"],
     providers: [
         {
             provide: DynamicFormComponent,

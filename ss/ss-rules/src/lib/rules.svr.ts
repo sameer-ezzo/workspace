@@ -21,8 +21,12 @@ export class RulesService {
         @Inject("APP_RULES") readonly appRules: Rule[],
         @Inject(DataService) public readonly dataService: DataService,
     ) {
-        this.rulesManager = new RulesManager(rootRule);
-        this._seedRules(appRules);
+        this.initializeRulesManager();
+    }
+
+    async initializeRulesManager() {
+        this.rulesManager = new RulesManager(this.rootRule);
+        await this._seedRules(this.appRules);
     }
 
     getRules(path?: string) {

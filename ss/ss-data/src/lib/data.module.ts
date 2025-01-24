@@ -54,6 +54,7 @@ type DataOptions = {
     models: DbModelDefinitionInfo;
     migrations: IDbMigration[];
     connectionOptions: DbConnectionOptions;
+    // inMemory?: boolean;
 };
 function toDataOptions(options: DatabasesOptions): DataOptions[] {
     return Object.getOwnPropertyNames(options).map((dbName) => {
@@ -100,11 +101,24 @@ function extractMongooseFeatures(options: DataOptions[]) {
         );
     });
 }
-
+// import { MongoMemoryServer } from "mongodb-memory-server";
 function extractMongooseRoot(options: DataOptions[]) {
     return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
         const opts = { ...connectionOptions };
         delete opts.prefix;
+        // if (inMemory) {
+        //     return MongooseModule.forRootAsync({
+        //         useFactory: async () => {
+        //             const mongoServer = await MongoMemoryServer.create();
+        //             const uri = mongoServer.getUri();
+        //             return {
+        //                 ...opts,
+        //                 uri,
+        //                 connectionName: dbName,
+        //             };
+        //         },
+        //     });
+        // }
         return MongooseModule.forRoot(databaseInfo.uri, {
             ...opts,
             connectionName: dbName,

@@ -14,9 +14,14 @@
     table {
         width: 100%;
     }
+}
 
-    select{
-        background-color: inherit;
-        color: inherit;
+::ng-deep {
+    rule-permissions-table {
+        input,
+        select {
+            background-color: inherit;
+            color: inherit;
+        }
     }
 }

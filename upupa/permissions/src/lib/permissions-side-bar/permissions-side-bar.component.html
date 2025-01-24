@@ -1,50 +1,46 @@
-@for (node of nodes; track node; let i = $index) {
-<div class="item">
-  @if (node.children.length > 0) {
-  <mat-accordion displayMode="flat">
-    <mat-expansion-panel #panel [expanded]="hasActiveChild(panel)" class="mat-elevation-z0">
-      <mat-expansion-panel-header (click)="focused = node" [class.active]="node === focused">
-        <mat-panel-title>
-          <h4 style="margin: 0"> {{node.rule?.name | titlecase}}</h4>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="actions">
-        @for (leaf of node.children; track leaf) {
-        <ng-container *ngTemplateOutlet="leafTemplate; context:{node:leaf, leaf,level: leaf.level }"></ng-container>
+@for (node of nodes(); track node; let i = $index) {
+    <div class="item">
+        @if (node.children.length > 0) {
+            <mat-accordion displayMode="flat" multi="true">
+                <mat-expansion-panel #panel [expanded]="hasActiveChild(panel)" class="mat-elevation-z0">
+                    <mat-expansion-panel-header (click)="activateNode($event, panel, node)" [class.active]="node === focused()">
+                        <mat-panel-title>
+                            <h4 style="margin: 0">{{ node.rule?.name | titlecase }}</h4>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <div class="actions">
+                        @for (leaf of node.children; track leaf) {
+                            <ng-container *ngTemplateOutlet="leafTemplate; context: { node: leaf, leaf, level: leaf.level }"></ng-container>
+                        }
+                    </div>
+                </mat-expansion-panel>
+            </mat-accordion>
+        } @else {
+            <div class="actions mat-expansion-panel mat-elevation-z0" style="margin-inline: 0">
+                <ng-container *ngTemplateOutlet="ruleTemplate; context: { node, rule: node.rule, level: 1 }"></ng-container>
+            </div>
         }
-      </div>
-    </mat-expansion-panel>
-  </mat-accordion>
-  }
-  @else {
-  <div class="actions mat-expansion-panel mat-elevation-z0" style="margin-inline: 0;">
-    <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:node.rule, level: 1 }"></ng-container>
-  </div>
-  }
-</div>
+    </div>
 }
 
-
-
 <ng-template #leafTemplate let-node="node" let-leaf="leaf" let-level="level">
-  @if (leaf.children?.length > 0) {
-  <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:leaf.rule,level: leaf.level }"></ng-container>
-  @for (item of leaf.children; track item) {
-  <ng-container *ngTemplateOutlet="leafTemplate; context:{ node, leaf:item, level: item.level }"></ng-container>
-  }
-  }
-  @if ((leaf.children||[]).length === 0) {
-  <ng-container *ngTemplateOutlet="ruleTemplate; context:{ node,rule:leaf.rule, level: leaf.level }"></ng-container>
-  }
+    @if (leaf.children?.length > 0) {
+        <ng-container *ngTemplateOutlet="ruleTemplate; context: { node, rule: leaf.rule, level: leaf.level }"></ng-container>
+        @for (item of leaf.children; track item) {
+            <ng-container *ngTemplateOutlet="leafTemplate; context: { node, leaf: item, level: item.level }"></ng-container>
+        }
+    }
+    @if ((leaf.children || []).length === 0) {
+        <ng-container *ngTemplateOutlet="ruleTemplate; context: { node, rule: leaf.rule, level: leaf.level }"></ng-container>
+    }
 </ng-template>
 
 <ng-template #ruleTemplate let-node="node" let-rule="rule" let-level="level">
-  @if(rule){
-  <div class="action" [ngStyle]="{'margin-inline-start.em': level-1}" (click)="focused = node"
-    [class.active]="rule.name === focused?.rule?.name">
-    <div class="action-header">
-      <span>{{rule.name || rule.path}}</span>
-    </div>
-  </div>
-  }
+    @if (rule) {
+        <div class="action" [ngStyle]="{ 'margin-inline-start.em': level - 1 }" (click)="focused.set(node)" [class.active]="rule.name === focused()?.rule?.name">
+            <div class="action-header">
+                <span>{{ rule.name ? (rule.name | titlecase) : rule.path }}</span>
+            </div>
+        </div>
+    }
 </ng-template>

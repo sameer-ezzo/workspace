@@ -38,7 +38,7 @@ export class PromptComponent implements OnInit {
     promptYesButton = input("Yes");
     placeholder = input("");
     submitBtn = input<ActionDescriptor>({ name: "submit", text: "Submit", type: "submit", color: "primary", variant: "raised" });
-
+    rows = input<number>(10);
     type = input("text");
     required = input(false);
 

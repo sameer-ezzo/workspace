@@ -12,13 +12,11 @@ import { MaterialModulesModule } from "./material-modules.module";
 import { RouterModule } from "@angular/router";
 import { UtilsModule } from "@upupa/common";
 import { MatSidenavModule } from "@angular/material/sidenav";
-import { UsersManagementModule } from "@upupa/membership";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { TagsModule, TagsPipe } from "@upupa/tags";
 import { PermissionsModule } from "@upupa/permissions";
 import { getUserInitialsImage } from "./user-image.service";
 import { catchError, map, of, switchMap } from "rxjs";
-import { DbI18nPipe } from "./dbI18n.pipe";
 import { AuthorizeModule } from "@upupa/authz";
 import { MatBtnComponent } from "@upupa/mat-btn";
 
@@ -50,11 +48,9 @@ const userImageProvider = {
         DataModule,
         DynamicFormNativeThemeModule,
         DynamicFormModule,
-        DataTableModule.forRoot([TagsPipe, DbI18nPipe]),
+        DataTableModule.forRoot([TagsPipe]),
         UploadModule,
         PopoverModule,
-        UsersManagementModule,
-        // MembershipModule,
         TagsModule,
         AuthorizeModule,
         PermissionsModule,

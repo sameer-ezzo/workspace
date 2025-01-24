@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, model, output, Output, input } from "@angular/core";
 import { NodeModel } from "../node-model";
-import { NgStyle, TitleCasePipe } from "@angular/common";
-import { MatExpansionModule } from "@angular/material/expansion";
+import { CommonModule, NgStyle, TitleCasePipe } from "@angular/common";
+import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansion";
 
 @Component({
     standalone: true,
@@ -9,24 +9,20 @@ import { MatExpansionModule } from "@angular/material/expansion";
     templateUrl: "./permissions-side-bar.component.html",
     styleUrls: ["./permissions-side-bar.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgStyle, TitleCasePipe, MatExpansionModule],
+    imports: [CommonModule, NgStyle, TitleCasePipe, MatExpansionModule],
 })
 export class PermissionsSideBarComponent {
-    @Output() focusedChange = new EventEmitter<NodeModel>();
-    @Input() nodes: NodeModel[] = [];
-    private _focused: NodeModel;
-    @Input()
-    public get focused(): NodeModel {
-        return this._focused;
-    }
-    public set focused(value: NodeModel) {
-        if (this._focused === value) return;
-        this._focused = value;
-        this.focusedChange.emit(this.focused);
-    }
+    readonly nodes = input.required<NodeModel[]>();
+    focused = model<NodeModel>();
 
-    hasActiveChild(el: any) {
+    hasActiveChild(el: MatExpansionPanel) {
+        if (el.opened) return true;
         const e = el._body?.nativeElement as HTMLElement;
         return e?.querySelector(".active") !== null;
+    }
+
+    activateNode(e: any, panel: MatExpansionPanel, node: NodeModel) {
+        if (node.children?.length) e.preventDefault();
+        this.focused.set(node);
     }
 }

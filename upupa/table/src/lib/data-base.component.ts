@@ -3,7 +3,7 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+import { AbstractControl,  ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 import { _defaultControl } from "@upupa/common";
 
 @Component({
@@ -135,8 +135,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     filterDebounceTime = input(300);
 
-    focusedItem = model<NormalizedItem<T>>(null);
-    focusedItemChange = output<NormalizedItem<T>>();
+    focusedItem = model<T>(null);
     itemClick = output<NormalizedItem<T>>();
 
     readonly itemsSource = signal<"adapter" | "selected">(this.lazyLoadData() ? "selected" : "adapter");
@@ -297,36 +296,36 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     setFocusedItem(row) {
         this.focusedItem.set(row);
-        this.focusedItemChange.emit(row);
     }
     nextFocusedItem() {
         const normalized = this.adapter().normalized();
-        const i = this.focusedItem() ? normalized.indexOf(this.focusedItem()) : -1;
-        this.focusedItem.set(normalized[i + 1]);
-        this.focusedItemChange.emit(this.focusedItem());
+        const i = this.focusedItem() ? normalized.findIndex((e) => e.item === this.focusedItem()) : -1;
+        if (i > -1) this.focusedItem.set(normalized[i + 1].item);
     }
     prevFocusedItem() {
         const normalized = this.adapter().normalized();
-
-        const i = this.focusedItem() ? normalized.indexOf(this.focusedItem()) : normalized.length;
-        this.focusedItem.set(normalized[i - 1]);
-        this.focusedItemChange.emit(this.focusedItem());
+        const i = this.focusedItem() ? normalized.findIndex((e) => e.item === this.focusedItem()) : -1;
+        if (i > 0) this.focusedItem.set(normalized[i - 1].item);
     }
 
     onLongPress(row: NormalizedItem<T>) {
-        this.focusedItem.set(row);
+        this.focusedItem.set(row.item);
         this.selectionModel.toggle(row.key);
         this.longPressed = row; //to notify click about it
     }
     longPressed: NormalizedItem<T>;
     onClick(row: NormalizedItem<T>) {
-        this.focusedItem.set(row);
-        this.focusedItemChange.emit(this.focusedItem());
+        this.focusedItem.set(row.item);
 
         if (this.longPressed) this.select(row.key);
         else {
             if (this.selectionModel.selected.length > 0) this.selectionModel.toggle(row.key);
-            else this.itemClick.emit(this.focusedItem());
+            else
+                this.itemClick.emit(
+                    this.adapter()
+                        .normalized()
+                        .find((e) => e.item === this.focusedItem()),
+                );
         }
 
         this.longPressed = null; //clear long press notification

@@ -464,7 +464,7 @@ export class UsersController {
         if (user) {
             user.disabled = lock;
             await user.save();
-            return true;
+            return { document: user };
         } else throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
     }
 

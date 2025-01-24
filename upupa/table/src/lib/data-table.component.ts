@@ -273,7 +273,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         if (selectInBetween) {
             const all = this.adapter().normalized();
             const i1 = all.indexOf(row);
-            const i2 = all.indexOf(this.focusedItem());
+            const i2 = this.focusedItem() ? all.indexOf(all.find((e) => e.item === this.focusedItem())) : -1;
 
             if (i1 > -1 && i2 > -1) rows = all.slice(Math.min(i1, i2), Math.max(i1, i2) + 1);
         }
@@ -311,7 +311,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     merge(obj1: any, obj2: any) {
         return { ...obj1, ...obj2 };
     }
-
 
     trackByFn(index, item) {
         return item.key;

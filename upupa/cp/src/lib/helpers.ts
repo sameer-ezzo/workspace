@@ -4,10 +4,9 @@ import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarSe
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
-import { DataFormComponent } from "./data-form-with-view-model/data-form-with-view-model.component";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 @Component({
@@ -49,7 +48,7 @@ export function readValueFromApi<T = any>(path: string) {
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
-function isFormViewmodelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
+function isFormViewModelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
     return "viewModelType" in vm;
 }
 
@@ -61,7 +60,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     const _injector = context?.injector ?? inject(Injector);
     const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
     const dialog = injector.get(DialogService);
-    const _mirror = isFormViewmodelMirror(vm) ? vm : reflectFormViewModelType(vm);
+    const _mirror = isFormViewModelMirror(vm) ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
     const v = await value;
@@ -76,6 +75,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         width: "90%",
         maxWidth: "750px",
         maxHeight: "95vh",
+        disableClose: true,
         ...context?.dialogOptions,
         footer: [
             ...formActions.map((descriptor) =>
@@ -174,10 +174,11 @@ export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K exte
     emitter.subscribe((e) => sub.next(e));
 
     const stream$ = destroyRef ? sub.pipe(takeUntilDestroyed(destroyRef)) : sub;
-    stream$.subscribe({
-        next: (e) => console.log(`Output ${output as any} emitted`, e),
-        complete: () => console.log(`Output ${output as any} completed`),
-    });
+    // test if the stream$ is becoming a memory leak (should print completed)
+    // stream$.subscribe({
+    //     next: (e) => console.log(`Output ${output as any} emitted`, e),
+    //     complete: () => console.log(`Output ${output as any} completed`),
+    // });
     return stream$;
 }
 

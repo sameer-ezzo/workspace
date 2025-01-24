@@ -25,5 +25,5 @@
   ],
   "include": [
     "**/*.ts"
-  ]
+, "../dynamic-form/src/lib/providers.ts"  ]
 }

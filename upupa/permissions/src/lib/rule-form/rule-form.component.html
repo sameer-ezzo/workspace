@@ -1,29 +1,20 @@
-@if (rule) {
-<h2>{{rule.name || rule.path | titlecase}}</h2>
-<!-- TODO -->
-<!-- ADD Rule Info like (fallback input to set grant or deny, description ...) -->
+@let r = rule();
+@if (r) {
+    <h2>{{ r.name ? (r.name | titlecase) : r.path }}</h2>
+    <!-- TODO -->
+    <!-- ADD Rule Info like (fallback input to set grant or deny, description ...) -->
 
-@if (loading()) {
-<div class="loader">
-  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
-</div>
-} @else {
-<div style="overflow: hidden; overflow-y: auto;padding-block: 1rem; padding-inline: 0.25rem;">
-  @for (action of actionNames(); track i; let i = $index) {
-  <div class="item">
-    <div class="flex row align-center">
-      <h4>{{ action | titlecase}}</h4>
-      <span class="spacer"></span>
-      <button mat-icon-button color="accent" (click)="addPermission(action)">
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
-    <rule-permissions-table [permissions]="actionPermissionsMap.get(action)()" [action]="action"
-        (permissionsChange)="updateRulePermissions(action,$event)"></rule-permissions-table>
-
-  </div>
-  }
-</div>
-
-}
+    @if (loading()) {
+        <div class="loader">
+            <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+        </div>
+    } @else {
+        <div style="overflow: hidden; overflow-y: auto; padding-block: 1rem; padding-inline: 0.25rem">
+            @for (action of actionNames(); track i; let i = $index) {
+                <div class="item">
+                    <rule-permissions-table #table [rule]="r" [action]="action"></rule-permissions-table>
+                </div>
+            }
+        </div>
+    }
 }

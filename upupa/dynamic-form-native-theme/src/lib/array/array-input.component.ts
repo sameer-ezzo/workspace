@@ -1,6 +1,6 @@
 import { Component, forwardRef, input, computed, Type, viewChild, signal, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-import { DataTableComponent, DataTableModule, resolveDataListInputsFor } from "@upupa/table";
+import { DataTableComponent, DataTableModule, reflectTableViewModel } from "@upupa/table";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 import { DynamicComponent, InputBaseComponent, PortalComponent } from "@upupa/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -42,7 +42,7 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     viewModel = input<Class>();
     columns = computed(() => {
         const vm = this.viewModel();
-        if (typeof vm === "function") return resolveDataListInputsFor(vm)?.columns || {};
+        if (typeof vm === "function") return reflectTableViewModel(vm)?.columns || {};
         return {};
     });
 

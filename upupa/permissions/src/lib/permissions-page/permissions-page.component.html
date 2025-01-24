@@ -1,19 +1,22 @@
 <div id="toolbar">
-  <h4>Permissions</h4>
-  <span class="spacer"></span>
-  <button mat-button (click)="restore()">
-    <mat-icon>restore</mat-icon>
-    <span>Restore</span>
-  </button>
-  <button mat-button (click)="export()">
-    <mat-icon>cloud_download</mat-icon>
-    <span>Export</span>
-  </button>
+    @if (loading()) {
+        <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+    }
+    <h4>Permissions</h4>
+    <span class="spacer"></span>
+    <button mat-button (click)="restore()" [disabled]="loading()">
+        <mat-icon>restore</mat-icon>
+        <span>Restore</span>
+    </button>
+    <button mat-button (click)="export()">
+        <mat-icon>cloud_download</mat-icon>
+        <span>Export</span>
+    </button>
 </div>
-<div style="padding-inline-start:1rem;overflow: hidden; overflow-y: auto;">
-  <permissions-side-bar [nodes]="nodes()" [focused]="focused()" (focusedChange)="focused.set($event)"></permissions-side-bar>
+<div style="padding-inline-start: 1rem; overflow: hidden; overflow-y: auto">
+    <permissions-side-bar [nodes]="nodes()" [focused]="focused()" (focusedChange)="focused.set($event)"></permissions-side-bar>
 </div>
 
-@if (focused) {
-<rule-form [rule]="focused()?.rule"></rule-form>
+@if (focused()) {
+    <rule-form [node]="focused()"></rule-form>
 }
