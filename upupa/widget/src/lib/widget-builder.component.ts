@@ -66,6 +66,14 @@ export class InputsViewModel {
         :host {
             display: block;
             position: relative;
+            margin-block-end: calc(65px + 1.5rem);
+            button {
+                position: absolute;
+                float: inline-end;
+                bottom: -65px;
+                z-index: 100;
+                inset-inline-end: 1.5rem;
+            }
         }
     `,
     template: `
@@ -84,7 +92,7 @@ export class InputsViewModel {
                 </gridstack-item>
             }
         </gridstack>
-        <button mat-fab color="accent" (click)="add()" style="position: absolute;inset-block-end: 1.5rem;inset-inline-end: 1.5rem;">
+        <button mat-fab color="accent" (click)="add()">
             <mat-icon>add</mat-icon>
         </button>
     `,
