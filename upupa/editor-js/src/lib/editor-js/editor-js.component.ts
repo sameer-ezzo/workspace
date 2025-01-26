@@ -139,7 +139,7 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     private updatePadding(): void {
         const editorContainer: HTMLElement = this.editorElement().nativeElement.querySelector(".codex-editor__redactor");
         if (editorContainer) {
-            editorContainer.style.paddingBottom = this.readOnly() ? "0" : "100px";
+            editorContainer.style.paddingBottom = this.readOnly() ? "0" : "0";
         }
     }
 

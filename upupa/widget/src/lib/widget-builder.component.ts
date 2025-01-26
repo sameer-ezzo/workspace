@@ -1,7 +1,7 @@
 import { Component, computed, inject, model, viewChild, ViewEncapsulation, input, SimpleChanges, OnChanges } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { PortalComponent, provideComponent } from "@upupa/common";
+import { DynamicComponent, PortalComponent, provideComponent } from "@upupa/common";
 import { DialogConfig, DialogService } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
@@ -79,8 +79,10 @@ export class InputsViewModel {
     template: `
         <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
             @for (widget of materializedWidgets(); track widget.id) {
-                <gridstack-item [options]="widget" (click)="setFocused(widget)">
-                    @if (!hideHeader()) {
+                <gridstack-item [options]="widget" (click)="focused.set(widget)">
+                    @if (headerTemplate()) {
+                        <portal [template]="headerTemplate()"></portal>
+                    } @else {
                         <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
                             <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings(widget.id)"><mat-icon>settings</mat-icon></button>
                             <h3>{{ widget.title }}</h3>
@@ -101,15 +103,12 @@ export class WidgetBuilderComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });
     gridOptions = model<GridStackOptions>(DEFAULT_GRID_OPTIONS);
 
-    hideHeader = input(false);
+    headerTemplate = input<DynamicComponent>(null);
     dialogOptions = input<DialogConfig>();
     focused = model<Widget | null>(null);
-    setFocused(widget: Widget) {
-        console.log("Focused widget", widget);
-        this.focused.set(widget);
-    }
     value = model<Widget[]>([]);
     disabled = model<boolean>(false);
+
     materializedWidgets = computed<MaterializedWidget[]>(() => {
         const blueprints = this.blueprints();
         return (this.value() ?? []).map((widget) => {
