@@ -143,8 +143,8 @@ export class PortalComponent<TCom = any> {
             injector: template.injector,
         });
 
-        const cssClass = template.class;
-        if (cssClass && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(cssClass);
+        const cssClass = (template.class ?? "").split(" ").filter(Boolean);
+        if (cssClass.length && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(...cssClass);
 
         this.subscribeToOutputs(template.outputs ?? {});
         this.setInputs(template.inputs ?? {});
