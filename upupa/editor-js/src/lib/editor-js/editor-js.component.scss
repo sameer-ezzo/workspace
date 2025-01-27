@@ -34,12 +34,31 @@ fieldset {
     }
 }
 ::ng-deep {
-    .codex-editor.codex-editor--rtl {
-        .ce-toolbar__actions {
-            left: auto !important;
-            right: -60px !important;
-            padding-right: 0 !important;
-            padding-left: 5px;
+    .codex-editor {
+        display: flex;
+        width: 100%;
+    }
+    .codex-editor__redactor {
+        flex: 1 1 auto;
+        margin: 0 !important;
+    }
+    .ce-toolbar__content,
+    .ce-block__content {
+        max-width: 100%;
+    }
+    .ce-toolbar,
+    .ce-toolbar__actions {
+        position: relative !important;
+        float: inline-start !important;
+        margin-inline-end: 0.25rem !important;
+        left: unset !important;
+        right: unset !important;
+        padding: 0 !important;
+    }
+
+    @media (min-width: 651px) {
+        .codex-editor__redactor {
+            margin: 0 !important;
         }
     }
 }

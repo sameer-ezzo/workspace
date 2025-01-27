@@ -12,7 +12,7 @@
         @if (rendererTemplate()) {
             <portal [template]="rendererTemplate()"></portal>
         } @else {
-            text() | json
+            {{ text() }}
         }
     }
 }

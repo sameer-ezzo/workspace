@@ -13,7 +13,6 @@ import { CommonModule } from "@angular/common";
 import { UploadService } from "./upload.service";
 import { UploadClient } from "./upload.client";
 import { STORAGE_BASE } from "./di.token";
-import { ImageComponent } from "./image.component/image.component";
 import { FileSizePipe } from "./file-size.pipe";
 import { MatTableModule } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -26,7 +25,6 @@ const declarations = [];
     declarations,
     imports: [
         FileSizePipe,
-        ImageComponent,
         CommonModule,
         MatIconModule,
         MatTabsModule,

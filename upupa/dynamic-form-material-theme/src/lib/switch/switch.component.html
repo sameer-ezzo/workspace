@@ -24,7 +24,7 @@
         </mat-checkbox>
     }
     @if (label()) {
-        <paragraph (click)="changeValue()" [text]="label()" [renderer]="renderer()"></paragraph>
+        <paragraph (click)="toggle()" [text]="label()" [renderer]="renderer()"></paragraph>
     }
 </div>
 @if (hint()) {

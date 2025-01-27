@@ -1,7 +1,7 @@
-import { Component, computed, inject, model, viewChild, ViewEncapsulation, input, SimpleChanges, OnChanges } from "@angular/core";
+import { Component, computed, inject, model, viewChild, ViewEncapsulation, input, SimpleChanges, OnChanges, output } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { PortalComponent, provideComponent } from "@upupa/common";
+import { DynamicComponent, PortalComponent, provideComponent } from "@upupa/common";
 import { DialogConfig, DialogService } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
@@ -15,6 +15,23 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 import { formInput } from "@upupa/dynamic-form";
 import { randomString } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
+
+@Component({
+    selector: "widget-header",
+    imports: [MatIconModule, MatButtonModule],
+    standalone: true,
+    template: ` <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
+        <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings.emit(widget())"><mat-icon>settings</mat-icon></button>
+        <h3>{{ widget().title }}</h3>
+        <div style="flex: 1"></div>
+        <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove.emit(widget())"><mat-icon>clear</mat-icon></button>
+    </div>`,
+})
+export class WidgetHeaderComponent {
+    widget = input.required<Widget>();
+    remove = output<Widget>();
+    settings = output<Widget>();
+}
 
 export const DEFAULT_GRID_OPTIONS: GridStackOptions = {
     margin: 5,
@@ -79,14 +96,9 @@ export class InputsViewModel {
     template: `
         <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
             @for (widget of materializedWidgets(); track widget.id) {
-                <gridstack-item [options]="widget" (click)="setFocused(widget)">
-                    @if (!hideHeader()) {
-                        <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
-                            <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings(widget.id)"><mat-icon>settings</mat-icon></button>
-                            <h3>{{ widget.title }}</h3>
-                            <div style="flex: 1"></div>
-                            <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove(widget.id)"><mat-icon>clear</mat-icon></button>
-                        </div>
+                <gridstack-item [options]="widget" (click)="focused.set(widget)">
+                    @if (headerTemplate()) {
+                        <portal [template]="getHeaderTemplate(widget)"></portal>
                     }
                     <portal [template]="widget.template"></portal>
                 </gridstack-item>
@@ -101,15 +113,20 @@ export class WidgetBuilderComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });
     gridOptions = model<GridStackOptions>(DEFAULT_GRID_OPTIONS);
 
-    hideHeader = input(false);
+    headerTemplate = input<DynamicComponent>({ component: WidgetHeaderComponent });
+    getHeaderTemplate = (widget: Widget) => {
+        return this.headerTemplate()
+            ? {
+                  ...this.headerTemplate(),
+                  inputs: { ...this.headerTemplate().inputs, widget },
+              }
+            : null;
+    };
     dialogOptions = input<DialogConfig>();
     focused = model<Widget | null>(null);
-    setFocused(widget: Widget) {
-        console.log("Focused widget", widget);
-        this.focused.set(widget);
-    }
     value = model<Widget[]>([]);
     disabled = model<boolean>(false);
+
     materializedWidgets = computed<MaterializedWidget[]>(() => {
         const blueprints = this.blueprints();
         return (this.value() ?? []).map((widget) => {
@@ -177,7 +194,7 @@ export class WidgetBuilderComponent implements OnChanges {
     }
 
     async settings(id: string) {
-        const widget = this.value().find((w) => w.id == id);
+        const widget = this.value().find((w) => w.id === id);
         const dialogRef = this.dialog.open(
             { component: WidgetSettingsComponent, inputs: { widget, blueprints: this.blueprints() } },
             {
