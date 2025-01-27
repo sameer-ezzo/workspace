@@ -1,17 +1,18 @@
-import { Component, inject, computed, input } from "@angular/core";
+import { Component, inject, computed, Injector } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { DataService } from "@upupa/data";
 import { AuthService, User, UserBase } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { DataTableComponent, DefaultTableCellTemplate } from "@upupa/table";
-
 import { firstValueFrom } from "rxjs";
 import { AdminUserPasswordRestComponent } from "../admin-userpwd-reset/admin-userpwd-reset.component";
-import { EditUserRolesComponent } from "../edit-user-roles/edit-user-roles.component";
 import { ConfirmService, DialogRef, DialogService, SnackBarService } from "@upupa/dialog";
 import { DOCUMENT } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatBtnComponent } from "@upupa/mat-btn";
+import { openFormDialog } from "@upupa/cp";
+import { EditUserFromViewModel } from "./user.forms";
+import { EditUserRolesFromViewModel } from "../edit-user-roles/edit-user-roles.forms";
 
 @Component({
     standalone: true,
@@ -25,7 +26,7 @@ export class ImpersonateUserButton extends DefaultTableCellTemplate {
 
     public readonly auth = inject(AuthService);
     private readonly doc = inject(DOCUMENT);
-    btn = { path: "auth", action: "Impersonate User", variant: "icon", name: "impersonate", icon: "supervised_user_circle" } as ActionDescriptor;
+    btn = { path: "auth", action: "Impersonate User", variant: "icon", name: "impersonate", icon: "theater_comedy" } as ActionDescriptor;
     async onAction(e: ActionEvent) {
         try {
             await this.auth.impersonate(this.item()._id);
@@ -47,30 +48,30 @@ export class ImpersonateUserButton extends DefaultTableCellTemplate {
 export class ChangeUserRolesButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
     adapter = this.table.adapter();
-    public readonly dialog = inject(DialogService);
-
+    dialog = inject(DialogService);
+    snack = inject(SnackBarService);
+    injector = inject(Injector);
     btn = {
         path: "auth",
         action: "Change User Roles",
         variant: "icon",
         text: "Change roles",
         name: "change-user-roles",
-        icon: "switch_access_shortcut_add",
+        icon: "group",
         menu: true,
     } as ActionDescriptor;
-    ActionDescriptor;
+
     async onAction(e: ActionEvent) {
-        const res = await firstValueFrom(
-            this.dialog
-                .open(
-                    { component: EditUserRolesComponent, inputs: { user: this.item() } },
-                    {
-                        title: "Change User Roles",
-                    },
-                )
-                .afterClosed(),
-        );
-        this.adapter.put(this.item(), res);
+        const value = new EditUserRolesFromViewModel({ _id: this.item()._id, roles: this.item().roles });
+        const { dialogRef } = await openFormDialog(EditUserRolesFromViewModel, value, { dialogOptions: { title: "User Roles" }, injector: this.injector, defaultAction: true });
+        const { result } = await firstValueFrom(dialogRef.afterClosed());
+        console.log("result", result);
+
+        if (result) {
+            this.snack.openSuccess("Password has been reset!");
+            await this.adapter.refresh();
+            dialogRef.close();
+        }
     }
 }
 
@@ -95,7 +96,7 @@ export class ResetPasswordButton extends DefaultTableCellTemplate {
         );
         const { result } = await firstValueFrom(dialogRef.afterClosed());
         console.log("result", result);
-        
+
         if (result) {
             this.snack.openSuccess("Password has been reset!");
             await this.adapter.refresh();
@@ -120,7 +121,10 @@ export class DeleteUserButton extends DefaultTableCellTemplate {
     btn = { variant: "icon", text: "Delete User", name: "delete", icon: "delete", color: "warn", menu: true } as ActionDescriptor;
     async onAction(e: ActionEvent) {
         const user = this.item();
-        if (user.roles?.indexOf("super-admin") > -1) return;
+        if (user.roles?.indexOf("super-admin") > -1) {
+            this.snack.openFailed("You cannot delete a super admin user!");
+            return;
+        }
         const d = {
             title: "Delete user",
             confirmText: "Do you really want to delete this user permanently?",
@@ -151,8 +155,8 @@ export class BanUserButton extends DefaultTableCellTemplate {
 
     btn = computed(() => {
         const disabled = this.item().disabled;
-        if (!disabled) return { variant: "icon", text: "Ban user", name: "ban", icon: "block", color: "warn" } as ActionDescriptor;
-        else return { variant: "icon", text: "Unban user", name: "unban", icon: "check_circle", color: "accent" } as ActionDescriptor;
+        if (!disabled) return { variant: "icon", text: "Ban user", name: "ban", icon: "lock", color: "warn" } as ActionDescriptor;
+        else return { variant: "icon", text: "Unban user", name: "unban", icon: "lock_open", color: "accent" } as ActionDescriptor;
     });
     async onAction(e: ActionEvent) {
         const user = this.item();
@@ -172,8 +176,9 @@ export class BanUserButton extends DefaultTableCellTemplate {
         ) {
             const baseUrl = this.auth.baseUrl;
             const { document } = await firstValueFrom(this.http.post<{ document: UserBase }>(`${baseUrl}/lock`, { id, lock }));
-            if (this.item().disabled !== document.disabled) await this.adapter.refresh();
+            await this.adapter.refresh();
             if (document.disabled) this.snack.openSuccess(`User ${this.item().email} has been banned`);
+            else this.snack.openSuccess(`User ${this.item().email} has been unbanned`);
         }
     }
 }

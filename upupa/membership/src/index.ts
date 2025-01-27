@@ -26,7 +26,6 @@ export * from './lib/management/admin-userpwd-reset/admin-userpwd-reset.componen
 export * from './lib/management/users-list/users-list.component';
 export * from './lib/management/roles-list/roles-list.component';
 
-export * from './lib/management/edit-user-roles/edit-user-roles.component';
 export * from './lib/membership-routing.module';
 export * from './lib/reset-password-form/reset-password-form.component';
 export * from './lib/idp-button.directive';

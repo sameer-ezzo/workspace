@@ -1,12 +1,14 @@
 import { DatePipe } from "@angular/common";
 import { inject } from "@angular/core";
-import { editButton } from "@upupa/cp";
+import { closeDialog, editButton } from "@upupa/cp";
 import { DataAdapter, DataService } from "@upupa/data";
 import { formInput } from "@upupa/dynamic-form";
 import { EmailColumnCellComponent } from "./email-column-cell.component";
-import { ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserButton } from "./users-list-actions.component";
-import { DialogRef } from "@upupa/dialog";
+import { ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserButton, ChangeUserRolesButton } from "./users-list-actions.component";
+import { DialogRef, SnackBarService } from "@upupa/dialog";
 import { column } from "@upupa/table";
+import { HttpErrorResponse } from "@angular/common/http";
+import { AuthService } from "@upupa/auth";
 
 export class CreateUserFromViewModel {
     @formInput({ input: "hidden" })
@@ -19,26 +21,43 @@ export class CreateUserFromViewModel {
     password = "";
     @formInput({ input: "switch", label: "Force change password" })
     forceChangePwd: boolean;
+
+    async onSubmit() {
+        const snack = inject(SnackBarService);
+        const auth = inject(AuthService);
+        const dialogRef = inject(DialogRef, { optional: true });
+
+        const adapter = inject(DataAdapter);
+        try {
+            const { document } = await auth.signup({ email: this.email, name: this.name, forceChangePwd: this.forceChangePwd }, this.password);
+            adapter.refresh();
+            if (dialogRef) dialogRef.close({ submitResult: document });
+        } catch (e) {
+            const error = e instanceof HttpErrorResponse ? e.error : e;
+            snack.openFailed("Failed to save user", error);
+        }
+    }
 }
 export class EditUserFromViewModel {
     @formInput({ input: "hidden" })
     _id: string;
     // @formInput({ input: "email", label: "Email", required: true, readonly: true })
     // email: string;
-    @formInput({ input: "text", label: "Username", required: true })
+    @formInput({ input: "text", label: "Full name", required: true })
     name: string;
 
     async onSubmit() {
-        const dialog = inject(DialogRef);
+        const snack = inject(SnackBarService);
         const data = inject(DataService);
+        const dialogRef = inject(DialogRef, { optional: true });
         const adapter = inject(DataAdapter);
         try {
-            // do not use adapter.put because it will fail with violation of unique constraint on (email, username)
             const { document } = await data.patch(`/user/${this._id}`, [{ op: "replace", path: "name", value: this.name }]);
             adapter.refresh();
-            dialog.close({ submitResult: document });
+            if (dialogRef) dialogRef.close({ submitResult: document });
         } catch (e) {
-            console.error(e);
+            const error = e instanceof HttpErrorResponse ? e.error : e;
+            snack.openFailed("Failed to save user", error);
         }
     }
 }
@@ -56,6 +75,9 @@ export class UserListViewModel {
     @column({ header: "Roles", sortDisabled: true })
     roles: any[];
 
-    @column({ header: " ", template: [ImpersonateUserButton, editButton(EditUserFromViewModel, { updateAdapter: false }), ResetPasswordButton, BanUserButton, DeleteUserButton] })
+    @column({
+        header: " ",
+        template: [ImpersonateUserButton, editButton(EditUserFromViewModel, { updateAdapter: false }), ChangeUserRolesButton, ResetPasswordButton, BanUserButton, DeleteUserButton],
+    })
     actions: any;
 }

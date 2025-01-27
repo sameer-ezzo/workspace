@@ -8,13 +8,13 @@ export class SnackBarService {
     openSuccess(message: string = "success", config?: SnackbarConfig) {
         const defaultConfig: MatSnackBarConfig = {
             duration: 3000,
-            verticalPosition: "top"
+            verticalPosition: "top",
         };
 
         if (config?.callback) {
             return this.openAction(message, config.callbackName ?? "undo", () => config.callback(), {
                 ...defaultConfig,
-                ...config
+                ...config,
             });
         }
         return this.snack.open(message, null, { ...defaultConfig, ...config });
@@ -24,30 +24,32 @@ export class SnackBarService {
             duration: 5000,
             politeness: "assertive",
             verticalPosition: "top",
-            panelClass: ["error"]
+            panelClass: ["error"],
         };
 
+        const msg = `${message} ${error?.message ?? ""}`;
+
         if (config?.callback) {
-            return this.openAction(message, config.callbackName ?? "snkbar-failed-msg", () => config.callback(), {
+            return this.openAction(config.callbackName ?? "OK", config.callbackName ?? "snkbar-failed-msg", () => config.callback(), {
                 ...defaultConfig,
-                ...config
+                ...config,
             });
         }
-        return this.snack.open(message, null, { ...defaultConfig, ...config });
+        return this.snack.open(msg, null, { ...defaultConfig, ...config });
     }
     openWarning(message: string = "warning", error: any = null, config?: MatSnackBarConfig) {
         const defaultConfig: MatSnackBarConfig = {
             duration: 5000,
             politeness: "assertive",
             verticalPosition: "top",
-            panelClass: ["warning"]
+            panelClass: ["warning"],
         };
         return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
     openInfo(message: string, config?: MatSnackBarConfig) {
         const defaultConfig: MatSnackBarConfig = {
             duration: 3000,
-            verticalPosition: "top"
+            verticalPosition: "top",
         };
         return this.snack.open(message, null, { ...defaultConfig, ...config });
     }
