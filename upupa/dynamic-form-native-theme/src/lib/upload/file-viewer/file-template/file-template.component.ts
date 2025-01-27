@@ -15,7 +15,7 @@ import { FileInfo } from "@noah-ark/common";
 import { FileIconPerTypePipe } from "../../file-icon-per-type.pipe";
 import { FileUploadService } from "../../file-upload.service";
 import { Subscription } from "rxjs";
-import { FileSizePipe, ImageComponent, UploadStream } from "@upupa/upload";
+import { FileSizePipe, UploadStream } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
 import { AsyncPipe, DatePipe, DOCUMENT } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
@@ -31,15 +31,15 @@ const actions = [
             variant: "icon",
             text: "Download",
             icon: "get_app",
-            menu: true
+            menu: true,
         }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
             name: "copy_url",
             variant: "icon",
-            text: 'Copy Url',
+            text: "Copy Url",
             icon: "content_copy",
-            menu: true
+            menu: true,
         }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
@@ -47,7 +47,7 @@ const actions = [
             variant: "icon",
             text: "Remove",
             icon: "delete",
-            menu: true
+            menu: true,
         }) as ActionDescriptor,
 ];
 // class="file hoverable" [class.loading]="fileVm.uploadTask"
@@ -60,7 +60,7 @@ const actions = [
     host: {
         "[class]": "class()",
     },
-    imports: [MatIconModule, MatButtonModule, ImageComponent, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe],
+    imports: [MatIconModule, MatButtonModule, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe],
 })
 export class FileTemplateComponent {
     private readonly auth = inject(AuthService);
@@ -77,7 +77,7 @@ export class FileTemplateComponent {
     includeAccess = input(false);
     events = output<FileEvent>();
     private readonly fi = new FileIconPerTypePipe();
-    imageSrc = signal<string | File>(undefined);
+    imageSrc = signal<string>(undefined);
 
     vm = signal<ViewerExtendedFileVm>(undefined);
     ngOnChanges(changes: SimpleChanges) {
@@ -85,16 +85,20 @@ export class FileTemplateComponent {
             const file = this.file();
             this.vm.set(this.convertToVm(file));
             const f = file.file;
-            let src: string | File = "";
+            let src: string = "";
             if (f instanceof File) {
-                src = f;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    src = e.target.result as string;
+                    this.imageSrc.set(src + (this.includeAccess() ? `?access_token=${this.auth.get_token()}` : ""));
+                };
+                reader.readAsDataURL(f);
                 this.startUpload(file);
             } else {
                 if (file.fileType !== "image") src = `/assets/upload/files-icons/${this.fi.transform(f)}.svg`;
                 else src = this.base() + f.path;
+                this.imageSrc.set(src + (this.includeAccess() ? `?access_token=${this.auth.get_token()}` : ""));
             }
-
-            this.imageSrc.set(src);
         }
     }
 
@@ -146,14 +150,14 @@ export class FileTemplateComponent {
         f.actions = acs.filter((a: ActionDescriptor) => a.menu !== true);
         f.menuActions = acs.filter((a: ActionDescriptor) => a.menu === true);
     }
-    snack = inject(SnackBarService)
+    snack = inject(SnackBarService);
     async onMenuAction(ad: ActionDescriptor, item: ViewerExtendedFileVm) {
         if (ad.name === "copy_url") {
             const file = item.file as FileInfo;
             // const at = `?access_token=${this.auth.get_token()}`;
             const fileUrl = `${file.path}`;
             navigator.clipboard.writeText(fileUrl);
-            this.snack.openInfo('Url copied to clipboard.')
+            this.snack.openInfo("Url copied to clipboard.");
         }
         if (ad.name === "download") this.downloadFile();
         else if (ad.name === "remove") {
@@ -161,8 +165,8 @@ export class FileTemplateComponent {
                 this.stream().cancel();
                 this.events.emit({ name: "cancelUpload", file: item.file } as CancelUploadFileEvent);
             } else {
-                this.events.emit({ name: "remove", file: item.file } as RemoveFileEvent)
-            };
+                this.events.emit({ name: "remove", file: item.file } as RemoveFileEvent);
+            }
         }
         // this.action.emit({ action: ad, data: [item.file] });
     }

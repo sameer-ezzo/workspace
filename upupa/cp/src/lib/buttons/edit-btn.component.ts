@@ -7,6 +7,7 @@ import { ITableCellTemplate } from "@upupa/table";
 import { openFormDialog } from "../helpers";
 import { DialogConfig } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
+import { reflectFormViewModelType } from "@upupa/dynamic-form";
 
 @Component({
     standalone: true,
@@ -14,11 +15,12 @@ import { firstValueFrom } from "rxjs";
     template: ` <mat-btn (action)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
-export class EditButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
+export class EditButton<TItem = unknown> implements ITableCellTemplate<unknown, TItem> {
     injector = inject(Injector);
     adapter = inject(DataAdapter, { optional: true });
 
     item = input<TItem>();
+    data = input<(btn: EditButton<TItem>) => TItem>(() => this.item());
     dialogOptions = input<any>({ title: "Edit" });
     btn = input<ActionDescriptor>({ name: "edit", icon: "edit", variant: "icon" });
     formViewModel = input<Class>();
@@ -26,29 +28,32 @@ export class EditButton<TValue = unknown, TItem = unknown> implements ITableCell
     updateAdapter = input<boolean>(false);
 
     async edit() {
-        // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
-            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), this.item(), { dialogOptions, defaultAction: true, injector: this.injector });
+            const mirror = reflectFormViewModelType(this.formViewModel());
+            const value = this.data()?.(this) ?? this.item() ?? new mirror.viewModelType();
+            const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
-            if (!result) return;
-            const { submitResult } = result;
-            if (result && this.updateAdapter()) {               
-                await this.adapter.put(this.item(), submitResult);
-                // this.adapter.refresh();
+
+            if (result && this.updateAdapter()) {
+                const { submitResult } = result;
+                if (this.adapter && submitResult) {
+                    await this.adapter.put(value, submitResult);
+                }
             }
         });
     }
 }
 
-export function editButton<T = unknown>(
+export function editButton<TItem = unknown>(
     formViewModel: Class,
+    value: TItem | ((btn: EditButton<TItem>) => TItem) = (btn) => btn.item(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
         updateAdapter?: boolean;
     },
-): DynamicComponent {
+): DynamicComponent<EditButton<TItem>> {
     options ??= {};
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
         text: "Edit",
@@ -57,11 +62,13 @@ export function editButton<T = unknown>(
         color: "accent",
         type: "button",
     };
-    const btn = { ...defaultEditDescriptor, ...options.descriptor };
+    const btn = { ...defaultEditDescriptor, ...options.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Edit", ...options?.dialogOptions };
 
+    const data = (typeof value === "function" ? value : (btn) => btn.item()) as (btn: EditButton<TItem>) => TItem;
+
     return {
-        component: EditButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options?.updateAdapter },
-    } as DynamicComponent<EditButton>;
+        component: EditButton<TItem>,
+        inputs: { formViewModel, dialogOptions, btn, data, updateAdapter: options?.updateAdapter },
+    };
 }

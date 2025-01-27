@@ -6,19 +6,22 @@ import { FriendlyError, friendlyError } from "./friendly-error";
 
 export type SubmitResult<R = any> = { submitResult?: R; error?: any };
 export function navigateTo(commands: string[], extras?: NavigationExtras) {
+    // closeDialog(undefined);
     const _router = inject(Router);
     const _route = inject(ActivatedRoute);
     _router.navigate(commands, { relativeTo: _route, ...extras });
 }
 
-export function closeDialogOrNavigateTo(dialogResult: SubmitResult<any>, commands: string[], extras?: NavigationExtras) {
-    const dialogRef = inject(DialogRef);
-    if (dialogRef) dialogRef.close(dialogResult);
-    else navigateTo(commands, extras);
+export function closeDialogOrNavigateTo(dialogResult: SubmitResult<any>, commands: string[], extras?: NavigationExtras, injector = inject(Injector)) {
+    runInInjectionContext(injector, () => {
+        const dialogRef = inject(DialogRef, { optional: true });
+        if (dialogRef) dialogRef.close(dialogResult);
+        else navigateTo(commands, extras);
+    });
 }
 
 export function closeDialog(dialogResult: SubmitResult<any>) {
-    const dialogRef = inject(DialogRef);
+    const dialogRef = inject(DialogRef, { optional: true });
     if (dialogRef) dialogRef.close(dialogResult);
 }
 

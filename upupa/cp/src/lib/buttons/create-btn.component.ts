@@ -15,22 +15,22 @@ import { reflectFormViewModelType } from "@upupa/dynamic-form";
     template: ` <mat-btn (action)="create()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
-export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCellTemplate<TValue, TItem> {
+export class CreateButton<TItem = unknown> implements ITableCellTemplate<unknown, TItem> {
     injector = inject(Injector);
     adapter = inject(DataAdapter, { optional: true });
 
-    item = input<TItem>();
+    item = input<TItem>(); //from cell template
+    data = input<(btn: CreateButton<TItem>) => TItem>(() => this.item());
     dialogOptions = input<any>({ title: "Create" });
     btn = input<ActionDescriptor>({ name: "create", color: "primary", icon: "add", variant: "raised" });
     formViewModel = input<Class<TItem>>();
     updateAdapter = input<boolean>(false);
 
     async create() {
-        // const v = value ? value() : item;
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
             const mirror = reflectFormViewModelType(this.formViewModel());
-            const value = this.item() ?? new mirror.viewModelType();
+            const value = this.data()?.(this) ?? this.item() ?? new mirror.viewModelType();
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
             if (result && this.updateAdapter()) {
@@ -43,15 +43,15 @@ export class CreateButton<TValue = unknown, TItem = unknown> implements ITableCe
     }
 }
 
-export function createButton<T = unknown>(
+export function createButton<TItem = unknown>(
     formViewModel: Class,
-    value = new formViewModel(),
+    value: TItem | ((btn: CreateButton<TItem>) => TItem) = () => new formViewModel(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
         updateAdapter?: boolean;
     },
-): DynamicComponent<CreateButton> {
+): DynamicComponent<CreateButton<TItem>> {
     options ??= {};
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
         text: "Create",
@@ -60,11 +60,13 @@ export function createButton<T = unknown>(
         color: "primary",
         type: "button",
     };
-    const btn = { ...defaultCreateDescriptor, ...options.descriptor };
+    const btn = { ...defaultCreateDescriptor, ...options.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
 
+    const data = (typeof value === "function" ? value : () => value) as (btn: CreateButton<TItem>) => TItem;
+
     return {
-        component: CreateButton<any, T>,
-        inputs: { formViewModel, dialogOptions, btn, updateAdapter: options.updateAdapter, item: value },
-    } as DynamicComponent<CreateButton>;
+        component: CreateButton<TItem>,
+        inputs: { formViewModel, dialogOptions, btn, data, updateAdapter: options.updateAdapter },
+    };
 }
