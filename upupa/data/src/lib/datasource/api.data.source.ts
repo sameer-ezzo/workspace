@@ -78,7 +78,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         if (sort?.active) query.sort_by = `${sort.active},${sort.direction}`;
 
         // const src = this.getData(page, query);
-        const data$ = this.dataService.get<T[]>(this.pathname, query);
+        const data$ = this.dataService.fetch<T[]>(this.pathname, query);
         return firstValueFrom(data$).then((res) => res.data);
     }
 

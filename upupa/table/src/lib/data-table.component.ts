@@ -88,7 +88,7 @@ export function injectDataAdapter() {
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
-    showPaginator = input(true, { transform: (v) => (v === undefined ? true : v) });
+    showPaginator = input(true, { transform: (v) => (v === false ? false : true) });
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);

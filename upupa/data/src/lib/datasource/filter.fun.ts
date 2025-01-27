@@ -52,39 +52,39 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     //FILTER
     const search = filter?.search?.toLocaleLowerCase();
     const query = Object.entries(filter ?? {}).filter(([k]) => k !== "search");
-    if (search || query.length) {
+    if (search) {
         result = all.filter((item) => {
             if (typeof item !== "object") {
-                if (search) {
-                    const itemTerm = item + "";
-                    if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
-                }
+                const itemTerm = item + "";
+                if (itemTerm.toLocaleLowerCase().indexOf(search) > -1) return true;
             } else {
-                let searchMatch = true;
-                if (search) {
-                    const itemTerm = terms
-                        .map((t) => getByPath(item, t.field as string))
-                        .join("{}")
-                        .trim();
-                    searchMatch = itemTerm.toLocaleLowerCase().indexOf(search) > -1;
-                }
-
-                if (query.length) {
-                    for (const [field, q] of query) {
-                        if (field === "search") continue;
-                        const itemValue = getByPath(item, field);
-                        if (q == null && itemValue == null) return true && searchMatch;
-                        if (typeof q === "string" && q.length > 0) {
-                            if (itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1) return true && searchMatch;
-                        }
-                        if (typeof q === "number") {
-                            if (itemValue === q) return true && searchMatch;
-                        }
-                    }
-                }
-                return searchMatch;
+                const itemTerm = terms
+                    .map((t) => getByPath(item, t.field as string))
+                    .join("{}")
+                    .trim();
+                return itemTerm.toLocaleLowerCase().indexOf(search) > -1;
             }
             return false;
+        });
+    }
+
+    if (query.length) {
+        result = result.filter((item) => {
+            if (typeof item === "object" && query.length) {
+                for (const [field, q] of query) {
+                    if (field === "search") continue;
+                    if (!q.length) return true;
+                    const itemValue = getByPath(item, field);
+                    if (q == null && itemValue == null) return true;
+                    if (typeof q === "string" && q.length > 0) {
+                        return itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1;
+                    }
+                    if (typeof q === "number") {
+                        if (itemValue === q) return true;
+                    }
+                }
+            }
+            return true;
         });
     }
 

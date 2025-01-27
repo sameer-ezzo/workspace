@@ -22,7 +22,7 @@ export class MatBtnComponent {
     loading = input(false);
     buttonDescriptor = input.required<ActionDescriptor>();
     disabled = input(false);
-    isDisabled = computed(() => this.disabled() || this.buttonDescriptor().disabled);
+    isDisabled = computed(() => this.loading() || this.disabled() || this.buttonDescriptor().disabled);
     variant = computed(() => this.buttonDescriptor().variant ?? "button");
     color = computed(() => {
         const validColors = ["primary", "accent", "warn"];

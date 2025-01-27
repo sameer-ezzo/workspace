@@ -17,9 +17,9 @@
         [matSortDirection]="adapter().sort()?.direction"
         [matSortActive]="adapter().sort()?.active"
         (matSortChange)="onSortData($event)"
-
-        [trackBy]="trackByFn">
+        [trackBy]="trackByFn"
     >
+        >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
                 @if (maxAllowed() !== 1 && selectedNormalized(); as sns) {
@@ -141,6 +141,7 @@
 </div>
 
 <!-- Hide paginator when total data is lte page size -->
+{{ showPaginator() }}
 <div class="mat-paginator">
     @let page = adapter().page();
     @let length = page.length ?? 0;
