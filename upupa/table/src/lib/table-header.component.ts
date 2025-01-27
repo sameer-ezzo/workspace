@@ -36,7 +36,7 @@ export class TableHeaderComponent {
 
     _doFilter(q) {
         const adapter = this.injector.get(DataAdapter); // lazy injected because adaptor is provided to input signal not during construction
-        const f = { ...adapter.filter, search: q };
+        const f = { ...adapter.filter(), search: q };
         adapter.load({ filter: f });
     }
 

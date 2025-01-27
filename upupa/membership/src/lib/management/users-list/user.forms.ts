@@ -44,18 +44,24 @@ export class EditUserFromViewModel {
 }
 
 export class UserListViewModel {
+    @column({ visible: false })
+    select = false;
     @column({ header: "Email", template: [{ component: EmailColumnCellComponent }] })
     email: string;
 
     @column({ header: "Full Name" })
     name: string;
 
-    @column({ header: "Last Log in", pipe: { pipe: DatePipe, args: ["medium"] } })
-    lastLogin: Date;
-
     @column({ header: "Roles", sortDisabled: true })
     roles: any[];
 
-    @column({ header: " ", template: [ImpersonateUserButton, editButton(EditUserFromViewModel, { updateAdapter: false }), ResetPasswordButton, BanUserButton, DeleteUserButton] })
+    @column({ header: "Last Log in", pipe: { pipe: DatePipe, args: ["medium"] } })
+    lastLogin: Date;
+
+    @column({
+        header: " ",
+        class: "actions",
+        template: [editButton(EditUserFromViewModel, { updateAdapter: false }), ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserButton],
+    })
     actions: any;
 }
