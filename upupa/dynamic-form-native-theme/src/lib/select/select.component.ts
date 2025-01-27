@@ -27,7 +27,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     name = input("");
     ngAfterViewInit() {
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
-            const filter = this.adapter().filter;
+            const filter = this.adapter().filter();
             const _filter = { ...filter, search: v };
             this.adapter().load({ filter: _filter });
         });

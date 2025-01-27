@@ -79,7 +79,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         // const src = this.getData(page, query);
         const data$ = this.dataService.get<T[]>(this.pathname, query);
-        return firstValueFrom(data$).then((res) => res.data);
+        return firstValueFrom(data$).then((res) => res);
     }
 
     override create(value: Partial<T>) {
