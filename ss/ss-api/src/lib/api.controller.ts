@@ -1,11 +1,10 @@
 import { Controller, HttpException, HttpStatus, Res } from "@nestjs/common";
 import { Response } from "express";
 import { DataService, Patch } from "@ss/data";
-import { Authorize, AuthorizeService } from "@ss/rules";
+import { AuthorizeService } from "@ss/rules";
 import type { IncomingMessage, Rule } from "@noah-ark/common";
 import { EndPoint, Message } from "@ss/common";
 import ObjectToCSV from "object-to-csv";
-import { MongoError, MongoServerError } from "mongodb";
 import { logger } from "@ss/common";
 import { _query } from "./_query";
 

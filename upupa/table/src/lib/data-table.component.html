@@ -24,6 +24,7 @@
             <th mat-header-cell *matHeaderCellDef>
                 @if (maxAllowed() !== 1 && selectedNormalized(); as sns) {
                     <mat-checkbox
+                        
                         (change)="toggleSelectAll()"
                         [checked]="sns.length >= adapter().normalized()?.length"
                         [indeterminate]="sns.length > 0 && sns.length !== adapter().normalized()?.length"
@@ -35,7 +36,12 @@
                 @if (adapter().imageProperty) {
                     <img [src]="row.image" [attr.alt]="row.display || row.key" class="avatar" />
                 }
-                <mat-checkbox (click)="$event.stopPropagation()" [checked]="selectionModel.isSelected(row.key)" (change)="toggleSelection($event, row)"></mat-checkbox>
+                <mat-checkbox
+                    [disabled]="row.state === 'disabled' || row.state === 'loading'"
+                    (click)="$event.stopPropagation()"
+                    [checked]="selectionModel.isSelected(row.key)"
+                    (change)="toggleSelection($event, row)"
+                ></mat-checkbox>
             </td>
         </ng-container>
 
@@ -146,7 +152,7 @@
     @let length = page.length ?? 0;
     @let pageSize = page.pageSize ?? adapter().entities().length;
     @let pageIndex = page.pageIndex ?? 0;
-    @if (showPaginator() && length > 10) {
+    @if (pageIndex > 0 || (showPaginator() && length > pageSize)) {
         <mat-paginator
             [disabled]="loading() === true"
             [pageIndex]="pageIndex"

@@ -95,7 +95,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         ],
     };
 
-    const dialogRef = dialog.open({ component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value }, injector }, options);
+    const dialogRef = dialog.open({ component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value: v }, injector }, options);
     const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
     return { dialogRef, componentRef };
 }
