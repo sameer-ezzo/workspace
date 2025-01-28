@@ -51,8 +51,11 @@
                 <mat-menu #menu="matMenu">
                     @for (a of fileVm.menuActions; track a) {
                         <button type="button" mat-menu-item (click)="onMenuAction(a, fileVm)">
-                            @if (a.icon) {
-                                <mat-icon>{{ a.icon }}</mat-icon>
+                            @if (a['icon']) {
+                                <mat-icon>{{ a['icon'] }}</mat-icon>
+                            }
+                            @else if(a['symbol']) {
+                                <mat-icon class="material-symbols-outlined">{{ a['symbol'] }}</mat-icon>
                             }
                             {{ a.text }}
                         </button>

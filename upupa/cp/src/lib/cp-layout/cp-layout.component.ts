@@ -14,6 +14,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { AuthorizeModule } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
+import { MatDivider } from "@angular/material/divider";
 
 function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>) {
     if (!items) return of([]);
@@ -25,7 +26,7 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
 @Component({
     selector: "cp-layout",
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatToolbarModule, ToolbarUserMenuComponent, RouterModule, MatSidenavModule, AuthorizeModule, MatExpansionModule],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatToolbarModule, ToolbarUserMenuComponent, RouterModule, MatSidenavModule, AuthorizeModule, MatExpansionModule,MatDivider],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
