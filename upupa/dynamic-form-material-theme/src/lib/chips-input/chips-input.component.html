@@ -12,17 +12,17 @@
             </mat-chip-row>
         }
         <input
-            #input
+            #textInput
             [attr.name]="name()"
             matInput
             [value]="text()"
-            (input)="text.set(input.value)"
+            (input)="text.set(textInput.value); updateFilter()"
             [required]="required()"
             [placeholder]="placeholder()"
             [matChipInputFor]="chipGrid"
             [matAutocomplete]="auto"
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
-            (matChipInputTokenEnd)="add(input.value); input.value = ''"
+            (matChipInputTokenEnd)="add(textInput.value); textInput.value = ''"
         />
     </mat-chip-grid>
 
@@ -32,7 +32,7 @@
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
             } @else {
-                @for (item of items(); track $index) {
+                @for (item of _items(); track $index) {
                     <mat-option [value]="item.value">
                         @if (item.image) {
                             <img [src]="item.image" [attr.alt]="item.display" />

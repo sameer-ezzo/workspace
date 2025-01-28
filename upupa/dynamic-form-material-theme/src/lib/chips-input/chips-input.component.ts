@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ChangeDetectionStrategy, Component, forwardRef, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output } from "@angular/core";
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
 
@@ -33,6 +33,12 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
     name = input("");
     placeholder = input("");
 
+    _items = computed(() => {
+        const all = this.items();
+        const value = this.value();
+        const v = this.adapter().getKeysFromValue(value);
+        return all.filter((x) => !v.includes(x.key));
+    });
     text = model("");
 
     removable = input(true);
@@ -41,9 +47,20 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
     canAdd = input(true);
     adding = output<NormalizedItem<T>>({ alias: "add" });
     autoComplete = input(true);
-
+    updateFilter() {
+        this.adapter().load({
+            filter: {
+                ...this.adapter().filter(),
+                search: this.text(),
+            },
+        });
+    }
     async add(value: any) {
-        if (!value || !this.canAdd()) return;
+        if (!value || !this.canAdd()) {
+            this.text.set("");
+            this.updateFilter();
+            return
+        };
         const adapter = this.adapter();
 
         const valueProperty = adapter.valueProperty;
@@ -59,5 +76,6 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
         this.text.set("");
         this.select(element.value);
         this.adding.emit(element);
+        this.updateFilter();
     }
 }
