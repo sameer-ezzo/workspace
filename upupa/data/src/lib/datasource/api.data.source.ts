@@ -1,6 +1,6 @@
 import { firstValueFrom } from "rxjs";
-import { FilterDescriptor, PageDescriptor, SortDescriptor, TableDataSource, Term } from "./model";
-import { DataService } from "../data.service";
+import { FilterDescriptor, PageDescriptor, ReadResult, SortDescriptor, TableDataSource, Term } from "./model";
+import { ApiGetResult, DataService } from "../data.service";
 import { Patch } from "@noah-ark/json-patch";
 import { signal } from "@angular/core";
 
@@ -44,7 +44,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         }
     }
 
-    load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<T[]> {
+    load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
         const filter = options?.filter ?? {};
         const search = filter.search;
         delete filter.search;
@@ -79,7 +79,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         // const src = this.getData(page, query);
         const data$ = this.dataService.get<T[]>(this.pathname, query);
-        return firstValueFrom(data$).then((res) => res.data);
+        return firstValueFrom(data$).then((res:ApiGetResult<T[]>) => res as ReadResult<T>);
     }
 
     override create(value: Partial<T>) {

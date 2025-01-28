@@ -99,14 +99,13 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     }
 
     //PAGINATION
-    if (page?.pageSize) {
-        page.length = result.length; //TOTAL
-        const from = page.pageIndex * page.pageSize;
-        const to = (page.pageIndex + 1) * page.pageSize;
-        result = result.filter((_, i) => i >= from && i < to);
-    }
+    const pageSize = page?.pageSize ?? result.length;
+    const pageIndex = page?.pageIndex ?? 0;
+    // p["length"] = result.length; //TOTAL
+    const from = pageIndex * pageSize;
+    const to = (pageIndex + 1) * pageSize;
 
-    return result;
+    return result.filter((_, i) => i >= from && i < to);
 }
 
 export function getByPath(obj: any, path: string) {

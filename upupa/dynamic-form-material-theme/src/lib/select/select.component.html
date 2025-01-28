@@ -72,11 +72,10 @@
                 <mat-option disabled> Loading ... </mat-option>
             }
 
-            <mat-option ></mat-option>
-
+            <mat-option></mat-option>
 
             @for (item of items(); track $index) {
-                <mat-option [value]="item.value" [disabled]="item.disabled">
+                <mat-option [value]="item.value" [disabled]="item.state === 'disabled'">
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
@@ -84,8 +83,6 @@
                     <mat-option disabled> No items found </mat-option>
                 }
             }
-
-
 
             @for (item of actions; track i; let i = $index) {
                 <mat-option (click)="onAction($event, item)">
@@ -98,9 +95,9 @@
         </mat-select>
     }
 
-    <div matSuffix style="display: flex; align-items: center;">
+    <div matSuffix style="display: flex; align-items: center">
         @if (loading()) {
-            <mat-progress-spinner style="margin: 0.5rem;" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
+            <mat-progress-spinner style="margin: 0.5rem" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {
             <button type="button" style="margin-inline-end: -1rem" mat-icon-button (click)="clearValue($event)">

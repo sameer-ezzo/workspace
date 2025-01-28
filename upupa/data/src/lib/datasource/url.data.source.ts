@@ -1,4 +1,4 @@
-import { DataLoaderOptions } from "./model";
+import { DataLoaderOptions, ReadResult } from "./model";
 import { HttpClient } from "@angular/common/http";
 import { ClientDataSource } from "./client.data.source";
 import { firstValueFrom } from "rxjs";
@@ -11,9 +11,9 @@ export class UrlDataSource<T = any> extends ClientDataSource<T> {
         super([]);
     }
 
-    override async load(options: DataLoaderOptions<T>): Promise<T[]> {
+    override async load(options: DataLoaderOptions<T>): Promise<ReadResult<T>> {
         const data = await firstValueFrom(this.http.get<T[]>(this.url));
         this.all.set(data);
-        return data;
+        return { data, total: data.length, query: [] };
     }
 }

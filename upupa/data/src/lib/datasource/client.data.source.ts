@@ -1,4 +1,4 @@
-import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term } from "./model";
+import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term, ReadResult } from "./model";
 import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
@@ -39,8 +39,9 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
         this.all.set(all);
     }
 
-    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<T[]> {
-        return filter(this.all(), options.filter, options.sort, options.page, options.terms);
+    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
+        const data = filter(this.all(), options.filter, options.sort, options.page, options.terms);
+        return { data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
     }
 
     override create(value: Partial<T>) {

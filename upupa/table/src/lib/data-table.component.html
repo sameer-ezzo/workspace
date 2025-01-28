@@ -144,7 +144,7 @@
 <div class="mat-paginator">
     @let page = adapter().page();
     @let length = page.length ?? 0;
-    @let pageSize = page.pageSize ?? 25;
+    @let pageSize = page.pageSize ?? adapter().entities().length;
     @let pageIndex = page.pageIndex ?? 0;
     @if (showPaginator() && length > 10) {
         <mat-paginator

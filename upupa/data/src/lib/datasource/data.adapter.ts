@@ -1,9 +1,10 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource } from "./model";
+import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
 import { computed } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
+import { Record } from "twilio/lib/twiml/VoiceResponse";
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
 export type DataAdapterDescriptor<TData = any> = {
@@ -45,7 +46,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         options?: DataLoaderOptions<T>,
     ) {
         super();
-        
+
         const _keyProperties = Array.isArray(keyProperty) ? keyProperty : keyProperty ? [keyProperty] : [];
         const _valueProperties = Array.isArray(valueProperty) ? valueProperty : valueProperty ? [valueProperty] : [];
         const _displayProperties = Array.isArray(displayProperty) ? displayProperty : displayProperty ? [displayProperty] : [];
@@ -66,9 +67,12 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const _options = { ...{ page: this.page(), filter: this.filter(), sort: this.sort(), terms: this.terms() }, ...options };
         try {
             patchState(this, { loading: true });
-            const items = await this.dataSource.load(_options);
-            patchState(this, { ..._options, loading: false });
-            patchState(this, setAllEntities(items.map((x) => this.normalize(x))));
+            const readResult: ReadResult = await this.dataSource.load(_options);
+            const p = _options.page ?? this.page() ?? { pageIndex: 0 };
+            const page = { ...p, length: readResult.total, previousPageIndex: p.pageIndex > 0 ? p.pageIndex - 1 : undefined } as PageDescriptor;
+
+            patchState(this, { ..._options, page, loading: false });
+            patchState(this, setAllEntities(readResult.data.map((x) => this.normalize(x))));
             return this.entities();
         } catch (error) {
             patchState(this, { error, loading: false });
@@ -154,6 +158,8 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 value: null,
                 image: null,
                 item: null,
+                state: null,
+                error: `Item ${item} Not Found`,
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
@@ -170,7 +176,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         else if (valueProps.length === 1) value = valueProps[0] ? item[valueProps[0]] : item; //to handle keyProperty = null (take the item itself as a key)
 
         const image = this.extract(item, this.imageProperty, undefined);
-        return { id, key, display, value, image, item: item };
+        return { id, key, display, value, image, item: item, state: "loaded", error: null };
     }
 
     extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {

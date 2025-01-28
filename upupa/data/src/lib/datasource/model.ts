@@ -24,20 +24,27 @@ export declare type DataLoaderOptions<T> = {
  */
 export type Key<T> = keyof T | (keyof T)[];
 export type NormalizedItem<T = any> = {
-    id: string
+    id: string;
     key: any;
     item: T;
     display: Partial<T>;
     value: Partial<T>;
     image?: Partial<T>;
     defaultSearchTerm?: string;
-    disabled?: boolean;
+    state: "loading" | "loaded" | "disabled" | "error";
+    error: string | null;
 };
 
 export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "date" | "boolean" };
 
+export type ReadResult<T = any> = {
+    data: T[];
+    total: number;
+    query: any[];
+};
+
 export abstract class TableDataSource<T = any, WriteResult = any> {
-    abstract load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<T[]>;
+    abstract load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>>;
     abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Promise<T[]>;
     abstract create(value: Partial<T>): Promise<WriteResult>;
     abstract put(item: T, value: Partial<T>): Promise<WriteResult>;
