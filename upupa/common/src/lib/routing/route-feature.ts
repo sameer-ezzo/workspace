@@ -76,7 +76,11 @@ function isDynamicComponentRoute(route: Partial<NamedRoute | DynamicComponentRou
 }
 
 export function withAction(
-    action: Omit<ActionDescriptor, "name"> & { action: string; name?: string; group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string } },
+    action: Omit<ActionDescriptor, "name"> & {
+        action: string;
+        name?: string;
+        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string; symbol?: string };
+    },
 ): RouteFeature {
     return {
         name: "withAction",

@@ -76,6 +76,7 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 name: route.data["action"].action ?? path,
                 link: path,
                 icon: route.data["action"].icon,
+                symbol: route.data["action"].symbol,
                 text: route.data["action"].text,
             });
             // check if group is already in sidebar
@@ -87,6 +88,7 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 name: route.data["action"].action ?? path,
                 link: path,
                 icon: route.data["action"].icon,
+                symbol: route.data["action"].symbol,
                 text: route.data["action"].text,
             });
         }

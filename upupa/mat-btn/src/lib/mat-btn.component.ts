@@ -33,7 +33,7 @@ export class MatBtnComponent {
 
     icon = computed(() => {
         const descriptor = this.buttonDescriptor();
-        let icon = descriptor.icon;
+        let icon = descriptor['icon'] ?? descriptor['symbol'];
         if (descriptor.variant === "icon" && !icon) icon = "circle";
         return icon;
     });

@@ -13,7 +13,7 @@
         @if (sideBarItems() | async; as sItems) {
             <mat-drawer #drawer class="sidenav" [mode]="sideBarMode()" [opened]="isSidebarOpened()">
                 @for (g of sItems; track i; let i = $index) {
-                    @if (g["items"]?.length > 0) {
+                    @if (g["items"]?.length) {
                         <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g, i)" displayMode="flat">
                             <mat-expansion-panel #panel [expanded]="hasActiveChild(panel) || g['expanded']" class="mat-elevation-z0">
                                 @if (g.text) {
@@ -29,6 +29,7 @@
                                 }
                             </mat-expansion-panel>
                         </mat-accordion>
+                        <mat-divider style="opacity: 0.3"></mat-divider>
                     } @else {
                         <ng-container *ngTemplateOutlet="linkTemplate; context: { item: g }"></ng-container>
                     }
@@ -57,7 +58,9 @@
 </ng-template>
 
 <ng-template #iconTemplate let-item="item">
-    @if (item.icon) {
+    @if (item.symbol) {
+        <mat-icon class="material-symbols-outlined">{{ item.symbol }}</mat-icon>
+    } @else if (item.icon) {
         <mat-icon>{{ item.icon }}</mat-icon>
     } @else if (item.icon_url) {
         <img [src]="item.icon_url" width="40px" height="40px" />
