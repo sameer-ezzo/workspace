@@ -79,7 +79,7 @@ export function withAction(
     action: Omit<ActionDescriptor, "name"> & {
         action: string;
         name?: string;
-        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string; symbol?: string };
+        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string; };
     },
 ): RouteFeature {
     return {

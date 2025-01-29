@@ -58,9 +58,7 @@
 </ng-template>
 
 <ng-template #iconTemplate let-item="item">
-    @if (item.symbol) {
-        <mat-icon class="material-symbols-outlined">{{ item.symbol }}</mat-icon>
-    } @else if (item.icon) {
+    @if (item.icon) {
         <mat-icon>{{ item.icon }}</mat-icon>
     } @else if (item.icon_url) {
         <img [src]="item.icon_url" width="40px" height="40px" />
