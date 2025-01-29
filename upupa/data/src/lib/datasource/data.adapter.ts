@@ -85,6 +85,12 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         return this.load();
     }
 
+    updateState(item: T, state: "loading" | "loaded" | "error", error?: string) {
+        const n = this.normalize(item);
+        if (!this.entities().find((x) => x.id === n.id)) return;
+        patchState(this, updateEntity({ id: n.id, changes: { ...n, state, error } }));
+    }
+
     async create(value: Partial<T>, opt: { refresh: boolean } = { refresh: this.autoRefresh() }) {
         const result = await this.dataSource.create(value);
 

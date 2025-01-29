@@ -86,7 +86,7 @@
                                 [class]="template['class']"
                             ></portal>
                         } @empty {
-                            <cell-template [value]="element.item | jpointer: column.key" [item]="element" [element]="element.item" [column]="column"></cell-template>
+                            <cell-template [value]="element.item | jpointer: column.key" [item]="element" [element]="element.item" [column]="column" [dataIndex]="dataIndex"></cell-template>
                         }
                     </div>
                 </td>

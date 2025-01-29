@@ -35,6 +35,7 @@ export class DefaultTableCellTemplate<TValue = any, TRow = any> implements ITabl
     element = input.required<NormalizedItem<TRow>>();
     item = input.required<TRow>();
     column = input<KeyValue<string, ColumnDescriptor>>();
+    dataIndex = input.required<number>();
 }
 
 export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href?: (x: T) => string): DynamicComponent {
