@@ -47,7 +47,6 @@ export type ActionDescriptorAppearance = {
 
     icon?: string;
     icon_url?: string;
-    symbol?: string;
 
     color?: "primary" | "accent" | "warn" | string;
     tooltip?: string;
