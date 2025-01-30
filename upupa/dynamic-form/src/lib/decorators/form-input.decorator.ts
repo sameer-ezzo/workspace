@@ -21,6 +21,7 @@ function _mergeMetadata(base: DynamicFormOptionsMetaData, override: DynamicFormO
         locales: override.locales ?? base.locales,
         conditions: override.conditions ?? base.conditions,
         name: override.name ?? base.name,
+        class: override.class ?? base.class,
         preventDirtyUnload: override.preventDirtyUnload ?? base.preventDirtyUnload,
         recaptcha: override.recaptcha ?? base.recaptcha,
         theme: override.theme ?? base.theme,
@@ -144,6 +145,7 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
     const inputs = {
         conditions: formMetadata.conditions,
         name: formMetadata.name ?? viewModel.name,
+        class: formMetadata.class ?? viewModel.name,
         preventDirtyUnload: formMetadata.preventDirtyUnload,
         recaptcha: formMetadata.recaptcha,
         theme: formMetadata.theme,

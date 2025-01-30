@@ -6,6 +6,8 @@
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
     (focusedItem)="onFocusedItemChanged($event)"
+    [expandable]="expandable()"
+    [expandableComponent]="expandableComponent()"
 >
     @if (tableHeaderComponent(); as template) {
         <ng-container class="table-header">

@@ -133,6 +133,7 @@ export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
     dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
+    expandableComponent?: DynamicComponent;
 };
 export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
     return {
@@ -143,6 +144,8 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
                 viewModel: config.viewModel,
                 dataAdapter: config.dataAdapter,
                 tableHeaderComponent: config.tableHeaderComponent,
+                expandableComponent: config.expandableComponent,
+                expandable: "single",
             },
         }),
     };

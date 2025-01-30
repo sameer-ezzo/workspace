@@ -107,27 +107,34 @@
             cdkDragDisabled="true"
             [cdkDragData]="row"
             class="{{ rowClass()(row) }}"
-            [class.focused]="focusedItem === row"
+            [class.focused]="focusedItem === row.item"
             [class.selected]="selectionModel.isSelected(row.key)"
-            (click)="onClick(row)"
+            (click)="onClick(row); toggleExpand(row,i)"
             (touch)="onClick(row)"
             (long-press)="onLongPress(row)"
         ></tr>
 
         <tr mat-row *matRowDef="let row; columns: _columns; when: isGroup" style="background: #ccc"></tr>
 
-        @if (expandable() !== "none" && expandableTemplate()) {
+        @let _detailsTemplate = expandableTemplate();
+        @let _detailsComponent = expandableComponent();
+        @if (expandable() !== "none" && (_detailsTemplate || _detailsComponent)) {
             <ng-container matColumnDef="expandedDetail" [sticky]="columns()['actions']?.sticky === 'start'">
                 <td
                     mat-cell
                     *matCellDef="let element"
                     [attr.colspan]="_columns.length"
-                    class="example-element-detail"
+                    class="element-detail"
                     [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'"
                 >
-                    <ng-container [ngTemplateOutlet]="expandableTemplate()" [ngTemplateOutletContext]="{ element }"></ng-container>
+                    @if (_detailsTemplate) {
+                        <ng-container [ngTemplateOutlet]="_detailsTemplate" [ngTemplateOutletContext]="{ element }"></ng-container>
+                    } @else {
+                        <portal [template]="_detailsComponent"></portal>
+                    }
                 </td>
             </ng-container>
+
             <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row" [class.expanded]="expanded[row.key]?.()"></tr>
         }
     </table>

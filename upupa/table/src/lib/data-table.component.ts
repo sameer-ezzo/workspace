@@ -38,6 +38,7 @@ import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatIconModule } from "@angular/material/icon";
+import { DynamicComponent } from "@upupa/common";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
@@ -110,6 +111,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     expanded: { [key: string]: WritableSignal<boolean> } = {};
     expandable = input<"single" | "multi" | "none">("none");
     expandableTemplate = input(null);
+    expandableComponent = input<DynamicComponent>(null);
     toggleExpand(row, index) {
         if (!this.expanded[row.key]) this.expanded[row.key] = signal(false);
         const v = this.expanded[row.key]?.();
@@ -315,4 +317,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     trackByFn(index, item) {
         return item.key;
     }
+}
+function DynamicComponent(arg0: null) {
+    throw new Error("Function not implemented.");
 }

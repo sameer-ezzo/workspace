@@ -111,9 +111,6 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
             deps: [DynamicFormComponent],
         },
     ],
-    host: {
-        "[class]": "'dynamic-form ' + class()",
-    },
     standalone: true,
     imports: [
         OrderedKeyValuePipe,

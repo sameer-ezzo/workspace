@@ -8,7 +8,6 @@ import { Class } from "@noah-ark/common";
 import { DataTableComponent } from "../data-table.component";
 import { reflectTableViewModel } from "../decorator";
 
-
 @Component({
     selector: "data-list",
     standalone: true,
@@ -36,6 +35,13 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     });
 
     viewModel = input.required<Class>();
+    expandable = input<"single" | "multi" | "none">("single");
+    expandableComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
+        transform: (c) => {
+            if (c instanceof Type) return { component: c };
+            return c;
+        },
+    });
 
     dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
         transform: (adapterOrDescriptor) => {
