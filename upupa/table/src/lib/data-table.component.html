@@ -18,13 +18,13 @@
         [matSortActive]="adapter().sort()?.active"
         (matSortChange)="onSortData($event)"
         [trackBy]="trackByFn"
+        (contentChanged)="contentChanged.emit()"
     >
         >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
                 @if (maxAllowed() !== 1 && selectedNormalized(); as sns) {
                     <mat-checkbox
-                        
                         (change)="toggleSelectAll()"
                         [checked]="sns.length >= adapter().normalized()?.length"
                         [indeterminate]="sns.length > 0 && sns.length !== adapter().normalized()?.length"
@@ -86,7 +86,13 @@
                                 [class]="template['class']"
                             ></portal>
                         } @empty {
-                            <cell-template [value]="element.item | jpointer: column.key" [item]="element" [element]="element.item" [column]="column" [dataIndex]="dataIndex"></cell-template>
+                            <cell-template
+                                [value]="element.item | jpointer: column.key"
+                                [item]="element"
+                                [element]="element.item"
+                                [column]="column"
+                                [dataIndex]="dataIndex"
+                            ></cell-template>
                         }
                     </div>
                 </td>

@@ -94,7 +94,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     breakpointObserver = inject(BreakpointObserver);
     stickyHeader = input(false);
     override maxAllowed = input<number, number>(Number.MAX_SAFE_INTEGER, { transform: (v) => Number.MAX_SAFE_INTEGER });
-
+    contentChanged = output<void>();
     name = input<string, string>(`table_${Date.now()}`, {
         alias: "tableName",
         transform: (v) => (v ? v : `table_${Date.now()}`),
