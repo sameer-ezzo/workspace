@@ -3,6 +3,7 @@ import { Field, FormScheme } from './types';
 
 export type DynamicFormInputs<T = any> = {
     name?: string;
+    class?: string;
     preventDirtyUnload?: boolean;
     recaptcha?: string;
     theme?: string;

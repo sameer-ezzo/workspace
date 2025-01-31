@@ -11,9 +11,7 @@ export function FormViewModel(
         id?: string
     }) {
     // fill metadata with general form info (name)
-    return (target) => {
-        formScheme(attributes as any)
-    }
+    return formScheme(attributes as any)
 }
 
 // type FormViewModelDefinition = { // almost like form scheme
