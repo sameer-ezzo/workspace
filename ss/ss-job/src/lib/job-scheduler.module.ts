@@ -9,18 +9,18 @@ const defaultConfig = new JobSchedulerConfig();
 export class JobSchedulerModule {
     static register<T extends JobProcessor>(
         config: JobSchedulerConfig = defaultConfig,
-        processors: Record<string, Provider<T>[]> = {} //Those can be registered later using scheduler.addProcessor method
+        processors: Record<string, Provider<T>[]> = {}, //Those can be registered later using scheduler.addProcessor method
     ): DynamicModule {
-        const _config = { ...defaultConfig, ...config }
-        const keys = Object.values(processors ?? {})
+        const _config = { ...defaultConfig, ...config };
+        const keys = Object.values(processors ?? {});
         const _processors = keys.length ? keys.reduce((a, b) => a.concat(b)) : [];
-        const _jobs = Object.keys(processors).map(key => {
+        const _jobs = Object.keys(processors).map((key) => {
             return {
                 provide: key,
                 useFactory: (...x) => x,
-                inject: processors[key].map(p => 'provide' in p ? p.provide : p)
-            } as Provider
-        })
+                inject: processors[key].map((p) => ("provide" in p ? p.provide : p)),
+            } as Provider;
+        });
         return {
             global: true,
             module: JobSchedulerModule,
@@ -29,14 +29,13 @@ export class JobSchedulerModule {
                 { provide: JOB_SCHEDULAR_CONFIG, useValue: _config },
                 {
                     provide: JobScheduler,
-                    useFactory: (redis: RedisClient, module: ModuleRef) => new JobScheduler(_config, redis, module),
-                    inject: [_config.redis, ModuleRef]
+                    useFactory: (config: JobSchedulerConfig, redis: RedisClient, module: ModuleRef) => new JobScheduler(config, redis, module),
+                    inject: [JOB_SCHEDULAR_CONFIG, RedisClient, ModuleRef],
                 },
                 ..._processors,
-                ..._jobs
+                ..._jobs,
             ],
-            exports: [JobScheduler, ..._processors]
-        }
-
+            exports: [JobScheduler, ..._processors],
+        };
     }
 }
