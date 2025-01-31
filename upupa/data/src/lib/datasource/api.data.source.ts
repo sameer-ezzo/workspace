@@ -51,25 +51,17 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         const sort = options?.sort;
         const page = options?.page ?? { pageIndex: 0, pageSize: 25 };
-        const terms = options?.terms ?? [];
+        const terms = (options?.terms ?? []).slice();
 
         const query: any = { ...this.queryParams };
-        if (search) {
-            const termsFields = terms.slice();
-            if (termsFields.length) {
-                const k = termsFields.shift();
-                const v = this._evalTerm(k, search);
-                if (v) query[k.field] = v;
-                if (termsFields.length)
-                    query[k.field] +=
-                        "|" +
-                        termsFields
-                            .map((f) => [String(f.field), this._evalTerm(f, search)])
-                            .filter((f) => f[1] && `${f[1]}`.length > 0)
-                            .map((f) => `${f[0]}=${f[1]}`)
-                            .join("|");
-            }
+        if (search && terms.length) {
+            const r = terms.map((f) => [String(f.field), this._evalTerm(f, search)]);
+            const t = r.filter((f) => f[1] && `${f[1]}`.length > 0) as [string, string][];
+            const [k, v] = t.shift();
+            const rest = t.map((f) => `${f[0]}=${f[1]}`).join("|");
+            query[k] = v + (t.length === 0 ? "" : `|` + rest);
         }
+
         Object.keys(filter).forEach((k) => (query[k] = filter[k]));
 
         query.page = page && page.pageIndex ? Math.max(0, page.pageIndex) + 1 : 1;
@@ -79,7 +71,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         // const src = this.getData(page, query);
         const data$ = this.dataService.get<T[]>(this.pathname, query);
-        return firstValueFrom(data$).then((res:ApiGetResult<T[]>) => res as ReadResult<T>);
+        return firstValueFrom(data$).then((res: ApiGetResult<T[]>) => res as ReadResult<T>);
     }
 
     override create(value: Partial<T>) {
