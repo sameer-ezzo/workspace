@@ -154,7 +154,7 @@ function extractDataMigrationProviders(options: DataOptions[]) {
         return {
             provide: getDataMigratorToken(dbName),
             useFactory: (dataService: DataService) => {
-                return new MigrationsService(dataService, migrations);
+                return MigrationsService.create(dataService, migrations);
             },
             inject: [getDataServiceToken(dbName)],
         } as FactoryProvider;

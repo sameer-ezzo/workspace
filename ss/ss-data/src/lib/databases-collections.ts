@@ -7,8 +7,9 @@ export interface IDbMigration {
   name: string;
   collectionName: string;
   schema: Schema;
-  up(dataService: DataService, ctx: { session: any }): Promise<void>;
-  down(dataService: DataService, ctx: { session: any }): Promise<void>;
+  documentVersion?: number;
+  up(dataService: DataService, ctx?: { session: any }): Promise<void>;
+  down(dataService: DataService, ctx?: { session: any }): Promise<void>;
 }
 
 export type DatabaseInfo = {

@@ -3,7 +3,7 @@ import { Model, Document } from "mongoose";
 
 import mongooseUniqueValidator from "mongoose-unique-validator";
 import { PathInfo } from "@noah-ark/path-matcher";
-import { HttpException, HttpStatus, Injectable, OnApplicationShutdown, OnModuleInit } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable, OnApplicationShutdown, OnModuleInit } from "@nestjs/common";
 import { JsonPointer } from "@noah-ark/json-patch";
 
 import { Patch } from "./model";
@@ -24,7 +24,6 @@ export type WriteResult<T> = {
 import toMongodb from "jsonpatch-to-mongodb";
 import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
-import { ObjectId } from "mongodb";
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
     autoIndex: true,
@@ -43,7 +42,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         public readonly name: string,
         public readonly connection: Connection,
         public readonly options: DbConnectionOptions,
-        protected readonly broker: Broker,
+        protected readonly broker: Broker
     ) {
         this.queryParser = new QueryParser();
         this.prefix = this.options.prefix ?? process.env.DBPREFIX ?? "";
