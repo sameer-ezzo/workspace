@@ -33,7 +33,8 @@
             @case ("expansion-panel") {
                 <mat-expansion-panel
                     [attr.name]="fieldName"
-                    class="{{ input }}-input {{ fieldName }}-container field"
+                    class="{{ input }}-input {{ fieldName }}-container field {{field.class}}"
+
                     [class.hidden]="fieldRef.hidden() === true"
                     [expanded]="fieldRef.inputs().expanded"
                 >
@@ -44,7 +45,7 @@
                 </mat-expansion-panel>
             }
             @default {
-                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field" [class.hidden]="fieldRef.hidden() === true">
+                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field {{field.class}}" [class.hidden]="fieldRef.hidden() === true">
                     <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
                 </div>
             }

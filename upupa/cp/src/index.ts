@@ -19,6 +19,7 @@ export * from "./lib/helpers";
 export * from "./lib/form-view-model/form-view-model.component";
 export * from "./lib/buttons/edit-btn.component";
 export * from "./lib/buttons/create-btn.component";
+export * from "./lib/wizard/wizard-layout.component";
 
 export * from "./lib/adapter-submit.fun";
 export * from "./lib/friendly-error";
