@@ -24,6 +24,8 @@ export type WriteResult<T> = {
 import toMongodb from "jsonpatch-to-mongodb";
 import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
+import { MigrationsService } from "./migrations.svr";
+import { IDbMigration } from "./databases-collections";
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
     autoIndex: true,
@@ -36,16 +38,24 @@ export const defaultMongoDbConnectionOptions: ConnectOptions = {
 mongoose.pluralize(undefined);
 @Injectable()
 export class DataService implements OnModuleInit, OnApplicationShutdown {
+    static async create(dbName: string, connection: mongoose.Connection, connectionOptions: DbConnectionOptions, broker: Broker, migrations: IDbMigration[]) {
+        logger.info(`Creating DataService for ${dbName}`);
+        const service = new DataService(dbName, connection, connectionOptions, broker);
+        await MigrationsService.migrate(service, migrations);
+        logger.info(`DataService for ${dbName} created successfully!`);
+        return service;
+    }
     queryParser: QueryParser;
     protected prefix = "";
     constructor(
         public readonly name: string,
         public readonly connection: Connection,
         public readonly options: DbConnectionOptions,
-        protected readonly broker: Broker
+        protected readonly broker: Broker,
     ) {
         this.queryParser = new QueryParser();
         this.prefix = this.options.prefix ?? process.env.DBPREFIX ?? "";
+        logger.info(`DataService created for ${name} with prefix: ${this.prefix}`);
     }
 
     async getModel<T extends Document = any>(name: string, prefix?: string): Promise<Model<T> | undefined> {

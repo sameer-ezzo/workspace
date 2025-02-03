@@ -1,7 +1,7 @@
 import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
 import { UsersController } from "./users.controller";
 import { CommonModule, logger } from "@ss/common";
-import { DataModule, DataService } from "@ss/data";
+import { DataService } from "@ss/data";
 import { RulesModule } from "@ss/rules";
 import { AuthModule, AuthService } from "@ss/auth";
 import { UsersOptions } from "./types";
@@ -40,7 +40,7 @@ export class UsersModule implements OnModuleInit {
         return {
             global: true,
             module: UsersModule,
-            imports: [AuthModule, RulesModule, DataModule, CommonModule, EventEmitterModule.forRoot({ wildcard: true })],
+            imports: [EventEmitterModule.forRoot({ wildcard: true })],
             providers: [...providers, { provide: "USERS_OPTIONS", useValue: options }],
             controllers: [UsersController],
         };

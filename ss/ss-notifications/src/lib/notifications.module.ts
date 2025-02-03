@@ -1,11 +1,10 @@
 import { DynamicModule, OnModuleInit, Provider } from "@nestjs/common";
-import { DataModule, DataService, getDataServiceToken } from "@ss/data";
+import { DataService, getDataServiceToken } from "@ss/data";
 import { ModuleRef } from "@nestjs/core";
 import { NotificationService } from "./notification.svr";
 import { NotificationController } from "./notification.controller";
 import { NotificationChannel } from "./notification-channel";
 import { NotificationOptions } from "./notification";
-import { CommonModule } from "@ss/common";
 import { Schema } from "mongoose";
 import { MongooseModule } from "@nestjs/mongoose";
 
@@ -72,8 +71,6 @@ export class NotificationsModule implements OnModuleInit {
             global: true,
             module: NotificationsModule,
             imports: [
-                CommonModule,
-                DataModule,
                 MongooseModule.forFeature(
                     [
                         {

@@ -16,22 +16,14 @@ export class MigrationError extends Error {
 }
 @Injectable()
 export class MigrationsService {
-    static async create(data: DataService, migrations: IDbMigration[]) {
-        const service = new MigrationsService(data, migrations);
-        await service.migrate(migrations);
-        return service;
-    }
-    constructor(
-        private readonly data: DataService,
-        private readonly migrations: IDbMigration[],
-    ) {}
-
-    private async migrate(migrations: IDbMigration[]) {
+    static async migrate(data: DataService, migrations: IDbMigration[]) {
+        logger.info("ENV VARS: " + process.env["NODE_ENV"]);
+        const databaseName = data.name;
         const dbIsReady = await new Promise((resolve) => {
-            if (this.data.connection.readyState === 1) {
+            if (data.connection.readyState === 1) {
                 resolve(true);
             } else {
-                this.data.connection.on("connected", () => {
+                data.connection.on("connected", () => {
                     resolve(true);
                 });
             }
@@ -42,54 +34,47 @@ export class MigrationsService {
             logger.error(reason);
             throw new MigrationError(reason);
         };
+        migrations ??= [];
 
-        try {
-            let model = await this.data.getModel("migration");
-            if (!model) model = await this.data.addModel("migration", migrationSchema);
+        let model = await data.getModel("migration");
+        if (!model) model = await data.addModel("migration", migrationSchema);
 
-            const dbMigrations = await model.find({}).lean();
-            if (dbMigrations.length > migrations.length) throwMismatchError("Migrations in db are more than the migrations in code");
-            if (dbMigrations.length === migrations.length) return;
+        const dbMigrations = await model.find({}).lean();
+        logger.info(`Migrating: ${data.name} - ${migrations.length} migrations to run, ${dbMigrations.length} migrations in db`);
+        if (dbMigrations.length > migrations.length) throwMismatchError("Migrations in db are more than the migrations in code");
+        if (dbMigrations.length === migrations.length) return;
 
-            const databaseName = this.data.connection.db.databaseName;
-            for (const migration of migrations) {
-                await delay(200);
-                // wait till db initialized (indexes recreated,...)
-                if (dbMigrations.find((m) => m.name === migration.name) || !("up" in migration) || typeof migration.up !== "function") continue;
+        for (const migration of migrations) {
+            if (dbMigrations.find((m) => m.name === migration.name) || !("up" in migration) || typeof migration.up !== "function") continue;
+            logger.info(`Migrating: ${migration.name} on ${databaseName}`);
+            // const session = await data.connection.startSession();
+            // session.startTransaction();
+            try {
+                await migration.up(data);
+                const res = await model.create([
+                    {
+                        _id: data.generateId(),
+                        name: migration.name,
+                        date: new Date(),
+                        collectionName: migration.collectionName,
+                        documentVersion: migration.documentVersion ?? 1,
+                        lockVersion: 0,
+                    } as unknown as MigrationModel,
+                ]);
 
-                const session = await this.data.connection.startSession();
-                try {
-                    session.startTransaction();
-                    logger.info(`Migrating: ${migration.name} on ${databaseName}`);
-                    await migration.up(this.data, { session });
-                    const res = await model.create(
-                        [
-                            {
-                                _id: this.data.generateId(),
-                                name: migration.name,
-                                date: new Date(),
-                                collectionName: migration.collectionName,
-                                documentVersion: migration.documentVersion ?? 1,
-                                lockVersion: 0,
-                            } as unknown as MigrationModel,
-                        ],
-                        { session },
-                    );
-                    dbMigrations.push(res[0]._doc);
-                    await session.commitTransaction();
-                    await session.endSession();
-                } catch (error) {
-                    await session.abortTransaction();
-                    await session.endSession();
-
-                    const err = `Migration Error: ${migration.name} on ${databaseName}`;
-                    logger.error(err, error);
-
-                    // throw new MigrationError(`Error on migration: ${migrations[i].name}`);
-                }
+                // await session.commitTransaction();
+                dbMigrations.push(res[0]._doc);
+                // await session.endSession();
+                // await delay(250);
+            } catch (error) {
+                // await session.abortTransaction();
+                // await session.endSession();
+                const msg = `Migration on ${databaseName} Error`;
+                logger.error(msg, error);
+                throw new MigrationError(msg);
             }
-        } catch (error) {
-            logger.error(`Error on migration: ${this.data.name}`, error);
         }
+
+        logger.info(`Migrated: ${data.name}`);
     }
 }
