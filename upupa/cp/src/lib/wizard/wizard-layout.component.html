@@ -1,0 +1,20 @@
+<mat-stepper [linear]="isLinear" #stepper [orientation]="_tight() ? 'vertical' : orientation()">
+    @for (step of steps(); let i = $index; track step) {
+        <mat-step [stepControl]="step.control" [label]="step.label" [state]="step.state" [editable]="step.editable ?? true" [optional]="step.optional">
+            <ng-template matStepContent>
+                <portal [template]="step.template" (attached)="onAttach($event, i)" (detached)="onDetach(i)"></portal>
+                <div style="display: flex; justify-content: end; gap: 1rem">
+                    @if (stepper.selectedIndex > 0) {
+                        <button mat-stroked-button matStepperPrevious>Back</button>
+                    }
+                    @if (stepper.selectedIndex < steps().length - 1) {
+                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); stepper.next()">Next</button>
+                    }
+                    @else {
+                        <button mat-flat-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); onDone()" color="primary">Done</button>
+                    }
+                </div>
+            </ng-template>
+        </mat-step>
+    }
+</mat-stepper>

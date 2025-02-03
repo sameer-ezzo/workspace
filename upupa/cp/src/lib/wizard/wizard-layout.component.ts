@@ -1,0 +1,123 @@
+import { Component, ComponentRef, computed, ElementRef, input, model, OnChanges, output, SimpleChanges, viewChild } from "@angular/core";
+import { AbstractControl } from "@angular/forms";
+import { MatStepperModule } from "@angular/material/stepper";
+import { DynamicComponent, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { CommonModule } from "@angular/common";
+import { MatButtonModule } from "@angular/material/button";
+import { Route } from "@angular/router";
+import { STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation } from "@angular/cdk/stepper";
+import { Observable, switchMap } from "rxjs";
+import { toObservable, toSignal } from "@angular/core/rxjs-interop";
+
+export function observeInlineSize(el: HTMLElement): Observable<number> {
+    return new Observable<number>((observer) => {
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentBoxSize) {
+                    const contentBoxSize = entry.contentBoxSize[0];
+                    observer.next(contentBoxSize.inlineSize);
+                }
+            }
+        });
+        resizeObserver.observe(el);
+        return () => resizeObserver.unobserve(el);
+    });
+}
+
+export type WizardStep = {
+    template: DynamicComponent;
+    label?: string;
+    control?: AbstractControl;
+    state?: string;
+    editable?: boolean;
+    optional?: boolean;
+};
+
+@Component({
+    selector: "wizard-layout",
+    standalone: true,
+    templateUrl: "./wizard-layout.component.html",
+    imports: [MatStepperModule, PortalComponent, CommonModule, MatButtonModule],
+    providers: [
+        {
+            provide: STEPPER_GLOBAL_OPTIONS,
+            useValue: {
+                displayDefaultIndicatorType: false,
+                showError: true,
+            } as StepperOptions,
+        },
+    ],
+})
+export class WizardLayoutComponent implements OnChanges {
+    stepper = viewChild("stepper", { read: ElementRef });
+
+    steps = input.required<WizardStep[]>();
+
+    isLinear = input(true, { transform: (v) => v ?? true });
+    orientation = input<StepperOrientation, StepperOrientation>("horizontal", { transform: (v) => v ?? "horizontal" }); // preferred orientation
+    tightThreshold = input<number, number>(600, { transform: (v) => v ?? 600 }); // automatically switch to vertical layout when width is less than this value
+
+    done = output();
+    next = output();
+    prev = output();
+
+    _componentRefs: ComponentRef<unknown>[] = []; // instance of each step component
+
+    _width$ = toObservable(this.stepper).pipe(switchMap((stepper) => observeInlineSize(stepper.nativeElement)));
+    _width = toSignal(this._width$);
+    _tight = computed(() => (this.tightThreshold() == 0 ? false : this._width() <= this.tightThreshold()));
+
+    onAttach({ componentRef }: { componentRef: ComponentRef<unknown> }, index: number) {
+        this._componentRefs[index] = componentRef;
+    }
+
+    onDetach(index: number) {
+        this._componentRefs[index] = undefined;
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes["steps"]) {
+            this._componentRefs = this.steps().map(() => undefined);
+        }
+    }
+
+    onNext() {
+        this.next.emit();
+    }
+
+    onPrevious() {
+        this.prev.emit();
+    }
+
+    onDone() {
+        this.done.emit();
+    }
+
+    getComponentRef(step: WizardStep);
+    getComponentRef(index: number);
+    getComponentRef(index: number | WizardStep) {
+        const i = typeof index === "number" ? index : this.steps().indexOf(index);
+        return this._componentRefs[i];
+    }
+}
+
+export function provideWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean }): Route {
+    return provideRoute(config, withWizardLayout(config));
+}
+
+export function withWizardLayout(config: { steps: WizardStep[]; isLinear?: boolean }): RouteFeature {
+    return {
+        name: "wizard-layout",
+        modify: () => ({
+            component: WizardLayoutComponent,
+            data: {
+                steps: config.steps,
+                isLinear: config.isLinear ?? true,
+            },
+        }),
+    };
+}
+
+// export function withWizardStep(): WizardStep {
+//     return { template: { component: DynamicComponent } };
+// }
