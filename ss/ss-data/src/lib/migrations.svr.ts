@@ -17,7 +17,6 @@ export class MigrationError extends Error {
 @Injectable()
 export class MigrationsService {
     static async migrate(data: DataService, migrations: IDbMigration[]) {
-        logger.info("ENV VARS: " + process.env["NODE_ENV"]);
         const databaseName = data.name;
         const dbIsReady = await new Promise((resolve) => {
             if (data.connection.readyState === 1) {
