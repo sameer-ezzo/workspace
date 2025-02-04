@@ -1,7 +1,6 @@
-import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
-import { FunctionalPermission, Rule, unreachable } from "@noah-ark/common";
-import { CommonModule } from "@ss/common";
-import { DataModule, DataService } from "@ss/data";
+import { DynamicModule, Inject, OnModuleInit, Provider } from "@nestjs/common";
+import { Rule, unreachable } from "@noah-ark/common";
+import { DataService } from "@ss/data";
 import { RulesService } from "./rules.svr";
 import { RulesImporterService } from "./rules-importer.svr";
 import { AuthorizeService } from "./authorize.svr";
@@ -9,9 +8,9 @@ import { AuthorizeInterceptor } from "./authorize.interceptor";
 import { PermissionController } from "./permission.controller";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AUTHORIZATION_TEMPLATES, AuthorizationTemplate } from "@noah-ark/expression-engine";
-import { MongooseModule } from "@nestjs/mongoose";
 import { SimplePermissionSchema } from "./simple-permission.schema";
 import { Schema } from "mongoose";
+import { MongooseModule } from "@nestjs/mongoose";
 
 export function rootRule(defaultAccess: "GRANT" | "DENY" | "LOGGED" = "DENY") {
     switch (defaultAccess) {
@@ -39,9 +38,7 @@ export const DenyRule: Rule = (() => {
 
 export class RulesModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
-    async onModuleInit() {
-        // await this.data.addModel('permission', SimplePermissionSchema);
-    }
+    async onModuleInit() {}
     static register(
         options: { dbName: string; permissionSchema: Schema; prefix?: string } = { dbName: "DB_DEFAULT", permissionSchema: SimplePermissionSchema },
         rootRule: Rule = DenyRule,
@@ -70,11 +67,7 @@ export class RulesModule implements OnModuleInit {
         return {
             global: true,
             module: RulesModule,
-            imports: [
-                DataModule,
-                CommonModule,
-                MongooseModule.forFeature([{ name: "permission", collection: `${options.prefix}permission`, schema: options.permissionSchema }], "DB_DEFAULT"),
-            ],
+            imports: [MongooseModule.forFeature([{ name: "permission", collection: `${options.prefix}permission`, schema: options.permissionSchema }], "DB_DEFAULT")],
             providers: [...providers, { provide: APP_INTERCEPTOR, useClass: AuthorizeInterceptor }],
             controllers: [PermissionController],
             exports: [...providers],

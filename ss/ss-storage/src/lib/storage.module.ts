@@ -1,8 +1,5 @@
-import { DynamicModule, Inject, Module, OnModuleInit } from "@nestjs/common";
-import { CommonModule } from "@ss/common";
-import { DataModule, DataService } from "@ss/data";
-import { RulesModule } from "@ss/rules";
-
+import { DynamicModule, Inject, OnModuleInit } from "@nestjs/common";
+import { DataService } from "@ss/data";
 import { ImageService } from "./image.svr";
 import { ImageController } from "./image.controller";
 import { StorageController } from "./storage.controller";
@@ -29,12 +26,7 @@ export class StorageModule implements OnModuleInit {
         return {
             global: true,
             module: StorageModule,
-            imports: [
-                RulesModule,
-                CommonModule,
-                DataModule,
-                MongooseModule.forFeature([{ name: "storage", collection: `${options.prefix}storage`, schema: storageSchema }], "DB_DEFAULT"),
-            ],
+            imports: [MongooseModule.forFeature([{ name: "storage", collection: `${options.prefix}storage`, schema: storageSchema }], "DB_DEFAULT")],
             controllers: [StorageController, ImageController],
             providers: [StorageService, ImageService, { provide: "STORAGE_SCHEMA", useValue: storageSchema }],
             exports: [{ provide: "STORAGE_SCHEMA", useValue: storageSchema }, StorageService, ImageService, MongooseModule],

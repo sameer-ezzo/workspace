@@ -3,14 +3,12 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AuthOptions } from "./auth-options";
 import { AuthenticationInterceptor } from "./auth.middleware";
 
-import { CommonModule, _env_secret } from "@ss/common";
-import { randomString } from "@noah-ark/common";
-import { logger } from "./logger";
+import {  _env_secret } from "@ss/common";
 
 import { PassportModule } from "@nestjs/passport";
 import { FacebookStrategy } from "./external/facebook.strategy";
 import { GoogleStrategy } from "./external/google.strategy";
-import { DataModule, DataService, getDataServiceToken } from "@ss/data";
+import { DataService, getDataServiceToken } from "@ss/data";
 import { AuthService } from "./auth.svr";
 import { MongooseModule } from "@nestjs/mongoose";
 import { userSchemaFactory } from "./user.schema";
@@ -53,7 +51,6 @@ if (process.env.FACEBOOK_APP_ID) {
     };
 }
 
-// @Module({})
 export class AuthModule implements OnModuleInit {
     constructor(@Inject("DB_AUTH") public readonly data: DataService) {}
     async onModuleInit() {}
@@ -86,8 +83,6 @@ export class AuthModule implements OnModuleInit {
             module: AuthModule,
             exports: [...providers, MongooseModule],
             imports: [
-                DataModule,
-                CommonModule,
                 PassportModule,
                 MongooseModule.forFeature(
                     [

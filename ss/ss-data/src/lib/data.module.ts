@@ -1,5 +1,5 @@
-import { DynamicModule, FactoryProvider, Inject, OnModuleInit, Provider } from "@nestjs/common";
-import { Broker, CommonModule } from "@ss/common";
+import { DynamicModule, FactoryProvider, Global, Inject, OnModuleInit, Provider } from "@nestjs/common";
+import { Broker } from "@ss/common";
 import { DbConnectionOptions, DbConnectionOptionsFactory } from "./data-options";
 import { DataService } from "./data.svr";
 import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collections";
@@ -25,6 +25,7 @@ if (process.env.DBPORT) logger.error(`DBPORT is deprecated. Use DB_[NAME] conven
 if (process.env.DBUSER) logger.error(`DBUSER is deprecated. Use DB_[NAME] convention instead.`);
 if (process.env.DBPASS) logger.error(`DBPASS is deprecated. Use DB_[NAME] convention instead.`);
 
+// @Global()
 export class DataModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
@@ -38,12 +39,11 @@ export class DataModule implements OnModuleInit {
         const mongooseRoots = extractMongooseRoot(options);
         const mongooseFeatures = extractMongooseFeatures(options);
         const dataServicePerDbProviders: Provider[] = extractDataServiceProviders(options);
-        const dataMigrationProviders: Provider[] = extractDataMigrationProviders(options);
         return {
             global: true,
             module: DataModule,
-            imports: [CommonModule, ...mongooseRoots, ...mongooseFeatures],
-            providers: [...dataServicePerDbProviders, ...dataMigrationProviders],
+            imports: [...mongooseRoots, ...mongooseFeatures],
+            providers: [...dataServicePerDbProviders],
             exports: [MongooseModule, ...dataServicePerDbProviders],
         };
     }
@@ -119,6 +119,16 @@ function extractMongooseRoot(options: DataOptions[]) {
         //         },
         //     });
         // }
+
+        // return MongooseModule.forRoot(databaseInfo.uri, {
+        //     connectionFactory: (connection) => {
+        //         const migrator = MigrationsService.create(connection, migrations);
+        //         return connection;
+        //     },
+        //     ...opts,
+        //     connectionName: dbName,
+        // });
+
         return MongooseModule.forRoot(databaseInfo.uri, {
             ...opts,
             connectionName: dbName,
@@ -133,8 +143,9 @@ function extractDataServiceProviders(options: DataOptions[]) {
     const providers: Provider[] = options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
         return {
             provide: getDataServiceToken(dbName),
-            useFactory: (broker: Broker, connection: Connection) => {
-                return new DataService(dbName, connection, connectionOptions, broker);
+            useFactory: async (broker: Broker, connection: Connection) => {
+                const service = await DataService.create(dbName, connection, connectionOptions, broker, migrations);
+                return service;
             },
             inject: [Broker, getConnectionToken(dbName)],
         } as FactoryProvider;
@@ -144,24 +155,5 @@ function extractDataServiceProviders(options: DataOptions[]) {
         useExisting: getDataServiceToken("DB_DEFAULT"),
     });
 
-    return providers;
-}
-export function getDataMigratorToken(dbName: string) {
-    return `${dbName}_MIGRATOR`;
-}
-function extractDataMigrationProviders(options: DataOptions[]) {
-    const providers: Provider[] = options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
-        return {
-            provide: getDataMigratorToken(dbName),
-            useFactory: (dataService: DataService) => {
-                return MigrationsService.create(dataService, migrations);
-            },
-            inject: [getDataServiceToken(dbName)],
-        } as FactoryProvider;
-    });
-    providers.push({
-        provide: MigrationsService,
-        useExisting: getDataMigratorToken("DB_DEFAULT"),
-    });
     return providers;
 }
