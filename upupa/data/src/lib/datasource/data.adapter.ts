@@ -4,7 +4,7 @@ import { computed } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
-import { Record } from "twilio/lib/twiml/VoiceResponse";
+
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
 export type DataAdapterDescriptor<TData = any> = {

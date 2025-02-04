@@ -39,9 +39,7 @@ export class FieldRef<TCom = any> {
         return inputs;
     }
 
-    // setVisibility(visible: boolean) {
-    //     const f = this.field();
-    //     f.hidden = !visible;
-    //     this.field.set({ ...f });
-    // }
+    setVisibility(visible: boolean) {
+        this.inputs.update((inputs) => ({ ...inputs, hidden: !visible }));
+    }
 }
