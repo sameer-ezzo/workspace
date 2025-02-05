@@ -24,6 +24,11 @@ import { DOCUMENT } from "@angular/common";
             useExisting: forwardRef(() => FileInputComponent),
             multi: true,
         },
+        {
+            provide: DataAdapter,
+            useFactory: (self: FileInputComponent) => self.adapter(),
+            deps: [FileInputComponent],
+        },
     ],
 })
 export class FileInputComponent extends DataComponentBase {

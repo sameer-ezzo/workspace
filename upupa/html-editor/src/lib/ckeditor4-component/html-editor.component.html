@@ -1,0 +1,8 @@
+@if (label()) {
+    <label>{{ label() }}</label>
+}
+<textarea #editor [attr.name]="name()"></textarea>
+@if (hint()) {
+    <span>{{ hint() }}</span>
+}
+<div *errors="control().errors; control: control(); let message">{{ message }}</div>

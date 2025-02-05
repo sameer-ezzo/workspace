@@ -5,6 +5,7 @@ import { DataComponentBase } from "@upupa/table";
 
 import { debounceTime } from "rxjs";
 import { InputDefaults } from "../defaults";
+import { DataAdapter } from "@upupa/data";
 
 @Component({
     standalone: true,
@@ -20,6 +21,11 @@ import { InputDefaults } from "../defaults";
             provide: NG_VALIDATORS,
             useExisting: forwardRef(() => SelectComponent),
             multi: true,
+        },
+        {
+            provide: DataAdapter,
+            useFactory: (self: SelectComponent) => self.adapter(),
+            deps: [SelectComponent],
         },
     ],
 })

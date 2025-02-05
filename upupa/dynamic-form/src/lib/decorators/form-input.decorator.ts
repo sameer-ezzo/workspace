@@ -217,6 +217,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     const field: Field = {
         input,
         inputs: { ...fieldOptions.inputs },
+        outputs: { ...fieldOptions.outputs },
         validations: [],
     };
 

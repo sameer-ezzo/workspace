@@ -25,6 +25,11 @@ import { InputDefaults } from "@upupa/dynamic-form-native-theme";
             useExisting: forwardRef(() => InlineEditableListComponent),
             multi: true,
         },
+        {
+            provide: DataAdapter,
+            useFactory: (self: InlineEditableListComponent) => self.adapter(),
+            deps: [InlineEditableListComponent],
+        },
     ],
 })
 export class InlineEditableListComponent extends DataComponentBase<any> implements OnInit, OnChanges, ControlValueAccessor {
