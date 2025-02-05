@@ -15,8 +15,10 @@ export class CreateUserFromViewModel {
     _id: string;
     @formInput({ input: "email", label: "Email", required: true })
     email: string;
-    @formInput({ input: "text", label: "Username", required: true })
+    @formInput({ input: "text", label: "Full Name", required: true })
     name: string;
+    @formInput({ input: "text", label: "Username", required: true })
+    username: string;
     @formInput({ input: "password", label: "Password", required: true })
     password = "";
     @formInput({ input: "switch", label: "Force change password" })
@@ -29,7 +31,15 @@ export class CreateUserFromViewModel {
 
         const adapter = inject(DataAdapter);
         try {
-            const { document } = await auth.signup({ email: this.email, name: this.name, forceChangePwd: this.forceChangePwd }, this.password);
+            const { document } = await auth.signup(
+                {
+                    email: this.email.trim().toLocaleLowerCase(),
+                    username: (this.username || this.email).trim().toLocaleLowerCase(),
+                    name: this.name.trim(),
+                    forceChangePwd: this.forceChangePwd,
+                },
+                this.password,
+            );
             adapter.refresh();
             if (dialogRef) dialogRef.close({ submitResult: document });
         } catch (e) {
