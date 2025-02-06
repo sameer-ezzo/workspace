@@ -12,6 +12,8 @@
         [readonly]="readonly()"
         [placeholder]="placeholder()"
         [attr.name]="name()"
+        [min]="min()"
+        [max]="max()"
     />
     <mat-datepicker-toggle matSuffix touchUi [for]="picker"></mat-datepicker-toggle>
     @if (hint()) {
