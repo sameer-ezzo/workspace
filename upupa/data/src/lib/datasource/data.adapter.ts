@@ -55,7 +55,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             page: options?.page ?? { pageIndex: 0 },
             sort: options?.sort,
             filter: options?.filter,
-            terms: options?.terms ?? [..._displayProperties, ..._keyProperties, ..._valueProperties],
+            terms: options?.terms ?? Array.from(new Set(_displayProperties)).map((field) => ({ field, type: "like" })),
             autoRefresh: options?.autoRefresh === false ? false : true,
         };
         patchState(this, _initial);

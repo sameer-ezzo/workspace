@@ -16,18 +16,18 @@
             [attr.name]="name()"
             matInput
             [value]="text()"
-            (input)="text.set(textInput.value); updateFilter()"
+            (input)="text.set(textInput.value)"
             [required]="required()"
             [placeholder]="placeholder()"
             [matChipInputFor]="chipGrid"
             [matAutocomplete]="auto"
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
-            (matChipInputTokenEnd)="add(textInput.value); textInput.value = ''"
+            (matChipInputTokenEnd)="onAddChip(textInput.value); textInput.value = ''"
         />
     </mat-chip-grid>
 
     <mat-autocomplete #auto (optionSelected)="$event.option.value ? select($event.option.value) : undefined">
-        @if(autoComplete()) {
+        @if (autoComplete()) {
             @if (loading()) {
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
@@ -40,11 +40,12 @@
                         <span>{{ item.display }}</span>
                     </mat-option>
                 } @empty {
-                    @if (canAdd() && text()?.length > 1) {
-                        <mat-option (click)="add(text())"><span>Add</span></mat-option>
-                    } @else {
+                    @if (!canAdd() || !text()?.length) {
                         <mat-option disabled>No options</mat-option>
                     }
+                }
+                @if (canAdd()) {
+                    <mat-option (click)="onAddChip(text())" > <mat-icon>add</mat-icon> <span>Add</span></mat-option>
                 }
             }
         }
