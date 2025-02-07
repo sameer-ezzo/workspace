@@ -172,8 +172,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         if (changes["adapter"]) {
             const adapter = this.adapter();
             if (!adapter) throw new Error("Adapter is required");
+            if (!this.lazyLoadData()) this.loadData();
 
-            this.loadData();
         }
         await super.ngOnChanges(changes);
 
