@@ -56,7 +56,7 @@ export async function adapterSubmit<T = any>(
     try {
         if (!_adapter) throw new Error("DataAdapter is not provided");
         const _id = form["_id"];
-        const response = (await _id) ? _adapter.put({ _id }, form) : _adapter.create(form);
+        const response = await (_id ? _adapter.put({ _id }, form) : _adapter.create(form));
         const result = "document" in response ? response.document : response;
         return onSuccess ? runInInjectionContext(injector, () => onSuccess(result)) : result;
     } catch (error) {

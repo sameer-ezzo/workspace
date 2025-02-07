@@ -1,30 +1,37 @@
-import { Component, forwardRef, input } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { DataComponentBase } from '@upupa/table';
-import { InputDefaults } from '../defaults';
+import { Component, forwardRef, input } from "@angular/core";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
+import { DataComponentBase } from "@upupa/table";
+import { InputDefaults } from "../defaults";
+import { DataAdapter } from "@upupa/data";
 
-@Component({ standalone: true,
-    selector: 'form-autocomplete-text',
-    templateUrl: './autocomplete-text.component.html',
+@Component({
+    standalone: true,
+    selector: "form-autocomplete-text",
+    templateUrl: "./autocomplete-text.component.html",
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => AutoCompleteTextComponent),
             multi: true,
         },
+        {
+            provide: DataAdapter,
+            useFactory: (self: AutoCompleteTextComponent) => self.adapter(),
+            deps: [AutoCompleteTextComponent],
+        },
     ],
 })
 export class AutoCompleteTextComponent extends DataComponentBase<string> {
-    name = input('');
+    name = input("");
     inlineError = true;
 
     appearance = input(InputDefaults.appearance);
     floatLabel = input(InputDefaults.floatLabel);
-    label = input('');
-    panelClass = input('');
-    placeholder = input('');
-    hint = input('');
+    label = input("");
+    panelClass = input("");
+    placeholder = input("");
+    hint = input("");
 
     _onlySelected = false;
 

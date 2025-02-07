@@ -48,10 +48,10 @@ export class DialogService {
     open<TCom, TData = any, TResult = any>(template: DynamicTemplate<TCom>, options?: DialogConfig): DialogRef<TCom, TResult> {
         if (!template) throw new Error("template is not provided for dialog!");
 
-        const t = component(template);
-        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, { ...options, injector: t.injector ?? options?.injector });
-        t.injector = undefined; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
-        matDialogRef.componentRef.setInput("template", t);
+        const _template = component(template);
+        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, { ...options, injector: _template.injector ?? options?.injector });
+        _template.injector = undefined; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
+        matDialogRef.componentRef.setInput("template", _template);
         matDialogRef.componentRef.setInput(
             "header",
             (options?.header ?? []).map((t) => component(t)),

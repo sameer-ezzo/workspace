@@ -1,10 +1,9 @@
 import { PasswordStrength } from "@upupa/auth";
-import { Field, Validator } from "../types";
+import { Field } from "../types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
 
-export interface IDynamicFormFieldOptions {}
 export class TextFieldOptions {}
 export class NumberFieldOptions {}
 export class BooleanFieldOptions {}
@@ -93,6 +92,7 @@ export type FieldOptions =
               | ({ input: "select" } & AdapterFieldOptions)
               | { input: "date" }
               | { input: "time" }
+              | { input: "calendar" }
               | ({ input: "file" } & FileInputOptions)
               | ({ input: "html" } & {
                     uploadPath: string;

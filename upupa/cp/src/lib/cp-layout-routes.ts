@@ -77,6 +77,8 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 link: path,
                 icon: route.data["action"].icon,
                 text: route.data["action"].text,
+                path:route.data["action"].path, // added path for permission check
+                action: route.data["action"].action //  added actoin for permission check
             });
             // check if group is already in sidebar
             if (!sideBar.includes(group)) {
@@ -88,6 +90,8 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 link: path,
                 icon: route.data["action"].icon,
                 text: route.data["action"].text,
+                path:route.data["action"].path, // added path for permission check
+                action: route.data["action"].action // added actoin for permission check
             });
         }
     }

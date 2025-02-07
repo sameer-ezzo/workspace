@@ -3,21 +3,13 @@ import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
-import { AbstractControl,  ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+import { AbstractControl, ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 import { _defaultControl } from "@upupa/common";
 
 @Component({
     standalone: true,
-    selector: "data-base",
     template: "",
-    styles: [],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DataComponentBase),
-            multi: true,
-        },
-    ],
+    providers: [], // base component cannot pass providers to child components
 })
 export class DataComponentBase<T = any> implements ControlValueAccessor, OnChanges, Validator {
     validate(control: AbstractControl): ValidationErrors {

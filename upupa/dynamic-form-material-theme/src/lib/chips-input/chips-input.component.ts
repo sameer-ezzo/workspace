@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output, runInInjectionContext } from "@angular/core";
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
 
@@ -10,7 +10,9 @@ import { MatChipsModule } from "@angular/material/chips";
 import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { NormalizedItem } from "@upupa/data";
+import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { debounceTime, distinctUntilChanged } from "rxjs";
 
 @Component({
     standalone: true,
@@ -21,6 +23,11 @@ import { NormalizedItem } from "@upupa/data";
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => MatChipsComponent),
             multi: true,
+        },
+        {
+            provide: DataAdapter,
+            useFactory: (self: MatChipsComponent) => self.adapter(),
+            deps: [MatChipsComponent],
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,9 +52,10 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
     separatorKeysCodes = input([ENTER, COMMA]);
 
     canAdd = input(true);
-    adding = output<NormalizedItem<T>>({ alias: "add" });
+    add = output<string>();
     autoComplete = input(true);
-    updateFilter() {
+
+    _applyFilter() {
         this.adapter().load({
             filter: {
                 ...this.adapter().filter(),
@@ -55,27 +63,21 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
             },
         });
     }
-    async add(value: any) {
-        if (!value || !this.canAdd()) {
+
+    text$ = toObservable(this.text).pipe(debounceTime(500), distinctUntilChanged());
+    constructor() {
+        super();
+        this.text$.pipe(takeUntilDestroyed()).subscribe(() => this._applyFilter());
+    }
+
+    async onAddChip(value: string) {
+        if (!this.canAdd()) return;
+
+        try {
+            runInInjectionContext(this.injector, () => {
+                this.add.emit(value);
+            });
             this.text.set("");
-            this.updateFilter();
-            return
-        };
-        const adapter = this.adapter();
-
-        const valueProperty = adapter.valueProperty;
-        const chip = valueProperty
-            ? Array.isArray(valueProperty)
-                ? { [valueProperty[valueProperty.findIndex((x) => x != adapter.keyProperty)]]: value }
-                : { [valueProperty]: value }
-            : value;
-
-        const item = await this.adapter().create(chip as any);
-        const element = this.adapter().normalize(item as any);
-
-        this.text.set("");
-        this.select(element.value);
-        this.adding.emit(element);
-        this.updateFilter();
+        } catch (error) {}
     }
 }
