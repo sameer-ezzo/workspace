@@ -94,7 +94,6 @@ export class AuthService {
             const result = await jose.jwtVerify(token, this.#secret);
             return result.payload as TokenBase;
         } catch (error) {
-            console.error(error);
             return undefined;
         }
     }

@@ -129,7 +129,7 @@ export class FileTemplateComponent {
             const type = f instanceof File ? f.type : f.mimetype;
             if (type) return type.split("/")?.[0].toLocaleLowerCase();
             const name = f instanceof File ? f.name : f.originalname;
-            const ext = name.split(".").pop();
+            const ext = name?.split(".").pop() ?? "";
             const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico", "webp"];
             if (imageExts.includes(ext)) return "image";
             return "file";
