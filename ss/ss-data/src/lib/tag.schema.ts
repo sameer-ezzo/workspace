@@ -1,20 +1,40 @@
-import mongoose, { Schema } from "mongoose";
+import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+import mongoose from "mongoose";
 
-const tagSchema = new Schema(
-    {
-        _id: mongoose.Schema.Types.ObjectId,
-        slug: { type: String, required: true, index: true },
-        name: { type: String, required: true, index: true },
-        description: { type: String, default: undefined },
-        order: { type: Number, default: 0 },
-        class: { type: String, index: true, default: undefined },
-        path: { type: String, index: true, required: true, default: "/" },
-        parentId: { type: String, index: true, default: undefined },
-        parentPath: { type: String, index: true, required: true, default: null },
-        meta: { type: Schema.Types.Mixed, default: undefined },
-        translations: { type: Schema.Types.Mixed, default: undefined },
-    },
-    { strict: false, timestamps: true },
-);
-tagSchema.index({ name: 1, parentPath: 1 }, { unique: true });
-export default tagSchema;
+@Schema({ strict: false, timestamps: true })
+export class TagModel {
+    @Prop({ type: mongoose.SchemaTypes.ObjectId })
+    _id: string;
+
+    @Prop({ required: true, index: true, unique: true })
+    slug: string;
+
+    @Prop({ required: true, index: true })
+    name: string;
+
+    @Prop({ required: true, default: "/" })
+    path: string;
+
+    @Prop({ required: true, default: null })
+    parentPath: string;
+
+    @Prop({ type: mongoose.SchemaTypes.Mixed, index: true, default: undefined })
+    parentId: string;
+
+
+    @Prop({ default: undefined })
+    description?: string;
+
+    @Prop({ default: 0 })
+    order?: number;
+
+    @Prop({ index: true, default: undefined })
+    class?: string;
+
+    @Prop({ type: mongoose.SchemaTypes.Mixed, default: undefined })
+    meta?: Record<string, unknown>;
+
+    @Prop({ type: mongoose.SchemaTypes.Mixed, default: undefined })
+    translations?: Record<string, unknown>;
+}
+export const TagSchema = SchemaFactory.createForClass(TagModel);

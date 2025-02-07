@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, output, signal } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
-import { InputBaseComponent } from "@upupa/common";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
@@ -31,7 +31,7 @@ type ViewType = "list" | "grid";
         "[class]": "view()",
         "[attr.name]": "name()",
     },
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, MatFormFieldModule, MatIconModule, FilesViewerComponent],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, ErrorsDirective, MatFormFieldModule, MatIconModule, FilesViewerComponent],
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");
@@ -197,11 +197,10 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
         this.viewModel.update((v) => [...v, ...newFiles]);
     }
 
-
     events = output<FileEvent>();
 
     viewerEventsHandler(e: FileEvent) {
-        this.events.emit(e)
+        this.events.emit(e);
         if (e.name === "remove") {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()

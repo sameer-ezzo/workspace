@@ -1,4 +1,4 @@
-import { DynamicModule, FactoryProvider, Global, Inject, OnModuleInit, Provider } from "@nestjs/common";
+import { DynamicModule, FactoryProvider, Inject, OnModuleInit, Provider } from "@nestjs/common";
 import { Broker } from "@ss/common";
 import { DbConnectionOptions, DbConnectionOptionsFactory } from "./data-options";
 import { DataService } from "./data.svr";
@@ -6,12 +6,11 @@ import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collec
 import { logger } from "./logger";
 
 import { MongooseModule, getConnectionToken, ModelDefinition } from "@nestjs/mongoose";
-import mongoose, { Connection, plugin } from "mongoose";
+import mongoose, { Connection } from "mongoose";
 import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
 import migrationSchema from "./migration-schema";
-import tagSchema from "./tag.schema";
 import changeSchema from "./change-schema";
-import { MigrationsService } from "./migrations.svr";
+import { TagSchema } from "./tag.schema";
 
 const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions("DB_DEFAULT", {
     retryAttempts: 5,
@@ -30,7 +29,7 @@ export class DataModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
         await this.data.addModel("migration", migrationSchema);
-        await this.data.addModel("tag", tagSchema);
+        await this.data.addModel("tag", TagSchema);
         await this.data.addModel("change", changeSchema);
     }
 

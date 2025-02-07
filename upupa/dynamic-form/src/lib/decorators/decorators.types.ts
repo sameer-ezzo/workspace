@@ -92,6 +92,7 @@ export type FieldOptions =
               | ({ input: "radios" } & ChoicesFieldOptions)
               | ({ input: "select" } & AdapterFieldOptions)
               | { input: "date" }
+              | { input: "time" }
               | ({ input: "file" } & FileInputOptions)
               | ({ input: "html" } & {
                     uploadPath: string;

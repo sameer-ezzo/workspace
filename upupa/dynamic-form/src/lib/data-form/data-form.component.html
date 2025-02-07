@@ -20,7 +20,9 @@
     [control]="control()"
 ></dynamic-form>
 <!-- [formGroup]="control()" -->
-
+<p>
+    {{ value() | json }}
+</p>
 @if (actions()?.length) {
     <div class="toolbar footer">
         @for (descriptor of actions(); track descriptor.name) {

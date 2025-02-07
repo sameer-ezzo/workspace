@@ -61,7 +61,7 @@ export type DynamicFormOptionsMetaData = DynamicFormOptions & {
 };
 
 function inferFieldInputType(property: any, propertyKey: string, field: Partial<FieldOptions>): FieldOptions["input"] {
-    let input = field?.["input"];
+    const input = field?.["input"];
     if (input) return input;
 
     const type = Reflect.getMetadata("design:type", property, propertyKey);

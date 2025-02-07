@@ -45,7 +45,7 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
     }
 
     override create(value: Partial<T>) {
-        this.all.update((all) => [...all, value as T]);
+        this.all.update((all) => [...(all ?? []), value as T]);
         return Promise.resolve(value);
     }
 
@@ -55,10 +55,9 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
 
     override put(item: T, value: Partial<T>) {
         const key = this._key(item);
-        const entries = this.entries();
-        const ref = entries.get(key);
-        // this.all.update((v) => v.map((x) => (x === ref ? (value as T) : x)));
-        this.all.set(this.all().map((x) => (x === ref ? (value as T) : x)));
+        // const entries = this.entries();
+        // const ref = entries.get(key);
+        this.all.update((v) => (v ?? []).map((x) => (this._key(x) === key ? (value as T) : x)));
 
         return Promise.resolve(value);
     }
@@ -69,7 +68,7 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
         let ref = entries.get(key);
         if (typeof ref !== "object") ref = {} as T;
         JsonPatch.patch(ref, patches);
-        this.all.update((v) => v.map((x) => (x === ref ? (ref as T) : x)));
+        this.all.update((v) => (v ?? []).map((x) => (x === ref ? (ref as T) : x)));
         return Promise.resolve(ref);
     }
 
@@ -77,7 +76,7 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
         const key = this._key(item);
         const entries = this.entries();
         const ref = entries.get(key);
-        this.all.update((v) => v.filter((x) => x !== ref));
+        this.all.update((v) => (v ?? []).filter((x) => x !== ref));
         return Promise.resolve(item);
     }
 

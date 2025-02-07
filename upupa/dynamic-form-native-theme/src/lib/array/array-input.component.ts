@@ -27,7 +27,8 @@ import { Class } from "@noah-ark/common";
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);
     label = input("");
-    readonly dataSource = new ClientDataSource<T>([]);
+    // todo: pass key property (_id passed to the dataSource to identify the unique key of the data source)
+    readonly dataSource = new ClientDataSource<T>([], "_id");
     readonly adapter = new DataAdapter<T>(this.dataSource);
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
@@ -67,5 +68,7 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     tableHeaderComponentRef: ComponentRef<any>;
     onTableHeaderAttached({ componentRef }) {
         this.tableHeaderComponentRef = componentRef;
+        console.log("tableHeaderComponentRef", this.tableHeaderComponentRef);
+        
     }
 }
