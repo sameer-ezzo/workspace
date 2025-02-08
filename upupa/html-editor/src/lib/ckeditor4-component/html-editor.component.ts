@@ -79,7 +79,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
     private async loadEditor(): Promise<void> {
         //https://cdnjs.com/libraries/ckeditor/4.22.1
-        await CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/ckeditor.min.js");
+        await CKEditor4Component.loadScript("https://cdn.ckeditor.com/4.22.1/full/ckeditor.js");
         // const scripts = [
         //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/imagebase/plugin.min.js"),
         //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/easyimage/plugin.min.js"),
@@ -91,7 +91,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
         const config = {
             licenseKey: "GPL",
             versionCheck: false,
-            skin: "moono-lisa",
             uiColor: "#fff7f9",
             toolbar: SMART_TOOLBAR,
             // extraPlugins: "uploadimage,easyimage",
