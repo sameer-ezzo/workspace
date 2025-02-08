@@ -39,9 +39,13 @@ export class MigrationsService {
         if (!model) model = await data.addModel("migration", migrationSchema);
 
         const dbMigrations = await model.find({}).lean();
+        // check should look for the migration in the db with the same name
         logger.info(`Migrating: ${data.name} - ${migrations.length} migrations to run, ${dbMigrations.length} migrations in db`);
         if (dbMigrations.length > migrations.length) throwMismatchError("Migrations in db are more than the migrations in code");
-        if (dbMigrations.length === migrations.length) return;
+        if (dbMigrations.length === migrations.length) {
+            logger.info(`Migrations are up to date on ${databaseName}`);
+            return;
+        }
 
         for (const migration of migrations) {
             if (dbMigrations.find((m) => m.name === migration.name) || !("up" in migration) || typeof migration.up !== "function") continue;

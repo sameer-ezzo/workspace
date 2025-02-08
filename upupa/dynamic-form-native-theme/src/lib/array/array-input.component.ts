@@ -1,10 +1,11 @@
 import { Component, forwardRef, input, computed, Type, viewChild, signal, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { DataTableComponent, DataTableModule, reflectTableViewModel } from "@upupa/table";
-import { ClientDataSource, DataAdapter } from "@upupa/data";
+import { ClientDataSource, DataAdapter, DataAdapterCreateItemEvent, DataAdapterCRUDEvent } from "@upupa/data";
 import { DynamicComponent, InputBaseComponent, PortalComponent } from "@upupa/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { Class } from "@noah-ark/common";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
     selector: "array-input",
@@ -47,6 +48,15 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
         return {};
     });
 
+    constructor() {
+        super();
+        this.adapter.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+            if (event instanceof DataAdapterCRUDEvent) {
+                this.updateValueFromDataSource();
+            }
+        });
+    }
+
     updateValueFromDataSource() {
         this.handleUserInput(this.dataSource.all());
     }
@@ -69,6 +79,5 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     onTableHeaderAttached({ componentRef }) {
         this.tableHeaderComponentRef = componentRef;
         console.log("tableHeaderComponentRef", this.tableHeaderComponentRef);
-        
     }
 }

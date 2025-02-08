@@ -4,6 +4,7 @@ import { computed } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
+import { ReplaySubject } from "rxjs";
 
 export type DataAdapterType = "server" | "api" | "client" | "http";
 
@@ -35,8 +36,32 @@ function DataAdapterStore<T>() {
         // withSelectedEntity(),
     );
 }
+export abstract class DataAdapterBaseEvent<T = any> {}
+export abstract class DataAdapterCRUDEvent<T = any> {}
 
+export class DataAdapterCreateItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
+    constructor(readonly item: NormalizedItem<T>) {
+        super();
+    }
+}
+export class DataAdapterUpdateItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
+    constructor(
+        readonly previous: T,
+        readonly current: NormalizedItem<T>,
+    ) {
+        super();
+    }
+}
+
+export class DataAdapterDeleteItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
+    constructor(readonly item: NormalizedItem<T>) {
+        super();
+    }
+}
 export class DataAdapter<T = any> extends DataAdapterStore<any>() {
+    private readonly _events = new ReplaySubject<DataAdapterCreateItemEvent | DataAdapterUpdateItemEvent | DataAdapterDeleteItemEvent>();
+    readonly events = this._events.asObservable();
+
     constructor(
         readonly dataSource: TableDataSource<T>,
         readonly keyProperty?: keyof T,
@@ -97,6 +122,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const n = this.normalize(result);
         patchState(this, setEntity(n));
 
+        this._events.next(new DataAdapterCreateItemEvent(n));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
@@ -105,6 +131,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const result = await this.dataSource.put(item, value);
         const n = this.normalize(result);
         patchState(this, setEntity(n));
+        this._events.next(new DataAdapterUpdateItemEvent(item, n));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
@@ -114,6 +141,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
         const n = this.normalize(result);
         patchState(this, updateEntity({ id: n.id, changes: n }));
+        this._events.next(new DataAdapterUpdateItemEvent(item, n));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }
@@ -123,6 +151,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const n = this.entities().find((x) => x.id === id);
         const result = await this.dataSource.delete(item);
         patchState(this, removeEntities([n.id]));
+        this._events.next(new DataAdapterDeleteItemEvent(n));
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }

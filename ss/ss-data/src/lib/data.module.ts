@@ -6,7 +6,7 @@ import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collec
 import { logger } from "./logger";
 
 import { MongooseModule, getConnectionToken, ModelDefinition } from "@nestjs/mongoose";
-import mongoose, { Connection } from "mongoose";
+import mongoose, { Connection, Schema } from "mongoose";
 import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
 import migrationSchema from "./migration-schema";
 import changeSchema from "./change-schema";
@@ -28,9 +28,9 @@ if (process.env.DBPASS) logger.error(`DBPASS is deprecated. Use DB_[NAME] conven
 export class DataModule implements OnModuleInit {
     constructor(@Inject(DataService) public readonly data: DataService) {}
     async onModuleInit() {
-        await this.data.addModel("migration", migrationSchema);
-        await this.data.addModel("tag", TagSchema);
-        await this.data.addModel("change", changeSchema);
+        // await this.data.addModel("migration", migrationSchema);
+        // await this.data.addModel("tag", TagSchema);
+        // await this.data.addModel("change", changeSchema);
     }
 
     static register(databasesCollections: DatabasesOptions): DynamicModule {
