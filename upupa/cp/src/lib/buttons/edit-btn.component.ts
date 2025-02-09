@@ -30,7 +30,8 @@ export class EditButton<TItem = unknown> {
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
             const mirror = reflectFormViewModelType(this.formViewModel());
-            const value = this.data()?.(this) ?? this.item() ?? new mirror.viewModelType();
+            const data = await this.data()?.(this);
+            const value = data ?? this.item() ?? new mirror.viewModelType();
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
 

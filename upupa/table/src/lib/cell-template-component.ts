@@ -7,10 +7,29 @@ import { DynamicPipe } from "./dynamic.pipe";
 import { ActivatedRoute, Params, QueryParamsHandling, RouterModule, UrlTree } from "@angular/router";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
+    /**
+     * The value of the cell
+     */
     value?: InputSignal<TValue>;
+
+    /**
+     * The normalized item of the row
+     */
     element?: InputSignal<{ item: TRow }>;
+
+    /**
+     * The row item object
+     */
     item?: InputSignal<TRow>;
+
+    /**
+     * The index of the row in the table
+     */
     dataIndex?: InputSignal<number>;
+
+    /**
+     * The column descriptor
+     */
     column?: InputSignal<KeyValue<string, ColumnDescriptor>>;
 }
 
