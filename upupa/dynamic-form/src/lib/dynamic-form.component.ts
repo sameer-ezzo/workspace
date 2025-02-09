@@ -47,9 +47,9 @@ import { CommonModule, KeyValuePipe } from "@angular/common";
 import { FieldRef } from "./field-ref";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 import { FormScheme } from "./types";
+import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
 
 @Pipe({
     name: "orderedKeyValue",
@@ -158,8 +158,9 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             } else if (e instanceof TouchedChangeEvent) {
                 this.form.markAsTouched({ emitEvent: false });
             } else if (e instanceof StatusChangeEvent) {
-                if (c.enabled) this.form.enable({ emitEvent: false });
-                else this.form.disable({ emitEvent: false });
+                // When we have a nested form c.enabled will cause loop
+                // if (c.enabled) this.form.enable({ emitEvent: false });
+                // else this.form.disable({ emitEvent: false });
 
                 if (e.status === "VALID") this.form.setErrors(null, { emitEvent: false });
                 else if (e.status === "INVALID") this.form.setErrors(c.errors, { emitEvent: false });

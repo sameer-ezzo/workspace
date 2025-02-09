@@ -8,7 +8,7 @@ export function getInitials(text: string): string {
         .join("");
 }
 
-export function textToImage(document: Document, text: string, color: string = "#fff", bgColor: string = "#2e7d32dd"): string {
+export function textToImage(document: Document, text: string, color = "#fff", bgColor = "#2e7d32dd"): string {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     const size = 80;
@@ -32,7 +32,7 @@ export function textToImage(document: Document, text: string, color: string = "#
     return canvas.toDataURL();
 }
 
-export function getUserInitialsImage(document: Document, name: string, color: string = "#fff", bgColor: string = "#2e7d32dd"): string {
+export function getUserInitialsImage(document: Document, name: string, color = "#fff", bgColor = "#2e7d32dd"): string {
     const initials = getInitials(name);
     return textToImage(document, initials, color, bgColor);
 }

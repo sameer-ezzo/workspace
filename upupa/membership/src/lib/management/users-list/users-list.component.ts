@@ -3,7 +3,7 @@ import { DataListComponent, withTableHeader } from "@upupa/table";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { Route } from "@angular/router";
 import { Type } from "@angular/core";
-import { CreateUserFromViewModel, EditUserFromViewModel, UserListViewModel } from "./user.forms";
+import { CreateUserFromViewModel, UserListViewModel } from "./user.forms";
 import { createButton } from "@upupa/cp";
 
 export type UsersTableConfig = {

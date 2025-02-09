@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http"
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { ErrorsDirective, UtilsModule } from "@upupa/common";
-import { DataTableModule } from "@upupa/table";
+
 import { UploadModule } from "@upupa/upload";
 import { AddressComponent } from "./address-edit/address.component";
 import { AutoCompleteTextComponent } from "./autocomplete-text-input/autocomplete-text.component";
@@ -36,6 +36,7 @@ import { FilesViewerComponent } from "./upload/file-viewer/file-viewer.component
 import { LocalFileInputComponent } from "./upload/local-file-input/local-file-input.component";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { FileTemplateComponent } from "./upload/file-viewer/file-template/file-template.component";
+import { DataTableComponent } from "@upupa/table";
 
 export const NATIVE_THEME_NAME = "native";
 export const DF_NATIVE_THEME_INPUTS = {
@@ -99,7 +100,7 @@ const imports = [
     FormsModule,
     ReactiveFormsModule,
     UploadModule,
-    DataTableModule,
+    DataTableComponent,
     ScrollingModule,
     MatBtnComponent,
     ErrorsDirective,

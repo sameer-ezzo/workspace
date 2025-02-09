@@ -1,6 +1,5 @@
-import { HttpClient } from "@angular/common/http";
 import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input } from "@angular/core";
-import { Permission, Principle } from "@noah-ark/common";
+import { Principle } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 

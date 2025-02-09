@@ -1,12 +1,4 @@
-import { ScrollingModule } from "@angular/cdk/scrolling";
-import { CommonModule } from "@angular/common";
-import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
-import { NgModule } from "@angular/core";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { ErrorsDirective, UtilsModule } from "@upupa/common";
-import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
-import { DataTableModule } from "@upupa/table";
-import { UploadModule } from "@upupa/upload";
+
 import { MatAddressComponent } from "./address-edit/address.component";
 import { MatAutoCompleteTextComponent } from "./autocomplete-text-input/autocomplete-text.component";
 import { MatChipsComponent } from "./chips-input/chips-input.component";
@@ -14,7 +6,6 @@ import { MatChoicesComponent } from "./choices/choices.component";
 import { MatColorInputComponent } from "./color-input/color-input.component";
 import { MatDateInputComponent } from "./date-input/date-input.component";
 import { HiddenInputComponent, MatInputComponent } from "./input/input.component";
-import { materialModules } from "./material-modules";
 import { MatNumberComponent } from "./number/number.component";
 import { MatPasswordInputComponent } from "./password/password.component";
 import { MatPhoneInputComponent } from "./phone/phone.component";
@@ -28,7 +19,6 @@ import { MatArrayInputComponent } from "./array/array-input.component";
 import { MatTextAreaComponent } from "./text-area/text-area.component";
 import { MatTreeComponent } from "./tree/tree.component";
 
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from "@angular/material/form-field";
 import { MatTimeInputComponent } from "./time-input/time-input.component";
 import { MatCalendarInputComponent } from "./calendar-input/calendar-input.component";
 
@@ -84,57 +74,57 @@ export const DF_MATERIAL_THEME_INPUTS = {
     address: { component: MatAddressComponent },
 };
 
-const declarations = [];
+// const declarations = [];
 
-const imports = [
-    ...materialModules,
-    UtilsModule,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    UploadModule,
-    DynamicFormNativeThemeModule,
-    MatArrayInputComponent,
-    MatSwitchComponent,
-    DataTableModule,
-    ScrollingModule,
-    ErrorsDirective,
+// const imports = [
+//     ...materialModules,
+//     UtilsModule,
+//     CommonModule,
+//     FormsModule,
+//     ReactiveFormsModule,
+//     UploadModule,
+//     DynamicFormNativeThemeModule,
+//     MatArrayInputComponent,
+//     MatSwitchComponent,
+//     DataTableComponent,
+//     ScrollingModule,
+//     ErrorsDirective,
 
-    MatPhoneInputComponent,
-    MatTextAreaComponent,
-    MatDateInputComponent,
-    MatSelectComponent,
-    MatTreeComponent,
-    MatNumberComponent,
-    MatChipsComponent,
-    MatPasswordInputComponent,
-    MatInputComponent,
-    MatChoicesComponent,
-    MatColorInputComponent,
-    MatAutoCompleteTextComponent,
-    MatAddressComponent,
-    MatSliderComponent,
-    MatReviewScaleComponent,
-    MatDateRangeComponent,
-    MatNumbersRangeComponent,
-    // FileIconPerTypePipe,
-    // MatAttachmentsComponent, MatLocalFileInputComponent, MatFileBrowserComponent,
-    // MatFilesViewerComponent, MatFileSelectComponent, FileIconPerTypePipe,
-    // MatFileInputComponent
-];
+//     MatPhoneInputComponent,
+//     MatTextAreaComponent,
+//     MatDateInputComponent,
+//     MatSelectComponent,
+//     MatTreeComponent,
+//     MatNumberComponent,
+//     MatChipsComponent,
+//     MatPasswordInputComponent,
+//     MatInputComponent,
+//     MatChoicesComponent,
+//     MatColorInputComponent,
+//     MatAutoCompleteTextComponent,
+//     MatAddressComponent,
+//     MatSliderComponent,
+//     MatReviewScaleComponent,
+//     MatDateRangeComponent,
+//     MatNumbersRangeComponent,
+//     // FileIconPerTypePipe,
+//     // MatAttachmentsComponent, MatLocalFileInputComponent, MatFileBrowserComponent,
+//     // MatFilesViewerComponent, MatFileSelectComponent, FileIconPerTypePipe,
+//     // MatFileInputComponent
+// ];
 
-@NgModule({
-    imports: [...imports],
-    declarations: [...declarations],
-    providers: [
-        provideHttpClient(withInterceptorsFromDi()),
-        // FileUploadService,
-        // FileIconPerTypePipe
-        {
-            provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
-            useValue: { appearance: "outline" },
-        },
-    ],
-    exports: [...declarations, ...imports],
-})
-export class DynamicFormMaterialThemeModule {}
+// @NgModule({
+//     imports: [...imports],
+//     declarations: [...declarations],
+//     providers: [
+//         provideHttpClient(withInterceptorsFromDi()),
+//         // FileUploadService,
+//         // FileIconPerTypePipe
+//         {
+//             provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+//             useValue: { appearance: "outline" },
+//         },
+//     ],
+//     exports: [...declarations, ...imports],
+// })
+// export class DynamicFormMaterialThemeModule {}

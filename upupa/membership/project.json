@@ -1,44 +1,37 @@
 {
-  "name": "upupa-membership",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "library",
-  "sourceRoot": "libs/workspace/upupa/membership/src",
-  "prefix": "raptor7-workspace",
-  "targets": {
-    "build": {
-      "executor": "@nx/angular:package",
-      "options": {
-        "tsConfig": "libs/workspace/upupa/membership/tsconfig.lib.json",
-        "project": "libs/workspace/upupa/membership/ng-package.json"
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "libs/workspace/upupa/membership/tsconfig.lib.prod.json"
+    "name": "upupa-membership",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/workspace/upupa/membership/src",
+    "prefix": "raptor7-workspace",
+    "targets": {
+        "build": {
+            "executor": "@nx/angular:package",
+            "options": {
+                "tsConfig": "libs/workspace/upupa/membership/tsconfig.lib.json",
+                "project": "libs/workspace/upupa/membership/ng-package.json"
+            },
+            "configurations": {
+                "production": {
+                    "tsConfig": "libs/workspace/upupa/membership/tsconfig.lib.prod.json"
+                }
+            },
+            "dependsOn": ["^build", "upupa-dynamic-form:build", "upupa-dynamic-form-material-theme:build"]
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/workspace/upupa/membership/src/**/*.ts", "libs/workspace/upupa/membership/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/upupa/membership"],
+            "options": {
+                "jestConfig": "libs/workspace/upupa/membership/jest.config.ts",
+                "passWithNoTests": true
+            }
         }
-      }
     },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/upupa/membership/src/**/*.ts",
-          "libs/workspace/upupa/membership/src/**/*.html"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/upupa/membership"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/upupa/membership/jest.config.ts",
-        "passWithNoTests": true
-      }
-    }
-  },
-  "tags": [
-    "framework:angular",
-    "type:library"
-  ]
+    "tags": ["framework:angular", "type:library"]
 }

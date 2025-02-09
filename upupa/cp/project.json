@@ -1,50 +1,41 @@
 {
-  "name": "upupa-cp",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "projectType": "library",
-  "sourceRoot": "libs/workspace/upupa/cp/src",
-  "prefix": "raptor7-workspace",
-  "targets": {
-    "build": {
-      "executor": "@nx/angular:package",
-      "outputs": [
-        "{workspaceRoot}/dist/libs/workspace/upupa/cp"
-      ],
-      "options": {
-        "project": "libs/workspace/upupa/cp/ng-package.json"
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.prod.json"
+    "name": "upupa-cp",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/workspace/upupa/cp/src",
+    "prefix": "raptor7-workspace",
+    "targets": {
+        "build": {
+            "executor": "@nx/angular:package",
+            "outputs": ["{workspaceRoot}/dist/libs/workspace/upupa/cp"],
+            "options": {
+                "project": "libs/workspace/upupa/cp/ng-package.json"
+            },
+            "configurations": {
+                "production": {
+                    "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.prod.json"
+                },
+                "development": {
+                    "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.json"
+                }
+            },
+            "defaultConfiguration": "production",
+            "dependsOn": ["^build", "upupa-dynamic-form:build"]
         },
-        "development": {
-          "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.json"
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/upupa/cp"],
+            "options": {
+                "jestConfig": "libs/workspace/upupa/cp/jest.config.ts",
+                "passWithNoTests": true
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/workspace/upupa/cp/src/**/*.ts", "libs/workspace/upupa/cp/src/**/*.html"]
+            }
         }
-      },
-      "defaultConfiguration": "production"
     },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/upupa/cp"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/upupa/cp/jest.config.ts",
-        "passWithNoTests": true
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/upupa/cp/src/**/*.ts",
-          "libs/workspace/upupa/cp/src/**/*.html"
-        ]
-      }
-    }
-  },
-  "tags": [
-    "framework:angular",
-    "type:library"
-  ]
+    "tags": ["framework:angular", "type:library"]
 }

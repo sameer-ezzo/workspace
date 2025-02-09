@@ -3,8 +3,7 @@ import { Class } from "@noah-ark/common";
 import { ActionDescriptor, DynamicComponent } from "@upupa/common";
 import { DataAdapter } from "@upupa/data";
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { ITableCellTemplate } from "@upupa/table";
-import { openFormDialog } from "../helpers";
+import { openFormDialog } from "./helpers";
 import { DialogConfig } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 import { reflectFormViewModelType } from "@upupa/dynamic-form";
@@ -15,7 +14,7 @@ import { reflectFormViewModelType } from "@upupa/dynamic-form";
     template: ` <mat-btn (action)="edit()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
-export class EditButton<TItem = unknown> implements ITableCellTemplate<unknown, TItem> {
+export class EditButton<TItem = unknown> {
     injector = inject(Injector);
     adapter = inject(DataAdapter, { optional: true });
 

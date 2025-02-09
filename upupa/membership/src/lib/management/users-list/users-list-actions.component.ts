@@ -1,17 +1,17 @@
 import { Component, inject, computed, Injector } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { DataService } from "@upupa/data";
-import { AuthService, User, UserBase } from "@upupa/auth";
+import { AuthService, UserBase } from "@upupa/auth";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { DataTableComponent, DefaultTableCellTemplate } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { AdminUserPasswordRestComponent } from "../admin-userpwd-reset/admin-userpwd-reset.component";
-import { ConfirmService, DialogRef, DialogService, SnackBarService } from "@upupa/dialog";
+import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 import { DOCUMENT } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { openFormDialog } from "@upupa/cp";
-import { EditUserFromViewModel } from "./user.forms";
+
 import { EditUserRolesFromViewModel } from "../edit-user-roles/edit-user-roles.forms";
 
 @Component({

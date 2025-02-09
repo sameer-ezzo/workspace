@@ -97,7 +97,7 @@ export class DataFormComponent<T = any> {
             const v = this.value();
             const type = this.viewModel().viewModelType;
 
-            if (!(v instanceof type)) {
+            if (type && !(v instanceof type)) {
                 const instance = runInInjectionContext(this._injector(), () => new type());
                 deepAssign(instance, v);
                 this.value.set(instance);

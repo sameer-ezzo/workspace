@@ -1,16 +1,16 @@
 import { Component, ViewChild, Input, ChangeDetectionStrategy, Output, EventEmitter } from "@angular/core";
-import { DynamicFormComponent, DynamicFormModule, Field, FormScheme } from "@upupa/dynamic-form";
 import { InputBaseComponent } from "@upupa/common";
 import { Condition } from "@noah-ark/expression-engine";
 import { ReplaySubject, debounceTime } from "rxjs";
 import { getNestedValue } from "../filter.types";
 import { ToFilterDescriptor } from "../../types";
 import { FilterDescriptor } from "@upupa/data";
+import { DynamicFormComponent, Field, FormScheme } from "@upupa/dynamic-form";
 
 @Component({
     selector: "cp-data-filter-form",
     standalone: true,
-    imports: [DynamicFormModule],
+    imports: [DynamicFormComponent],
     templateUrl: "./data-filter-form.component.html",
     styleUrls: ["./data-filter-form.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,

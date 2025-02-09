@@ -8,7 +8,7 @@ import { DynamicFormInputs } from "../dynamic-form-inputs";
 import { FieldGroup, FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { TableHeaderComponent } from "@upupa/table";
+import { ArrayFormTableHeaderComponent } from "./form-array-table-header.component";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
 
@@ -199,7 +199,7 @@ export function formInputArray(
             inputs: {
                 viewModel: tableViewModel,
                 tableHeaderComponent: {
-                    component: TableHeaderComponent,
+                    component: ArrayFormTableHeaderComponent,
                     inputs: {
                         showSearch: config?.showSearch ?? false,
                         inlineEndSlot: config?.inlineEndSlot ?? [],

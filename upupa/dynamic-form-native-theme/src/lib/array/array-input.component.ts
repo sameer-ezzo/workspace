@@ -1,17 +1,17 @@
-import { Component, forwardRef, input, computed, Type, viewChild, signal, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
+import { Component, forwardRef, input, computed, Type, SimpleChanges, inject, Injector, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-import { DataTableComponent, DataTableModule, reflectTableViewModel } from "@upupa/table";
-import { ClientDataSource, DataAdapter, DataAdapterCreateItemEvent, DataAdapterCRUDEvent } from "@upupa/data";
+import { ClientDataSource, DataAdapter, DataAdapterCRUDEvent } from "@upupa/data";
 import { DynamicComponent, InputBaseComponent, PortalComponent } from "@upupa/common";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { Class } from "@noah-ark/common";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { DataTableComponent, reflectTableViewModel } from "@upupa/table";
 
 @Component({
     selector: "array-input",
     templateUrl: "./array-input.component.html",
     standalone: true,
-    imports: [DataTableModule, PortalComponent, MatFormFieldModule],
+    imports: [PortalComponent, DataTableComponent, MatFormFieldModule],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -30,7 +30,9 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     label = input("");
     // todo: pass key property (_id passed to the dataSource to identify the unique key of the data source)
     readonly dataSource = new ClientDataSource<T>([], "_id");
-    readonly adapter = new DataAdapter<T>(this.dataSource);
+    readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as any, undefined, undefined, undefined, {
+        page: { pageSize: Number.MAX_SAFE_INTEGER },
+    });
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
@@ -78,6 +80,5 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     tableHeaderComponentRef: ComponentRef<any>;
     onTableHeaderAttached({ componentRef }) {
         this.tableHeaderComponentRef = componentRef;
-        console.log("tableHeaderComponentRef", this.tableHeaderComponentRef);
     }
 }

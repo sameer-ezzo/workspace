@@ -2,13 +2,16 @@ import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionC
 import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { injectDataAdapter, injectRowItem } from "@upupa/table";
 import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { NgControl } from "@angular/forms";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { TranslationModule } from "@upupa/language";
+import { translateButton } from "./translate-btn.component";
+import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { injectDataAdapter, injectRowItem } from "@upupa/table";
+
 @Component({
     selector: "inline-button",
     standalone: true,
@@ -102,57 +105,17 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
 
 export function translationButtons(
     formViewModel: Class,
-    value?: () => any | Promise<any>,
+    value?: (btn: TranslationModule) => any | Promise<any>,
     options?: {
+        translationStrategy: "link" | "embed";
         locales: { nativeName: string; code: string }[];
         dialogOptions?: Partial<DialogConfig>;
     },
 ): DynamicComponent[] {
     if (!formViewModel) throw new Error("formViewModel is required");
-
-    return (options?.locales ?? []).map((locale) => {
-        const descriptor = {
-            name: locale.code,
-            text: locale.nativeName ?? locale.code,
-            icon: "translate",
-        };
-        return inlineButton({
-            descriptor: descriptor,
-            clickHandler: async (source) => {
-                const dialogOptions = { title: `${locale.nativeName}`, ...options?.dialogOptions };
-                const adapter = injectDataAdapter();
-                const injector = inject(Injector);
-                const item = readInput("item", source);
-                const v = await (value ? value() : item);
-
-                const _value = Object.assign({}, v, v.translations?.[locale.code]);
-                const translations = Object.assign({}, _value.translations);
-                delete _value.translations; // to prevent json circular reference
-
-                const mirror = reflectFormViewModelType(formViewModel);
-                mirror.viewModelType = Object; // to prevent view model submit handler
-                mirror.actions = [];
-                const { submitResult, error } = await openFormDialog.call(source, mirror, _value, {
-                    dialogOptions,
-                    injector,
-                    defaultAction: {
-                        text: "Translate",
-                        icon: "translate",
-                        color: "primary",
-                        type: "submit",
-                    },
-                });
-                if (error) return;
-
-                translations[locale.code] = submitResult;
-                v.translations = translations;
-                await adapter.put(item, v);
-
-                await adapter.refresh();
-            },
-            inputItem: null,
-        });
-    });
+    return (options?.locales ?? []).map((locale) =>
+        translateButton(formViewModel, value, { locale, translationStrategy: options.translationStrategy, dialogOptions: options?.dialogOptions }),
+    );
 }
 
 export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(output: K, instance: TCom = this): Promise<TOut[K]> {

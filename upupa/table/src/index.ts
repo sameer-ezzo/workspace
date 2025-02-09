@@ -1,4 +1,4 @@
-export * from './lib/data-table.service';
+
 export * from './lib/data-table.component';
 export * from './lib/dynamic.pipe';
 export * from './lib/json-pointer.pipe';

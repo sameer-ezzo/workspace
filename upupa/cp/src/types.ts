@@ -1,16 +1,14 @@
-import { Type } from '@angular/core';
-import { Condition } from '@noah-ark/expression-engine';
-import { FormScheme } from '@upupa/dynamic-form';
-import { FlatHierarchy } from '@noah-ark/path-matcher';
-import { ActionDescriptor } from '@upupa/common';
-import { DataAdapter, FilterDescriptor } from '@upupa/data';
+import { Type } from "@angular/core";
+import { Condition } from "@noah-ark/expression-engine";
 
-
+import { FlatHierarchy } from "@noah-ark/path-matcher";
+import { ActionDescriptor } from "@upupa/common";
+import { DataAdapter, FilterDescriptor } from "@upupa/data";
 
 export type FormSubmitResult = {
-  closeDialog?: boolean;
-  successMessage?: string;
-  redirect?: string;
+    closeDialog?: boolean;
+    successMessage?: string;
+    redirect?: string;
 };
 // export type DataFormViewModel<T = any> = DynamicFormOptions<T> & {
 //   value$: Observable<T>;
@@ -24,34 +22,32 @@ export type FormSubmitResult = {
 //   defaultSubmitOptions?: FormSubmitResult;
 // };
 export type DataQueryParams = {
-  key: string;
-  value: string | number | boolean;
+    key: string;
+    value: string | number | boolean;
 }[];
-export type ToFilterDescriptor = (
-  value: Record<string, any>
-) => FilterDescriptor;
+export type ToFilterDescriptor = (value: Record<string, any>) => FilterDescriptor;
 export type DataListFilterForm = {
-  position: 'sidenav-start' | 'sidenav-end' | 'dialog';
-  fields: FormScheme;
-  conditions?: Condition[];
-  toFilterDescriptor: ToFilterDescriptor;
-  filterChangeDebounceTime?: number;
-  groupBy?: string; // this is the name of the field in the filter form that will be used to group the filter fields and encode them using base64
+    position: "sidenav-start" | "sidenav-end" | "dialog";
+    fields: any;
+    conditions?: Condition[];
+    toFilterDescriptor: ToFilterDescriptor;
+    filterChangeDebounceTime?: number;
+    groupBy?: string; // this is the name of the field in the filter form that will be used to group the filter fields and encode them using base64
 };
 export type DataFormResolverResult = {
-  path: string;
-  formViewModel: any;
+    path: string;
+    formViewModel: any;
 };
 export type DataListResolverResult = {
-  path: string;
-  adapter: DataAdapter;
-  listViewModel: any;
+    path: string;
+    adapter: DataAdapter;
+    listViewModel: any;
 };
 export type FormResolverCollectionMap = {
-  [collection: string]: DataFormResolverResult;
+    [collection: string]: DataFormResolverResult;
 };
 
-export type DataAdapterType = 'server' | 'client' | 'http';
+export type DataAdapterType = "server" | "client" | "http";
 // export type DataListViewModel<
 //   TData = any,
 //   AdapterType extends DataAdapterType = 'server'
@@ -72,29 +68,26 @@ export type DataAdapterType = 'server' | 'client' | 'http';
 // };
 
 export type ScaffoldingViewModel = {
-  actions?: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
-  query?: Record<string, any>;
+    actions?: ActionDescriptor[] | ((row: any) => ActionDescriptor[]);
+    query?: Record<string, any>;
 };
 export type FormScaffoldingModel = ScaffoldingViewModel & {
-  type: 'form';
-  viewModel: any;
+    type: "form";
+    viewModel: any;
 } & any;
 export type ListScaffoldingModel = ScaffoldingViewModel & {
-  type: 'list';
-  viewModel: any;
-} & any;;
+    type: "list";
+    viewModel: any;
+} & any;
 export type ScaffoldingModel = FormScaffoldingModel | ListScaffoldingModel;
 
 export interface IScaffolder<T extends ScaffoldingModel> {
-  scaffold(path: string, ...params: any[]): Promise<T> | T;
+    scaffold(path: string, ...params: any[]): Promise<T> | T;
 }
-export type ScaffolderFactory<T extends ScaffoldingModel> = (
-  path: string,
-  ...params: any[]
-) => Promise<T> | T;
+export type ScaffolderFactory<T extends ScaffoldingModel> = (path: string, ...params: any[]) => Promise<T> | T;
 export type Scaffolder<T extends ScaffoldingModel = ScaffoldingModel> = {
-  type?: Type<IScaffolder<T>>;
-  scaffold?: ScaffolderFactory<T>;
+    type?: Type<IScaffolder<T>>;
+    scaffold?: ScaffolderFactory<T>;
 };
 
 export type ScaffoldingScheme = FlatHierarchy<Scaffolder>;

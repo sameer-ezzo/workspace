@@ -1,6 +1,6 @@
 import { DatePipe } from "@angular/common";
 import { inject } from "@angular/core";
-import { closeDialog, editButton } from "@upupa/cp";
+import { editButton } from "@upupa/cp";
 import { DataAdapter, DataService } from "@upupa/data";
 import { formInput } from "@upupa/dynamic-form";
 import { EmailColumnCellComponent } from "./email-column-cell.component";

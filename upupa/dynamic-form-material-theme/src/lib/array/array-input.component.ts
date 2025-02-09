@@ -4,13 +4,14 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { PortalComponent } from "@upupa/common";
 import { ArrayInputComponent } from "@upupa/dynamic-form-native-theme";
-import { DataTableModule } from "@upupa/table";
+import { DataTableComponent } from "@upupa/table";
+
 
 @Component({
     selector: "mat-form-array-input",
     templateUrl: "./array-input.component.html",
     standalone: true,
-    imports: [DataTableModule, PortalComponent, MatFormFieldModule, MatInputModule],
+    imports: [DataTableComponent, PortalComponent, MatFormFieldModule, MatInputModule],
     styleUrl: "./array-input.component.scss",
     providers: [
         {
