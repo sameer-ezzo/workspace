@@ -30,7 +30,7 @@ export class CreateButton<TItem = unknown> implements ITableCellTemplate<unknown
         const dialogOptions = this.dialogOptions();
         runInInjectionContext(this.injector, async () => {
             const mirror = reflectFormViewModelType(this.formViewModel());
-            const value = this.data()?.(this) ?? this.item() ?? new mirror.viewModelType();
+            const value = (await this.data()?.(this)) ?? this.item() ?? new mirror.viewModelType();
             const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
             const result = await firstValueFrom(dialogRef.afterClosed());
             if (result && this.updateAdapter()) {

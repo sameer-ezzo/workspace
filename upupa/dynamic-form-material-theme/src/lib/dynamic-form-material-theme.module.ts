@@ -29,7 +29,7 @@ import { MatTextAreaComponent } from "./text-area/text-area.component";
 import { MatTreeComponent } from "./tree/tree.component";
 
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from "@angular/material/form-field";
-import { MatTimeInputComponent } from "./time-input/time-input.component";
+// import { MatTimeInputComponent } from "./time-input/time-input.component";
 import { MatCalendarInputComponent } from "./calendar-input/calendar-input.component";
 
 export const DF_MATERIAL_THEME_INPUTS = {
@@ -55,7 +55,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
         },
     },
     date: { component: MatDateInputComponent },
-    time: { component: MatTimeInputComponent },
+    // time: { component: MatTimeInputComponent },
     calendar: { component: MatCalendarInputComponent },
     "date-range": { component: MatDateRangeComponent },
     select: { component: MatSelectComponent },
