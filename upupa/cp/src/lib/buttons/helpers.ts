@@ -8,7 +8,7 @@ import { Class } from "@noah-ark/common";
 import { NgControl } from "@angular/forms";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TranslationModule } from "@upupa/language";
-import { translateButton } from "./translate-btn.component";
+import { EmbedTranslationButton, LinkTranslationButton, translateButton } from "./translate-btn.component";
 import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
 
@@ -103,9 +103,9 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     return { dialogRef, componentRef };
 }
 
-export function translationButtons(
+export function translationButtons<TItem = unknown>(
     formViewModel: Class,
-    value?: (btn: TranslationModule) => any | Promise<any>,
+    value: TItem | ((btn: EmbedTranslationButton<TItem> | LinkTranslationButton<TItem>) => TItem) = () => new formViewModel(),
     options?: {
         translationStrategy: "link" | "embed";
         locales: { nativeName: string; code: string }[];
@@ -113,6 +113,7 @@ export function translationButtons(
     },
 ): DynamicComponent[] {
     if (!formViewModel) throw new Error("formViewModel is required");
+
     return (options?.locales ?? []).map((locale) =>
         translateButton(formViewModel, value, { locale, translationStrategy: options.translationStrategy, dialogOptions: options?.dialogOptions }),
     );

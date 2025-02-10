@@ -13,7 +13,9 @@ import { cloneDeep } from "lodash";
 @Component({
     standalone: true,
     selector: "embed-translation-btn",
-    template: ` <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>`,
+    template: ` @if (item()["lang"] !== locale().code) {
+        <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
+    }`,
     imports: [MatBtnComponent],
 })
 export class EmbedTranslationButton<TItem = unknown> {
@@ -102,7 +104,9 @@ export class EmbedTranslationButton<TItem = unknown> {
 @Component({
     standalone: true,
     selector: "link-translation-btn",
-    template: ` <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>`,
+    template: ` @if (item()["lang"] !== locale().code) {
+        <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
+    }`,
     imports: [MatBtnComponent],
 })
 export class LinkTranslationButton<TItem = unknown> {
@@ -198,7 +202,6 @@ export function translateButton<TItem = unknown>(
     const dialogOptions = { title: "Translate", ...options?.dialogOptions };
 
     const data = (typeof value === "function" ? value : () => value) as (btn: EmbedTranslationButton<TItem>) => TItem;
-
     if (options.translationStrategy === "embed")
         return {
             component: EmbedTranslationButton<TItem>,
