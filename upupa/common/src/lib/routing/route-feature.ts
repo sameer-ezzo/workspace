@@ -1,4 +1,4 @@
-import { ResolveFn, Route, Routes } from "@angular/router";
+import { ResolveFn, Route } from "@angular/router";
 import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
 
@@ -80,7 +80,7 @@ export function withAction(
         action: string;
         name?: string;
         path?: string;
-        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string; };
+        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string };
     },
 ): RouteFeature {
     return {
