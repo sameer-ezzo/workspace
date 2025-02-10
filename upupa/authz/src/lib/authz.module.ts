@@ -2,10 +2,10 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { AuthorizeActionDirective } from "./authorize-action.directive";
 import { PERMISSIONS_BASE_URL } from "./di.tokens";
-import { AuthModule } from "@upupa/auth";
+
 
 @NgModule({
-    imports: [CommonModule, AuthModule, AuthorizeActionDirective],
+    imports: [CommonModule, AuthorizeActionDirective],
     declarations: [],
     exports: [AuthorizeActionDirective],
     providers: [],

@@ -10,23 +10,23 @@ export const convertToProvider = (token: InjectionToken<string>, option: string 
     return option;
 };
 
-@NgModule({
-    imports: [CommonModule],
-    providers: [...authProviders(_options)],
-})
-export class AuthModule {
-    // constructor(@Optional() @SkipSelf() parentModule: AuthModule) {
-    //     if (parentModule) {
-    //         throw new Error('AuthModule is already loaded. Import it in the AppModule only');
-    //     }
-    // }
+// @NgModule({
+//     imports: [CommonModule],
+//     providers: [...authProviders(_options)],
+// })
+// export class AuthModule {
+//     // constructor(@Optional() @SkipSelf() parentModule: AuthModule) {
+//     //     if (parentModule) {
+//     //         throw new Error('AuthModule is already loaded. Import it in the AppModule only');
+//     //     }
+//     // }
 
-    public static forRoot(baseUrl: string, options?: AuthOptions): ModuleWithProviders<AuthModule> {
-        options = { ..._options, ...options, base_url: baseUrl };
+//     public static forRoot(baseUrl: string, options?: AuthOptions): ModuleWithProviders<AuthModule> {
+//         options = { ..._options, ...options, base_url: baseUrl };
 
-        return {
-            ngModule: AuthModule,
-            providers: [...authProviders(options)],
-        };
-    }
-}
+//         return {
+//             ngModule: AuthModule,
+//             providers: [...authProviders(options)],
+//         };
+//     }
+// }

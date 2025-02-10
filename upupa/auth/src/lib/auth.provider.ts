@@ -12,8 +12,8 @@ export type AuthProvider = Omit<Provider, "provide">;
 
 export function authProviders(options: AuthOptions): Provider[] {
     return [
-        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         { provide: AUTH_OPTIONS, useValue: options },
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     ] as Provider[];
 }
 

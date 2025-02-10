@@ -81,7 +81,7 @@ export class AuthService {
         return Object.freeze(this.options.password_policy);
     }
 
-    constructor() {
+    constructor() {        
         const user = this.jwt(this.get_token());
         this.triggerNext(user);
 
