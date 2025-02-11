@@ -71,18 +71,20 @@ export function filter<T>(all: T[], filter: FilterDescriptor, sort: SortDescript
     if (query.length) {
         result = result.filter((item) => {
             if (typeof item === "object" && query.length) {
+                let res = [];
                 for (const [field, q] of query) {
                     if (field === "search") continue;
-                    if (!q.length) return true;
+                    if (!q.length) continue;
                     const itemValue = getByPath(item, field);
-                    if (q == null && itemValue == null) return true;
-                    if (typeof q === "string" && q.length > 0) {
-                        return itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1;
+                    if (q == null && itemValue == null) res.push(true);
+                    if (typeof q === "string") {
+                        res.push(itemValue?.toLocaleLowerCase().indexOf(q.toLocaleLowerCase()) > -1);
                     }
                     if (typeof q === "number") {
-                        if (itemValue === q) return true;
+                        if (itemValue === q) res.push(true);
                     }
                 }
+                return res.every((r) => r);
             }
             return true;
         });
