@@ -135,7 +135,10 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     readonly items = computed<NormalizedItem<T>[]>(() => {
         const normalized = this.adapter().normalized();
         const selectedNormalized = this.selectedNormalized();
-        return this.itemsSource() === "adapter" ? normalized : selectedNormalized;
+        if (this.itemsSource() === "adapter") {
+            const selectedNotNormalized = selectedNormalized.filter((x) => !normalized.find((e) => e.key === x.key));
+            return [...selectedNotNormalized, ...normalized];
+        } else return selectedNormalized;
     });
 
     _firstLoad = false;

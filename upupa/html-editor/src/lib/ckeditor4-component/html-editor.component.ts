@@ -32,7 +32,8 @@ export const SMART_TOOLBAR = [
     ["JustifyLeft", "JustifyCenter", "JustifyRight", "JustifyBlock", "BidiLtr", "BidiRtl"],
     ["Link", "Unlink"],
     ["Image", "Upload", "Table", "HorizontalRule", "SpecialChar"],
-    ["Maximize", "ShowBlocks", "MediaEmbed"],
+    ["Source", "Iframe", "Embed", "MediaEmbed"],
+    ["Maximize"],
 ];
 
 @Component({
@@ -79,21 +80,20 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
     private async loadEditor(): Promise<void> {
         //https://cdnjs.com/libraries/ckeditor/4.22.1
-        await CKEditor4Component.loadScript("https://cdn.ckeditor.com/4.22.1/full/ckeditor.js");
-        // const scripts = [
-        //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/imagebase/plugin.min.js"),
-        //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/easyimage/plugin.min.js"),
-        //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloontoolbar/plugin.min.js"),
-        //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/cloudservices/plugin.min.js"),
-        //     CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloonpanel/plugin.min.js"),
-        // ];
+        // await CKEditor4Component.loadScript("https://cdn.ckeditor.com/4.22.1/full/ckeditor.js");
+        const scripts = [
+            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/imagebase/plugin.min.js"),
+            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloontoolbar/plugin.min.js"),
+            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/cloudservices/plugin.min.js"),
+            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloonpanel/plugin.min.js"),
+        ];
         // await Promise.all(scripts);
         const config = {
             licenseKey: "GPL",
             versionCheck: false,
             uiColor: "#fff7f9",
             toolbar: SMART_TOOLBAR,
-            // extraPlugins: "uploadimage,easyimage",
+            extraPlugins: "image2",
             uploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserImageUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
