@@ -81,7 +81,7 @@ export class AuthService {
         return Object.freeze(this.options.password_policy);
     }
 
-    constructor() {        
+    constructor() {
         const user = this.jwt(this.get_token());
         this.triggerNext(user);
 
@@ -248,7 +248,7 @@ export class AuthService {
         return null;
     }
     async signin(credentials: Credentials & { rememberMe?: boolean }): Promise<Principle | { type: "reset-pwd"; reset_token: string }> {
-        const authRequestBody: Record<string, string | any> = { grant_type: "password", password: credentials.password, device: undefined };
+        const authRequestBody: Record<string, string | any> = { grant_type: "password", rememberMe: false, password: credentials.password, device: undefined };
 
         if (credentials.id) authRequestBody["id"] = credentials.id;
         else if (!credentials.password) throw "USERNAME_AND_PASSWORD_ARE_REQUIRED"; //password is required for all cases except id login (passwordless login)
@@ -256,8 +256,9 @@ export class AuthService {
         if (credentials.username) authRequestBody["username"] = credentials.username;
         if (credentials.email) authRequestBody["email"] = credentials.email;
         if (credentials.phone) authRequestBody["phone"] = credentials.phone;
+        if (credentials.rememberMe) authRequestBody["rememberMe"] = credentials.rememberMe;
 
-        authRequestBody["device"] = this.deviceService.getDevice();
+        authRequestBody["device"] = await this.deviceService.getDevice();
 
         try {
             const auth_token = await this._doHttpFetch(this.baseUrl, authRequestBody);
