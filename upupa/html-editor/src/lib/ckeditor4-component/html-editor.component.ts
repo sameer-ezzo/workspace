@@ -65,9 +65,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     label = input("");
     hint = input("");
     upload = inject(UploadClient);
-
-    private readonly uploadClient = inject(UploadClient);
-    private readonly auth = inject(AuthService);
+    auth = inject(AuthService);
 
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -79,15 +77,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private async loadEditor(): Promise<void> {
-        //https://cdnjs.com/libraries/ckeditor/4.22.1
-        // await CKEditor4Component.loadScript("https://cdn.ckeditor.com/4.22.1/full/ckeditor.js");
-        const scripts = [
-            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/imagebase/plugin.min.js"),
-            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloontoolbar/plugin.min.js"),
-            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/cloudservices/plugin.min.js"),
-            // CKEditor4Component.loadScript("https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.22.1/plugins/balloonpanel/plugin.min.js"),
-        ];
-        // await Promise.all(scripts);
+        if (typeof CKEDITOR === "undefined") await CKEditor4Component.loadScript("/ckeditor/ckeditor.js");
+
         const config = {
             licenseKey: "GPL",
             versionCheck: false,
