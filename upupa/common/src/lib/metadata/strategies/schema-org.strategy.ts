@@ -23,11 +23,8 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
         this.clearSchemaOrgTags();
         const fallback = metaFallback.fallback as any;
         const schema = { ...(fallback.schema ?? {}), ...(meta.schema ?? {}) };
-        for (const schemaKey in schema) {
-            if (Object.prototype.hasOwnProperty.call(schema, schemaKey)) {
-                this.makeSchemaOrgTag(schemaKey, schema[schemaKey]);
-            }
-        }
+
+        this.makeSchemaOrgTag(schema["@type"].toLocaleLowerCase(), schema);
     }
 
     // clear all application/ld+json schema tags from the head
@@ -42,6 +39,7 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
 
     makeSchemaOrgTag(type: string, schema: ImageObjectSchema) {
         const s = this.fillSchemaByType(type, schema);
+
         if (!s) return;
         const script = this.dom.createElement("script");
         script.type = "application/ld+json";

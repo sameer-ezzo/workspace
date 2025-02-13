@@ -41,15 +41,14 @@ export class EmbedTranslationButton<TItem = unknown> {
             const value = this.data()?.(this) ?? this.item() ?? new mirror.viewModelType();
             const v = await value;
             const { code, nativeName } = this.locale();
-            const _translations = Array.isArray(v.translations)
-                ? cloneDeep(v.translations)
-                : Object.entries(v.translations).map(([lang, value]: [string, any]) => ({ ...value, lang }));
+            const trans = v.translations ?? [];
+            const _translations = Array.isArray(trans) ? cloneDeep(trans) : Object.entries(trans).map(([lang, value]: [string, any]) => ({ ...value, lang }));
             const _value = Object.assign(
                 {},
                 v,
                 _translations.find((t) => t.lang === code),
+                { lang: code },
             );
-            const translations = cloneDeep(_value.translations);
             delete _value._id;
             delete _value.translations; // to prevent json circular reference
 

@@ -1,4 +1,4 @@
-import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, APP_INITIALIZER } from "@angular/core";
+import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, APP_INITIALIZER, FactoryProvider } from "@angular/core";
 import { MetadataService, PAGE_METADATA_STRATEGIES } from "./metadata.service";
 import { DEFAULT_OPEN_GRAPH_CONFIG, OPEN_GRAPH_CONFIG, OpenGraphConfig, OpenGraphMetadataStrategy } from "./strategies/open-graph.strategy";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG, PageMetadataStrategy } from "./strategies/page-metadata.strategy";
@@ -22,8 +22,8 @@ type MetadataFeatureProvider = Omit<Provider, "provide" | "multi">;
  * @param features
  * @returns
  */
-export function providePageMetadata(config: ContentMetadataConfig | (() => ContentMetadataConfig), ...features: (Provider | EnvironmentProviders)[]) {
-    const configProvider = typeof config == "function" ? { useFactory: config } : { useValue: config };
+export function providePageMetadata(config: ContentMetadataConfig | Omit<FactoryProvider, "provide" | "multi">, ...features: (Provider | EnvironmentProviders)[]) {
+    const configProvider = config && "useFactory" in config ? config : { useValue: config };
 
     return makeEnvironmentProviders([
         {

@@ -31,7 +31,7 @@
             }
         </mat-toolbar>
 
-        <file-select #fileSelect [hideSelectButton]="true" (events)="onFileEvent($event)" [value]="files()" [view]="view()" [path]="path()"></file-select>
+        <file-select #fileSelect [hideSelectButton]="true" [readonly]="false" [maxAllowedFiles]="maxAllowedFiles" (events)="onFileEvent($event)" [value]="files()" [view]="view()" [path]="path()"></file-select>
 
         <mat-paginator
             (page)="adapter.load({ page: $event })"

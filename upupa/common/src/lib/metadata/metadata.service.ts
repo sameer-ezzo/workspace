@@ -47,7 +47,13 @@ export class MetadataService {
 
     private readonly router = inject(Router);
     private readonly dom = inject(DOCUMENT);
-    private readonly config = inject(PAGE_METADATA_CONFIG);
+    readonly config = inject(PAGE_METADATA_CONFIG);
+
+    // this function helps to update the config object
+    // in new versions of Angular, this could not be set during the app initialization.
+    updateConfig(config: Partial<ContentMetadataConfig>) {
+        Object.assign(this.config, config);
+    }
     async listenForRouteChanges() {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {

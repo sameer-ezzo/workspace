@@ -76,6 +76,7 @@ export class FileBrowserComponent {
     value = model<FileInfo[]>([]);
     disabled = model(false);
 
+    maxAllowedFiles = Number.MAX_SAFE_INTEGER;
     public fileUploader = inject(FileUploadService);
 
     async onFileEvent(event: FileEvent) {
