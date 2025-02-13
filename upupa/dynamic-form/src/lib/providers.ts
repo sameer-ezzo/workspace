@@ -25,13 +25,13 @@ export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...featur
     return provideRoute(config, withFormComponent(config), ...features);
 }
 
-export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent {
+export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent<DataFormComponent> {
     return {
         component: DataFormComponent,
         inputs: {
             viewModel: config.viewModel,
             value: config.value,
-            form: config.form,
+            // form: config.form,
         },
     };
 }

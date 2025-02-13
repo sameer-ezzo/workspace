@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./lib/cp-layout/cp-layout.component";
+export * from "./lib/center-layout/center-layout";
 export * from "./lib/di.token";
 export * from "./lib/side-bar-group-item";
 export * from "./lib/tool-bar-user-menu/tool-bar-user-menu.component";

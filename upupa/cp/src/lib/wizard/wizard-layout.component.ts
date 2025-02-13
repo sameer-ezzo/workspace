@@ -1,4 +1,4 @@
-import { Component, ComponentRef, computed, ElementRef, input, model, OnChanges, output, SimpleChanges, viewChild } from "@angular/core";
+import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
 import { MatStepperModule } from "@angular/material/stepper";
 import { DynamicComponent, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
@@ -25,7 +25,7 @@ export function observeInlineSize(el: HTMLElement): Observable<number> {
 }
 
 export type WizardStep = {
-    template: DynamicComponent;
+    template: DynamicComponent | (() => DynamicComponent);
     label?: string;
     control?: AbstractControl;
     state?: string;
@@ -51,6 +51,7 @@ export type WizardStep = {
 export class WizardLayoutComponent implements OnChanges {
     stepper = viewChild("stepper", { read: ElementRef });
 
+    injector = inject(Injector);
     steps = input.required<WizardStep[]>();
 
     isLinear = input(true, { transform: (v) => v ?? true });
@@ -98,6 +99,14 @@ export class WizardLayoutComponent implements OnChanges {
     getComponentRef(index: number | WizardStep) {
         const i = typeof index === "number" ? index : this.steps().indexOf(index);
         return this._componentRefs[i];
+    }
+
+    getTemplate(step: WizardStep) {
+        if (step["_template"]) return step["_template"];
+        const template = step.template;
+        const _template = typeof template === "function" ? runInInjectionContext(this.injector, () => template()) : template;
+        step["_template"] = _template;
+        return _template;
     }
 }
 
