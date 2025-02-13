@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import { HttpClient, HttpRequest, HttpEventType, HttpResponse, HttpErrorResponse } from "@angular/common/http";
+import { HttpClient, HttpRequest, HttpEventType, HttpResponse, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { FileInfo, UploadStream } from "./model";
 import { DOCUMENT } from "@angular/common";
 
@@ -17,7 +17,16 @@ export class UploadService {
         }
         form.append(fileName, file);
 
-        const req = new HttpRequest("POST", url, form, { reportProgress: true });
+        const uploadHeaders = new HttpHeaders({
+            Accept: "application/json",
+            "Cache-Control": "no-cache",
+            "Accept-Charset": "utf-8",
+        });
+
+        const req = new HttpRequest("POST", url, form, {
+            reportProgress: true,
+            headers: uploadHeaders,
+        });
         task.connection = this.http.request(req).subscribe({
             next: (event: any) => {
                 if (event.type === HttpEventType.UploadProgress) {
@@ -102,7 +111,7 @@ export function openFileDialog(doc, accept: string = null, multiple = false): Pr
                 fileInput.remove();
                 resolve(fileInput.files);
             },
-            false
+            false,
         );
 
         fileInput.click();
