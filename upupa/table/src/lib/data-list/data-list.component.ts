@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, viewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, Type, computed, inject, input, model, runInInjectionContext, viewChild } from "@angular/core";
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
@@ -96,10 +96,10 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         // });
     }
 
+    focusedItem = model();
     onFocusedItemChanged($event: any) {
-        // const vm = this.vm();
-        // runInInjectionContext(this.injector, () => {
-        //     vm.onFocusedItemChange?.($event);
-        // });
+        runInInjectionContext(this.injector, () => {
+            this.focusedItem.set($event);
+        });
     }
 }
