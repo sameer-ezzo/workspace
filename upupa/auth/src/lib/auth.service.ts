@@ -256,7 +256,7 @@ export class AuthService {
         if (credentials.username) authRequestBody["username"] = credentials.username;
         if (credentials.email) authRequestBody["email"] = credentials.email;
         if (credentials.phone) authRequestBody["phone"] = credentials.phone;
-        if (credentials.rememberMe) authRequestBody["rememberMe"] = credentials.rememberMe;
+        authRequestBody["rememberMe"] = credentials.rememberMe === true;
 
         authRequestBody["device"] = await this.deviceService.getDevice();
 
@@ -273,7 +273,7 @@ export class AuthService {
 
                 this.setTokens(auth_token);
                 this.triggerNext(jwt);
-                if (credentials.rememberMe !== true) this.setupBeforeUnloadListener();
+                if (authRequestBody["rememberMe"] !== true) this.setupBeforeUnloadListener();
 
                 return jwt as Principle;
             }

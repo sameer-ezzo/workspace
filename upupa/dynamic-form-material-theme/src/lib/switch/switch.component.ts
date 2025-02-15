@@ -25,7 +25,10 @@ export class MatSwitchComponent extends SwitchComponent {
     inputEl = viewChild.required<MatSlideToggle | MatCheckbox>("_inputElement");
     override template = input<"checkbox" | "toggle">("checkbox");
 
-    
+    _handleUserInput(checked: boolean) {
+        console.log(this.name(), checked);
+        this.handleUserInput(checked);
+    }
 
     toggle() {
         const input = this.inputEl();

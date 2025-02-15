@@ -4,10 +4,11 @@
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             [checked]="value()"
-            (change)="handleUserInput($event.checked)"
+            (change)="_handleUserInput($event.checked)"
             [checked]="value"
             (blur)="markAsTouched()"
             [attr.name]="name()"
+            [formControl]="control()"
         >
         </mat-slide-toggle>
     }
@@ -16,10 +17,11 @@
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             [checked]="value()"
-            (change)="handleUserInput($event.checked)"
+            (change)="_handleUserInput($event.checked)"
             [checked]="value"
             (blur)="markAsTouched()"
             [attr.name]="name()"
+            [formControl]="control()"
         >
         </mat-checkbox>
     }
