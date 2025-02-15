@@ -1,6 +1,6 @@
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "./decorators/form-input.decorator";
-import { FormGroup } from "@angular/forms";
+import { FormControl, FormGroup } from "@angular/forms";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { Route } from "@angular/router";
@@ -25,12 +25,13 @@ export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...featur
     return provideRoute(config, withFormComponent(config), ...features);
 }
 
-export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup }): DynamicComponent<DataFormComponent> {
+export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup ,control?: FormControl}): DynamicComponent<DataFormComponent> {
     return {
         component: DataFormComponent,
         inputs: {
             viewModel: config.viewModel,
             value: config.value,
+            control: config.control,
             // form: config.form,
         },
     };

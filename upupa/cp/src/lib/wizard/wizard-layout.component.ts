@@ -1,7 +1,7 @@
 import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
 import { MatStepperModule } from "@angular/material/stepper";
-import { DynamicComponent, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { Route } from "@angular/router";
@@ -110,20 +110,30 @@ export class WizardLayoutComponent implements OnChanges {
     }
 }
 
-export function provideWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean }): Route {
-    return provideRoute(config, withWizardLayout(config));
+export function provideWizardLayout(
+    config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: { done?: (c, e) => void; next?: (c, e) => void } },
+    ...features: RouteFeature[]
+): Route {
+    return provideRoute(withWizardLayout(config), ...features);
 }
 
-export function withWizardLayout(config: { steps: WizardStep[]; isLinear?: boolean }): RouteFeature {
+export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: { done?: (c, e) => void; next?: (c, e) => void } }): DynamicComponentRoute {
     return {
-        name: "wizard-layout",
-        modify: () => ({
+        name: "withWizardLayout",
+        path: config.path,
+        component: {
             component: WizardLayoutComponent,
-            data: {
-                steps: config.steps,
-                isLinear: config.isLinear ?? true,
-            },
-        }),
+            outputs: config.outputs,
+
+        },
+        resolve: config.resolve,
+        data: {
+            steps: config.steps,
+            isLinear: config.isLinear ?? true,
+            outputs:config.outputs
+
+
+        }
     };
 }
 
