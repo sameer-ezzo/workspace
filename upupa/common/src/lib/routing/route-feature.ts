@@ -1,4 +1,4 @@
-import { ResolveFn, Route } from "@angular/router";
+import { ResolveFn, Route, RouterOutlet } from "@angular/router";
 import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
 
@@ -62,7 +62,7 @@ export function provideRoute<T = any>(
     if (isDynamicComponentRoute(_route)) {
         const dynamicComponent = _route.component;
         route.component = dynamicComponent.component;
-        route.data = { ...route.data, ...dynamicComponent.inputs };
+        route.data = { ...route.data, ...dynamicComponent.inputs, outputs: dynamicComponent.outputs };
     }
 
     for (const modifier of features) {
@@ -90,5 +90,71 @@ export function withAction(
                 data: { ...route.data, action },
             };
         },
+    };
+}
+
+import { APP_INITIALIZER, ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { Subscription } from "rxjs";
+
+@Injectable({ providedIn: "root" })
+export class RouteOutputBinder {
+    _map = new Map<ComponentRef<any>, Subscription[]>();
+
+    bindOutputs(activatedRoute: ActivatedRoute, componentRef: ComponentRef<any>): void {
+        if (!componentRef) return;
+
+        const outputsConfig = activatedRoute.snapshot.data["outputs"] as Record<string, (...args: any[]) => void>;
+        const mirror = reflectComponentType(componentRef.componentType);
+        if (outputsConfig) {
+            for (const outputName in outputsConfig) {
+                if (!mirror.outputs.find((o) => o.templateName == outputName)) continue;
+
+                const output = componentRef.instance[outputName];
+                if (output && output.subscribe) {
+                    const handler = outputsConfig[outputName];
+                    const subscription = output.subscribe((...args: any[]) => {
+                        runInInjectionContext(componentRef.injector, () => {
+                            handler(componentRef, ...args);
+                        });
+                    });
+                    this._map.set(componentRef, [...(this._map.get(componentRef) || []), subscription]);
+                }
+            }
+        }
+    }
+
+    unbindOutputs(componentRef: ComponentRef<any>) {
+        if (!componentRef) return;
+        if (this._map.has(componentRef)) {
+            for (const sub of this._map.get(componentRef)) {
+                sub.unsubscribe();
+            }
+            this._map.delete(componentRef);
+        }
+    }
+}
+
+export function provideRouteOutputBinder(): Provider {
+    return {
+        provide: APP_INITIALIZER,
+        useFactory: (outputBinder: RouteOutputBinder) => () => {
+            const originalDeactivate = RouterOutlet.prototype.deactivate;
+            const originalActivateWith = RouterOutlet.prototype.activateWith;
+            RouterOutlet.prototype.activateWith = function (...args) {
+                const res = originalActivateWith.apply(this, args);
+                const componentRef = this.activated;
+                const [activatedRoute] = args;
+                outputBinder.bindOutputs(activatedRoute, componentRef);
+                return res;
+            };
+            RouterOutlet.prototype.deactivate = function (...args) {
+                const componentRef = this.activated;
+                outputBinder.unbindOutputs(componentRef);
+                return originalDeactivate.apply(this, args);
+            };
+        },
+        deps: [RouteOutputBinder],
+        multi: true,
     };
 }
