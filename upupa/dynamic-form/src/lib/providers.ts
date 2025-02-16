@@ -4,6 +4,7 @@ import { FormControl, FormGroup } from "@angular/forms";
 import { DataFormComponent } from "./data-form/data-form.component";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { Route } from "@angular/router";
+import { Injector } from "@angular/core";
 
 export type DynamicFormConfig = { viewModel: Class | FormViewModelMirror; value?: any; form?: FormGroup };
 
@@ -25,7 +26,7 @@ export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...featur
     return provideRoute(config, withFormComponent(config), ...features);
 }
 
-export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup ,control?: FormControl}): DynamicComponent<DataFormComponent> {
+export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup ,control?: FormControl,injector?:Injector},): DynamicComponent<DataFormComponent> {
     return {
         component: DataFormComponent,
         inputs: {
@@ -33,6 +34,8 @@ export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror;
             value: config.value,
             control: config.control,
             // form: config.form,
+
         },
+        injector: config.injector
     };
 }
