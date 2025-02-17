@@ -2,7 +2,7 @@
     @for (step of steps(); let i = $index; track step) {
         <mat-step [stepControl]="step.control" [label]="step.label" [state]="step.state" [editable]="step.editable ?? true" [optional]="step.optional">
             <ng-template matStepContent>
-                @let template = getTemplate(step);
+                @let template = step['_template'];
                 <portal [template]="template" (attached)="onAttach($event, i)" (detached)="onDetach(i)"></portal>
                 <div style="display: flex; justify-content: end; gap: 1rem">
                     @if (stepper.selectedIndex > 0) {

@@ -52,7 +52,16 @@ export class WizardLayoutComponent implements OnChanges {
     stepper = viewChild("stepper", { read: ElementRef });
 
     injector = inject(Injector);
-    steps = input.required<WizardStep[]>();
+    steps = input.required<WizardStep[], WizardStep[]>({
+        transform: (v) => {
+            const value = v ?? [];
+            for (const step of value) {
+                const template = step.template;
+                step["_template"] ??= typeof template === "function" ? runInInjectionContext(this.injector, () => template()) : template;
+            }
+            return v;
+        },
+    });
 
     isLinear = input(true, { transform: (v) => v ?? true });
     orientation = input<StepperOrientation, StepperOrientation>("horizontal", { transform: (v) => v ?? "horizontal" }); // preferred orientation
@@ -101,13 +110,13 @@ export class WizardLayoutComponent implements OnChanges {
         return this._componentRefs[i];
     }
 
-    getTemplate(step: WizardStep) {
-        if (step["_template"]) return step["_template"];
-        const template = step.template;
-        const _template = typeof template === "function" ? runInInjectionContext(this.injector, () => template()) : template;
-        step["_template"] = _template;
-        return _template;
-    }
+    // getTemplate(step: WizardStep) {
+    //     if (step["_template"]) return step["_template"];
+    //     const template = step.template;
+    //     const _template = typeof template === "function" ? runInInjectionContext(this.injector, () => template()) : template;
+    //     step["_template"] = _template;
+    //     return _template;
+    // }
 }
 
 export function provideWizardLayout(
@@ -124,16 +133,13 @@ export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear
         component: {
             component: WizardLayoutComponent,
             outputs: config.outputs,
-
         },
         resolve: config.resolve,
         data: {
             steps: config.steps,
             isLinear: config.isLinear ?? true,
-            outputs:config.outputs
-
-
-        }
+            outputs: config.outputs,
+        },
     };
 }
 

@@ -20,7 +20,7 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @if (loading()) {
+            @if (adapter().loading()) {
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
             }
@@ -38,7 +38,7 @@
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
-                @if (!loading()) {
+                @if (!adapter().loading()) {
                     <span disabled> No items found </span>
                 }
             }
@@ -68,7 +68,7 @@
             @if (showSearch()) {
                 <ng-container [ngTemplateOutlet]="searchBoxTemplate"></ng-container>
             }
-            @if (loading()) {
+            @if (adapter().loading()) {
                 <mat-option disabled> Loading ... </mat-option>
             }
 
@@ -79,7 +79,7 @@
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
             } @empty {
-                @if (!loading()) {
+                @if (!adapter().loading()) {
                     <mat-option disabled> No items found </mat-option>
                 }
             }
@@ -96,7 +96,7 @@
     }
 
     <div matSuffix style="display: flex; align-items: center">
-        @if (loading()) {
+        @if (adapter().loading()) {
             <mat-progress-spinner style="margin: 0.5rem" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
         }
         @if (value() && !disabled()) {

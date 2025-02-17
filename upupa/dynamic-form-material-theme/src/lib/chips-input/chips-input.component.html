@@ -28,7 +28,7 @@
 
     <mat-autocomplete #auto (optionSelected)="$event.option.value ? select($event.option.value) : undefined">
         @if (autoComplete()) {
-            @if (loading()) {
+            @if (adapter().loading()) {
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
             } @else {

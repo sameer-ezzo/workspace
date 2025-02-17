@@ -124,6 +124,7 @@ tr > th:first-child {
 }
 
 tr {
+    --bg-focused-button: var(--mdc-outlined-text-field-focus-outline-color, #6200ee);
     content-visibility: auto;
     contain-intrinsic-height: 60px;
     & > td:first-child {
@@ -171,9 +172,6 @@ tr {
     }
 }
 
-tr {
-    background: var(--mat-table-background-color) !important;
-}
 tr + tr.expandable-row td {
     border-bottom: none !important;
 }
@@ -230,4 +228,12 @@ tr:hover div.actions,
 tr.focus div.actions,
 tr.selected div.actions {
     visibility: visible;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 9999;
 }

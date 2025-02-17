@@ -3,8 +3,8 @@
 </span>
 
 <div class="table-container">
-    @if (loading()) {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    @if (adapter().loading()) {
+        <mat-progress-bar style="position: absolute;" mode="indeterminate"></mat-progress-bar>
     }
     <table
         #table
@@ -13,12 +13,13 @@
         [dataSource]="adapter().normalized()"
         matSort
         [class.sticky-header]="stickyHeader()"
-        [matSortDisabled]="loading()"
+        [matSortDisabled]="adapter().loading()"
         [matSortDirection]="adapter().sort()?.direction"
         [matSortActive]="adapter().sort()?.active"
         (matSortChange)="onSortData($event)"
         [trackBy]="trackByFn"
         (contentChanged)="contentChanged.emit()"
+        [class.loading]="adapter().loading()"
     >
         >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
@@ -107,7 +108,7 @@
             cdkDragDisabled="true"
             [cdkDragData]="row"
             class="{{ rowClass()(row) }}"
-            [class.focused]="focusedItem === row.item"
+            [class.focused]="focusedItem() === row.item"
             [class.selected]="selectionModel.isSelected(row.key)"
             (click)="onClick(row); toggleExpand(row,i)"
             (touch)="onClick(row)"
@@ -163,7 +164,7 @@
         </div>
     }
 
-    <!-- @if (!loading()) {
+    <!-- @if (!adapter().loading()) {
         @if (!items().length) {
             <div id="no-data" style="text-align: center; padding: 2rem">
                 @if (noDataImage()) {
@@ -183,7 +184,7 @@
     @let pageIndex = page.pageIndex ?? 0;
     @if (pageIndex > 0 || (showPaginator() && length > pageSize)) {
         <mat-paginator
-            [disabled]="loading() === true"
+            [disabled]="adapter().loading() === true"
             [pageIndex]="pageIndex"
             [length]="length"
             [pageSize]="pageSize"

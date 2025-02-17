@@ -112,7 +112,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     });
 
     lazyLoadData = input(false);
-    loading = signal(false);
+
 
     noDataImage = input<string>("");
 
@@ -144,10 +144,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     _firstLoad = false;
     async loadData() {
         if (this._firstLoad) return;
-        this.loading.set(true);
         await this.adapter().refresh();
-
-        this.loading.set(false);
         this._firstLoad = true;
     }
 
