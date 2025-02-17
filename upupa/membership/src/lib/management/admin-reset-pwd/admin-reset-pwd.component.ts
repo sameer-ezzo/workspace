@@ -38,7 +38,7 @@ export class AdminResetPasswordComponent {
         public translator: TranslateService,
     ) {}
     async onAction(e: ActionEvent) {
-        if (e.action.name === "reset") return await this.reset();
+        if (e.descriptor.name === "reset") return await this.reset();
         else return e;
     }
     async reset() {

@@ -1,4 +1,4 @@
-import { Component, output, input, computed } from "@angular/core";
+import { Component, output, input, computed, runInInjectionContext, Injector, inject } from "@angular/core";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -33,23 +33,28 @@ export class MatBtnComponent {
 
     icon = computed(() => {
         const descriptor = this.buttonDescriptor();
-        let icon = descriptor['icon'] ?? descriptor['symbol'];
+        let icon = descriptor["icon"] ?? descriptor["symbol"];
         if (descriptor.variant === "icon" && !icon) icon = "circle";
         return icon;
     });
 
     context = input(undefined);
     data = input<any>();
-
+    private readonly injector = inject(Injector);
     async onAction(event: Event) {
         event.preventDefault();
         event.stopPropagation();
         if (this.isDisabled()) return;
-        this.action.emit({
-            ...event,
-            action: this.buttonDescriptor(),
-            data: this.data(),
-            context: this.context(),
-        } as ActionEvent);
+        runInInjectionContext(this.injector, () => {
+            const e = {
+                event,
+                descriptor: this.buttonDescriptor(),
+                data: this.data(),
+                context: this.context(),
+                componentRef: this,
+                timestamp: new Date(),
+            } as ActionEvent;
+            this.action.emit(e);
+        });
     }
 }

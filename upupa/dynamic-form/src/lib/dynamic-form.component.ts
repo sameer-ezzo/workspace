@@ -297,15 +297,22 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
         if (changes["fields"]) {
             const scheme = this.fields();
+            console.warn(`${this.name()}:fields Changed`, scheme);
             if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
 
             this._patches.clear();
             this.graph = this._builder.build(this.form, scheme, this.value(), "/");
             this.initialized.emit(new DynamicFormInitializedEvent(this.value(), this.graph));
 
-            //handlers
+            // Clean up existing subscriptions before creating new handlers
             this.subs?.forEach((s) => s.unsubscribe());
-            this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
+            this.subs = [
+                InputVisibilityHandler(this),
+                ChangeFormSchemeHandler(this),
+                ChangeInputsHandler(this),
+                ChangeValueHandler(this),
+                ChangeStateHandler(this),
+            ];
         }
         if (changes["value"]) {
             this._patches.clear();
