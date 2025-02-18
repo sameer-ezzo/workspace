@@ -1,13 +1,15 @@
 import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
 import { MatStepperModule } from "@angular/material/stepper";
-import { DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { ComponentOutputs, ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { Route } from "@angular/router";
-import { STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation } from "@angular/cdk/stepper";
-import { Observable, switchMap } from "rxjs";
+import { CdkStep, STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation, StepperSelectionEvent } from "@angular/cdk/stepper";
+import { BehaviorSubject, combineLatest, debounceTime, filter, first, firstValueFrom, from, map, Observable, of, ReplaySubject, Subject, switchMap } from "rxjs";
 import { toObservable, toSignal } from "@angular/core/rxjs-interop";
+import { delay } from "@noah-ark/common";
+import { waitForOutput } from "../buttons/helpers";
 
 export function observeInlineSize(el: HTMLElement): Observable<number> {
     return new Observable<number>((observer) => {
@@ -67,9 +69,16 @@ export class WizardLayoutComponent implements OnChanges {
     orientation = input<StepperOrientation, StepperOrientation>("horizontal", { transform: (v) => v ?? "horizontal" }); // preferred orientation
     tightThreshold = input<number, number>(600, { transform: (v) => v ?? 600 }); // automatically switch to vertical layout when width is less than this value
 
+    attached = output<ComponentRef<unknown>>();
+    selectedIndex = model(0);
+    selected = input<CdkStep | undefined>();
+
+    async getSelectedComponent(): Promise<ComponentRef<unknown>> {
+        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput("attached", this as any) as any);
+    }
+
+    selectionChange = output<StepperSelectionEvent>();
     done = output();
-    next = output();
-    prev = output();
 
     _componentRefs: ComponentRef<unknown>[] = []; // instance of each step component
 
@@ -79,6 +88,7 @@ export class WizardLayoutComponent implements OnChanges {
 
     onAttach({ componentRef }: { componentRef: ComponentRef<unknown> }, index: number) {
         this._componentRefs[index] = componentRef;
+        this.attached.emit(componentRef);
     }
 
     onDetach(index: number) {
@@ -89,18 +99,19 @@ export class WizardLayoutComponent implements OnChanges {
         if (changes["steps"]) {
             this._componentRefs = this.steps().map(() => undefined);
         }
-    }
-
-    onNext() {
-        this.next.emit();
-    }
-
-    onPrevious() {
-        this.prev.emit();
+        if (changes["selectedIndex"]) {
+            if (this.selectedIndex() == null || this.selectedIndex() < 0) {
+                this.selectedIndex.set(0);
+            }
+        }
     }
 
     onDone() {
         this.done.emit();
+    }
+
+    onSelectedChange(e: StepperSelectionEvent) {
+        this.selectionChange.emit(e);
     }
 
     getComponentRef(step: WizardStep);
@@ -120,13 +131,13 @@ export class WizardLayoutComponent implements OnChanges {
 }
 
 export function provideWizardLayout(
-    config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: { done?: (c, e) => void; next?: (c, e) => void } },
+    config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: ComponentOutputsHandlers<WizardLayoutComponent> },
     ...features: RouteFeature[]
 ): Route {
     return provideRoute(withWizardLayout(config), ...features);
 }
 
-export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: { done?: (c, e) => void; next?: (c, e) => void } }): DynamicComponentRoute {
+export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: ComponentOutputsHandlers<WizardLayoutComponent> }): DynamicComponentRoute {
     return {
         name: "withWizardLayout",
         path: config.path,

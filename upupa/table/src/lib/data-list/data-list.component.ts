@@ -114,13 +114,6 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     onFocusedItemChanged($event: any) {
         runInInjectionContext(this.injector, () => {
             this.focusedItem.set($event);
-            this.focusedItemChanged.emit($event);
         });
-    }
-
-    focusedItemChanged = output();
-    onFocusedItemChange($event: any) {
-        console.log($event);
-        this.focusedItemChanged.emit($event);
     }
 }

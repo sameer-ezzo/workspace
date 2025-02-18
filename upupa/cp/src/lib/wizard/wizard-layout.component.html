@@ -1,4 +1,4 @@
-<mat-stepper [linear]="isLinear" #stepper [orientation]="_tight() ? 'vertical' : orientation()">
+<mat-stepper [linear]="isLinear" #stepper [orientation]="_tight() ? 'vertical' : orientation()" [(selectedIndex)]="selectedIndex"  >
     @for (step of steps(); let i = $index; track step) {
         <mat-step [stepControl]="step.control" [label]="step.label" [state]="step.state" [editable]="step.editable ?? true" [optional]="step.optional">
             <ng-template matStepContent>
@@ -9,7 +9,7 @@
                         <button mat-stroked-button matStepperPrevious>Back</button>
                     }
                     @if (stepper.selectedIndex < steps().length - 1) {
-                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); stepper.next();onNext()">Next</button>
+                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); stepper.next();">Next</button>
                     }
                     @else {
                         <button mat-flat-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); onDone()" color="primary">Done</button>

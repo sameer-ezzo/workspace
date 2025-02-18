@@ -286,9 +286,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         else this.select(value);
     }
 
-    setFocusedItem(row) {
-        this.focusedItem.set(row);
-    }
+
     nextFocusedItem() {
         const normalized = this.adapter().normalized();
         const i = this.focusedItem() ? normalized.findIndex((e) => e.item === this.focusedItem()) : -1;

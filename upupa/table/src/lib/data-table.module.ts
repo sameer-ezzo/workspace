@@ -1,5 +1,5 @@
-import { provideRoute, DynamicComponent, RouteFeature } from "@upupa/common";
-import { makeEnvironmentProviders, Provider, Type } from "@angular/core";
+import { provideRoute, DynamicComponent, RouteFeature, ComponentOutputs } from "@upupa/common";
+import { makeEnvironmentProviders, output, Provider, Type } from "@angular/core";
 
 import { Route } from "@angular/router";
 
@@ -110,7 +110,7 @@ export type TableConfig<T = unknown> = {
     dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
     expandableComponent?: DynamicComponent;
-    outputs?:{focusedItemChange?:(e:any)=>void}
+    outputs?: ComponentOutputs<DataListComponent>;
 };
 export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
     return {
@@ -123,9 +123,8 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
                 tableHeaderComponent: config.tableHeaderComponent,
                 expandableComponent: config.expandableComponent,
                 expandable: "single",
-                focusedItemChange:config.outputs?.focusedItemChange
+                outputs: config.outputs,
             },
-
         }),
     };
 }

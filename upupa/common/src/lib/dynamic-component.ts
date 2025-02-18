@@ -7,11 +7,15 @@ type ComponentInput<T> = InputSignal<T>;
 type ComponentOutput<T> = OutputRef<T>;
 
 export type ComponentInputs<TCom> = { [K in keyof TCom as TCom[K] extends ComponentInput<any> ? K : never]: TCom[K] extends ComponentInput<infer TInput> ? TInput : never };
-export type ComponentInputSignals<TCom> = { [K in keyof TCom as TCom[K] extends ComponentInput<any> ? K : never]: TCom[K] extends ComponentInput<infer TInput> ? () => Signal<TInput> : never };
+export type ComponentInputSignals<TCom> = {
+    [K in keyof TCom as TCom[K] extends ComponentInput<any> ? K : never]: TCom[K] extends ComponentInput<infer TInput> ? () => Signal<TInput> : never;
+};
 export type ComponentOutputHandler<TCom, TEvent = any> = (source: ComponentRef<TCom>, e: TEvent) => void | Promise<void>;
 export type ComponentOutputs<TCom> = {
     [K in keyof TCom as TCom[K] extends ComponentOutput<any> ? K : never]: TCom[K] extends ComponentOutput<infer TOutput> ? TOutput : never;
 };
+
+export type ComponentOutputsHandlers<TCom> = { [K in keyof ComponentOutputs<TCom>]?: ComponentOutputHandler<TCom, ComponentOutputs<TCom>[K]> };
 
 export type DynamicComponent<TCom = any> = {
     component: Type<TCom>;
@@ -27,7 +31,7 @@ export type DynamicComponent<TCom = any> = {
     /**
      * @description a record object of outputs to listen to on the component. source parameter is the component reference itself and e is the event emitted.
      */
-    outputs?: { [K in keyof ComponentOutputs<TCom>]?: ComponentOutputHandler<ComponentRef<TCom>, ComponentOutputs<TCom>[K]> };
+    outputs?: ComponentOutputsHandlers<TCom>;
 
     /**
      * @description a record object of content nodes to project inside the component

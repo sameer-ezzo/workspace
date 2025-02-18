@@ -13,7 +13,7 @@ export type LayoutConfig = {
     loginUrl?: string;
 };
 
-export function provideLayoutRoute(config: Route & LayoutConfig, ...features: RouteFeature[]): Route {
+export function provideLayoutRoute(config: Omit<Route, "component"> & LayoutConfig, ...features: RouteFeature[]): Route {
     return provideRoute(config, withLayoutComponent(config), ...features);
 }
 
@@ -34,7 +34,6 @@ export function withLayoutComponent(config: LayoutConfig): RouteFeature {
         }),
     };
 }
-
 
 export type FlattenedRoutes = Record<string, Route>;
 function flattenRoutes(routes: Routes, basePath = "/"): FlattenedRoutes {
@@ -77,8 +76,8 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 link: path,
                 icon: route.data["action"].icon,
                 text: route.data["action"].text,
-                path:route.data["action"].path, // added path for permission check
-                action: route.data["action"].action //  added actoin for permission check
+                path: route.data["action"].path, // added path for permission check
+                action: route.data["action"].action, //  added actoin for permission check
             });
             // check if group is already in sidebar
             if (!sideBar.includes(group)) {
@@ -90,8 +89,8 @@ export function routesToActions(routes: Routes, basePath = "/"): SideBarViewMode
                 link: path,
                 icon: route.data["action"].icon,
                 text: route.data["action"].text,
-                path:route.data["action"].path, // added path for permission check
-                action: route.data["action"].action // added actoin for permission check
+                path: route.data["action"].path, // added path for permission check
+                action: route.data["action"].action, // added actoin for permission check
             });
         }
     }

@@ -5,10 +5,9 @@
     (selectionChange)="onSelectionChange($event)"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
-    (focusedItem)="onFocusedItemChanged($event)"
-    (focusedItemChange)="onFocusedItemChange($event)"
     [expandable]="expandable()"
     [expandableComponent]="expandableComponent()"
+    [(focusedItem)]="focusedItem"
 >
     @if (tableHeaderComponent(); as template) {
         <ng-container class="table-header">

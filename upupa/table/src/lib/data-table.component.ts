@@ -173,7 +173,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             const adapter = this.adapter();
             if (!adapter) throw new Error("Adapter is required");
             if (!this.lazyLoadData()) this.loadData();
-
         }
         await super.ngOnChanges(changes);
 
@@ -285,7 +284,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             else this.deselect(r.key);
         }
 
-        this.setFocusedItem(row);
+        this.focusedItem.set(row);
     }
 
     //todo grouping https://docs.mongodb.com/manual/reference/operator/aggregation/group/
