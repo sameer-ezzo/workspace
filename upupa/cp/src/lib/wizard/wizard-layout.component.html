@@ -9,7 +9,7 @@
                         <button mat-stroked-button matStepperPrevious>Back</button>
                     }
                     @if (stepper.selectedIndex < steps().length - 1) {
-                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); stepper.next()">Next</button>
+                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); stepper.next();onNext()">Next</button>
                     }
                     @else {
                         <button mat-flat-button [disabled]="step.control?.touched && step.control?.invalid" (click)="step.control?.markAsTouched(); onDone()" color="primary">Done</button>

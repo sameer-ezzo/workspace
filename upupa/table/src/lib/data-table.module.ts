@@ -110,6 +110,7 @@ export type TableConfig<T = unknown> = {
     dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
     expandableComponent?: DynamicComponent;
+    outputs?:{focusedItemChange?:(e:any)=>void}
 };
 export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
     return {
@@ -122,7 +123,9 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
                 tableHeaderComponent: config.tableHeaderComponent,
                 expandableComponent: config.expandableComponent,
                 expandable: "single",
+                focusedItemChange:config.outputs?.focusedItemChange
             },
+
         }),
     };
 }
