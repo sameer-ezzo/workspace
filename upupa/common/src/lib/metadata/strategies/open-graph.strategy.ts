@@ -24,7 +24,7 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
     private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "property");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
-        const fallback = metaFallback.fallback as any;
+        const fallback = (metaFallback.fallback ?? {}) as any;
 
         const og = { ...(fallback.og ?? {}), ...(meta.og ?? {}) }; //as OpenGraphData;
 

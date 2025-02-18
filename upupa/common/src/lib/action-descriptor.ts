@@ -4,9 +4,10 @@ import { ThemePalette } from "@angular/material/core";
 
 export type ActionsDescriptor = ActionDescriptor[];
 export type ActionEvent<T = any, C = any> = {
-    action: ActionDescriptor;
+    descriptor: ActionDescriptor;
     data: T[];
     context?: C;
+    componentRef: any;
 };
 
 export type ActionDescriptorBase = {

@@ -122,7 +122,7 @@ export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
 
     async onAction(e: ActionEvent) {
         const dialogRef = e.context.dialogRef;
-        if (e.action.name === "save") {
+        if (e.descriptor.name === "save") {
             try {
                 await this.save();
                 dialogRef.close(this.user);

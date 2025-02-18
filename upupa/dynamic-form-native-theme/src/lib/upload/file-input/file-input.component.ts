@@ -72,7 +72,7 @@ export class FileInputComponent extends DataComponentBase {
     ];
 
     onAction(e: ActionEvent) {
-        if (e.action.name === "remove") {
+        if (e.descriptor.name === "remove") {
             this.removeFile(e.data[0].item);
         }
     }

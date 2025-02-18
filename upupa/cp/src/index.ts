@@ -23,3 +23,4 @@ export * from "./lib/wizard/wizard-layout.component";
 export * from "./lib/adapter-submit.fun";
 export * from "./lib/friendly-error";
 export * from "./lib/cp.module";
+export * from "./lib/meta-forms/index";
