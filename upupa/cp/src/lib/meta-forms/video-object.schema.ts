@@ -108,18 +108,22 @@ export class VideoSchema {
     })
     publication = [];
 
-    @formInputArray(VideoPart, {
-        inlineEndSlot: [
-            createButton(VideoPart, () => new VideoPart(), {
-                dialogOptions: {
-                    maxWidth: "625px",
-                    title: "Add Video Part",
-                },
-                descriptor: { icon: "add", text: "Add Video Part" },
-                updateAdapter: true,
-            }),
-        ],
-    })
+    @formInputArray(
+        VideoPart,
+        {
+            inlineEndSlot: [
+                createButton(VideoPart, () => new VideoPart(), {
+                    dialogOptions: {
+                        maxWidth: "625px",
+                        title: "Add Video Part",
+                    },
+                    descriptor: { icon: "add", text: "Add Part" },
+                    updateAdapter: true,
+                }),
+            ],
+        },
+        { label: "Video Parts" },
+    )
     hasPart = [];
 
     // SeekToAction
