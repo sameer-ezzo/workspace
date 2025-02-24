@@ -1,4 +1,4 @@
-import { NgModule, Optional, SkipSelf, ModuleWithProviders } from "@angular/core";
+import { NgModule, Optional, SkipSelf, ModuleWithProviders, makeEnvironmentProviders } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -9,7 +9,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatTabsModule } from "@angular/material/tabs";
-import { CommonModule } from "@angular/common";
+import { CommonModule, DOCUMENT } from "@angular/common";
 import { UploadService } from "./upload.service";
 import { UploadClient } from "./upload.client";
 import { STORAGE_BASE } from "./di.token";
@@ -66,4 +66,23 @@ export class UploadModule {
             ],
         };
     }
+}
+
+export function provideUpload(baseUrl: string) {
+    return makeEnvironmentProviders([
+        ...declarations,
+        UploadService,
+        UploadClient,
+        {
+            provide: STORAGE_BASE,
+            useFactory: (doc: Document) => {
+                baseUrl = (baseUrl.length ? baseUrl : "/storage").trim().toLocaleLowerCase();
+                if (baseUrl.startsWith("http")) return baseUrl;
+                const base = `${doc.location.protocol}//${doc.location.hostname}`;
+                const url = new URL(baseUrl, base).toString();
+                return url;
+            },
+            deps: [DOCUMENT],
+        },
+    ]);
 }

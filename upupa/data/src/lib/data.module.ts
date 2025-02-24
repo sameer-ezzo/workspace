@@ -1,4 +1,4 @@
-import { NgModule, ModuleWithProviders } from "@angular/core";
+import { NgModule, ModuleWithProviders, makeEnvironmentProviders } from "@angular/core";
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 import { APIBASE } from "./di.token";
 import { DataConfig } from "./model";
@@ -21,8 +21,8 @@ export class DataModule {
                     useFactory: (doc: Document) => {
                         api_base = (api_base.length ? api_base : "/api").trim().toLocaleLowerCase();
                         if (api_base.startsWith("http")) return api_base;
-                        const base = `${doc.location.protocol}//${doc.location.hostname}`;
-                        return new URL(api_base ?? "/api", base).toString();
+                        const base = `${doc.location.protocol}://${doc.location.hostname}`;
+                        return new URL(api_base, base).toString();
                     },
                     deps: [DOCUMENT],
                 },
@@ -33,4 +33,24 @@ export class DataModule {
             ],
         };
     }
+}
+
+export function provideApi(api_base: string, config?: DataConfig) {
+    return makeEnvironmentProviders([
+        {
+            provide: APIBASE,
+            useFactory: (doc: Document) => {
+                api_base = (api_base.length ? api_base : "/api").trim().toLocaleLowerCase();
+                if (api_base.startsWith("http")) return api_base;
+                const base = `${doc.location.protocol}//${doc.location.hostname}`;
+                const url = new URL(api_base, base).toString();
+                return url;
+            },
+            deps: [DOCUMENT],
+        },
+        {
+            provide: DataConfig,
+            useValue: config,
+        },
+    ]);
 }
