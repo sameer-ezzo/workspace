@@ -109,6 +109,7 @@ export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
     dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
     tableHeaderComponent?: Type<any> | DynamicComponent;
+    expandable?: "single" | "multi" | "none";
     expandableComponent?: DynamicComponent;
     outputs?: ComponentOutputs<DataListComponent>;
 };
