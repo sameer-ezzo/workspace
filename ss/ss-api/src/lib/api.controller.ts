@@ -65,7 +65,7 @@ export class ApiController {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
 
         const data = await this.dataService.agg(path, false, ...q);
-        const total = await this.dataService.count(path, ...q); //TODO use count based on pipeline api
+        const total = data.length ? await this.dataService.count(path, ...q) : 0; //TODO use count based on pipeline api
         const result = { data, total, query: q };
         return result;
     }

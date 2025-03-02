@@ -282,8 +282,20 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const max_page_number = 100;
             const per_page = million ? 1000000 : Math.min(query.per_page || max_page_number, max_page_number);
 
+            const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
+            const pre_filter = [];
+            const post_filter = [];
+            for (const f of $and) {
+                if (Object.keys(f).some((k) => k.includes("."))) {
+                    post_filter.push(f);
+                } else {
+                    pre_filter.push(f);
+                }
+            }
+
             if (query.fields1) pipeline.push({ $addFields: query.fields1 });
             if (query.fields2) pipeline.push({ $addFields: query.fields2 });
+            if (pre_filter.length) pipeline.push({ $match: { $and: pre_filter } });
             if (query.lookups)
                 query.lookups.forEach((l: any) => {
                     l.from = this.prefix + l.from;
@@ -319,7 +331,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 });
             }
             if (query.fields3) pipeline.push({ $addFields: query.fields3 });
-            if (query.filter && query.filter.$and && query.filter.$and.length) pipeline.push({ $match: query.filter });
+            if (post_filter.length) pipeline.push({ $match: { $and: post_filter } });
             if (query.sort) pipeline.push({ $sort: query.sort });
             if (query.select) pipeline.push({ $project: query.select });
 

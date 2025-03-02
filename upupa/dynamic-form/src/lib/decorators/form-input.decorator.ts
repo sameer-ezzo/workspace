@@ -165,6 +165,7 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
                 inputs: { label: toTitleCase(groupName), ...formMetadata.groups[fieldName].inputs },
                 template: formMetadata.groups[fieldName].template,
                 class: formMetadata.groups[fieldName].class,
+                hidden: formMetadata.groups[fieldName].hidden,
             };
 
             group.items[fieldName] = field;
@@ -216,6 +217,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
 
     const field: Field = {
         input,
+        hidden: fieldOptions.hidden ?? false,
         inputs: { ...fieldOptions.inputs },
         outputs: { ...fieldOptions.outputs },
         validations: [],
