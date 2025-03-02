@@ -160,7 +160,7 @@
             @if (noDataImage()) {
                 <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
             }
-            <p>No Data</p>
+            <p>{{ noDataMessage() }}</p>
         </div>
     }
 
@@ -168,9 +168,9 @@
         @if (!items().length) {
             <div id="no-data" style="text-align: center; padding: 2rem">
                 @if (noDataImage()) {
-                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
+                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="noDataMessage()" />
                 }
-                <p>No Data</p>
+                <p>{{ noDataMessage() }}</p>
             </div>
         } @else {}
     } -->

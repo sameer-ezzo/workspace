@@ -119,8 +119,8 @@ export function translationButtons<TItem = unknown>(
     );
 }
 
-export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(output: K, instance: TCom = this): Promise<TOut[K]> {
-    const emitter = instance[output as any];
+export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(instance: TCom, output: K): Promise<TOut[K]> {
+    const emitter = instance[output as any] as OutputEmitterRef<TOut[K]>;
     if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
     return new Promise<any>((resolve) => {
         const sub = emitter.subscribe((e) => {
@@ -130,7 +130,7 @@ export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K
     });
 }
 
-export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(output: K, instance: TCom = this): Observable<TOut[K]> {
+export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(instance: TCom, output: K): Observable<TOut[K]> {
     const emitter = instance[output as any] as OutputEmitterRef<TOut[K]>;
     if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
     const destroyRef = instance["injector"]?.get(DestroyRef);

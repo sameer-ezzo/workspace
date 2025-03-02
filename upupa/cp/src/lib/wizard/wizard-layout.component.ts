@@ -74,7 +74,7 @@ export class WizardLayoutComponent implements OnChanges {
     selected = input<CdkStep | undefined>();
 
     async getSelectedComponent(): Promise<ComponentRef<unknown>> {
-        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput("attached", this as any) as any);
+        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput(this as WizardLayoutComponent, "attached"));
     }
 
     selectionChange = output<StepperSelectionEvent>();
