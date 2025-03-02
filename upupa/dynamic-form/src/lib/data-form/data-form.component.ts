@@ -2,13 +2,12 @@ import { Component, inject, signal, computed, input, Injector, runInInjectionCon
 
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
-import { _defaultControl, ActionEvent, deepAssign } from "@upupa/common";
+import { _defaultControl, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormViewModelMirror, reflectFormViewModelType } from "../decorators/form-input.decorator";
 import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GRAPH } from "../dynamic-form.component";
-import { waitForOutput } from "@upupa/cp";
 
 export const FORM_VIEW_MODEL = new InjectionToken<any>("FORM_VIEW_MODEL");
 
