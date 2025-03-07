@@ -77,7 +77,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private async loadEditor(): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await CKEditor4Component.loadScript("/ckeditor/ckeditor.js");
+        if (typeof CKEDITOR === "undefined") await CKEditor4Component.loadScript("/ckeditor/ckeditor.js?v=0.0.1");
 
         const config = {
             licenseKey: "GPL",
@@ -153,6 +153,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private static loadScript(src: string): Promise<void> {
+        console.log("LOADING: ", src);
+
         if (this.isScriptLoaded[src]) return Promise.resolve();
         if (this.loadPromise[src]) return this.loadPromise[src];
 
@@ -161,6 +163,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             script.src = src;
             script.async = true;
             script.onload = () => {
+                console.log("LOADED: ", src);
+
                 this.isScriptLoaded[src] = true;
                 resolve();
             };

@@ -362,4 +362,11 @@ export class AuthService {
         }
         return null;
     }
+
+    hasRole(role: string) {
+        return this.user?.roles?.includes(role);
+    }
+    hasClaim(claim: string, value?: string) {
+        return this.user?.claims?.[claim] === value;
+    }
 }

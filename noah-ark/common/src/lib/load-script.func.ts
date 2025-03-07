@@ -1,5 +1,5 @@
 const scripts = new Map<string, Promise<HTMLScriptElement>>();
-export function loadScript(doc, src: string, options: { async?: boolean; defer?: boolean } = { async: true, defer: true }): Promise<HTMLScriptElement> {
+export function loadScript(doc: Document, src: string, options: { async?: boolean; defer?: boolean } = { async: true, defer: true }): Promise<HTMLScriptElement> {
     const script = doc.createElement("script");
     script.src = src;
     script.async = options?.async === true;
@@ -11,7 +11,7 @@ export function loadScript(doc, src: string, options: { async?: boolean; defer?:
         script.onload = () => resolve(script);
         script.onerror = (error) => reject(error);
     });
-    doc.head.appendChild(script);
+    doc.body.appendChild(script);
 
     scripts.set(src, loadPromise);
 

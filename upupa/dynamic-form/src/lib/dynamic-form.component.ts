@@ -178,7 +178,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
     initialized = output<DynamicFormInitializedEvent<T>>();
-    submitted = output<T>();
+    submitted = output<{ result?: T; error?: any }>();
     preventDirtyUnload = input(false);
 
     get patches(): Patch[] {
@@ -306,13 +306,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
             // Clean up existing subscriptions before creating new handlers
             this.subs?.forEach((s) => s.unsubscribe());
-            this.subs = [
-                InputVisibilityHandler(this),
-                ChangeFormSchemeHandler(this),
-                ChangeInputsHandler(this),
-                ChangeValueHandler(this),
-                ChangeStateHandler(this),
-            ];
+            this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
         if (changes["value"]) {
             this._patches.clear();
@@ -339,7 +333,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         e?.preventDefault();
         if (this.form.invalid) {
             this.scrollToError();
-        } else this.submitted.emit(this.value());
+            this.submitted.emit({ error: "Invalid inputs" });
+        } else this.submitted.emit({ result: this.value() });
     }
 
     _onChange: (value: T) => void;

@@ -35,7 +35,7 @@ export class ApiService {
 
     constructor(
         private http: HttpClient,
-        @Inject(APIBASE) public readonly api_base: string = "/api",
+        @Inject(APIBASE) public readonly api_base = "/api",
     ) {}
 
     get<T>(path: string): Observable<T> {

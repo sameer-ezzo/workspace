@@ -1,6 +1,6 @@
 import { PasswordStrength } from "@upupa/auth";
 import { Field } from "../types";
-import { DataAdapterDescriptor } from "@upupa/data";
+import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
 
@@ -10,9 +10,9 @@ export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
     minAllowed?: number = 1;
     maxAllowed?: number = 1;
-    adapter: DataAdapterDescriptor = { type: "client", data: [] };
+    adapter: DataAdapterDescriptor | DataAdapter = { type: "client", data: [] };
 }
-export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any> };
+export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any>, hidden?: boolean };
 export type BaseFormFieldOptions = Field & {
     required?: boolean;
     group?: string | FieldGroup;

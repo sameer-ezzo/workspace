@@ -1,15 +1,13 @@
 import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
 import { MatStepperModule } from "@angular/material/stepper";
-import { ComponentOutputs, ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature, waitForOutput } from "@upupa/common";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { Route } from "@angular/router";
 import { CdkStep, STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation, StepperSelectionEvent } from "@angular/cdk/stepper";
-import { BehaviorSubject, combineLatest, debounceTime, filter, first, firstValueFrom, from, map, Observable, of, ReplaySubject, Subject, switchMap } from "rxjs";
+import { Observable, switchMap } from "rxjs";
 import { toObservable, toSignal } from "@angular/core/rxjs-interop";
-import { delay } from "@noah-ark/common";
-import { waitForOutput } from "../buttons/helpers";
 
 export function observeInlineSize(el: HTMLElement): Observable<number> {
     return new Observable<number>((observer) => {
@@ -74,7 +72,7 @@ export class WizardLayoutComponent implements OnChanges {
     selected = input<CdkStep | undefined>();
 
     async getSelectedComponent(): Promise<ComponentRef<unknown>> {
-        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput("attached", this as any) as any);
+        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput(this as WizardLayoutComponent, "attached"));
     }
 
     selectionChange = output<StepperSelectionEvent>();

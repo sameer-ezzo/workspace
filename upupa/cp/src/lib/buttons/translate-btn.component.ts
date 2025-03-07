@@ -80,7 +80,7 @@ export class EmbedTranslationButton<TItem = unknown> {
                             outputs: {
                                 action: async () => {
                                     const dataFormComponent = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                    const res = await dataFormComponent.onSubmit();
+                                    const res = await dataFormComponent.submit();
                                     dialogRef.close(res);
                                 },
                             },
@@ -162,7 +162,7 @@ export class LinkTranslationButton<TItem = unknown> {
                             outputs: {
                                 action: async () => {
                                     const dataFormComponent = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                    const res = await dataFormComponent.onSubmit();
+                                    const res = await dataFormComponent.submit();
                                     dialogRef.close(res);
                                 },
                             },

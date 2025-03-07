@@ -115,6 +115,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
 
     noDataImage = input<string>("");
+    noDataMessage = input<string>("No data found");
 
     minAllowed = input<number, number | null | undefined>(0, {
         transform: (v) => Math.max(0, Math.round(Math.abs(v ?? 0))),
