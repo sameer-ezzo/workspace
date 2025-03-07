@@ -295,7 +295,7 @@ export class RulePermissionsTableComponent {
 
     tableColumns = reflectTableViewModel(PermissionRowViewModel).columns; // { ...TABLE_COLUMNS } as unknown as ColumnsDescriptor;
 
-    dataSource = new ClientDataSource([]);
+    dataSource = new ClientDataSource([], "_id");
     adapter = new DataAdapter(this.dataSource, "_id");
     public readonly permissionsService = inject(PermissionsService);
 

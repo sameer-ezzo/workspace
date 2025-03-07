@@ -22,7 +22,7 @@ export function compare(a, b): number {
 }
 
 export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
-    all = signal<T[]>([]);
+    readonly all = signal<T[]>([]);
     entries = computed(() => {
         const map = new Map<R, T>();
         for (const item of this.all()) {
@@ -33,10 +33,12 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
     });
     constructor(
         all: T[],
-        public key: string | ((item: T) => R) = (item) => item as unknown as R,
+        readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R,
+
+        mapper: (items: T[]) => T[] = (items) => items,
     ) {
-        super();
-        this.all.set(all);
+        super(mapper);
+        this.all.set(mapper(all));
     }
 
     async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
@@ -50,7 +52,7 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
     }
 
     _key(item: T) {
-        return typeof this.key === "string" ? JsonPointer.get(item, this.key) : this.key(item);
+        return typeof this.key === "function" ? this.key(item) : JsonPointer.get(item, this.key as string);
     }
 
     override put(item: T, value: Partial<T>) {

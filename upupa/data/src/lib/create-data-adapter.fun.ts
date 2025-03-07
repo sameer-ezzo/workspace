@@ -8,16 +8,17 @@ import { TableDataSource } from "./datasource/model";
 
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
     let dataSource: TableDataSource;
-
+    descriptor.keyProperty ??= "_id" as keyof T;
+    descriptor.mapper ??= (items) => items;
     switch (descriptor.type) {
         case "client":
-            dataSource = new ClientDataSource(descriptor.data ?? []);
+            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty, descriptor.mapper);
             break;
         case "server":
         case "api":
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path);
-            descriptor.keyProperty ??= "_id" as any;
-            descriptor.displayProperty ??= "name" as any;
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.mapper);
+            descriptor.displayProperty ??= "name" as keyof T;
+
             break;
         default:
             throw unreachable("data adapter type:", descriptor);

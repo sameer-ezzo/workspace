@@ -67,6 +67,7 @@ export type FieldOptions =
           (
               | ({ input: "fieldset" } & BaseFormFieldOptions)
               | ({ input: "object" } & BaseFormFieldOptions)
+              | ({ input: "paragraph" } & { text: string; renderer: "markdown" | "html" | "none" })
               | ({ input: "text" } & TextFieldOptions)
               | ({ input: "color" } & TextFieldOptions)
               | ({ input: "textarea" } & TextFieldOptions & {

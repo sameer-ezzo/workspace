@@ -8,7 +8,7 @@ import { Router, ActivationEnd } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
 import { Principle } from "@noah-ark/common";
 
-import { analyzePassword } from "./password-strength-policy";
+import { analyzePassword } from "../../../../noah-ark/common/src/lib/password-strength-policy";
 import { DeviceService } from "./device.service";
 import { LocalStorageService } from "./local-storage.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";

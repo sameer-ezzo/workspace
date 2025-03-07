@@ -1,4 +1,4 @@
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, map } from "rxjs";
 import { FilterDescriptor, PageDescriptor, ReadResult, SortDescriptor, TableDataSource, Term } from "./model";
 import { ApiGetResult, DataService } from "../data.service";
 import { Patch } from "@noah-ark/json-patch";
@@ -23,8 +23,9 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
     constructor(
         private readonly dataService: DataService,
         public readonly path: string,
+        mapper: (items: T[]) => T[] = (items) => items,
     ) {
-        super();
+        super(mapper);
         const _url = new URL("/", dataService.api.api_base);
         this.url = new URL(path, _url.protocol + "//" + _url.host);
     }
@@ -69,8 +70,7 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
 
         if (sort?.active) query.sort_by = `${sort.active},${sort.direction}`;
 
-        // const src = this.getData(page, query);
-        const data$ = this.dataService.get<T[]>(this.pathname, query);
+        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: this.mapper(res.data ?? []) })));
         return firstValueFrom(data$).then((res: ApiGetResult<T[]>) => res as ReadResult<T>);
     }
 

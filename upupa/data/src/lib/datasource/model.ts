@@ -10,6 +10,8 @@ export type SortDescriptor = Sort;
 export type FilterDescriptor = Record<string, string | string[]> & { search?: string };
 
 export declare type Dictionary<T = string> = Record<string, T>;
+
+
 export declare type DataLoaderOptions<T> = {
     terms?: Term<T>[];
     page?: Partial<PageDescriptor>;
@@ -44,10 +46,15 @@ export type ReadResult<T = any> = {
 };
 
 export abstract class TableDataSource<T = any, WriteResult = any> {
+    constructor(readonly mapper: (items: T[]) => T[] = (items) => items) {}
     abstract load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>>;
     abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Promise<T[]>;
     abstract create(value: Partial<T>): Promise<WriteResult>;
     abstract put(item: T, value: Partial<T>): Promise<WriteResult>;
     abstract patch(item: T, patches: Patch[]): Promise<WriteResult>;
     abstract delete(item: T): Promise<WriteResult>;
+
+    map(items: T[]): T[] {
+        return this.mapper(items);
+    }
 }
