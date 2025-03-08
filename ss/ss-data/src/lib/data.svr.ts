@@ -285,10 +285,9 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
             const pre_filter = [];
             const post_filter = [];
-            console.log("pre filter", pre_filter);
-            console.log("post filter", post_filter);
+
             for (const f of $and) {
-                if (Object.keys(f).some((k) => k.includes("."))) {
+                if (Object.keys(f).some((k) => k.startsWith('$') || k.includes("."))) {
                     post_filter.push(f);
                 } else {
                     pre_filter.push(f);
