@@ -68,6 +68,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
     dataTable = viewChild(DataTableComponent);
 
+    secondaryRows = computed(() => reflectTableViewModel(this.viewModel()).secondaryRows);
     columns = computed(() => reflectTableViewModel(this.viewModel()).columns);
     instance: Class;
     // vm = computed(() => {

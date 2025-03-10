@@ -108,6 +108,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     _columns: string[] = [];
     columns = input<ColumnsDescriptor | "auto">("auto"); //eventually columns are the container of all and it's a dictionary
 
+    secondaryRows = input<ColumnsDescriptorStrict>({});
     expanded: { [key: string]: WritableSignal<boolean> } = {};
     expandable = input<"single" | "multi" | "none">("none");
     expandableTemplate = input(null);
