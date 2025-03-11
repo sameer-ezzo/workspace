@@ -1,4 +1,5 @@
-import { PasswordStrength } from "../../../../noah-ark/common/src/lib/password-strength-policy";
+import { PasswordStrength } from "@noah-ark/common";
+
 
 export class AuthOptions {
     base_url?: string  = "/auth";
