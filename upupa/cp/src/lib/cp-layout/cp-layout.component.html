@@ -1,11 +1,15 @@
 <main>
     <mat-toolbar class="mat-elevation-z2">
-        @if (sideBarItems() | async; as items) {
+        @let items = sideBarItems();
+        @if (items) {
             <button mat-icon-button (click)="drawer().toggle()">
                 <mat-icon>reorder</mat-icon>
             </button>
         }
         <img [src]="logo()" class="logo" />
+        @for (item of topBarItems(); track $index) {
+            <portal [component]="item.component"></portal>
+        }
         <span class="spacer"></span>
         <toolbar-user-menu [commands]="userMenuCommands()" [loginUrl]="loginUrl()"></toolbar-user-menu>
     </mat-toolbar>

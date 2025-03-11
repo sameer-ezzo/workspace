@@ -4,12 +4,13 @@ import { Observable } from "rxjs";
 import { CpLayoutComponent } from "./cp-layout/cp-layout.component";
 import { CP_SIDE_BAR_ITEMS } from "./di.token";
 import { SideBarGroup, SideBarViewModel } from "./side-bar-group-item";
-import { provideRoute, RouteFeature } from "@upupa/common";
+import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 
 export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
+    topbar?: DynamicComponent[];
     loginUrl?: string;
 };
 
@@ -25,6 +26,7 @@ export function withLayoutComponent(config: LayoutConfig): RouteFeature {
             data: {
                 logo: config.logo,
                 loginUrl: config.loginUrl,
+                topBarItems: config.topbar,
             },
             providers: [
                 Array.isArray(config.sidebar)

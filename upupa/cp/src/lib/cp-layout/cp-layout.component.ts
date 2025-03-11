@@ -15,6 +15,7 @@ import { AuthorizeModule } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
 import { MatDivider } from "@angular/material/divider";
+import { DynamicComponent, PortalComponent } from "@upupa/common";
 
 function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>) {
     if (!items) return of([]);
@@ -26,7 +27,19 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
 @Component({
     selector: "cp-layout",
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatToolbarModule, ToolbarUserMenuComponent, RouterModule, MatSidenavModule, AuthorizeModule, MatExpansionModule,MatDivider],
+    imports: [
+        CommonModule,
+        MatButtonModule,
+        MatIconModule,
+        MatToolbarModule,
+        ToolbarUserMenuComponent,
+        RouterModule,
+        MatSidenavModule,
+        AuthorizeModule,
+        MatExpansionModule,
+        MatDivider,
+        PortalComponent
+    ],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +54,8 @@ export class CpLayoutComponent {
         const sidebar = this.sidebar();
         return sideBarItemsTransform(this.cp_side_bar_items).pipe(map((items) => items.concat(sidebar ?? [])));
     });
+
+    topBarItems = input<DynamicComponent[]>();
 
     getId = (g, i) => "accordion_" + (g.name || i);
     hasActiveChild(el: MatExpansionPanel) {
