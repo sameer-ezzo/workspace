@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
-import { ColumnDescriptor, ColumnsDescriptor } from "./types";
+import { ColumnDescriptor, ColumnsDescriptor, ColumnsDescriptorStrict } from "./types";
 import { toTitleCase } from "@upupa/common";
 import { DatePipe } from "@angular/common";
 
@@ -11,6 +11,7 @@ export type DataListViewModelQueryParam = {
     propertyKey: string;
 };
 export type DataListViewModelInputs = {
+    secondaryRows: ColumnsDescriptorStrict;
     dataAdapterDescriptor: DataAdapterDescriptor<DataAdapterType>;
     // headerActions: {
     //     order: number;
@@ -34,6 +35,29 @@ export const setDataListMetadataFor = (target: any, value: Record<string, unknow
     if (parent && parent.constructor) targetMeta = { ...reflectTableViewModel(parent), ...targetMeta };
     Reflect.defineMetadata(dataListInputsMetadataKey, { ...targetMeta, ...value }, target);
 };
+
+export function secondaryRow(options: ColumnDescriptor = { visible: true }) {
+    return function (target: any, propertyKey: string) {
+        const inputs = reflectTableViewModel(target.constructor);
+        const secondaryRows: ColumnsDescriptorStrict = inputs?.secondaryRows ?? {};
+        const key = options.displayPath ?? propertyKey;
+
+        const template = options.template ? (Array.isArray(options.template) ? options.template : [options.template]) : [];
+        const normalizedTemplate = template.map((t) => ("component" in t ? t : { component: t }));
+
+        setDataListMetadataFor(target.constructor, {
+            ...inputs,
+            secondaryRows: {
+                ...secondaryRows,
+                [key]: {
+                    ...options,
+                    header: options.header ?? toTitleCase(propertyKey),
+                    template: normalizedTemplate,
+                },
+            },
+        });
+    };
+}
 
 export function column(options: ColumnDescriptor = { visible: true }) {
     return function (target: any, propertyKey: string) {
