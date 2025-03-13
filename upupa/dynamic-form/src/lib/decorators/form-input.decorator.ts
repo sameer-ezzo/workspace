@@ -2,7 +2,7 @@
 // export * from './lib/decorators/form-field.decorator';
 import "reflect-metadata";
 import { Field, Fieldset, FormScheme } from "../types";
-import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent, camelCaseToTitle } from "@upupa/common";
 import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
 import { FieldGroup, FieldOptions } from "./decorators.types";
@@ -162,7 +162,7 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
             const group = (fields[groupName] as Fieldset) ?? {
                 input: "group",
                 items: {},
-                inputs: { label: toTitleCase(groupName), ...formMetadata.groups[fieldName].inputs },
+                inputs: { label: camelCaseToTitle(groupName), ...formMetadata.groups[fieldName].inputs },
                 template: formMetadata.groups[fieldName].template,
                 class: formMetadata.groups[fieldName].class,
                 hidden: formMetadata.groups[fieldName].hidden,
@@ -238,7 +238,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
         field.validations = fieldOptions.validations;
     }
 
-    field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? toTitleCase(fieldName);
+    field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? camelCaseToTitle(fieldName);
     field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"];
     field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"];
 

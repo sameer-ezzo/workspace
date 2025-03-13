@@ -22,7 +22,7 @@ export function compare(a, b): number {
 }
 
 export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
-    all = signal<T[]>([]);
+    readonly all = signal<T[]>([]);
     entries = computed(() => {
         const map = new Map<R, T>();
         for (const item of this.all()) {

@@ -27,7 +27,7 @@ values will be automatically converted to corresponding types
 'null' => null
 'undefined' => undefined
 -- Note:
-If {operator} is not provided it's considred as {eq} but value conversion for number,array won't happen ex: model=9 will not convert 9 to number it will be treated as '9'
+If {operator} is not provided it's considered as {eq} but value conversion for number,array won't happen ex: model=9 will not convert 9 to number it will be treated as '9'
 */
 
 /*

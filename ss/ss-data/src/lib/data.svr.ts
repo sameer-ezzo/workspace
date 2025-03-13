@@ -285,8 +285,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
             const pre_filter = [];
             const post_filter = [];
-            console.log("pre filter", pre_filter);
-            console.log("post filter", post_filter);
+            logger.debug("pre filter", pre_filter);
+            logger.debug("post filter", post_filter);
             for (const f of $and) {
                 if (Object.keys(f).some((k) => k.includes("."))) {
                     post_filter.push(f);
@@ -414,7 +414,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
     }
 
-    private _generatePatches(value: any, currentPath: string = ""): Patch[] {
+    private _generatePatches(value: any, currentPath = ""): Patch[] {
         let patches: Patch[] = [];
 
         if (typeof value !== "object" || value === null) {
@@ -428,7 +428,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         } else {
             // Handle objects
             for (const key in value) {
-                if (value.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(value, key)) {
                     patches = patches.concat(this._generatePatches(value[key], `${currentPath}/${key}`));
                 }
             }

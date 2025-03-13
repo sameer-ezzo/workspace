@@ -102,7 +102,7 @@ export class ApiController {
         const principle = msg.principle; //(<any>req).user
 
         const segments = path.split("/").filter((s) => s);
-        if (segments.length != 2) {
+        if (segments.length !== 2) {
             throw new HttpException("Invalid_Document_Path", HttpStatus.BAD_REQUEST);
         }
 
