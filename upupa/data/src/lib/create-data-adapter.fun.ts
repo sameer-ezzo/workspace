@@ -8,19 +8,31 @@ import { TableDataSource } from "./datasource/model";
 
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
     let dataSource: TableDataSource;
-    descriptor.keyProperty ??= "_id" as keyof T;
+
     descriptor.mapper ??= (items) => items;
     switch (descriptor.type) {
-        case "client":
-            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty, descriptor.mapper);
-            break;
         case "server":
         case "api":
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.mapper);
             descriptor.displayProperty ??= "name" as keyof T;
-
+            descriptor.keyProperty ??= "_id" as keyof T;
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.mapper);
+            break;
+        case "client":
+            if (!descriptor.keyProperty) {
+                const firstItem = descriptor.data?.[0];
+                if (firstItem && firstItem["_id"]) {
+                    descriptor.keyProperty ??= "_id" as keyof T;
+                }
+            }
+            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty, descriptor.mapper);
             break;
         case "signal":
+            if (!descriptor.keyProperty) {
+                const firstItem = descriptor.data()[0];
+                if (firstItem && firstItem["_id"]) {
+                    descriptor.keyProperty = "_id" as keyof T;
+                }
+            }
             dataSource = new SignalDataSource(descriptor.data, descriptor.keyProperty, descriptor.mapper);
             break;
         default:
