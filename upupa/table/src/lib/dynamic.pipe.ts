@@ -6,7 +6,7 @@ import { Injector, Pipe, PipeTransform } from "@angular/core";
     standalone: true,
 })
 export class DynamicPipe implements PipeTransform {
-    public constructor(private injector: Injector) {}
+    constructor(private injector: Injector) {}
 
     transform(value: any, pipeToken: any, pipeArgs: any[] = []): any {
         if (!pipeToken) {

@@ -31,7 +31,20 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable, MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
-import { CommonModule } from "@angular/common";
+import {
+    CommonModule,
+    CurrencyPipe,
+    DatePipe,
+    DecimalPipe,
+    KeyValuePipe,
+    PercentPipe,
+    SlicePipe,
+    LowerCasePipe,
+    I18nPluralPipe,
+    I18nSelectPipe,
+    TitleCasePipe,
+    UpperCasePipe,
+} from "@angular/common";
 import { DragDropModule } from "@angular/cdk/drag-drop";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
@@ -86,6 +99,18 @@ export function injectDataAdapter() {
             useFactory: (self: DataTableComponent) => self.adapter(),
             deps: [forwardRef(() => DataTableComponent)],
         },
+        DatePipe,
+        PercentPipe,
+        DecimalPipe,
+        CurrencyPipe,
+        KeyValuePipe,
+        SlicePipe,
+        JsonPointerPipe,
+        LowerCasePipe,
+        TitleCasePipe,
+        UpperCasePipe,
+        I18nPluralPipe,
+        I18nSelectPipe,
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {

@@ -1,4 +1,4 @@
-import { provideRoute, DynamicComponent, RouteFeature, ComponentOutputs } from "@upupa/common";
+import { provideRoute, DynamicComponent, RouteFeature, ComponentOutputs, TypeOrFunc } from "@upupa/common";
 import { makeEnvironmentProviders, output, Provider, Type } from "@angular/core";
 
 import { Route } from "@angular/router";
@@ -107,7 +107,7 @@ export function provideDataTable(options: DataTableOptions, providers: Provider[
 
 export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
-    dataAdapter: DataAdapter<T> | DataAdapterDescriptor;
+    dataAdapter:TypeOrFunc< DataAdapter<T> | DataAdapterDescriptor>;
     tableHeaderComponent?: Type<any> | DynamicComponent;
     expandable?: "single" | "multi" | "none";
     expandableComponent?: DynamicComponent;
