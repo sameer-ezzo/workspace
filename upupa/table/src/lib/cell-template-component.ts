@@ -1,4 +1,4 @@
-import { KeyValue } from "@angular/common";
+import { DatePipe, KeyValue } from "@angular/common";
 import { Component, computed, input, InputSignal, SimpleChanges } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";

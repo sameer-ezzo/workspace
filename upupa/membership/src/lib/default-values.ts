@@ -1,4 +1,4 @@
-import { PasswordStrength } from "@upupa/auth";
+import { PasswordStrength } from "@noah-ark/common";
 import { Field, formInput, formScheme, FormScheme, hiddenField, switchField } from "@upupa/dynamic-form";
 
 export const defaultVerifyCodeField: FormScheme = {

@@ -1,7 +1,6 @@
-import { PasswordStrength } from "@upupa/auth";
 import { Field } from "../types";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
-import { Class } from "@noah-ark/common";
+import { Class, PasswordStrength } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
 
 export class TextFieldOptions {}
@@ -67,6 +66,7 @@ export type FieldOptions =
           (
               | ({ input: "fieldset" } & BaseFormFieldOptions)
               | ({ input: "object" } & BaseFormFieldOptions)
+              | ({ input: "paragraph" } & { text: string; renderer: "markdown" | "html" | "none" })
               | ({ input: "text" } & TextFieldOptions)
               | ({ input: "color" } & TextFieldOptions)
               | ({ input: "textarea" } & TextFieldOptions & {

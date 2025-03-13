@@ -6,9 +6,8 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router, ActivationEnd } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
-import { Principle } from "@noah-ark/common";
+import { analyzePassword, Principle } from "@noah-ark/common";
 
-import { analyzePassword } from "./password-strength-policy";
 import { DeviceService } from "./device.service";
 import { LocalStorageService } from "./local-storage.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";

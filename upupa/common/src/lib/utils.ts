@@ -36,3 +36,6 @@ function readInput(input: string, instance = this) {
     if (typeof inputRef === "function") return inputRef();
     return inputRef;
 }
+
+
+export type TypeOrFunc<T> = T | (() => T);

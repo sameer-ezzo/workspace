@@ -29,8 +29,8 @@ export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);
     label = input("");
     // todo: pass key property (_id passed to the dataSource to identify the unique key of the data source)
-    readonly dataSource = new ClientDataSource<T>([], "_id");
-    readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as any, undefined, undefined, undefined, {
+    readonly dataSource = new ClientDataSource<T>([], "_id" as keyof T);
+    readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as keyof T, undefined, undefined, undefined, {
         page: { pageSize: Number.MAX_SAFE_INTEGER },
     });
 

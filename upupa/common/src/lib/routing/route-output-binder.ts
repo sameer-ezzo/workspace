@@ -1,6 +1,15 @@
 import { APP_INITIALIZER, ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext } from "@angular/core";
+import { SIGNAL } from "@angular/core/primitives/signals";
 import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
 import { Subscription } from "rxjs";
+
+function isClass(func) {
+    return typeof func === "function" && func.prototype?.constructor !== undefined;
+}
+
+function isSignal(func) {
+    return typeof func === "function" && func[SIGNAL];
+}
 
 export function provideRouteOutputBinder(): Provider {
     return {
@@ -12,6 +21,7 @@ export function provideRouteOutputBinder(): Provider {
                 const res = originalActivateWith.apply(this, args);
                 const componentRef = this.activated;
                 const [activatedRoute] = args;
+                outputBinder.setInputs(activatedRoute, componentRef);
                 outputBinder.bindOutputs(activatedRoute, componentRef);
                 return res;
             };
@@ -29,6 +39,8 @@ export function provideRouteOutputBinder(): Provider {
 @Injectable({ providedIn: "root" })
 export class RouteOutputBinder {
     _map = new Map<ComponentRef<any>, Subscription[]>();
+
+    injector = inject(Injector);
 
     bindOutputs(activatedRoute: ActivatedRoute, componentRef: ComponentRef<any>): void {
         if (!componentRef) return;
@@ -61,5 +73,28 @@ export class RouteOutputBinder {
             }
             this._map.delete(componentRef);
         }
+    }
+
+    setInputs(activatedRoute: ActivatedRoute, componentRef: ComponentRef<any>): void {
+        if (!componentRef) return;
+
+        const { queryParams, params, data } = activatedRoute.snapshot;
+        const inputs = { ...queryParams, ...params, ...data };
+        const mirror = reflectComponentType(componentRef.componentType);
+
+        for (const input of mirror.inputs) {
+            if (input.propName in inputs) {
+                const inputValue = this._getInputValue(inputs[input.propName]);
+                componentRef.setInput(input.propName, inputValue);
+            }
+        }
+    }
+
+    _getInputValue(inputValue: any) {
+        if (typeof inputValue == "function" && !isClass(inputValue) && !isSignal(inputValue)) {
+            console.log("Running input function", inputValue);
+            return runInInjectionContext(this.injector, () => inputValue());
+        }
+        return inputValue;
     }
 }
