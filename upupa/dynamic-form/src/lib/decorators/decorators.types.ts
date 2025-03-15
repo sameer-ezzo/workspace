@@ -39,6 +39,7 @@ export type FileInputOptions = {
     dateFormat?: string;
     minAllowedFiles?: number;
     maxAllowedFiles?: number;
+    capture?:string;
     minSize?: number;
     maxSize?: number;
     accept?: string;
