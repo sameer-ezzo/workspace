@@ -15,8 +15,11 @@ export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
             component: DataFormComponent,
             data: {
                 viewModel: config.viewModel,
-                value: config.value,
+                value: typeof config.value !== "function" ? config.value : undefined,
                 form: config.form,
+            },
+            resolve: {
+                value: typeof config.value === "function" ? config.value : undefined,
             },
         }),
     };
@@ -26,7 +29,13 @@ export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...featur
     return provideRoute(config, withFormComponent(config), ...features);
 }
 
-export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror; value?: T; form?: FormGroup ,control?: FormControl,injector?:Injector},): DynamicComponent<DataFormComponent> {
+export function composeForm<T>(config: {
+    viewModel: Class | FormViewModelMirror;
+    value?: T;
+    form?: FormGroup;
+    control?: FormControl;
+    injector?: Injector;
+}): DynamicComponent<DataFormComponent> {
     return {
         component: DataFormComponent,
         inputs: {
@@ -34,8 +43,7 @@ export function composeForm<T>(config: { viewModel: Class | FormViewModelMirror;
             value: config.value,
             control: config.control,
             // form: config.form,
-
         },
-        injector: config.injector
+        injector: config.injector,
     };
 }
