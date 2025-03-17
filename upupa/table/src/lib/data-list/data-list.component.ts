@@ -57,7 +57,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         },
     });
 
-    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
+    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor>({
         transform: (adapterOrDescriptor) => {
             if (adapterOrDescriptor instanceof DataAdapter) {
                 return adapterOrDescriptor;
@@ -68,6 +68,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
 
     dataTable = viewChild(DataTableComponent);
 
+    secondaryRows = computed(() => reflectTableViewModel(this.viewModel()).secondaryRows);
     columns = computed(() => reflectTableViewModel(this.viewModel()).columns);
     instance: Class;
     // vm = computed(() => {

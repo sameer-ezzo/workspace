@@ -7,6 +7,16 @@ export class PasswordStrength {
         readonly special: number | MinMax = 1,
         readonly digit: number | MinMax = 1,
     ) {}
+
+    verifyPassword(password: string) {
+        return verifyPassword(password);
+    }
+    generatePassword() {
+        return generatePassword(this);
+    }
+    analyzePassword(password: string) {
+        return analyzePassword(password);
+    }
 }
 
 const lower = "abcdefghijklmnopqrstuvwxyz";

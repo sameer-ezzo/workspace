@@ -7,6 +7,12 @@ import { DefaultTableCellTemplate } from "@upupa/table";
     selector: "email-column-cell",
     standalone: true,
     imports: [MatIcon, MatTooltip],
+    styles: `
+        :host {
+            display: flex;
+            align-items: center;
+        }
+    `,
     template: `
         <span>
             {{ item().email }}

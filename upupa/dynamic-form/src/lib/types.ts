@@ -40,8 +40,6 @@ const INPUTS = [
     "slider",
     "reviews",
     "email",
-    "date",
-    "date",
     "select",
     "array",
     "radios",

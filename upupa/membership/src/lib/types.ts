@@ -1,11 +1,11 @@
 import { FormScheme, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { defaultForgotPasswordFormFields, defaultResetPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
 import { Condition } from "@noah-ark/expression-engine";
-import { PasswordStrength } from "@upupa/auth";
 import { ComponentRef, inject } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { SnackBarService } from "@upupa/dialog";
 import { Router } from "@angular/router";
+import { PasswordStrength } from "@noah-ark/common";
 
 export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {

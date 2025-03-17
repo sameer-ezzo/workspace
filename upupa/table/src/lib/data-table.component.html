@@ -1,10 +1,11 @@
+@let _secondaryRows = secondaryRows() | keyvalue;
 <span class="table-header">
     <ng-content select=".table-header"></ng-content>
 </span>
 
 <div class="table-container">
     @if (adapter().loading()) {
-        <mat-progress-bar style="position: absolute;" mode="indeterminate"></mat-progress-bar>
+        <mat-progress-bar style="position: absolute" mode="indeterminate"></mat-progress-bar>
     }
     <table
         #table
@@ -110,7 +111,7 @@
             class="{{ rowClass()(row) }}"
             [class.focused]="focusedItem() === row.item"
             [class.selected]="selectionModel.isSelected(row.key)"
-            (click)="onClick(row); toggleExpand(row,i)"
+            (click)="onClick(row); toggleExpand(row, i)"
             (touch)="onClick(row)"
             (long-press)="onLongPress(row)"
         ></tr>
@@ -123,7 +124,7 @@
             <ng-container matColumnDef="expandedDetail" [sticky]="columns()['actions']?.sticky === 'start'">
                 <td
                     mat-cell
-                    *matCellDef="let element;let dataIndex = dataIndex"
+                    *matCellDef="let element; let dataIndex = dataIndex"
                     [attr.colspan]="_columns.length"
                     class="element-detail"
                     [@detailExpand]="expanded[element.key]?.() ? 'expanded' : 'collapsed'"
@@ -131,28 +132,76 @@
                     @if (_detailsTemplate) {
                         <ng-container [ngTemplateOutlet]="_detailsTemplate" [ngTemplateOutletContext]="{ element }"></ng-container>
                     } @else {
-
                         <portal
-                                [component]="_detailsComponent.component"
-                                [inputs]="
-                                    merge(_detailsComponent.inputs, {
-                                        value: element.item,
-                                        item: element.item,
-                                        element,
-                                        row: element,
-                                        dataIndex,
-                                    })
-                                "
-                                [injector]="getRowInjector(element)"
-                                [outputs]="_detailsComponent['outputs']"
-                                [bindings]="_detailsComponent['bindings']"
-                                [class]="_detailsComponent['class']"
-                            ></portal>
+                            [component]="_detailsComponent.component"
+                            [inputs]="
+                                merge(_detailsComponent.inputs, {
+                                    value: element.item,
+                                    item: element.item,
+                                    element,
+                                    row: element,
+                                    dataIndex,
+                                })
+                            "
+                            [injector]="getRowInjector(element)"
+                            [outputs]="_detailsComponent['outputs']"
+                            [bindings]="_detailsComponent['bindings']"
+                            [class]="_detailsComponent['class']"
+                        ></portal>
                     }
                 </td>
             </ng-container>
 
             <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row" [class.expanded]="expanded[row.key]?.()"></tr>
+        }
+
+
+
+        @for (column of _secondaryRows; track $index) {
+            <ng-container [matColumnDef]="column.key">
+                <td
+                    mat-cell
+                    *matCellDef="let element; let dataIndex = dataIndex"
+                    [attr.colspan]="_columns.length"
+                    [class.none]="column.value?.visible === false"
+                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngClass]="column.value.class"
+                >
+                    <div [ngClass]="column.value.class">
+                        @for (template of column.value.template ?? []; track colIdx; let colIdx = $index) {
+                            <portal
+                                [component]="template['component']"
+                                [inputs]="
+                                    merge(template.inputs, {
+                                        value: element.item | jpointer: column.key,
+                                        item: element.item,
+                                        element,
+                                        row: element,
+                                        column,
+                                        dataIndex,
+                                    })
+                                "
+                                [injector]="getRowInjector(element)"
+                                [outputs]="template['outputs']"
+                                [bindings]="template['bindings']"
+                                [class]="template['class']"
+                            ></portal>
+                        } @empty {
+                            <cell-template
+                                [value]="element.item | jpointer: column.key"
+                                [item]="element"
+                                [element]="element.item"
+                                [column]="column"
+                                [dataIndex]="dataIndex"
+                            ></cell-template>
+                        }
+                    </div>
+                </td>
+            </ng-container>
+        }
+
+        @for (secondaryRow of _secondaryRows; track secondaryRow.key; let i = $index) {
+            <tr mat-row *matRowDef="let row; columns: [_secondaryRows[0].key]" class="secondary-row"></tr>
         }
     </table>
     @if (adapter().normalized().length === 0) {
@@ -160,7 +209,7 @@
             @if (noDataImage()) {
                 <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
             }
-            <p>No Data</p>
+            <p>{{ noDataMessage() }}</p>
         </div>
     }
 
@@ -168,9 +217,9 @@
         @if (!items().length) {
             <div id="no-data" style="text-align: center; padding: 2rem">
                 @if (noDataImage()) {
-                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
+                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="noDataMessage()" />
                 }
-                <p>No Data</p>
+                <p>{{ noDataMessage() }}</p>
             </div>
         } @else {}
     } -->

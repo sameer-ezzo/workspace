@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-export type UserClaims = Record<string, string | number | boolean>;
+export type UserClaims = Record<string, string | number | boolean | string[] | number[] | boolean[]>;
 export type User<T extends string | ObjectId = string> = {
   _id?: T;
   username: string;

@@ -1,7 +1,7 @@
 import { ComponentRef, computed, Injector, signal, WritableSignal } from "@angular/core";
 import { FormGroup, FormControl } from "@angular/forms";
 import { Field } from "./types";
-import { createDataAdapter } from "@upupa/data";
+import { createDataAdapter, DataAdapter } from "@upupa/data";
 import { cloneDeep } from "lodash";
 import { DynamicComponent } from "@upupa/common";
 
@@ -20,7 +20,7 @@ export class FieldRef<TCom = any> {
         readonly path: `group:${string}` | `/${string}`,
         readonly field: Field,
         readonly form: FormGroup,
-        readonly control?: FormControl | FormGroup,
+        readonly control?: FormControl | FormGroup
     ) {
         this.hidden = signal(field.hidden === true);
         this.text = signal(field.text);
@@ -31,7 +31,14 @@ export class FieldRef<TCom = any> {
 
     _handleInputs(_inputs: DynamicComponent<TCom>["inputs"]) {
         const inputs = cloneDeep(_inputs);
-        if (inputs["adapter"] || !inputs["_adapter"]) return inputs; //if adapter is passed don't do anything
+        if (!inputs["adapter"] && !inputs["_adapter"]) return inputs; //if adapter is passed don't do anything
+        if (inputs["adapter"] && inputs["adapter"] instanceof DataAdapter) return inputs; //if adapter is passed don't do anything
+        if (inputs["_adapter"] && inputs["_adapter"] instanceof DataAdapter) {
+            inputs["adapter"] = inputs["_adapter"];
+            delete inputs["_adapter"];
+            return inputs;
+        }
+
         const adapter = createDataAdapter(inputs["_adapter"], this.injector);
         inputs["adapter"] = adapter;
         delete inputs["_adapter"];
@@ -41,5 +48,6 @@ export class FieldRef<TCom = any> {
 
     setVisibility(visible: boolean) {
         this.inputs.set({ ...this.inputs(), hidden: !visible });
+        this.hidden.set(!visible);
     }
 }

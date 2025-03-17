@@ -1,4 +1,4 @@
-import { Component, inject, input, Input } from "@angular/core";
+import { Component, computed, inject, input, Input } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
@@ -34,7 +34,8 @@ export class ToolbarUserMenuComponent {
         filter((u) => !!u),
         map((u) => u.name ?? u.email?.substring(0, u.email.indexOf("@"))),
     );
-    impersonated$ = this.u$.pipe(map((u) => u?.claims?.["imps"] || undefined));
+
+    impersonated = computed(() => this.auth.userSignal()?.claims?.["imps"] || undefined);
 
     umcClicked(e) {
         e = e.action;

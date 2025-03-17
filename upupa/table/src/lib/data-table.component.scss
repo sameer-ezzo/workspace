@@ -77,7 +77,7 @@
     }
 }
 th {
-    border-top: solid 1px;
+    border-top: solid 1px var(--mat-table-row-item-outline-color);
 }
 
 tr[cdk-header-row] > th {

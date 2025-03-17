@@ -1,13 +1,32 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
-import { computed } from "@angular/core";
+import { computed, Signal, WritableSignal } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
 import { ReplaySubject } from "rxjs";
 
-export type DataAdapterType = "server" | "api" | "client" | "http";
+export type DataAdapterType = "server" | "api" | "client" | "http" | "signal";
 
+/**
+ * Describes the configuration for a data adapter.
+ *
+ * @template TData - The type of data being adapted.
+ *
+ * @property {DataAdapterType} type - The type of the data adapter. Use "api" or "client".
+ *
+ * @property {keyof TData} [keyProperty] - The property of the data that serves as the unique key.
+ *
+ * @property {Key<TData>} [displayProperty] - The property of the data to be used for display purposes.
+ *
+ * @property {Key<TData>} [valueProperty] - The property of the data to be used as the value.
+ *
+ * @property {Key<TData>} [imageProperty] - The property of the data to be used for image display.
+ *
+ * @property {DataLoaderOptions<TData>} [options] - Additional options for loading data.
+ *
+ * @property {(items: TData[]) => TData[]} [mapper] - A function to map data in the data source before it is normalized in the adapter. Useful for data transformation into Data List View Model.
+ */
 export type DataAdapterDescriptor<TData = any> = {
     type: DataAdapterType;
 
@@ -16,8 +35,16 @@ export type DataAdapterDescriptor<TData = any> = {
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
     options?: DataLoaderOptions<TData>;
-} & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] });
+    mapper?: (items: TData[]) => TData[];
+} & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] } | { type: "signal"; data: WritableSignal<TData[]> });
 
+/**
+ * DataAdapterStore is a function that creates a signal store framework
+ * for managing data entities with state management.
+ *
+ * @template T - The type of the entity being managed.
+ * @returns {SignalStore} A signal store configured with entity management.
+ */
 function DataAdapterStore<T>() {
     return signalStore(
         { protectedState: false },
@@ -36,14 +63,33 @@ function DataAdapterStore<T>() {
         // withSelectedEntity(),
     );
 }
+
+/**
+ * Describes the base event for DataAdapter.
+ * @template T - The type of the entity involved in the event.
+ */
 export abstract class DataAdapterBaseEvent<T = any> {}
+
+/**
+ * Describes the base CRUD event for DataAdapter.
+ * @template T - The type of the entity involved in the event.
+ */
 export abstract class DataAdapterCRUDEvent<T = any> {}
 
+/**
+ * Event triggered when an item is created in the data adapter.
+ * @template T - The type of the created entity.
+ */
 export class DataAdapterCreateItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
     constructor(readonly item: NormalizedItem<T>) {
         super();
     }
 }
+
+/**
+ * Event triggered when an item is updated in the data adapter.
+ * @template T - The type of the updated entity.
+ */
 export class DataAdapterUpdateItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
     constructor(
         readonly previous: T,
@@ -53,11 +99,22 @@ export class DataAdapterUpdateItemEvent<T = any> extends DataAdapterCRUDEvent<T>
     }
 }
 
+/**
+ * Event triggered when an item is deleted in the data adapter.
+ * @template T - The type of the deleted entity.
+ */
 export class DataAdapterDeleteItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
     constructor(readonly item: NormalizedItem<T>) {
         super();
     }
 }
+
+/**
+ * DataAdapter is responsible for managing data operations and state
+ * for a specific data source.
+ *
+ * @template T - The type of data items being managed.
+ */
 export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     private readonly _events = new ReplaySubject<DataAdapterCreateItemEvent | DataAdapterUpdateItemEvent | DataAdapterDeleteItemEvent>();
     readonly events = this._events.asObservable();

@@ -25,7 +25,7 @@
   ],
   "include": [
     "**/*.ts",
-    "**/platform.js",
+    "**/platform.js", "../../noah-ark/common/src/lib/password-strength-policy.ts",
 
   ]
 }

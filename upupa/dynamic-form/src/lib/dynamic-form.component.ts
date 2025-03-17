@@ -178,7 +178,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
     initialized = output<DynamicFormInitializedEvent<T>>();
-    submitted = output<T>();
+    submitted = output<{ event: SubmitEvent; form: FormGroup; result?: T; error?: any }>();
     preventDirtyUnload = input(false);
 
     get patches(): Patch[] {
@@ -306,13 +306,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
             // Clean up existing subscriptions before creating new handlers
             this.subs?.forEach((s) => s.unsubscribe());
-            this.subs = [
-                InputVisibilityHandler(this),
-                ChangeFormSchemeHandler(this),
-                ChangeInputsHandler(this),
-                ChangeValueHandler(this),
-                ChangeStateHandler(this),
-            ];
+            this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
         }
         if (changes["value"]) {
             this._patches.clear();
@@ -334,12 +328,15 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         // this.formRef().nativeElement.submit();
         this.formRef().ngSubmit.emit();
     }
-    onSubmit(e: SubmitEvent) {
-        e?.stopPropagation();
-        e?.preventDefault();
+    onSubmit(event: SubmitEvent) {
+        event?.stopPropagation();
+        event?.preventDefault();
         if (this.form.invalid) {
             this.scrollToError();
-        } else this.submitted.emit(this.value());
+            this.submitted.emit({ event, form: this.form, error: "FORM_IS_INVALID" });
+        } else if (this.form.pristine) {
+            this.submitted.emit({ event, form: this.form, result: this.value(), error: "FORM_IS_PRISTINE" });
+        } else this.submitted.emit({ event, form: this.form, result: this.value() });
     }
 
     _onChange: (value: T) => void;

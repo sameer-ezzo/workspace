@@ -2,22 +2,38 @@ import { effect, Injector, runInInjectionContext } from "@angular/core";
 import { DataAdapter, DataAdapterDescriptor, DataAdapterType } from "./datasource/data.adapter";
 import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
-import { ClientDataSource } from "./datasource/client.data.source";
+import { ClientDataSource, SignalDataSource } from "./datasource/client.data.source";
 import { ApiDataSource } from "./datasource/api.data.source";
 import { TableDataSource } from "./datasource/model";
 
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
     let dataSource: TableDataSource;
 
+    descriptor.mapper ??= (items) => items;
     switch (descriptor.type) {
-        case "client":
-            dataSource = new ClientDataSource(descriptor.data ?? []);
-            break;
         case "server":
         case "api":
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path);
-            descriptor.keyProperty ??= "_id" as any;
-            descriptor.displayProperty ??= "name" as any;
+            descriptor.displayProperty ??= "name" as keyof T;
+            descriptor.keyProperty ??= "_id" as keyof T;
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.mapper);
+            break;
+        case "client":
+            if (!descriptor.keyProperty) {
+                const firstItem = descriptor.data?.[0];
+                if (firstItem && firstItem["_id"]) {
+                    descriptor.keyProperty ??= "_id" as keyof T;
+                }
+            }
+            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty, descriptor.mapper);
+            break;
+        case "signal":
+            if (!descriptor.keyProperty) {
+                const firstItem = descriptor.data()[0];
+                if (firstItem && firstItem["_id"]) {
+                    descriptor.keyProperty = "_id" as keyof T;
+                }
+            }
+            dataSource = new SignalDataSource(descriptor.data, descriptor.keyProperty, descriptor.mapper);
             break;
         default:
             throw unreachable("data adapter type:", descriptor);

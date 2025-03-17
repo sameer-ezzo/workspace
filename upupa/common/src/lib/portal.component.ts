@@ -17,6 +17,7 @@ import {
     runInInjectionContext,
     effect,
     signal,
+    viewChild,
 } from "@angular/core";
 import { Subscription } from "rxjs";
 import { createContentNodes } from "./routing/create-content-nodes";
@@ -28,13 +29,13 @@ import { signalLink } from "./routing/signals";
     selector: "portal",
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
-    template: ``,
+    template: ` <ng-container #portal></ng-container> `,
     standalone: true,
 })
 export class PortalComponent<TCom = any> {
     environmentInjector = inject(EnvironmentInjector);
-    host = inject(ViewContainerRef);
-
+    // host = inject(ViewContainerRef);
+    portal = viewChild("portal", { read: ViewContainerRef });
     componentRef?: ComponentRef<any>;
     componentMirror?: ComponentMirror<any>;
 
@@ -137,7 +138,7 @@ export class PortalComponent<TCom = any> {
         if (!component) return;
         const content = createContentNodes(template.content, this.environmentInjector);
         this.componentMirror = reflectComponentType(component) ?? undefined;
-        this.componentRef = this.host.createComponent(component, {
+        this.componentRef = this.portal().createComponent(component, {
             environmentInjector: this.environmentInjector,
             projectableNodes: content,
             injector: template.injector,
@@ -162,7 +163,7 @@ export class PortalComponent<TCom = any> {
             this.componentMirror = undefined;
         }
 
-        this.host.clear();
+        this.portal().clear();
 
         this.detached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }

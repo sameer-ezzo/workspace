@@ -89,6 +89,7 @@ export class UserListViewModel {
 
     @column({
         header: " ",
+        class: "actions",
         template: [ImpersonateUserButton, editButton(EditUserFromViewModel, { updateAdapter: false }), ChangeUserRolesButton, ResetPasswordButton, BanUserButton, DeleteUserButton],
     })
     actions: any;

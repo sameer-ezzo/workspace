@@ -3,11 +3,10 @@
 import "reflect-metadata";
 import { Field, Fieldset, FormScheme } from "../types";
 import { ActionDescriptor, DynamicComponent, toTitleCase } from "@upupa/common";
-import { PasswordStrength } from "@upupa/auth";
 import { DynamicFormInputs } from "../dynamic-form-inputs";
 import { FieldGroup, FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
-import { Class } from "@noah-ark/common";
+import { Class, PasswordStrength } from "@noah-ark/common";
 import { ArrayFormTableHeaderComponent } from "./form-array-table-header.component";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
@@ -165,6 +164,7 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
                 inputs: { label: toTitleCase(groupName), ...formMetadata.groups[fieldName].inputs },
                 template: formMetadata.groups[fieldName].template,
                 class: formMetadata.groups[fieldName].class,
+                hidden: formMetadata.groups[fieldName].hidden,
             };
 
             group.items[fieldName] = field;
@@ -216,6 +216,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
 
     const field: Field = {
         input,
+        hidden: fieldOptions.hidden ?? false,
         inputs: { ...fieldOptions.inputs },
         outputs: { ...fieldOptions.outputs },
         validations: [],

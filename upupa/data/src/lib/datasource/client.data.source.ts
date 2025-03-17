@@ -2,7 +2,7 @@ import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term
 import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
-import { computed, signal } from "@angular/core";
+import { computed, Signal, signal, WritableSignal } from "@angular/core";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -21,8 +21,7 @@ export function compare(a, b): number {
     else return 0;
 }
 
-export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
-    all = signal<T[]>([]);
+export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
     entries = computed(() => {
         const map = new Map<R, T>();
         for (const item of this.all()) {
@@ -32,25 +31,32 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
         return map;
     });
     constructor(
-        all: T[],
-        public key: string | ((item: T) => R) = (item) => item as unknown as R,
+        public readonly all: WritableSignal<T[]>,
+        readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R,
+
+        mapper: (items: T[]) => T[] = (items) => items,
     ) {
-        super();
-        this.all.set(all);
+        super(mapper);
     }
 
     async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
-        const data = filter(this.all(), options.filter, options.sort, options.page, options.terms);
+        const data = filter(this.all(), options?.filter, options?.sort, options?.page, options?.terms);
         return { data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
+    }
+
+    override async getItems(keys: (string | number | symbol)[], keyProperty: string | undefined): Promise<T[]> {
+        if (keys == null || keys.length === 0) return [];
+        const all = this.all() ?? [];
+        return keys.map((k) => all.find((item) => (keyProperty ? k === item?.[keyProperty] : k === item)));
+    }
+
+    _key(item: T) {
+        return typeof this.key === "function" ? this.key(item) : JsonPointer.get(item, this.key as string);
     }
 
     override create(value: Partial<T>) {
         this.all.update((all) => [...(all ?? []), value as T]);
         return Promise.resolve(value);
-    }
-
-    _key(item: T) {
-        return typeof this.key === "string" ? JsonPointer.get(item, this.key) : this.key(item);
     }
 
     override put(item: T, value: Partial<T>) {
@@ -79,10 +85,10 @@ export class ClientDataSource<T = any, R = T> extends TableDataSource<T, Partial
         this.all.update((v) => (v ?? []).filter((x) => x !== ref));
         return Promise.resolve(item);
     }
+}
 
-    override async getItems(keys: (string | number | symbol)[], keyProperty: string | undefined): Promise<T[]> {
-        if (keys == null || keys.length === 0) return [];
-        const all = this.all() ?? [];
-        return keys.map((k) => all.find((item) => (keyProperty ? k === item?.[keyProperty] : k === item)));
+export class ClientDataSource<T = any, R = T> extends SignalDataSource<T, R> {
+    constructor(all: T[], key: keyof T | ((item: T) => R) = (item) => item as unknown as R, mapper: (items: T[]) => T[] = (items) => items) {
+        super(signal(all), key, mapper);
     }
 }

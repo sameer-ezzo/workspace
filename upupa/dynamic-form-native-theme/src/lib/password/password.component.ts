@@ -1,8 +1,8 @@
 import { Component, forwardRef, model, input, inject, InputSignal } from "@angular/core";
 import { NG_VALUE_ACCESSOR, AbstractControl, NG_VALIDATORS, FormControl, Validator, FormBuilder } from "@angular/forms";
 
-import { PasswordStrength, generatePassword, verifyPassword } from "@upupa/auth";
 import { InputComponent } from "../input/input.component";
+import { generatePassword, PasswordStrength, verifyPassword } from "@noah-ark/common";
 
 @Component({
     standalone: true,

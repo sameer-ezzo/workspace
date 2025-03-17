@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, input, Injector, runInInjectionCon
 
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
-import { _defaultControl, ActionEvent, deepAssign } from "@upupa/common";
+import { _defaultControl, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
@@ -120,33 +120,40 @@ export class DataFormComponent<T = any> {
         });
     }
 
+    no = 0;
+
     submitted = output<{ submitResult?: T; error?: any }>();
     submitting = signal(false);
-    onSubmit(): Promise<{ submitResult?: any; error?: any }> {
+    async onSubmit(event: { result?: any; error?: any }) {
+        if (!event || event.error) {
+            const result = { error: event.error, no: this.no };
+            this.no++;
+            this.submitted.emit(result);
+            return result;
+        }
         const vm = this.value();
         this.submitting.set(true);
-
-        let submitResult: T | undefined;
-
-        return runInInjectionContext(this._injector(), async () => {
+        const result = await runInInjectionContext(this._injector(), async () => {
             try {
-                submitResult = (await vm["onSubmit"]?.()) ?? this.value();
-                this.submitted.emit({ submitResult });
-                return { submitResult };
+                const result = (await vm["onSubmit"]?.()) ?? this.value();
+                return { submitResult: result };
             } catch (error) {
-                this.submitted.emit({ error });
                 return { error };
-            } finally {
-                this.submitting.set(false);
             }
         });
+
+        this.submitting.set(false);
+        this.submitted.emit(result);
+        return result;
     }
 
-    submit() {
-        return this.dynamicFormEl().submit();
+    async submit(): Promise<{ submitResult?: T; error?: any }> {
+        const task = waitForOutput(this as DataFormComponent, "submitted"); // subscribe to output first because returning is faster than emitting
+        this.dynamicFormEl().submit();
+        return await task;
     }
 
-    async onAction(e: ActionEvent): Promise<void> {
+    async onAction(e: ActionEvent) {
         const vm = this.value();
         const { handlerName } = e.descriptor as any;
 

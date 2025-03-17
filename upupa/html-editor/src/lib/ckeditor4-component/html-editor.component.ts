@@ -156,8 +156,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private static loadScript(src: string): Promise<void> {
-        console.log("LOADING: ", src);
-
         if (this.isScriptLoaded[src]) return Promise.resolve();
         if (this.loadPromise[src]) return this.loadPromise[src];
 
@@ -166,8 +164,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             script.src = src;
             script.async = true;
             script.onload = () => {
-                console.log("LOADED: ", src);
-
                 this.isScriptLoaded[src] = true;
                 resolve();
             };
