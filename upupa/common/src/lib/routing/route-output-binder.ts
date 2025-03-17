@@ -30,6 +30,8 @@ export function provideRouteOutputBinder(): Provider {
 export class RouteOutputBinder {
     _map = new Map<ComponentRef<any>, Subscription[]>();
 
+    injector = inject(Injector);
+
     bindOutputs(activatedRoute: ActivatedRoute, componentRef: ComponentRef<any>): void {
         if (!componentRef) return;
 

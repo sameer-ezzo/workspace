@@ -57,7 +57,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         },
     });
 
-    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
+    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor>({
         transform: (adapterOrDescriptor) => {
             if (adapterOrDescriptor instanceof DataAdapter) {
                 return adapterOrDescriptor;
