@@ -92,6 +92,10 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             //filebrowserImageBrowseUrl,
             image2_alignClasses: ["image-left", "image-center", "image-right"],
             image2_captionedClass: "image-captioned",
+            // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
+            extraAllowedContent: "*[style,id](*);",
+
+
             ...this.config(),
         };
         this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
@@ -153,8 +157,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private static loadScript(src: string): Promise<void> {
-        console.log("LOADING: ", src);
-
         if (this.isScriptLoaded[src]) return Promise.resolve();
         if (this.loadPromise[src]) return this.loadPromise[src];
 
@@ -163,8 +165,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             script.src = src;
             script.async = true;
             script.onload = () => {
-                console.log("LOADED: ", src);
-
                 this.isScriptLoaded[src] = true;
                 resolve();
             };
