@@ -92,6 +92,9 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             //filebrowserImageBrowseUrl,
             image2_alignClasses: ["image-left", "image-center", "image-right"],
             image2_captionedClass: "image-captioned",
+
+            // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
+            extraAllowedContent: "*[style,id](*);",
             ...this.config(),
         };
         this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
