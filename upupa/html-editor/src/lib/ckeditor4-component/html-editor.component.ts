@@ -84,7 +84,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             versionCheck: false,
             uiColor: "#fff7f9",
             toolbar: SMART_TOOLBAR,
-            extraPlugins: "image2",
+            extraPlugins: "image2,pastefromword, pastefromgdocs",
             uploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserImageUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
