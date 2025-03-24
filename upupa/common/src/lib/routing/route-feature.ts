@@ -59,6 +59,7 @@ export function provideRoute<T = any>(
     features = features.filter((f) => f); // remove undefined features
 
     let route = _route as Route;
+    route.runGuardsAndResolvers ??= "always";
     if (isDynamicComponentRoute(_route)) {
         const dynamicComponent = _route.component;
         route.component = dynamicComponent.component;
