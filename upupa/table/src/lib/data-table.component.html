@@ -205,7 +205,7 @@
         }
     </table>
     @if (adapter().normalized().length === 0) {
-        <div class="no-data" style="text-align: center; padding: 2rem">
+        <div class="no-data">
             @if (noDataImage()) {
                 <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
             }

@@ -27,6 +27,12 @@ mat-dialog-container {
     & .toolbar.footer:empty {
         display: none;
     }
+    .toolbar.header.titled:not(:empty) {
+        border-block-end: 1px solid var(--mat-sys-outline-variant) !important;
+    }
+    .toolbar.footer:not(:empty) {
+        border-block-start: 1px solid var(--mat-sys-outline-variant) !important;
+    }
 
     & .toolbar {
         display: flex;

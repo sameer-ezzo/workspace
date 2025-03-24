@@ -125,7 +125,8 @@ export class DataFormComponent<T = any> {
     submitted = output<{ submitResult?: T; error?: any }>();
     submitting = signal(false);
     async onSubmit(event: { result?: any; error?: any }) {
-        if (!event || event.error) {
+        // IMPORTANT! Skip for event.error == FORM_IS_PRISTINE since user can submit form with default values (no interaction needed)
+        if (event?.error && event.error !== "FORM_IS_PRISTINE") {
             const result = { error: event.error, no: this.no };
             this.no++;
             this.submitted.emit(result);

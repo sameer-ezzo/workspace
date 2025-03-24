@@ -21,7 +21,6 @@ import { MatBtnComponent } from "@upupa/mat-btn";
                 flex-direction: column;
                 width: 100%;
                 box-sizing: border-box;
-                padding: 1rem;
 
                 mat-btn {
                     align-self: flex-end;
