@@ -11,7 +11,7 @@ import { ToolbarUserMenuComponent } from "../tool-bar-user-menu/tool-bar-user-me
 import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
-import { AuthorizeModule } from "@upupa/authz";
+import { AuthorizeModule, AuthzDirective } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
 import { MatDivider } from "@angular/material/divider";
@@ -38,7 +38,8 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
         AuthorizeModule,
         MatExpansionModule,
         MatDivider,
-        PortalComponent
+        PortalComponent,
+        AuthzDirective
     ],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
