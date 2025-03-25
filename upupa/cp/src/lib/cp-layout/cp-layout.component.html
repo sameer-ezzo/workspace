@@ -49,6 +49,7 @@
     <a
         class="cp-item-link"
         [attr.id]="item.name || index"
+        [authz]="item.action"
         authAction
         [path]="item.path"
         [action]="item.action"
