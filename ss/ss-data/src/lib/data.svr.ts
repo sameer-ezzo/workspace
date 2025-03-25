@@ -279,7 +279,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             if (query.select) pipeline.push({ $project: query.select });
         } else {
             const page = query.page || 1;
-            const max_page_number = 100;
+            const max_page_number = 1000;
             const per_page = million ? 1000000 : Math.min(query.per_page || max_page_number, max_page_number);
 
             const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
