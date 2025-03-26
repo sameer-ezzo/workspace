@@ -7,17 +7,6 @@ import { AuthService } from "@upupa/auth";
 import { catchError, map, of, switchMap } from "rxjs";
 import { DOCUMENT } from "@angular/common";
 import { makeEnvironmentProviders } from "@angular/core";
-// import { AuthService } from "@upupa/auth";
-// import { UploadModule } from "@upupa/upload";
-// import { PopoverModule } from "@upupa/popover";
-// import { LanguageModule } from "@upupa/language";
-// import { MaterialModulesModule } from "./material-modules.module";
-// import { RouterModule } from "@angular/router";
-// import { UtilsModule } from "@upupa/common";
-// import { MatSidenavModule } from "@angular/material/sidenav";
-// import { catchError, map, of, switchMap } from "rxjs";
-// import { AuthorizeModule } from "@upupa/authz";
-// import { MatBtnComponent } from "@upupa/mat-btn";
 
 const userImageProvider = {
     provide: USER_PICTURE_RESOLVER,
@@ -35,49 +24,6 @@ const userImageProvider = {
     },
     deps: [AuthService, DataService, DOCUMENT],
 };
-
-// @NgModule({
-//     imports: [
-//         CommonModule,
-//         UtilsModule,
-//         MatSidenavModule,
-//         RouterModule,
-//         MaterialModulesModule,
-//         LanguageModule,
-//         DataModule,
-//         DynamicFormNativeThemeModule,
-//         DynamicFormModule,
-//         DataTableModule.forRoot([TagsPipe]),
-//         UploadModule,
-//         PopoverModule,
-//         TagsModule,
-//         AuthorizeModule,
-//         PermissionsModule,
-//         MatBtnComponent,
-//     ],
-//     providers: [{ provide: CP_OPTIONS, useValue: { userAvatarMode: "avatar" } }, userImageProvider],
-// })
-// export class ControlPanelModule {
-//     public static register(
-//         options: {
-//             providers?: any[];
-//         } = {
-//             providers: [userImageProvider],
-//         },
-//     ): ModuleWithProviders<ControlPanelModule> {
-//         return {
-//             ngModule: ControlPanelModule,
-//             providers: [
-//                 {
-//                     provide: CP_OPTIONS,
-//                     useValue: options ?? {},
-//                 },
-//                 userImageProvider,
-//                 ...(options.providers ?? []),
-//             ],
-//         };
-//     }
-// }
 
 export function provideControlPanel(
     options: {
