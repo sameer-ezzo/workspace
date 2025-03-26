@@ -84,7 +84,7 @@ export class ApiController {
         const patches = [{ op: "replace", path: "/" + segments.join("/"), value: doc } as Patch];
 
         const oldData = await this.dataService.get(path);
-        const { access, rule, source, action } = this.authorizationService.authorize(msg, "update", { ...msg, oldData, patches });
+        const { access, rule, source, action } = this.authorizationService.authorize(msg, "Update", { ...msg, oldData, patches });
         if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
 
         try {
@@ -108,7 +108,7 @@ export class ApiController {
 
         const oldData = await this.dataService.get(path);
 
-        const { access, rule, source, action } = this.authorizationService.authorize(msg, "update", { oldData, patches });
+        const { access, rule, source, action } = this.authorizationService.authorize(msg, "Update", { oldData, patches });
         if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
 
         try {
@@ -126,7 +126,7 @@ export class ApiController {
 
         const oldData = await this.dataService.get(path);
 
-        const { access, rule, source, action } = this.authorizationService.authorize(msg, "delete", { oldData });
+        const { access, rule, source, action } = this.authorizationService.authorize(msg, "Delete", { oldData });
         if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
 
         try {
