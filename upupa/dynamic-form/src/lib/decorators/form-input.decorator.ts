@@ -246,6 +246,11 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             break;
         case "array":
             break;
+        case "list":
+            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
+            field.inputs["_adapter"] = fieldOptions.inputs?.["adapter"] ?? fieldOptions.adapter;
+            field.inputs["tableHeaderComponent"] = fieldOptions["tableHeaderComponent"];
+            break;
         case "checks":
         case "radios":
             field.inputs["direction"] = fieldOptions.direction ?? "vertical";

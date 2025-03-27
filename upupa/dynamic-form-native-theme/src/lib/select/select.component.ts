@@ -56,7 +56,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
     filterInputRef = viewChild.required<ElementRef>("filterInput");
     filterModel = model<string>();
 
-    override singleValueAsArray = input(false);
+    override multiple = input(false);
 
     clearValue(e) {
         e.stopPropagation();

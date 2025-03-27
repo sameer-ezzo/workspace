@@ -20,7 +20,7 @@ export class FieldRef<TCom = any> {
         readonly path: `group:${string}` | `/${string}`,
         readonly field: Field,
         readonly form: FormGroup,
-        readonly control?: FormControl | FormGroup
+        readonly control?: FormControl | FormGroup,
     ) {
         this.hidden = signal(field.hidden === true);
         this.text = signal(field.text);
@@ -35,12 +35,14 @@ export class FieldRef<TCom = any> {
         if (inputs["adapter"] && inputs["adapter"] instanceof DataAdapter) return inputs; //if adapter is passed don't do anything
         if (inputs["_adapter"] && inputs["_adapter"] instanceof DataAdapter) {
             inputs["adapter"] = inputs["_adapter"];
+            inputs["dataAdapter"] = inputs["_adapter"];
             delete inputs["_adapter"];
             return inputs;
         }
 
         const adapter = createDataAdapter(inputs["_adapter"], this.injector);
         inputs["adapter"] = adapter;
+        inputs["dataAdapter"] = adapter;
         delete inputs["_adapter"];
 
         return inputs;

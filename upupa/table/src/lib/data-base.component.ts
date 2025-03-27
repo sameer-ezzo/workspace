@@ -33,7 +33,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     valueChange = output<Partial<T> | Partial<T>[]>();
     required = input<boolean>(false);
     disabled = model(false);
-    singleValueAsArray = input<boolean>(true);
+    multiple = input<boolean>(true);
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
@@ -61,7 +61,8 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         }
 
         this.value.set(v);
-        this.selectionModel.select(...(Array.isArray(v) ? v : [v]));
+        const keys = this.adapter().getKeysFromValue(v);
+        this.selectionModel.select(...keys);
 
         this._normalizeValue(v);
     }
@@ -112,7 +113,6 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     });
 
     lazyLoadData = input(false);
-
 
     noDataImage = input<string>("");
     noDataMessage = input<string>("No data found");
@@ -196,41 +196,49 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         this.sortChange.emit(sort);
     }
 
+    async valueFromKeys() {
+        return this.adapter().getItems(this.selectionModel.selected);
+    }
     //selection
-    readonly selectionModel = new SelectionModel<Partial<T>>(true, []);
-    toggleSelectAll() {
+    readonly selectionModel = new SelectionModel<keyof T>(true, []);
+    async toggleSelectAll() {
         //selection can have items from data from other pages or filtered data so:
         //if selected items n from this adapter data < adapter data -> select the rest
         //else unselect all items from adapter data only
 
-        if (!this.singleValueAsArray()) {
+        let selection = null;
+        if (!this.multiple()) {
             this.selectionModel.clear();
-            this.value.set(null);
         } else {
             const all = this.adapter().normalized();
             const selected = this.selectionModel.selected;
             if (all.length === selected.length) this.selectionModel.deselect(...selected);
-            else this.selectionModel.select(...all.map((x) => x.value));
-            this.value.set(this.selectionModel.selected);
+            else this.selectionModel.select(...all.map((x) => x.key));
+            selection = await this.valueFromKeys();
         }
 
-        this.selectedNormalized.set(
-            this.adapter()
-                .normalized()
-                .filter((x) => this.selected().includes(x.value)),
-        );
+        this.value.set(selection.map((x) => x.value));
+        this.selectedNormalized.set(selection);
+        // this.adapter()
+        //     .normalized()
+        //     .filter((x) => this.selected().includes(x.value)),
+        // );
         this.markAsTouched();
         this.propagateChange();
     }
 
-    _select(...value: Partial<T>[]) {
-        if (this.singleValueAsArray()) {
-            this.selectionModel.select(...value);
-            this.value.set(this.selectionModel.selected);
+    async _select(...value: Partial<T>[]) {
+        const keys = this.adapter().getKeysFromValue(value);
+        let selection = null;
+        if (this.multiple()) {
+            this.selectionModel.select(...keys);
+            selection = await this.valueFromKeys();
+            this.value.set(selection.map((x) => x.value));
         } else {
             this.selectionModel.clear();
-            this.value.set(value[0]);
-            this.selectionModel.select(value[0]);
+            this.selectionModel.select(keys[0]);
+            selection = await this.valueFromKeys();
+            this.value.set(selection.shift()?.value);
         }
 
         this.selectedNormalized.set(
@@ -239,6 +247,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
                 .filter((x) => this.selected().includes(x.value)),
         );
     }
+
     select(...value: Partial<T>[]) {
         this._select(...value);
         this.markAsTouched();
@@ -256,37 +265,31 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     }
     deselectAll() {
         this.selectionModel.clear(false);
-        if (this.singleValueAsArray()) this.value.set([]);
+        if (this.multiple()) this.value.set([]);
         else this.value.set(null);
 
-        this.selectedNormalized.set(
-            this.adapter()
-                .normalized()
-                .filter((x) => this.selected().includes(x.value)),
-        );
+        this.selectedNormalized.set([]);
         this.markAsTouched();
         this.propagateChange();
     }
 
-    deselect(...value: Partial<T>[]) {
-        this.selectionModel.deselect(...value);
-        if (this.singleValueAsArray()) this.value.set(this.selectionModel.selected);
-        else this.value.set(null);
-        this.selectedNormalized.set(
-            this.adapter()
-                .normalized()
-                .filter((x) => this.selected().includes(x.value)),
-        );
+    async deselect(...value: Partial<T>[]) {
+        const keys = this.adapter().getKeysFromValue(value);
+        this.selectionModel.deselect(...keys);
+        let selection = await this.valueFromKeys();
+        if (this.multiple()) this.value.set(selection.shift()?.value);
+        else this.value.set(selection.map((x) => x.value));
+        this.selectedNormalized.set(selection);
 
         this.markAsTouched();
         this.propagateChange();
     }
 
     toggle(value: Partial<T>) {
-        if (this.selectionModel.isSelected(value)) this.deselect(value);
+        const [key] = this.adapter().getKeysFromValue([value]);
+        if (this.selectionModel.isSelected(key)) this.deselect(value);
         else this.select(value);
     }
-
 
     nextFocusedItem() {
         const normalized = this.adapter().normalized();

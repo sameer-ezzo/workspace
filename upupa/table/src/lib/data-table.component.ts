@@ -52,6 +52,7 @@ import { PortalComponent } from "@upupa/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatIconModule } from "@angular/material/icon";
 import { DynamicComponent } from "@upupa/common";
+import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
@@ -98,6 +99,11 @@ export function injectDataAdapter() {
             provide: DataAdapter,
             useFactory: (self: DataTableComponent) => self.adapter(),
             deps: [forwardRef(() => DataTableComponent)],
+        },
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataTableComponent),
+            multi: true,
         },
         DatePipe,
         PercentPipe,
@@ -286,7 +292,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     shiftKeyPressed = false;
     @HostListener("document:keydown", ["$event"])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === "Shift") this.shiftKeyPressed = this.maxAllowed() !== 1;
+        if (event.key === "Shift") this.shiftKeyPressed = this.multiple() && this.maxAllowed() !== 1;
     }
 
     @HostListener("document:keyup", ["$event"])

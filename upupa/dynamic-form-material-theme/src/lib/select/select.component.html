@@ -3,7 +3,7 @@
         <mat-label>{{ label() }}</mat-label>
     }
 
-    @if (maxAllowed() !== 1) {
+    @if (multiple() === true) {
         <mat-select
             #selectInput
             multiple
@@ -45,8 +45,8 @@
 
             @for (item of actions; track $index) {
                 <mat-option (click)="onAction($event, item)">
-                    @if (item['icon']?.length) {
-                        <mat-icon>{{ item['icon'] }}</mat-icon>
+                    @if (item["icon"]?.length) {
+                        <mat-icon>{{ item["icon"] }}</mat-icon>
                     }
                     <span>{{ item.text }}</span>
                 </mat-option>
@@ -86,8 +86,8 @@
 
             @for (item of actions; track i; let i = $index) {
                 <mat-option (click)="onAction($event, item)">
-                    @if (item['icon']?.length) {
-                        <mat-icon>{{ item['icon'] }}</mat-icon>
+                    @if (item["icon"]?.length) {
+                        <mat-icon>{{ item["icon"] }}</mat-icon>
                     }
                     <span>{{ item.text }}</span>
                 </mat-option>

@@ -25,11 +25,11 @@
         >
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
-                @if (maxAllowed() !== 1 && selectedNormalized(); as sns) {
+                @if (multiple() === true) {
                     <mat-checkbox
                         (change)="toggleSelectAll()"
-                        [checked]="sns.length >= adapter().normalized()?.length"
-                        [indeterminate]="sns.length > 0 && sns.length !== adapter().normalized()?.length"
+                        [checked]="selected().length >= adapter().normalized()?.length"
+                        [indeterminate]="selected().length > 0 && selected().length !== adapter().normalized()?.length"
                     >
                     </mat-checkbox>
                 }
@@ -154,8 +154,6 @@
 
             <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="expandable-row" [class.expanded]="expanded[row.key]?.()"></tr>
         }
-
-
 
         @for (column of _secondaryRows; track $index) {
             <ng-container [matColumnDef]="column.key">

@@ -386,7 +386,6 @@ export class QueryParser {
             else if (x.key === "per_page" && !isNaN(+x.value)) 
             {
                 per_page = Math.min(+x.value, 500);
-                logger.info("per_page", { per_page });
             }
             else if (x.key === "group_by") {
                 const g = x.value.split(",");

@@ -2,7 +2,7 @@
     <mat-label>{{ label() }}</mat-label>
 }
 @if (template() === "normal") {
-    @if (maxAllowed() !== 1) {
+    @if (multiple() == true) {
         <div class="{{ direction() }} {{ template() }} choices" [attr.name]="name()">
             @for (item of items(); track item.key) {
                 <mat-checkbox class="choice" (change)="toggle(item.key)" [checked]="selectionModel.isSelected(item.key)">
