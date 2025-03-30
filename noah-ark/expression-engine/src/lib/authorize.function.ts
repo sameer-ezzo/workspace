@@ -73,7 +73,7 @@ export const AUTHORIZATION_TEMPLATES: Record<string, Pick<FunctionalPermission, 
     },
 };
 
-export function matchPermissions(
+export function selectPermissions(
     rule: Rule,
     action: string,
     ctx: AuthorizeContext,
@@ -89,27 +89,27 @@ export function matchPermissions(
  *
  * @param msg The message object to be authorized (it contains the path to the rule object and it contains the principle object)
  * @param action A string key that points to the specific permission inside the rule object @default rule.operation
- * @param additional Any data useful for the authorization function @example { new_data, old_data }
+ * @param context Any data useful for the authorization function @example { new_data, old_data }
  * @returns grant or deny access for the provided msg/action
  */
-export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, bypassSelectors = false, additional?: Record<string, unknown>): AuthorizeResult {
+export function authorize(msg: AuthorizeMessage, rule: Rule, action?: string, bypassSelectors = false, context?: Record<string, unknown>): AuthorizeResult {
     //BUILD CONTEXT AND ALLOW SUPER ADMIN
     action ??= msg.operation;
     if (_isSuperAdmin(msg)) return { rule: { name: "builtin:super-admin", path: "**" }, action, access: "grant" };
 
-    const ruleSummary = rule ? { name: rule.name, path: rule.path, fallbackSource: rule.fallbackSource, ruleSource: rule.ruleSource } : undefined;
+    const ruleSummary = rule ? { name: rule.name, path: rule.path, ruleSource: rule.ruleSource } : undefined;
 
     //ASSUME THE RESULT IS THE DEFAULT AUTHORIZATION AND BUILD THE CONTEXT
-    const authorizationContext = { msg, additional } as AuthorizeContext;
+    const authorizationContext = { msg, additional: context } as AuthorizeContext;
     const result = {
-        access: typeof rule.fallbackAuthorization === "string" ? rule.fallbackAuthorization : "deny",
+        access: rule.fallbackAuthorization,
         rule: ruleSummary,
         action,
         ctx: authorizationContext,
     } as AuthorizeResult;
 
     //MATCH PERMISSIONS (CHECK PERMISSIONS SELECTORS)
-    const matches = matchPermissions(rule, action, authorizationContext, bypassSelectors);
+    const matches = selectPermissions(rule, action, authorizationContext, bypassSelectors);
     authorizationContext.permissions = matches.reduce((a, b) => ({ ...a, [permissionKey(b.permission)]: b }), {});
     let permissions = matches.filter((m) => m.match.result).map((m) => m.permission);
 

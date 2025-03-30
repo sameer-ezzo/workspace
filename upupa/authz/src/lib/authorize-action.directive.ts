@@ -92,7 +92,11 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     });
 
     readonly action = computed(() => this.segments()[0]);
-    readonly path = computed(() => this.segments()[1]);
+    readonly path = computed(() => {
+        const path = this.segments()[1];
+        if (!path.startsWith("/")) console.error(`Path must start with / Path:${path}`, this.hostElement.nativeElement);
+        return path;
+    });
 
     initialized = false;
     ngOnChanges(changes: SimpleChanges) {
