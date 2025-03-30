@@ -88,13 +88,10 @@ export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, C
     }
 
     onSelectionChange(event: any) {
-        console.log(this.viewModel().name, event);
-
         this.handleUserInput(this.dataTable().value() as any);
     }
     onPageChange(event: any) {}
     onSortChange(event: any) {
-        console.log(this.viewModel().name, event);
         // this should reflect the sorting in the selected items as well as the data table
     }
 

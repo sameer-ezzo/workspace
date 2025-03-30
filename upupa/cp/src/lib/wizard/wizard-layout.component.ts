@@ -112,11 +112,8 @@ export class WizardLayoutComponent implements OnChanges {
         this.selectionChange.emit(e);
     }
 
-    getComponentRef(step: WizardStep);
-    getComponentRef(index: number);
-    getComponentRef(index: number | WizardStep) {
-        const i = typeof index === "number" ? index : this.steps().indexOf(index);
-        return this._componentRefs[i];
+    getComponentRef(index: number) {
+        return this._componentRefs[index];
     }
 
     // getTemplate(step: WizardStep) {
