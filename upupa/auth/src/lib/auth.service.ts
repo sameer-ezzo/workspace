@@ -368,4 +368,7 @@ export class AuthService {
     hasClaim(claim: string, value?: string) {
         return this.user?.claims?.[claim] === value;
     }
+    hasAnyRole(...roles: string[]) {
+        return this.user?.roles?.some((role) => roles.includes(role));
+    }
 }
