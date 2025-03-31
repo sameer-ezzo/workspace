@@ -31,6 +31,7 @@ export type WizardStep = {
     state?: string;
     editable?: boolean;
     optional?: boolean;
+    actions?: DynamicComponent[];
 };
 
 @Component({
@@ -134,19 +135,19 @@ export function provideWizardLayout(
 
 export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: ComponentOutputsHandlers<WizardLayoutComponent> }): DynamicComponentRoute {
     return {
-        name: "withWizardLayout",
-        path: config.path,
+        name: "WizardLayout",
+        ...config,
         component: {
             component: WizardLayoutComponent,
             outputs: config.outputs,
         },
-        resolve: config.resolve,
         data: {
             steps: config.steps,
             isLinear: config.isLinear ?? true,
             outputs: config.outputs,
+            ...config.data,
         },
-    };
+    } as DynamicComponentRoute;
 }
 
 // export function withWizardStep(): WizardStep {
