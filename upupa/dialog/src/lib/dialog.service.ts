@@ -1,11 +1,9 @@
-import { Injectable, TemplateRef, Inject, ElementRef, EventEmitter, SimpleChanges, SimpleChange, Signal, Type, input, inject, signal, Injector } from "@angular/core";
+import { ComponentFactoryResolver, Injectable, Signal, ViewContainerRef, inject } from "@angular/core";
 import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
-import { ComponentType } from "@angular/cdk/portal";
-import { DOCUMENT } from "@angular/common";
-import { firstValueFrom, Subject } from "rxjs";
-import { ActionDescriptor, ActionEvent, component, DynamicComponent, DynamicTemplate } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
 import { DialogRef } from "./dialog-ref";
+import { DataAdapter } from "@upupa/data";
 
 export type UpupaDialogActionContext<C = any> = {
     host: DialogWrapperComponent<C>;
@@ -49,8 +47,14 @@ export class DialogService {
         if (!template) throw new Error("template is not provided for dialog!");
 
         const _template = component(template);
-        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, { ...options, injector: _template.injector ?? options?.injector });
-        _template.injector = undefined; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
+        const injector = _template.injector ?? options?.injector;
+        _template.injector = injector; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
+        const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
+            ...options,
+            injector,
+            componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
+            //viewContainerRef:
+        });
         matDialogRef.componentRef.setInput("template", _template);
         matDialogRef.componentRef.setInput(
             "header",
