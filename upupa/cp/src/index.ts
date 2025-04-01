@@ -15,8 +15,7 @@ export * from "./lib/decorators/scheme.router.decorator";
 export * from "./lib/decorators/form-view-model.decorator";
 
 export * from "./lib/buttons/helpers";
-export * from "./lib/buttons/edit-btn.component";
-export * from "./lib/buttons/create-btn.component";
+export * from "./lib/buttons/form-dialog-btn.component";
 export * from "./lib/buttons/translate-btn.component";
 export * from "./lib/wizard/wizard-layout.component";
 

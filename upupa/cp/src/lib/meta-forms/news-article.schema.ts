@@ -3,8 +3,7 @@ import { formInput, formInputArray } from "@upupa/dynamic-form";
 import { column } from "@upupa/table";
 import { cloneDeep } from "lodash";
 import { adapterSubmit, closeDialogOrNavigateTo } from "../adapter-submit.fun";
-import { createButton } from "../buttons/create-btn.component";
-import { editButton } from "../buttons/edit-btn.component";
+import { createButton, editButton } from "../buttons/form-dialog-btn.component";
 import { deleteButton } from "../buttons/helpers";
 
 

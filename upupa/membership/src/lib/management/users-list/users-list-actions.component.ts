@@ -64,11 +64,11 @@ export class ChangeUserRolesButton extends DefaultTableCellTemplate {
     async onAction(e: ActionEvent) {
         const value = new EditUserRolesFromViewModel({ _id: this.item()._id, roles: this.item().roles });
         const { dialogRef } = await openFormDialog(EditUserRolesFromViewModel, value, { dialogOptions: { title: "User Roles" }, injector: this.injector, defaultAction: true });
-        const { result } = await firstValueFrom(dialogRef.afterClosed());
-        console.log("result", result);
+        const { submitResult } = await firstValueFrom(dialogRef.afterClosed());
+        console.log("result", submitResult);
 
-        if (result) {
-            this.snack.openSuccess("Password has been reset!");
+        if (submitResult) {
+            this.snack.openSuccess("User roles have been changed!");
             await this.adapter.refresh();
             dialogRef.close();
         }

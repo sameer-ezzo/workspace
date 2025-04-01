@@ -1,6 +1,6 @@
 import { formInput, formInputArray } from "@upupa/dynamic-form";
 import { column } from "@upupa/table";
-import { createButton } from "../buttons/create-btn.component";
+import { createButton } from "../buttons/form-dialog-btn.component";
 
 /**
  * Represents video schema model based on the structured data for Videos.
