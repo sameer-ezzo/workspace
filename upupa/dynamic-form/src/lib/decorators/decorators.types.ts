@@ -10,6 +10,7 @@ export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
     minAllowed?: number = 1;
     maxAllowed?: number = 1;
+    multiple?: boolean = false;
     adapter: DataAdapterDescriptor | DataAdapter = { type: "client", data: [] };
 }
 export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any>; hidden?: boolean };

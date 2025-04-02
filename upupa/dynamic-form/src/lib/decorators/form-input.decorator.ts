@@ -227,6 +227,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
         field.inputs["_adapter"] = descriptor;
         field.inputs["minAllowed"] = fieldOptions["minAllowed"];
         field.inputs["maxAllowed"] = fieldOptions["maxAllowed"];
+        field.inputs["multiple"] = "multiple" in fieldOptions ? fieldOptions["multiple"] === true : field.inputs["maxAllowed"] !== 1;
     }
 
     if (fieldOptions["required"]) {
