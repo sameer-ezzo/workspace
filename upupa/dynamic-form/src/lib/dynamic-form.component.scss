@@ -57,3 +57,7 @@ form {
 mat-expansion-panel {
     margin-block-end: 1rem;
 }
+
+::ng-deep .mat-expansion-panel-body {
+    padding: 1rem;
+}

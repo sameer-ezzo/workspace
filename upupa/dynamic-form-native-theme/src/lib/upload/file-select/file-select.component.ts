@@ -4,7 +4,7 @@ import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
-import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
+import { FileEvent, RemoveFileEvent, UploadFileSuccessEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
@@ -201,13 +201,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
     viewerEventsHandler(e: FileEvent) {
         this.events.emit(e);
-        if (e.name === "remove") {
+        if (e instanceof RemoveFileEvent) {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()
                 .filter((f) => !f.error && !(f.file instanceof File))
                 .map((f) => f.file as FileInfo);
             this.handleUserInput(vm);
-        } else if (e.name === "uploadSuccess") {
+        } else if (e instanceof UploadFileSuccessEvent) {
             const f = e.file as File;
             const fileInfo = e.fileInfo as FileInfo;
             const vm = this.viewModel().map((vf) => {

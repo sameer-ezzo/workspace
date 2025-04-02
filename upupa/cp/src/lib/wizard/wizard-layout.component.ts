@@ -1,6 +1,6 @@
 import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { AbstractControl } from "@angular/forms";
-import { MatStepperModule } from "@angular/material/stepper";
+import { MatStepper, MatStepperModule } from "@angular/material/stepper";
 import { ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature, waitForOutput } from "@upupa/common";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
@@ -50,7 +50,7 @@ export type WizardStep = {
     ],
 })
 export class WizardLayoutComponent implements OnChanges {
-    stepper = viewChild("stepper", { read: ElementRef });
+    _stepper = viewChild("stepper", { read: ElementRef });
 
     injector = inject(Injector);
     steps = input.required<WizardStep[], WizardStep[] | (() => WizardStep[])>({
@@ -81,7 +81,7 @@ export class WizardLayoutComponent implements OnChanges {
 
     _componentRefs: ComponentRef<unknown>[] = []; // instance of each step component
 
-    _width$ = toObservable(this.stepper).pipe(switchMap((stepper) => observeInlineSize(stepper.nativeElement)));
+    _width$ = toObservable(this._stepper).pipe(switchMap((stepper) => observeInlineSize(stepper.nativeElement)));
     _width = toSignal(this._width$);
     _tight = computed(() => (this.tightThreshold() == 0 ? false : this._width() <= this.tightThreshold()));
 
@@ -106,6 +106,8 @@ export class WizardLayoutComponent implements OnChanges {
     }
 
     onDone() {
+        const step = this.steps()[this.selectedIndex()];
+        step.control?.markAsTouched();
         this.done.emit();
     }
 
@@ -124,6 +126,27 @@ export class WizardLayoutComponent implements OnChanges {
     //     step["_template"] = _template;
     //     return _template;
     // }
+
+    stepper = viewChild<MatStepper>(MatStepper);
+    next() {
+        const selectedIndex = this.selectedIndex();
+        if (selectedIndex == null || selectedIndex == this.steps().length - 1) return;
+
+        const step = this.steps()[selectedIndex];
+        if (step.control?.invalid) return;
+
+        step.control?.markAsTouched();
+        this.stepper().next();
+    }
+
+    prev() {
+        const selectedIndex = this.selectedIndex();
+        if (selectedIndex == null || selectedIndex == 0) return;
+
+        const step = this.steps()[selectedIndex];
+        step.control?.markAsTouched();
+        this.stepper().previous();
+    }
 }
 
 type WizardLayoutConfig = {
