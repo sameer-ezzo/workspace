@@ -39,7 +39,7 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
         MatExpansionModule,
         MatDivider,
         PortalComponent,
-        AuthzDirective
+        AuthzDirective,
     ],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
@@ -81,7 +81,9 @@ export class CpLayoutComponent {
                 cpItems.forEach((accEl: HTMLElement) => {
                     const links = accEl.querySelectorAll(".cp-item-link");
                     const allHidden = Array.from(links).every((l: HTMLElement) => l.style.display === "none");
-                    accEl.style.display = allHidden === true ? "none" : "block";
+                    if (allHidden) {
+                        accEl.style.display = "hidden";
+                    }
                 });
             }, 500);
         });

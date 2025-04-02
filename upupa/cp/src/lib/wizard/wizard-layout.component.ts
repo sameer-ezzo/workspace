@@ -31,6 +31,7 @@ export type WizardStep = {
     state?: string;
     editable?: boolean;
     optional?: boolean;
+    actions?: DynamicComponent[];
 };
 
 @Component({
@@ -52,14 +53,14 @@ export class WizardLayoutComponent implements OnChanges {
     stepper = viewChild("stepper", { read: ElementRef });
 
     injector = inject(Injector);
-    steps = input.required<WizardStep[], WizardStep[]>({
+    steps = input.required<WizardStep[], WizardStep[] | (() => WizardStep[])>({
         transform: (v) => {
-            const value = v ?? [];
+            const value = (typeof v == "function" ? runInInjectionContext(this.injector, () => v()) : v) ?? [];
             for (const step of value) {
                 const template = step.template;
                 step["_template"] ??= typeof template === "function" ? runInInjectionContext(this.injector, () => template()) : template;
             }
-            return v;
+            return value;
         },
     });
 
@@ -112,11 +113,8 @@ export class WizardLayoutComponent implements OnChanges {
         this.selectionChange.emit(e);
     }
 
-    getComponentRef(step: WizardStep);
-    getComponentRef(index: number);
-    getComponentRef(index: number | WizardStep) {
-        const i = typeof index === "number" ? index : this.steps().indexOf(index);
-        return this._componentRefs[i];
+    getComponentRef(index: number) {
+        return this._componentRefs[index];
     }
 
     // getTemplate(step: WizardStep) {
@@ -128,28 +126,31 @@ export class WizardLayoutComponent implements OnChanges {
     // }
 }
 
-export function provideWizardLayout(
-    config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: ComponentOutputsHandlers<WizardLayoutComponent> },
-    ...features: RouteFeature[]
-): Route {
+type WizardLayoutConfig = {
+    steps: WizardStep[] | (() => WizardStep[]);
+    isLinear?: boolean;
+    outputs?: ComponentOutputsHandlers<WizardLayoutComponent>;
+};
+
+export function provideWizardLayout(config: Route & WizardLayoutConfig, ...features: RouteFeature[]): Route {
     return provideRoute(withWizardLayout(config), ...features);
 }
 
-export function withWizardLayout(config: Route & { steps: WizardStep[]; isLinear?: boolean; outputs?: ComponentOutputsHandlers<WizardLayoutComponent> }): DynamicComponentRoute {
+export function withWizardLayout(config: Route & WizardLayoutConfig): DynamicComponentRoute {
     return {
-        name: "withWizardLayout",
-        path: config.path,
+        name: "WizardLayout",
+        ...config,
         component: {
             component: WizardLayoutComponent,
             outputs: config.outputs,
         },
-        resolve: config.resolve,
         data: {
             steps: config.steps,
             isLinear: config.isLinear ?? true,
             outputs: config.outputs,
+            ...config.data,
         },
-    };
+    } as DynamicComponentRoute;
 }
 
 // export function withWizardStep(): WizardStep {

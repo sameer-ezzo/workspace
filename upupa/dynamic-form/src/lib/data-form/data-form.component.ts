@@ -107,7 +107,7 @@ export class DataFormComponent<T = any> {
 
     onInitialized(e: DynamicFormInitializedEvent) {
         const vm = this.value() as any;
-        if (!("onInit" in vm && typeof vm["onInit"] === "function")) return;
+        if (!(vm && "onInit" in vm && typeof vm["onInit"] === "function")) return;
         runInInjectionContext(this._injector(), async () => {
             await vm["onInit"](e);
         });

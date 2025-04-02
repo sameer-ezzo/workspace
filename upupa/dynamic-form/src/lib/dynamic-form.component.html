@@ -33,10 +33,11 @@
             @case ("expansion-panel") {
                 <mat-expansion-panel
                     [attr.name]="fieldName"
-                    class="{{ input }}-input {{ fieldName }}-container field {{field.class}}"
-
+                    class="{{ input }}-input {{ fieldName }}-container field {{ field.class }}"
                     [class.hidden]="fieldRef.hidden() === true"
                     [expanded]="fieldRef.inputs().expanded"
+                    #panel
+                    (load)="fieldRef.attachedComponentRef.set({ instance: panel })"
                 >
                     <mat-expansion-panel-header>
                         <mat-panel-title> {{ fieldRef.inputs().label }} </mat-panel-title>
@@ -45,7 +46,13 @@
                 </mat-expansion-panel>
             }
             @default {
-                <div [attr.name]="fieldName" class="{{ input }}-input {{ fieldName }}-container field {{field.class}}" [class.hidden]="fieldRef.hidden() === true">
+                <div
+                    [attr.name]="fieldName"
+                    class="{{ input }}-input {{ fieldName }}-container field {{ field.class }}"
+                    [class.hidden]="fieldRef.hidden() === true"
+                    #div
+                    (load)="fieldRef.attachedComponentRef.set({ instance: div })"
+                >
                     <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
                 </div>
             }
@@ -61,6 +68,8 @@
             [class.hidden]="fieldRef.hidden() === true"
             [text]="fieldRef.text()"
             [renderer]="fieldRef.inputs()?.['renderer']"
+            #panel
+            (load)="fieldRef.attachedComponentRef.set({ instance: panel })"
         ></paragraph>
     } @else {
         <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formControl]="control"></field>
@@ -77,7 +86,7 @@
     @let input = field.input;
 
     @if (input === "paragraph" || fieldRef.text()) {
-        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer']"></paragraph>
+        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer']" #panel (load)="fieldRef.attachedComponentRef.set({ instance: panel })"></paragraph>
     }
     @for (record of field.items | orderedKeyValue; track $index) {
         @let _fieldName = record.key;

@@ -46,10 +46,11 @@ import { ConditionalLogicService } from "./conditional-logic.service";
 import { CommonModule, KeyValuePipe } from "@angular/common";
 import { FieldRef } from "./field-ref";
 import { ScrollingModule } from "@angular/cdk/scrolling";
-import { MatExpansionModule } from "@angular/material/expansion";
+import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansion";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 import { FormScheme } from "./types";
 import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+import { LoadDirective } from "./load.directive";
 
 @Pipe({
     name: "orderedKeyValue",
@@ -122,6 +123,7 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
         DynamicFormNativeThemeModule,
         DynamicFormFieldComponent,
         MatExpansionModule,
+        LoadDirective
     ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
@@ -332,6 +334,15 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         event?.stopPropagation();
         event?.preventDefault();
         if (this.form.invalid) {
+            //expand all groups
+            const groups = [...this.graph.keys()].filter((k) => k.startsWith("group:"));
+            for (const group of groups) {
+                const g = this.graph.get(group);
+                if (g.field?.["template"] == "expansion-panel") {
+                    const panel = g.attachedComponentRef().instance as MatExpansionPanel;
+                    panel.open();
+                }
+            }
             this.scrollToError();
             this.submitted.emit({ event, form: this.form, error: "FORM_IS_INVALID" });
         } else if (this.form.pristine) {

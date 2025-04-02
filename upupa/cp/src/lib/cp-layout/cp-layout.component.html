@@ -18,7 +18,7 @@
             <mat-drawer #drawer class="sidenav" [mode]="sideBarMode()" [opened]="isSidebarOpened()">
                 @for (g of sItems; track i; let i = $index) {
                     @if (g["items"]?.length) {
-                        <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g, i)" displayMode="flat">
+                        <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g, i)" displayMode="flat" [authz]="g.action">
                             <mat-expansion-panel #panel [expanded]="hasActiveChild(panel) || g['expanded']" class="mat-elevation-z0">
                                 @if (g.text) {
                                     <mat-expansion-panel-header>
@@ -33,7 +33,7 @@
                                 }
                             </mat-expansion-panel>
                         </mat-accordion>
-                        <mat-divider></mat-divider>
+                        <mat-divider [authz]="g.action"></mat-divider>
                     } @else {
                         <ng-container *ngTemplateOutlet="linkTemplate; context: { item: g }"></ng-container>
                     }

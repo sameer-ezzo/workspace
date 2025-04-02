@@ -133,7 +133,6 @@ function createRulesTreeFromEndpoints(endPoints, rulesService: RulesService) {
                     name: p,
                     builtIn: false,
                     fallbackAuthorization: parentRule.fallbackAuthorization,
-                    fallbackSource: parentRule.fallbackSource ?? parentRule.name,
                     ruleSource: "decorator",
                     actions: {},
                 } as Rule);

@@ -144,12 +144,16 @@ export class PortalComponent<TCom = any> {
             injector: template.injector,
         });
 
-        const cssClass = (template.class ?? "").split(" ").filter(Boolean);
-        if (cssClass.length && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(...cssClass);
+        try {
+            const cssClass = (template.class ?? "").split(" ").filter(Boolean);
+            if (cssClass.length && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(...cssClass);
 
-        this.subscribeToOutputs(template.outputs ?? {});
-        this.setInputs(template.inputs ?? {});
-        // this.applyBindings(template.bindings ?? {});
+            this.subscribeToOutputs(template.outputs ?? {});
+            this.setInputs(template.inputs ?? {});
+            // this.applyBindings(template.bindings ?? {});
+        } catch (error) {
+            console.error("Error during component attach:", error);
+        }
 
         this.attached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }

@@ -11,6 +11,7 @@ import { TranslationModule } from "@upupa/language";
 import { EmbedTranslationButton, LinkTranslationButton, translateButton } from "./translate-btn.component";
 import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
+import { SubmitResult } from "../adapter-submit.fun";
 
 @Component({
     selector: "inline-button",
@@ -98,7 +99,10 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         ],
     };
 
-    const dialogRef = dialog.open({ component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value: v }, injector }, options);
+    const dialogRef = dialog.open<DataFormComponent<TViewModel>, TViewModel, SubmitResult<TViewModel>>(
+        { component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value: v }, injector },
+        options,
+    );
     const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
     return { dialogRef, componentRef };
 }
@@ -118,7 +122,6 @@ export function translationButtons<TItem = unknown>(
         translateButton(formViewModel, value, { locale, translationStrategy: options.translationStrategy, dialogOptions: options?.dialogOptions }),
     );
 }
-
 
 export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean> {
     const confirm = inject(ConfirmService);
