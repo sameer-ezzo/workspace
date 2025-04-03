@@ -1,6 +1,6 @@
 import { Component, inject, Injector, input, output, runInInjectionContext } from "@angular/core";
 import { Class } from "@noah-ark/common";
-import { ActionDescriptor, DynamicComponent } from "@upupa/common";
+import { ActionDescriptor, ComponentOutputs, ComponentOutputsHandlers, DynamicComponent } from "@upupa/common";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { openFormDialog } from "./helpers";
 import { DialogConfig } from "@upupa/dialog";
@@ -35,26 +35,28 @@ export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
             return (await this.data()?.(this)) ?? this.item() ?? new mirror.viewModelType();
         });
 
-        const { dialogRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
-        const result = await firstValueFrom(dialogRef.afterClosed());
-        this.submit.emit(result);
-
-        if (result?.submitResult) {
-            const { submitResult } = result;
-            dialogRef.close(result);
-            this.success.emit(submitResult);
-        } else if (result?.error) this.error.emit(result.error);
-        else this.cancel.emit();
+        const { dialogRef, componentRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
+        const sub = componentRef.instance.submitted.subscribe((result: SubmitResult<TItem>) => {
+            this.submit.emit(result);
+            if (result?.submitResult) {
+                const { submitResult } = result;
+                sub.unsubscribe();
+                dialogRef.close(result);
+                this.success.emit(submitResult);
+            } else if (result?.error) this.error.emit(result.error);
+            else this.cancel.emit();
+        });
     }
 }
 
-export function adapterButton<TItem = unknown>(
+export function formDialogButton<TItem = unknown>(
     formViewModel: Class,
     value: TItem | ((btn: FormDialogButton<TItem>) => TItem) = () => new formViewModel(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
         updateAdapter?: boolean;
+        outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
     options ??= {};
@@ -64,6 +66,7 @@ export function adapterButton<TItem = unknown>(
     return {
         component: FormDialogButton<TItem>,
         inputs: { formViewModel, dialogOptions, btn, data },
+        outputs: options?.outputs,
     };
 }
 
@@ -74,6 +77,7 @@ export function createButton<TItem = unknown>(
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
         updateAdapter?: boolean;
+        outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
@@ -85,7 +89,7 @@ export function createButton<TItem = unknown>(
     };
     const btn = { ...defaultCreateDescriptor, ...options?.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    return adapterButton<TItem>(formViewModel, value, { descriptor: btn, dialogOptions, updateAdapter: options?.updateAdapter });
+    return formDialogButton<TItem>(formViewModel, value, { descriptor: btn, dialogOptions, updateAdapter: options?.updateAdapter, outputs: options?.outputs });
 }
 
 export function editButton<TItem = unknown>(
@@ -95,6 +99,7 @@ export function editButton<TItem = unknown>(
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
         updateAdapter?: boolean;
+        outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
     options ??= {};
@@ -108,5 +113,5 @@ export function editButton<TItem = unknown>(
     const btn = { ...defaultEditDescriptor, ...options?.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Edit", ...options?.dialogOptions };
 
-    return adapterButton<TItem>(formViewModel, value, { descriptor: btn, dialogOptions, updateAdapter: options.updateAdapter });
+    return formDialogButton<TItem>(formViewModel, value, { descriptor: btn, dialogOptions, updateAdapter: options?.updateAdapter, outputs: options?.outputs });
 }

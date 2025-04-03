@@ -22,7 +22,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { SnackBarService } from "@upupa/dialog";
+import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 
 const actions = [
     (item: File | FileInfo) =>
@@ -78,6 +78,7 @@ export class FileTemplateComponent {
     events = output<FileEvent>();
     private readonly fi = new FileIconPerTypePipe();
     imageSrc = signal<string>(undefined);
+    confirm = inject(ConfirmService);
 
     vm = signal<ViewerExtendedFileVm>(undefined);
     ngOnChanges(changes: SimpleChanges) {
@@ -114,27 +115,24 @@ export class FileTemplateComponent {
         a.target = "_blank";
         a.click();
 
-        this.events.emit({
-            name: "download",
-            file: file,
-        } as DownloadFileEvent);
+        this.events.emit(new DownloadFileEvent(file));
     }
 
     // private _displayedColumns = ['thumb', 'name', 'size', 'date', 'commands'];
     // displayedColumns = signal(['thumb', 'name', 'size', 'date', 'commands']);
 
     convertToVm(file: ViewerExtendedFileVm) {
-        const getFileType = (f: File | FileInfo) => {
+        const getFileType = (f: FileInfo) => {
             if (!f) return "file";
-            const type = f instanceof File ? f.type : f.mimetype;
+            const type = f.mimetype;
             if (type) return type.split("/")?.[0].toLocaleLowerCase();
-            const name = f instanceof File ? f.name : f.originalname;
+            const name = f.originalname;
             const ext = name?.split(".").pop() ?? "";
             const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico", "webp"];
             if (imageExts.includes(ext)) return "image";
             return "file";
         };
-        const fileType = getFileType(file.file as File | FileInfo);
+        const fileType = getFileType(file.file as FileInfo);
         file["fileType"] = fileType;
         file["fileName"] = file.file["originalname"] ?? file.file["name"];
         file["date"] = file.file["date"] ?? new Date();
@@ -163,9 +161,9 @@ export class FileTemplateComponent {
         else if (ad.name === "remove") {
             if (this.stream()) {
                 this.stream().cancel();
-                this.events.emit({ name: "cancelUpload", file: item.file } as CancelUploadFileEvent);
+                this.events.emit(new CancelUploadFileEvent(item.file as File));
             } else {
-                this.events.emit({ name: "remove", file: item.file } as RemoveFileEvent);
+                if (await this.confirm.open()) this.events.emit(new RemoveFileEvent(item.file as FileInfo));
             }
         }
         // this.action.emit({ action: ad, data: [item.file] });
@@ -184,10 +182,10 @@ export class FileTemplateComponent {
         const file: File = fvm.file as File;
         this.uploadingSub = s.connection;
         this.uploading.set(true);
-        this.events.emit({ name: "uploadStart", stream: s, file: fvm.file } as UploadFileStartEvent);
+        this.events.emit(new UploadFileStartEvent(fvm.file as File, s));
         s.response$.subscribe({
             next: (f) => {
-                this.events.emit({ name: "uploadSuccess", stream: s, fileInfo: f, file: file } as UploadFileSuccessEvent);
+                this.events.emit(new UploadFileSuccessEvent(f, file, s));
                 fvm.file = f;
                 this.stream.set(undefined);
             },
@@ -195,15 +193,46 @@ export class FileTemplateComponent {
                 const error = { message: e.error.message, error: e };
                 fvm.error = error;
                 this.error.set(error);
-                this.events.emit({ name: "uploadError", ...error, file: file } as UploadFileErrorEvent);
+                this.events.emit(new UploadFileErrorEvent(file, error));
                 this.stream.set(undefined);
                 this.uploading.set(false);
             },
             complete: () => {
-                this.events.emit({ name: "uploadEnd", file: file, fileInfo: fvm.file } as UploadFileEndEvent);
+                this.events.emit(new UploadFileEndEvent(fvm.file as FileInfo));
                 this.uploading.set(false);
                 this.stream.set(undefined);
             },
         });
     }
+
+    dialog = inject(DialogService);
+    onImageClick() {
+        this.dialog.open({ component: ImageViewerComponent, inputs: { path: this.imageSrc() } });
+    }
+}
+
+@Component({
+    selector: "image-viewer",
+    standalone: true,
+    template: `<div class="image-viewer"><img [src]="path()" alt="" /></div>`,
+    styles: [
+        `
+            .image-viewer {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            img {
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 8px;
+            }
+        `,
+    ],
+    encapsulation: ViewEncapsulation.None,
+})
+export class ImageViewerComponent {
+    path = input.required<string>();
 }

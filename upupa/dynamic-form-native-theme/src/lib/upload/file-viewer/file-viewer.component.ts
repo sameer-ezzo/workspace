@@ -48,9 +48,6 @@ export class FilesViewerComponent {
     protected breakpointObserver = inject(BreakpointObserver);
 
     async onFileEvent(event: FileEvent) {
-        if (event.name === "remove") {
-        }
-
         this.events.emit(event);
     }
 

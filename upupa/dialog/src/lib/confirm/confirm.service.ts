@@ -17,10 +17,10 @@ export class ConfirmService {
             {
                 component: ConfirmComponent,
                 inputs: {
-                    confirmText: options?.confirmText,
+                    confirmText: options?.confirmText ?? "Are you sure?",
                     img: options?.img,
-                    discardButton: { color: "accent", text: options.no ?? "Cancel" },
-                    confirmButton: { color: "warn", text: options.yes ?? "Proceed" },
+                    discardButton: { color: "accent", text: options?.no ?? "Cancel" },
+                    confirmButton: { color: "warn", text: options?.yes ?? "Proceed" },
                 },
             },
             o,

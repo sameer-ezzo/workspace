@@ -131,6 +131,8 @@ function extractMongooseRoot(options: DataOptions[]) {
         return MongooseModule.forRoot(databaseInfo.uri, {
             ...opts,
             connectionName: dbName,
+            serverSelectionTimeoutMS: 10000, // Wait up to 10s for MongoDB to respond
+            socketTimeoutMS: 45000,          // Close sockets after 45s of inactivity
         });
     }) as any;
 }

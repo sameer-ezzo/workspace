@@ -48,7 +48,7 @@ export class DialogService {
 
         const _template = component(template);
         const injector = _template.injector ?? options?.injector;
-        _template.injector = injector; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
+        _template.injector = undefined; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
