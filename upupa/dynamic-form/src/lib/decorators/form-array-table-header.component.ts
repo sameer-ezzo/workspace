@@ -58,7 +58,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
                     min-width: 220px;
                     padding: 0.5rem;
                     ::placeholder {
-                        color: var(--mat-sys-on-secondary-container);
+                        color: var(--mat-sys-outline);
                     }
                 }
             }

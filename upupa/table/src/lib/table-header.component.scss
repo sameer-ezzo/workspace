@@ -19,7 +19,7 @@
     position: relative;
     justify-content: center;
     background-color: var(--mat-sys-surface-container-low);
-    border: 1px solid var(--mat-sys-outline);
+    border: 1px solid var(--mat-sys-outline-variant);
     color: var(--mat-sys-on-surface-bright);
     transition: all 0.2s ease-in-out;
     border-radius: 0.5rem;
@@ -27,7 +27,7 @@
     &:hover,
     &:focus-within {
         background-color: var(--mat-sys-surface-container-lowest);
-        border-color: var(--mat-sys-outline-variant);
+        border-color: var(--mat-sys-outline);
         color: var(--mat-sys-on-surface);
         box-shadow: var(--mat-sys-level1, 0 2px 5px rgba(0, 0, 0, 0.2));
     }
@@ -38,15 +38,11 @@
         outline: none;
         border: none;
         height: 100%;
+        ::placeholder {
+            color: var(--mat-sys-outline);
+        }
     }
     .filter-input {
         flex: 1 1 auto;
-    }
-    input.filter-input {
-        min-width: 220px;
-        padding: 0.5rem;
-        ::placeholder {
-            color: var(--mat-sys-on-secondary-container);
-        }
     }
 }
