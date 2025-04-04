@@ -28,6 +28,47 @@ export type RefreshSigninRequestGrant = {
 };
 export type SigninRequest = SigninRequestBase & (PasswordSigninRequestGrant | RefreshSigninRequestGrant);
 
+const usernameRegex = /^[a-zA-Z0-9_.-@]+$/;
+//const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-\.]+$/;
+const phoneRegex = /^\+[0-9]+$/;
+
+function validateUser(user: Partial<User>): string[] {
+    const errors = [];
+
+    // validation
+    // protect sensitive fields
+    if (user.roles != null) errors.push("ROLES_OVER_POST");
+    if (user.claims != null) errors.push("CLAIMS_OVER_POST");
+
+    if (!user.username && !user.phone && !user.email) errors.push("USERNAME_OR_PHONE_OR_EMAIL_REQUIRED");
+    if (user.username) {
+        if (user.username.length < 3) errors.push("USERNAME_TOO_SHORT");
+        if (user.username.length > 50) errors.push("USERNAME_TOO_LONG");
+
+        if (!usernameRegex.test(user.username)) errors.push("USERNAME_INVALID");
+
+        user.username = user.username.toLowerCase();
+    }
+    if (user.email) {
+        if (user.email.length < 3) errors.push("EMAIL_TOO_SHORT");
+        if (user.email.length > 50) errors.push("EMAIL_TOO_LONG");
+
+        // if (!emailRegex.test(user.email)) errors.push("EMAIL_INVALID");
+        if (user.email.length > 50) errors.push("EMAIL_TOO_LONG");
+        user.email = user.email.toLowerCase();
+    }
+
+    if (user.phone) {
+        user.phone = user.phone.toLowerCase().replace(/[^0-9+]/g, "") as User["phone"];
+        if (!phoneRegex.test(user.phone)) errors.push("PHONE_INVALID");
+    }
+
+    // ensure consistency
+    if (user.phone && !user.phone.startsWith("+")) errors.push("PHONE_MUST_STARTS_WITH_PLUS");
+
+    return errors;
+}
+
 @Controller("auth")
 export class UsersController {
     private http: Axios;
@@ -80,6 +121,7 @@ export class UsersController {
         http: { method: "POST", path: "resetpassword" },
         operation: "Reset Password",
     })
+    @Authorize({ by: "anonymous", access: "grant" })
     public async resetpassword(
         @Message()
         msg: IncomingMessage<{ new_password: string; reset_token: string }>,
@@ -133,6 +175,7 @@ export class UsersController {
         http: { method: "POST", path: "adminreset" },
         operation: "Reset User's Password",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async adminReset(
         @Message()
         msg: IncomingMessage<{
@@ -161,6 +204,7 @@ export class UsersController {
         http: { method: "POST", path: "addusertoroles" },
         operation: "Add User To Roles",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async addUserToRoles(@Message() msg: IncomingMessage<{ userId: string; roles: string[] }>) {
         const { userId, roles } = msg.payload;
         if (!userId) throw new HttpException("MISSING_USER_ID", HttpStatus.BAD_REQUEST);
@@ -178,6 +222,7 @@ export class UsersController {
         http: { method: "POST", path: "changeuserroles" },
         operation: "Change User Roles",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async changeUserRoles(@Message() msg: IncomingMessage<{ userId: string; roles: string[] }>) {
         const { userId, roles } = msg.payload;
         await this.auth.changeUserToRoles(userId, roles);
@@ -189,6 +234,7 @@ export class UsersController {
         http: { method: "POST", path: "admincreateuser" },
         operation: "Admin Create User",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async adminCreateUser(@Message() msg: IncomingMessage<any>) {
         const _user = msg.payload;
 
@@ -196,10 +242,6 @@ export class UsersController {
         delete _user.roles;
 
         try {
-            const user_errors = this.auth.verifyUser(_user);
-            if (user_errors.length) {
-                return user_errors;
-            }
             const res = await this.auth.signUp(_user, _user.password);
             if (roles?.length) this.auth.addUserToRoles(res._id, roles);
             this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document, options: this.options }));
@@ -214,6 +256,7 @@ export class UsersController {
         http: { method: "POST", path: "impersonate" },
         operation: "Impersonate User",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async impersonate(@Message() msg: IncomingMessage<{ sub: string }>) {
         //get current principle
         const principle = msg.principle;
@@ -431,7 +474,7 @@ export class UsersController {
     public async signup(@Message() msg: IncomingMessage<User & { password: string }>) {
         try {
             const _user = msg.payload;
-            const user_errors = this.auth.verifyUser(msg.payload);
+            const user_errors = validateUser(msg.payload);
             if (user_errors.length) {
                 throw new HttpException(user_errors, HttpStatus.BAD_REQUEST);
             }
@@ -447,6 +490,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: "POST", path: "lock" }, operation: "Lock User" })
+    @Authorize({ by: "role", value: "super-admin" })
     public async lock(@Message() msg: IncomingMessage<{ id: string; lock: string | boolean }>) {
         const id = msg.payload.id ?? msg.payload["_id"];
         if (!id) {
@@ -485,18 +529,11 @@ export class UsersController {
         return { requiresPassword: true, canLogin: true, requires2FA: false };
     }
 
-    @Get("api-token")
-    async apiToken(@Message() msg) {
-        if (msg.principle) {
-            const api_token = await this.auth.issueAccessToken(msg.principle); //{scope:"data,mailer",audience:""});
-            return `api-token : ${api_token}`;
-        } else throw new HttpException(null, HttpStatus.FORBIDDEN);
-    }
-
     @EndPoint({
         http: { method: "POST", path: "verify/send" },
         operation: "Send Verification",
     })
+    @Authorize({ by: "anonymous" })
     public async sendVerification(
         @Message()
         msg: IncomingMessage<{ id: string; name: string; value: string }>,
@@ -554,6 +591,7 @@ export class UsersController {
     }
 
     @EndPoint({ http: { method: "POST", path: "verify" }, operation: "Verify" })
+    @Authorize({ by: "anonymous" })
     public async verify(
         @Message()
         msg: IncomingMessage<{
@@ -594,6 +632,7 @@ export class UsersController {
         http: { method: "POST", path: "device" },
         operation: "Add Device",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async updateDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle;
         if (!principal) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
@@ -617,6 +656,7 @@ export class UsersController {
         http: { method: "DELETE", path: "device" },
         operation: "Remove Device",
     })
+    @Authorize({ by: "role", value: "super-admin" })
     public async removeDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle;
         if (!principal) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
