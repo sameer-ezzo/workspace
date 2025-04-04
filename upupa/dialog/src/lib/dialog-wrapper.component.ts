@@ -14,7 +14,6 @@ import { DialogRef } from "./dialog-ref";
 
 @Component({
     selector: "dialog-wrapper",
-    standalone: true,
     imports: [MatDialogModule, MatButtonModule, MatIconModule, PortalComponent],
     templateUrl: "./dialog-wrapper.component.html",
     styleUrls: ["./dialog-wrapper.component.scss"],
@@ -28,7 +27,7 @@ import { DialogRef } from "./dialog-ref";
             useFactory: (self: DialogWrapperComponent) => self.dialogRef,
             deps: [forwardRef(() => DialogWrapperComponent)],
         },
-    ],
+    ]
 })
 export class DialogWrapperComponent<C = any> implements DialogPortal<C>, AfterViewInit {
     hostClass = computed(() => [this.panelClass(), this.footer().length > 0 ? "y-scroll" : ""].join(" "));

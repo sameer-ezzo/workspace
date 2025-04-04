@@ -7,11 +7,10 @@ import { NumbersRangeComponent } from "@upupa/dynamic-form-native-theme";
 
 // https://angular-slider.github.io/ngx-slider/demos
 @Component({
-    standalone: true,
     selector: "mat-form-numbers-range-input",
     templateUrl: "./numbers-range.component.html",
     styleUrls: ["./numbers-range.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatNumbersRangeComponent), multi: true }],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule],
+    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule]
 })
 export class MatNumbersRangeComponent<T = number> extends NumbersRangeComponent<T> {}

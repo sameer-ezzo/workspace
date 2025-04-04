@@ -5,7 +5,6 @@ import { DefaultTableCellTemplate } from "@upupa/table";
 
 @Component({
     selector: "email-column-cell",
-    standalone: true,
     imports: [MatIcon, MatTooltip],
     styles: `
         :host {
@@ -20,6 +19,6 @@ import { DefaultTableCellTemplate } from "@upupa/table";
         <mat-icon style="opacity: 0.6" matTooltip="Unverified">
             {{ !item().emv ? "error" : "" }}
         </mat-icon>
-    `,
+    `
 })
 export class EmailColumnCellComponent extends DefaultTableCellTemplate {}

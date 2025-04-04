@@ -8,11 +8,10 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 
 @Component({
-    standalone: true,
     selector: "change-avatar",
     templateUrl: "./change-avatar.component.html",
     styleUrls: ["./change-avatar.component.scss"],
-    imports: [MatButtonModule, MatIconModule],
+    imports: [MatButtonModule, MatIconModule]
 })
 export class ChangeAvatarComponent {
     avatar: string;

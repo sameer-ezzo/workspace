@@ -1,6 +1,6 @@
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output, runInInjectionContext } from "@angular/core";
-import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, computed, forwardRef, input, InputSignal, model, output, runInInjectionContext } from "@angular/core";
+import { ControlValueAccessor, FormsModule, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
 
 import { MatInputModule } from "@angular/material/input";
@@ -15,7 +15,6 @@ import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { debounceTime, distinctUntilChanged } from "rxjs";
 
 @Component({
-    standalone: true,
     selector: "mat-form-chips-input",
     templateUrl: "./chips-input.component.html",
     providers: [
@@ -29,6 +28,11 @@ import { debounceTime, distinctUntilChanged } from "rxjs";
             useFactory: (self: MatChipsComponent) => self.adapter(),
             deps: [MatChipsComponent],
         },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => MatChipsComponent),
+            multi: true,
+        },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatChipsModule, MatIconModule, MatAutocompleteModule],
@@ -40,12 +44,6 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
     name = input("");
     placeholder = input("");
 
-    _items = computed(() => {
-        const all = this.items();
-        const value = this.value();
-        const v = this.adapter().getKeysFromValue(value);
-        return all.filter((x) => !v.includes(x.key));
-    });
     text = model("");
 
     removable = input(true);

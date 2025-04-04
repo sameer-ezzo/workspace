@@ -3,7 +3,9 @@ import { ChangeAvatarComponent } from "../change-avatar/change-avatar.component"
 import { ChangePhoneComponent } from "../change-phone/change-phone.component";
 import { ChangeEmailComponent } from "../change-email/change-email.component";
 
-@Component({ standalone: true, selector: "user-profile", templateUrl: "./profile.component.html", imports: [ChangeAvatarComponent, ChangePhoneComponent, ChangeEmailComponent] })
+@Component({
+    selector: "user-profile", templateUrl: "./profile.component.html", imports: [ChangeAvatarComponent, ChangePhoneComponent, ChangeEmailComponent]
+})
 export class ProfileComponent {
     @Input() appearance = "fill";
     @Input() emailName = "email";

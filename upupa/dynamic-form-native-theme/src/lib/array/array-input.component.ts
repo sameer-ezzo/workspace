@@ -10,7 +10,6 @@ import { DataTableComponent, reflectTableViewModel } from "@upupa/table";
 @Component({
     selector: "array-input",
     templateUrl: "./array-input.component.html",
-    standalone: true,
     imports: [PortalComponent, DataTableComponent, MatFormFieldModule],
     providers: [
         {
@@ -23,7 +22,7 @@ import { DataTableComponent, reflectTableViewModel } from "@upupa/table";
             useFactory: (self: ArrayInputComponent) => self.adapter,
             deps: [ArrayInputComponent],
         },
-    ],
+    ]
 })
 export class ArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);

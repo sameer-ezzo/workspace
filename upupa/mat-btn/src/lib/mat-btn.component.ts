@@ -11,10 +11,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     selector: "mat-btn",
     templateUrl: "./mat-btn.component.html",
     imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, MatProgressSpinnerModule],
-    standalone: true,
     host: {
         "[attr.disabled]": "isDisabled()",
-    },
+    }
 })
 export class MatBtnComponent {
     action = output<ActionEvent | any>();

@@ -4,12 +4,11 @@ import { CommonModule, NgStyle, TitleCasePipe } from "@angular/common";
 import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansion";
 
 @Component({
-    standalone: true,
     selector: "permissions-side-bar",
     templateUrl: "./permissions-side-bar.component.html",
     styleUrls: ["./permissions-side-bar.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, NgStyle, TitleCasePipe, MatExpansionModule],
+    imports: [CommonModule, NgStyle, TitleCasePipe, MatExpansionModule]
 })
 export class PermissionsSideBarComponent {
     readonly nodes = input.required<NodeModel[]>();

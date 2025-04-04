@@ -8,11 +8,10 @@ import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
 
 @Component({
-    standalone: true,
     selector: "reset-password-form",
     templateUrl: "./reset-password-form.component.html",
     styleUrls: ["./reset-password-form.component.scss"],
-    imports: [DynamicFormComponent, MatButtonModule],
+    imports: [DynamicFormComponent, MatButtonModule]
 })
 export class ResetPasswordFormComponent {
     public options = inject<MembershipOptions>(MEMBERSHIP_OPTIONS, { optional: true });

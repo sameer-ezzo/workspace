@@ -128,13 +128,11 @@ export function selectField(
     placeholder?: string,
     hint?: string,
     appearance?: "fill" | "outline",
-    maxAllowed?: number,
     validators: Validator[] = [],
     hidden = false,
 ): FieldItem {
     const sf = field("select", name, label, placeholder, hint, appearance, validators, hidden);
     sf.inputs["adapter"] = adapter;
-    sf.inputs["maxAllowed"] = maxAllowed;
     return sf;
 }
 
@@ -145,13 +143,11 @@ export function autoCompleteField(
     placeholder?: string,
     hint?: string,
     appearance?: "fill" | "outline",
-    maxAllowed?: number,
     validators: Validator[] = [],
     hidden = false,
 ) {
     const sf = field("autocomplete-text", name, label, placeholder, hint, appearance, validators, hidden);
     sf.inputs["adapter"] = adapter;
-    sf.inputs["maxAllowed"] = maxAllowed;
     return sf;
 }
 

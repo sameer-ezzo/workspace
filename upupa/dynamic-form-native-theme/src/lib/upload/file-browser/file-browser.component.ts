@@ -33,7 +33,6 @@ const valueProperty = [
 ] as (keyof FileInfo)[];
 
 @Component({
-    standalone: true,
     selector: "file-browser",
     templateUrl: "./file-browser.component.html",
     styleUrls: ["./file-browser.component.scss"],
@@ -44,7 +43,7 @@ const valueProperty = [
             multi: true,
         },
     ],
-    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule],
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule]
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);
@@ -116,8 +115,9 @@ export class FileBrowserComponent {
     }
 
     writeValue(v: FileInfo[]): void {
-        this.value.set(v);
-        this.adapter.getItems(this.adapter.getKeysFromValue(v));
+        throw new Error("Method not implemented."); // extend data-base component ?
+        // this.value.set(v);
+        // this.adapter.getItems(this.adapter.getKeysFromValue(v));
     }
 
     registerOnChange(fn: (value: FileInfo[]) => void): void {

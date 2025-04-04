@@ -6,7 +6,6 @@ import { InputComponent } from "../../input/input.component";
 
 // https://angular-slider.github.io/ngx-slider/demos
 @Component({
-    standalone: true,
     selector: "form-slider",
     templateUrl: "./slider.component.html",
     styleUrls: ["./slider.component.scss"],
@@ -18,7 +17,7 @@ import { InputComponent } from "../../input/input.component";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule],
+    imports: [FormsModule, ReactiveFormsModule]
 })
 export class SliderComponent extends InputComponent {
     @Input() floor = 0;

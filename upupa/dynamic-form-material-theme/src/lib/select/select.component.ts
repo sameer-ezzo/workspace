@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, forwardRef, viewChild } from "@angular/core";
-import { FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
+import { FormsModule, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -12,7 +12,6 @@ import { ErrorsDirective, FocusDirective } from "@upupa/common";
 import { SelectComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     imports: [
         MatSelectModule,
         FormsModule,
@@ -39,11 +38,11 @@ import { SelectComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
         {
-            provide: NG_VALIDATORS,
+            provide: NG_ASYNC_VALIDATORS,
             useExisting: forwardRef(() => MatSelectComponent),
             multi: true,
         },
-    ],
+    ]
 })
 export class MatSelectComponent<T = any> extends SelectComponent<T> implements Validator {
     selectInput = viewChild<MatSelect>(MatSelect);

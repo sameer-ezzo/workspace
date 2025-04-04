@@ -13,6 +13,7 @@ export class FieldRef<TCom = any> {
     readonly outputs!: WritableSignal<DynamicComponent<TCom>["outputs"]>;
     readonly models = new Map<string, ComponentRef<TCom>>();
     readonly attachedComponentRef = signal<ComponentRef<TCom> | undefined>(undefined);
+    readonly attachedComponent = computed(() => this.attachedComponentRef()?.instance);
 
     constructor(
         readonly injector: Injector,

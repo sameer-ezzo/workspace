@@ -29,8 +29,7 @@ import { signalLink } from "./routing/signals";
     selector: "portal",
     imports: [CommonModule],
     // host: { ngSkipHydration: "true" },
-    template: ` <ng-container #portal></ng-container> `,
-    standalone: true,
+    template: ` <ng-container #portal></ng-container> `
 })
 export class PortalComponent<TCom = any> {
     environmentInjector = inject(EnvironmentInjector);

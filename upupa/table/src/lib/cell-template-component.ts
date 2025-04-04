@@ -34,7 +34,6 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
 }
 
 @Component({
-    standalone: true,
     selector: "cell-template",
     imports: [DynamicPipe],
     template: `
@@ -47,7 +46,7 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
         } @else {
             {{ value() }}
         }
-    `,
+    `
 })
 export class DefaultTableCellTemplate<TValue = any, TRow = any> implements ITableCellTemplate<TValue, TRow> {
     value = input.required<TValue>();
@@ -83,9 +82,7 @@ export type LinkRouterCellInputs = {
     routerLinkActiveOptions?: { exact: boolean; ignoreQueryParams: boolean } | undefined;
 };
 @Component({
-    standalone: true,
     imports: [RouterModule],
-
     template: `
         <a
             [routerLink]="routerLink().routerLink"
@@ -103,7 +100,7 @@ export type LinkRouterCellInputs = {
             [routerLinkActiveOptions]="routerLink().routerLinkActiveOptions ?? { exact: true, ignoreQueryParams: true }"
             >{{ text() }}</a
         >
-    `,
+    `
 })
 export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTemplate<TValue> {
     textFn = input<(ref: RouterLinkCellTemplate) => string>();
@@ -113,7 +110,6 @@ export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTe
 }
 
 @Component({
-    standalone: true,
     imports: [RouterModule],
     template: `
         @let _href = href() ? href()(value()) : null;
@@ -122,7 +118,7 @@ export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTe
         } @else {
             {{ value()?.[textProp()] }}
         }
-    `,
+    `
 })
 export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<TValue> {
     textProp = input.required<keyof TValue>();

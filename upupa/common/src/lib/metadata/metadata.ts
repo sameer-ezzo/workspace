@@ -1,4 +1,4 @@
-import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, APP_INITIALIZER, FactoryProvider } from "@angular/core";
+import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, FactoryProvider, inject, provideAppInitializer } from "@angular/core";
 import { MetadataService, PAGE_METADATA_STRATEGIES } from "./metadata.service";
 import { DEFAULT_OPEN_GRAPH_CONFIG, OPEN_GRAPH_CONFIG, OpenGraphConfig, OpenGraphMetadataStrategy } from "./strategies/open-graph.strategy";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG, PageMetadataStrategy } from "./strategies/page-metadata.strategy";
@@ -34,12 +34,10 @@ export function providePageMetadata(config: ContentMetadataConfig | Omit<Factory
         { provide: CONTENT, useFactory: (route: ActivatedRoute) => route.snapshot.data["content"], deps: [ActivatedRoute] },
 
         ...features,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: (metaService: MetadataService) => initializeMetData(metaService),
-            deps: [MetadataService],
-            multi: true,
-        },
+        provideAppInitializer(() => {
+        const initializerFn = ((metaService: MetadataService) => initializeMetData(metaService))(inject(MetadataService));
+        return initializerFn();
+      }),
     ]);
 }
 

@@ -11,12 +11,11 @@ import { DataFormComponent, reflectFormViewModelType } from "@upupa/dynamic-form
 import { cloneDeep } from "lodash";
 
 @Component({
-    standalone: true,
     selector: "embed-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent],
+    imports: [MatBtnComponent]
 })
 export class EmbedTranslationButton<TItem = unknown> {
     injector = inject(Injector);
@@ -101,12 +100,11 @@ export class EmbedTranslationButton<TItem = unknown> {
 }
 
 @Component({
-    standalone: true,
     selector: "link-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent],
+    imports: [MatBtnComponent]
 })
 export class LinkTranslationButton<TItem = unknown> {
     injector = inject(Injector);

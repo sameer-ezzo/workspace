@@ -9,7 +9,6 @@ import { MatFormField, MatFormFieldAppearance, MatHint } from "@angular/material
 import { SnackBarService } from "@upupa/dialog";
 import { FormsModule } from "@angular/forms";
 @Component({
-    standalone: true,
     selector: "admin-reset-pwd",
     templateUrl: "./admin-reset-pwd.component.html",
     styles: [
@@ -19,7 +18,7 @@ import { FormsModule } from "@angular/forms";
             }
         `,
     ],
-    imports: [FormsModule, MatFormField, MatHint],
+    imports: [FormsModule, MatFormField, MatHint]
 })
 export class AdminResetPasswordComponent {
     loading = false;

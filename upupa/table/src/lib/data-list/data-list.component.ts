@@ -26,7 +26,6 @@ import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, Untype
 
 @Component({
     selector: "data-list",
-    standalone: true,
     imports: [CommonModule, PortalComponent, DataTableComponent],
     templateUrl: "./data-list.component.html",
     styleUrls: ["./data-list.component.scss"],
@@ -126,7 +125,8 @@ export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, C
             this.markAsTouched();
             this.propagateChange();
         } else {
-            this.control()?.setValue(v);
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
         }
     }
 

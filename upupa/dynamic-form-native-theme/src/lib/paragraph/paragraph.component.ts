@@ -7,8 +7,7 @@ export const PARAGRAPH_RENDERER_TEMPLATE = new InjectionToken<"markdown" | "html
     selector: "paragraph",
     templateUrl: "./paragraph.component.html",
     styleUrls: ["./paragraph.component.scss"],
-    standalone: true,
-    imports: [UtilsModule, PortalComponent, MarkdownPipe, HtmlPipe],
+    imports: [UtilsModule, PortalComponent, MarkdownPipe, HtmlPipe]
 })
 export class ParagraphComponent {
     control = input<UntypedFormControl>();

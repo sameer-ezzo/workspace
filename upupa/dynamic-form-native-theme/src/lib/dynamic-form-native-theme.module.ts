@@ -70,19 +70,9 @@ export const DF_NATIVE_THEME_INPUTS = {
     file: { component: FileSelectComponent },
     "local-file": { component: LocalFileInputComponent },
     tree: { component: TreeComponent },
-    radios: {
-        component: ChoicesComponent,
-        field: {
-            inputs: { maxAllowed: 1 },
-        },
-    },
+    radios: { component: ChoicesComponent },
     array: { component: ArrayInputComponent },
-    checks: {
-        component: ChoicesComponent,
-        field: {
-            inputs: { maxAllowed: 1000 },
-        },
-    },
+    checks: { component: ChoicesComponent },
     switch: { component: SwitchComponent },
     color: { component: ColorInputComponent },
     "autocomplete-text": { component: AutoCompleteTextComponent },

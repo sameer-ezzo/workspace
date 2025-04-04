@@ -10,7 +10,6 @@ import { SliderComponent } from "@upupa/dynamic-form-native-theme";
 
 // https://angular-slider.github.io/ngx-slider/demos
 @Component({
-    standalone: true,
     selector: "mat-form-slider-input",
     templateUrl: "./slider.component.html",
     styleUrls: ["./slider.component.scss"],
@@ -22,6 +21,6 @@ import { SliderComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
+    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule]
 })
 export class MatSliderComponent extends SliderComponent {}

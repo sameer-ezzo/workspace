@@ -9,11 +9,10 @@ import { MembershipFormExternalLinksComponent } from "../membership-form-externa
 import { JsonPipe } from "@angular/common";
 
 @Component({
-    standalone: true,
     selector: "signup-form",
     styleUrls: ["./signup-form.component.scss"],
     templateUrl: "./signup-form.component.html",
-    imports: [CollectorComponent, PortalComponent, JsonPipe],
+    imports: [CollectorComponent, PortalComponent, JsonPipe]
 })
 export class SignUpFormComponent {
     public readonly auth: AuthService = inject(AuthService);

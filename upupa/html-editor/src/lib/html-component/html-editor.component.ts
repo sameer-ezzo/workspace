@@ -18,8 +18,6 @@ declare type EditorConfig = any;
     selector: "form-html",
     templateUrl: "./html-editor.component.html",
     styleUrls: ["./html-editor.component.scss"],
-
-    standalone: true,
     imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
     providers: [
         {
@@ -27,7 +25,7 @@ declare type EditorConfig = any;
             useExisting: forwardRef(() => HtmlEditorComponent),
             multi: true,
         },
-    ],
+    ]
 })
 export class HtmlEditorComponent extends InputBaseComponent<string> {
     readonly = input(false);

@@ -9,10 +9,9 @@ import { reflectFormViewModelType, SubmitResult } from "@upupa/dynamic-form";
 import { ITableCellTemplate } from "@upupa/table";
 
 @Component({
-    standalone: true,
     selector: "edit-btn",
     template: ` <mat-btn (action)="openDialog()" [buttonDescriptor]="btn()"></mat-btn>`,
-    imports: [MatBtnComponent],
+    imports: [MatBtnComponent]
 })
 export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
     injector = inject(Injector);

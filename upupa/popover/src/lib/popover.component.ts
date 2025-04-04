@@ -27,14 +27,13 @@ import { OverlayModule } from "@angular/cdk/overlay";
 
 @Component({
     imports: [OverlayModule, CommonModule, A11yModule],
-    standalone: true,
     selector: "popover",
     templateUrl: "./popover.component.html",
     styleUrls: ["./popover.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     animations: [transformPopover],
-    exportAs: "popover",
+    exportAs: "popover"
 })
 export class PopoverComponent implements PopoverPanel, OnDestroy {
     // tslint:disable-line:component-class-suffix

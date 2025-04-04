@@ -26,7 +26,6 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
 }
 @Component({
     selector: "cp-layout",
-    standalone: true,
     imports: [
         CommonModule,
         MatButtonModule,
@@ -44,7 +43,7 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    encapsulation: ViewEncapsulation.None,
+    encapsulation: ViewEncapsulation.None
 })
 export class CpLayoutComponent {
     loginUrl = input("/login");

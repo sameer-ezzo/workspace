@@ -4,7 +4,6 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { FormsModule } from "@angular/forms";
 
 @Component({
-    standalone: true,
     selector: "columns-select",
     templateUrl: "./columns-select.component.html",
     imports: [MatCheckboxModule, FormsModule],
@@ -23,7 +22,7 @@ import { FormsModule } from "@angular/forms";
                 }
             }
         `,
-    ],
+    ]
 })
 export class ColumnsSelectComponent {
     columns: { name: string; descriptor: ColumnDescriptor }[] = [];

@@ -25,7 +25,6 @@ class Password {
 
 @Component({
     selector: "pwd-input",
-    standalone: true,
     imports: [FormsModule, ReactiveFormsModule],
     providers: [{ provide: MatFormFieldControl, useExisting: PasswordInput }],
     template: `
@@ -54,7 +53,7 @@ class Password {
         role: "group",
         "[attr.aria-describedby]": "describedBy",
         "[attr.aria-labelledby]": "parentFormField?.getLabelId()",
-    },
+    }
 })
 export class PasswordInput implements ControlValueAccessor {
     static nextId = 0;

@@ -12,7 +12,6 @@ import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { MatError } from "@angular/material/form-field";
 
 @Component({
-    standalone: true,
     selector: "local-file-input",
     templateUrl: "./local-file-input.component.html",
     styleUrls: ["./local-file-input.component.scss"],
@@ -23,7 +22,7 @@ import { MatError } from "@angular/material/form-field";
             useExisting: forwardRef(() => LocalFileInputComponent),
             multi: true,
         },
-    ],
+    ]
 })
 export class LocalFileInputComponent extends InputBaseComponent implements OnChanges {
     color = input<ThemePalette>("accent");

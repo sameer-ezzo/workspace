@@ -112,7 +112,6 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
             deps: [DynamicFormComponent],
         },
     ],
-    standalone: true,
     imports: [
         OrderedKeyValuePipe,
         CommonModule,
@@ -123,7 +122,7 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
         DynamicFormNativeThemeModule,
         DynamicFormFieldComponent,
         MatExpansionModule,
-        LoadDirective
+        LoadDirective,
     ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
@@ -239,7 +238,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             this.markAsTouched();
             this.propagateChange();
         } else {
-            this.control().setValue(v);
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
         }
     }
 

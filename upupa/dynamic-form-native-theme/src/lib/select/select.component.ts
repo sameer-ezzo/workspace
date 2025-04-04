@@ -1,5 +1,5 @@
 import { Component, Input, forwardRef, Output, EventEmitter, TemplateRef, ElementRef, input, viewChild, model } from "@angular/core";
-import { FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { FormControl, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ActionDescriptor } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
 
@@ -18,7 +18,7 @@ import { DataAdapter } from "@upupa/data";
             multi: true,
         },
         {
-            provide: NG_VALIDATORS,
+            provide: NG_ASYNC_VALIDATORS,
             useExisting: forwardRef(() => SelectComponent),
             multi: true,
         },
@@ -60,8 +60,7 @@ export class SelectComponent<T = any> extends DataComponentBase<T> {
 
     clearValue(e) {
         e.stopPropagation();
-        this.selectionModel.clear();
-        this.value.set(undefined);
+        this.select(undefined);
         this.markAsTouched();
         this.propagateChange();
     }

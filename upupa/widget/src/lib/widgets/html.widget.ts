@@ -10,9 +10,8 @@ class HtmlWidgetSettings {
 
 @Component({
     selector: "html-widget",
-    standalone: true,
     imports: [HtmlPipeStandalone],
-    template: ` <div [innerHTML]="text() | html"></div> `,
+    template: ` <div [innerHTML]="text() | html"></div> `
 })
 export class HtmlWidget {
     text = input<string>();

@@ -3,7 +3,6 @@ import { Component } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 @Component({
-    standalone: true,
     selector: "login-external-links",
     styles: [
         `
@@ -14,6 +13,6 @@ import { RouterLink } from "@angular/router";
         `,
     ],
     template: ` <a i18n [routerLink]="['../forgot-password']">Forgot password?</a> <a i18n [routerLink]="['../signup']">Sign up</a> `,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink]
 })
 export class LoginExternalLinksComponent {}

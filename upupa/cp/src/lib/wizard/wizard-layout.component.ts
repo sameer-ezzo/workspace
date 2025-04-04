@@ -36,7 +36,6 @@ export type WizardStep = {
 
 @Component({
     selector: "wizard-layout",
-    standalone: true,
     templateUrl: "./wizard-layout.component.html",
     imports: [MatStepperModule, PortalComponent, CommonModule, MatButtonModule],
     providers: [
@@ -47,7 +46,7 @@ export type WizardStep = {
                 showError: true,
             } as StepperOptions,
         },
-    ],
+    ]
 })
 export class WizardLayoutComponent implements OnChanges {
     _stepper = viewChild("stepper", { read: ElementRef });

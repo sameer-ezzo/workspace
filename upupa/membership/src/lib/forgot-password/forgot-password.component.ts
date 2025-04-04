@@ -2,11 +2,10 @@ import { Component, inject, Injector } from "@angular/core";
 import { CommonModule } from "@angular/common";
 
 @Component({
-    standalone: true,
     selector: "forgot-password",
     templateUrl: "./forgot-password.component.html",
     styleUrls: ["./forgot-password.component.scss"],
-    imports: [ CommonModule],
+    imports: [CommonModule]
 })
 export class ForgotPasswordComponent {
     // readonly options: MembershipForgotPasswordOptions = inject(FORGOT_PASSWORD_OPTIONS);

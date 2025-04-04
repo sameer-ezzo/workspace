@@ -1,5 +1,5 @@
 import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef } from "@angular/core";
-import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent, waitForOutput } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
@@ -15,7 +15,6 @@ import { SubmitResult } from "../adapter-submit.fun";
 
 @Component({
     selector: "inline-button",
-    standalone: true,
     imports: [MatBtnComponent],
     template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
     styles: [],
@@ -59,7 +58,7 @@ function isFormViewModelMirror(vm: FormViewModelMirror | Class): vm is FormViewM
 export async function openFormDialog<TViewModelClass extends Class | FormViewModelMirror, TViewModel = ExtractViewModel<TViewModelClass>>(
     vm: TViewModelClass,
     value: TViewModel,
-    context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean } = {},
+    context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean; closeOnSuccess?: boolean } = {},
 ) {
     const _injector = context?.injector ?? inject(Injector);
     const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
@@ -104,7 +103,14 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         options,
     );
     const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
-    return { dialogRef, componentRef };
+
+    if (context?.closeOnSuccess !== false) {
+        const sub = componentRef.instance.submitted.subscribe((result) => {
+            if (result.submitResult) dialogRef.close(result);
+        });
+    }
+
+    return { dialogRef, componentRef, submit: waitForOutput(componentRef.instance, "submitted") };
 }
 
 export function translationButtons<TItem = unknown>(

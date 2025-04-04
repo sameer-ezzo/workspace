@@ -7,7 +7,6 @@ import { MatInputModule } from "@angular/material/input";
 import { DateRangeComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-date-range-input",
     templateUrl: "./date-range.component.html",
     styleUrls: ["./date-range.component.css"],
@@ -18,6 +17,6 @@ import { DateRangeComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatDatepickerModule],
+    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatDatepickerModule]
 })
 export class MatDateRangeComponent extends DateRangeComponent {}

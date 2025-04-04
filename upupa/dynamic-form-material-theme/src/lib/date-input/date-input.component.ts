@@ -9,7 +9,6 @@ import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
 import { InputDefaults } from "../defaults";
 
 @Component({
-    standalone: true,
     selector: "mat-form-date-input",
     templateUrl: "./date-input.component.html",
     providers: [
@@ -20,7 +19,7 @@ import { InputDefaults } from "../defaults";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule]
 })
 export class MatDateInputComponent extends DateInputComponent {
     appearance = input(InputDefaults.appearance);

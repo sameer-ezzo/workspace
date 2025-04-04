@@ -12,7 +12,6 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
     selector: "collector",
-    standalone: true,
     imports: [DynamicFormComponent, CommonModule, UtilsModule, MatBtnComponent],
     templateUrl: "./collector.component.html",
     styleUrls: ["./collector.component.scss"],
@@ -28,7 +27,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
             useFactory: (self: CollectorComponent) => self.dynamicForm().graph,
             deps: [CollectorComponent],
         },
-    ],
+    ]
 })
 export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
