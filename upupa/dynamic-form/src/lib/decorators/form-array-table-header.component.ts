@@ -64,7 +64,6 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
         `,
     ],
-    standalone: true,
     imports: [PortalComponent, MatIconModule, FormsModule, MatButtonModule],
     template: `
         @if (showSearch()) {
@@ -89,7 +88,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
             <ng-content select></ng-content>
         </div>
-    `,
+    `
 })
 export class ArrayFormTableHeaderComponent {
     injector = inject(Injector);

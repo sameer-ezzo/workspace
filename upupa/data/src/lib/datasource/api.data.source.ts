@@ -1,31 +1,24 @@
 import { firstValueFrom, map } from "rxjs";
-import { FilterDescriptor, PageDescriptor, ReadResult, SortDescriptor, TableDataSource, Term } from "./model";
+import { FilterDescriptor, Key, PageDescriptor, ReadResult, SortDescriptor, TableDataSource, Term } from "./model";
 import { ApiGetResult, DataService } from "../data.service";
 import { Patch } from "@noah-ark/json-patch";
 import { signal } from "@angular/core";
 
-export class ApiDataSource<T = any> extends TableDataSource<T> {
+export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDataSource<T> {
     readonly allDataLoaded = signal(false);
-
-    // readonly src$ = new ReplaySubject<Observable<T[]>>(1);
-    // readonly data$ = this.src$.pipe(
-    //     // debounceTime(200),
-    //     switchMap((src) => src),
-    // );
 
     private readonly url: URL;
     private get pathname() {
         return this.url ? this.url.pathname : this.path;
     }
-    private get queryParams() {
+    private get queryParams(): Record<string, string> {
         return this.url ? Object.fromEntries(this.url.searchParams as any) : {};
     }
     constructor(
         private readonly dataService: DataService,
-        public readonly path: string,
-        mapper: (items: T[]) => T[] = (items) => items,
+        readonly path: string,
+        readonly key: keyof T = "_id",
     ) {
-        super(mapper);
         const _url = new URL("/", dataService.api.api_base);
         this.url = new URL(path, _url.protocol + "//" + _url.host);
     }
@@ -45,7 +38,10 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         }
     }
 
-    load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
+    load(
+        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
+        mapper?: (raw: unknown) => T[],
+    ): Promise<ReadResult<T>> {
         const filter = options?.filter ?? {};
         const search = filter.search;
         delete filter.search;
@@ -54,52 +50,56 @@ export class ApiDataSource<T = any> extends TableDataSource<T> {
         const page = options?.page ?? { pageIndex: 0, pageSize: 25 };
         const terms = (options?.terms ?? []).slice();
 
-        const query: any = { ...this.queryParams };
-        if (search && terms.length) {
-            const r = terms.map((f) => [String(f.field), this._evalTerm(f, search)]);
-            const t = r.filter((f) => f[1] && `${f[1]}`.length > 0) as [string, string][];
-            const [k, v] = t.shift();
-            const rest = t.map((f) => `${f[0]}=${f[1]}`).join("|");
-            query[k] = v + (t.length === 0 ? "" : `|` + rest);
+        const query: Record<string | "page" | "per_page", string | number> = options?.keys
+            ? { [this.key]: `{in}${options.keys.join(",")}`, per_page: options.keys.length }
+            : { ...this.queryParams };
+        if (!options?.keys) {
+            // when passing keys we want to make sure items are returned
+            if (search && terms.length) {
+                const r = terms.map((f) => [String(f.field), this._evalTerm(f, search)]);
+                const t = r.filter((f) => f[1] && `${f[1]}`.length > 0) as [string, string][];
+                const [k, v] = t.shift();
+                const rest = t.map((f) => `${f[0]}=${f[1]}`).join("|");
+                query[k] = v + (t.length === 0 ? "" : `|` + rest);
+            }
+            Object.keys(filter).forEach((k) => (query[k] = filter[k] as string));
+
+            query["page"] = page && page.pageIndex ? Math.max(0, page.pageIndex) + 1 : 1;
+            query["per_page"] = page && page.pageSize ? Math.max(0, page.pageSize) : 25;
         }
 
-        Object.keys(filter).forEach((k) => (query[k] = filter[k]));
+        if (sort?.active) query["sort_by"] = `${sort.active},${sort.direction}`;
 
-        query.page = page && page.pageIndex ? Math.max(0, page.pageIndex) + 1 : 1;
-        query.per_page = page && page.pageSize ? Math.max(0, page.pageSize) : 25;
-
-        if (sort?.active) query.sort_by = `${sort.active},${sort.direction}`;
-
-        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: this.mapper(res.data ?? []) })));
+        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: mapper ? mapper(res.data ?? []) : res.data })));
         return firstValueFrom(data$).then((res: ApiGetResult<T[]>) => res as ReadResult<T>);
     }
 
-    override create(value: Partial<T>) {
+    create(value: Partial<T>) {
         return this.dataService.post(this.pathname, value);
     }
 
-    override put(item: T, value: Partial<T>) {
-        const key = item?.["_id"];
-        if (key == undefined) throw new Error("Item has no _id key");
+    put(item: T, value: Partial<T>) {
+        const key = item?.[this.key];
+        if (key == undefined) throw new Error("Item has no key");
         return this.dataService.put(`${this.pathname}/${key}`, value);
     }
 
-    override patch(item: T, patches: Patch[]) {
-        const key = item?.["_id"];
-        if (key == undefined) throw new Error("Item has no _id key");
+    patch(item: T, patches: Patch[]) {
+        const key = item?.[this.key];
+        if (key == undefined) throw new Error("Item has no key");
         return this.dataService.patch(`${this.pathname}/${key}`, patches);
     }
-    override delete(item: T) {
-        const key = item?.["_id"];
-        if (key == undefined) throw new Error("Item has no _id key");
+    delete(item: T) {
+        const key = item?.[this.key];
+        if (key == undefined) throw new Error("Item has no key");
         return this.dataService.delete(`${this.pathname}/${key}`);
     }
 
     destroy?() {}
 
-    override getItems(keys: (string | number | symbol)[], key: string | number | symbol): Promise<T[]> {
-        if (!keys?.length) return Promise.resolve([]);
-        const query = { [key]: `{in}${keys.join(",")}` };
-        return firstValueFrom(this.dataService.get<T[]>(this.pathname, query)).then((res) => res.data);
-    }
+    //  getItems(keys: (string | number | symbol)[], key: string | number | symbol): Promise<T[]> {
+    //     if (!keys?.length) return Promise.resolve([]);
+    //     const query = { [key]: `{in}${keys.join(",")}` };
+    //     return firstValueFrom(this.dataService.get<T[]>(this.pathname, query)).then((res) => res.data);
+    // }
 }

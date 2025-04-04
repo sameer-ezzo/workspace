@@ -1,4 +1,4 @@
-import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term, ReadResult } from "./model";
+import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term, ReadResult, Key } from "./model";
 import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
@@ -21,7 +21,7 @@ export function compare(a, b): number {
     else return 0;
 }
 
-export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial<T>> {
+export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Partial<T>> {
     entries = computed(() => {
         const map = new Map<R, T>();
         for (const item of this.all()) {
@@ -31,35 +31,34 @@ export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial
         return map;
     });
     constructor(
-        public readonly all: WritableSignal<T[]>,
+        readonly all: WritableSignal<T[]>,
         readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R,
+    ) {}
 
-        mapper: (items: T[]) => T[] = (items) => items,
-    ) {
-        super(mapper);
-    }
-
-    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>> {
-        const data = filter(this.all(), options?.filter, options?.sort, options?.page, options?.terms);
-        return { data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
-    }
-
-    override async getItems(keys: (string | number | symbol)[], keyProperty: string | undefined): Promise<T[]> {
-        if (keys == null || keys.length === 0) return [];
-        const all = this.all() ?? [];
-        return keys.map((k) => all.find((item) => (keyProperty ? k === item?.[keyProperty] : k === item)));
+    async load(
+        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
+        mapper?: (raw: unknown) => T[],
+    ): Promise<ReadResult<T>> {
+        const all = this.all();
+        if (options?.keys) {
+            const data = options.keys.map((k) => all.find((item) => this._key(item) === k));
+            return { data: mapper ? mapper(data) : data, total: data.length, query: [] };
+        } else {
+            const data = filter(all, options?.filter, options?.sort, options?.page, options?.terms);
+            return { data: mapper ? mapper(data) : data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
+        }
     }
 
     _key(item: T) {
         return typeof this.key === "function" ? this.key(item) : JsonPointer.get(item, this.key as string);
     }
 
-    override create(value: Partial<T>) {
+    create(value: Partial<T>) {
         this.all.update((all) => [...(all ?? []), value as T]);
         return Promise.resolve(value);
     }
 
-    override put(item: T, value: Partial<T>) {
+    put(item: T, value: Partial<T>) {
         const key = this._key(item);
         // const entries = this.entries();
         // const ref = entries.get(key);
@@ -68,7 +67,7 @@ export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial
         return Promise.resolve(value);
     }
 
-    override patch(item: T, patches: Patch[]) {
+    patch(item: T, patches: Patch[]) {
         const key = this._key(item);
         const entries = this.entries();
         let ref = entries.get(key);
@@ -78,7 +77,7 @@ export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial
         return Promise.resolve(ref);
     }
 
-    override delete(item: T) {
+    delete(item: T) {
         const key = this._key(item);
         const entries = this.entries();
         const ref = entries.get(key);
@@ -88,7 +87,7 @@ export class SignalDataSource<T = any, R = T> extends TableDataSource<T, Partial
 }
 
 export class ClientDataSource<T = any, R = T> extends SignalDataSource<T, R> {
-    constructor(all: T[], key: keyof T | ((item: T) => R) = (item) => item as unknown as R, mapper: (items: T[]) => T[] = (items) => items) {
-        super(signal(all), key, mapper);
+    constructor(all: T[], key: keyof T | ((item: T) => R) = (item) => item as unknown as R) {
+        super(signal(all), key);
     }
 }
