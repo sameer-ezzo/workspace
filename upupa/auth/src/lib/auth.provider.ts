@@ -1,9 +1,9 @@
 import { EnvironmentProviders, InjectionToken, Provider } from "@angular/core";
 import { AUTH_OPTIONS } from "./di.token";
 import { AuthOptions } from "./auth-options";
+import { AUTH_IDPs } from "./idps";
 import { HTTP_INTERCEPTORS } from "@angular/common/http";
 import { AuthInterceptor } from "./auth.interceptor";
-import { AUTH_IDPs } from "./idps";
 
 export type EmailAndPasswordProviderOptions = { fields?: any; on_success?: any; on_error?: any };
 

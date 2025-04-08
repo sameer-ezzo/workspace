@@ -1,12 +1,12 @@
 import { Component, inject, model, Injector } from "@angular/core";
-import { SignUpFormComponent } from "../signup-form/signup-form.component";
+// import { SignUpFormComponent } from "../signup-form/signup-form.component";
 
 @Component({
     standalone: true,
     selector: "signup",
     styleUrls: ["./signup.component.scss"],
     templateUrl: "./signup.component.html",
-    imports: [SignUpFormComponent],
+    // imports: [SignUpFormComponent],
 })
 export class SignUpComponent {
 
