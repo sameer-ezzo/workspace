@@ -28,8 +28,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
             }
         `,
     ],
-    standalone: true,
-    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
+    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule]
 })
 export class PromptComponent implements OnInit {
     promptText = input("Please enter value");

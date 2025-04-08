@@ -33,13 +33,12 @@ export class WidgetSettingsForm {
 
 @Component({
     selector: "widget-settings",
-    standalone: true,
     imports: [MatButtonModule, MatIconModule, DataFormComponent, FormsModule],
     template: `
         <h1>Settings</h1>
         <data-form [viewModel]="settingsForm" [(value)]="settings"></data-form>
         <data-form [viewModel]="blueprint().settingsForm" [(value)]="inputs"></data-form>
-    `,
+    `
 })
 export class WidgetSettingsComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[]>();

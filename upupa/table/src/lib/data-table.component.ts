@@ -52,7 +52,7 @@ import { PortalComponent } from "@upupa/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatIconModule } from "@angular/material/icon";
 import { DynamicComponent } from "@upupa/common";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
@@ -64,7 +64,6 @@ export function injectDataAdapter() {
 }
 
 @Component({
-    standalone: true,
     selector: "data-table",
     templateUrl: "./data-table.component.html",
     styleUrls: ["./data-table.component.scss"],
@@ -105,6 +104,11 @@ export function injectDataAdapter() {
             useExisting: forwardRef(() => DataTableComponent),
             multi: true,
         },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => DataTableComponent),
+            multi: true,
+        },
         DatePipe,
         PercentPipe,
         DecimalPipe,
@@ -125,7 +129,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
     stickyHeader = input(false);
-    override maxAllowed = input<number, number>(Number.MAX_SAFE_INTEGER, { transform: (v) => Number.MAX_SAFE_INTEGER });
+
     contentChanged = output<void>();
     name = input<string, string>(`table_${Date.now()}`, {
         alias: "tableName",
@@ -181,7 +185,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     constructor() {
         super();
         effect(() => {
-            const s = this.selectedNormalized();
+            const s = this.adapter().selection();
             this.selectionChange.emit(s);
         });
     }
@@ -292,7 +296,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     shiftKeyPressed = false;
     @HostListener("document:keydown", ["$event"])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === "Shift") this.shiftKeyPressed = this.multiple() && this.maxAllowed() !== 1;
+        if (event.key === "Shift") this.shiftKeyPressed = this.multiple();
     }
 
     @HostListener("document:keyup", ["$event"])
@@ -313,7 +317,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
         for (const r of rows) {
             if (event.checked) this.select(r.key);
-            else this.deselect(r.key);
+            else this.unselect(r.key);
         }
 
         this.focusedItem.set(row);

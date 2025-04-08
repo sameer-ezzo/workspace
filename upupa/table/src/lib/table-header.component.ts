@@ -10,9 +10,8 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 @Component({
     selector: "table-header",
     styleUrl: "./table-header.component.scss",
-    standalone: true,
     imports: [PortalComponent, MatIconModule, FormsModule, MatButtonModule],
-    templateUrl: "./table-header.component.html",
+    templateUrl: "./table-header.component.html"
 })
 export class TableHeaderComponent {
     injector = inject(Injector);

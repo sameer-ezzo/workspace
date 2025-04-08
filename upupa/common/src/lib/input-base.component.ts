@@ -31,7 +31,8 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
             this.markAsTouched();
             this.propagateChange();
         } else {
-            this.control().setValue(v);
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
         }
     }
 

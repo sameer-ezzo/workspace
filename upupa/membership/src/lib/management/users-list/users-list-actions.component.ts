@@ -15,10 +15,9 @@ import { openFormDialog } from "@upupa/cp";
 import { EditUserRolesFromViewModel } from "../edit-user-roles/edit-user-roles.forms";
 
 @Component({
-    standalone: true,
     selector: "impersonate-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent],
+    imports: [MatIconModule, MatBtnComponent]
 })
 export class ImpersonateUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -40,10 +39,9 @@ export class ImpersonateUserButton extends DefaultTableCellTemplate {
 }
 
 @Component({
-    standalone: true,
     selector: "change-user-roles-button",
     template: `<mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent],
+    imports: [MatIconModule, MatBtnComponent]
 })
 export class ChangeUserRolesButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -76,10 +74,9 @@ export class ChangeUserRolesButton extends DefaultTableCellTemplate {
 }
 
 @Component({
-    standalone: true,
     selector: "reset-password-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent],
+    imports: [MatIconModule, MatBtnComponent]
 })
 export class ResetPasswordButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -106,10 +103,9 @@ export class ResetPasswordButton extends DefaultTableCellTemplate {
 }
 
 @Component({
-    standalone: true,
     selector: "delete-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent],
+    imports: [MatIconModule, MatBtnComponent]
 })
 export class DeleteUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -138,10 +134,9 @@ export class DeleteUserButton extends DefaultTableCellTemplate {
 }
 
 @Component({
-    standalone: true,
     selector: "ban-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn()" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent],
+    imports: [MatIconModule, MatBtnComponent]
 })
 export class BanUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);

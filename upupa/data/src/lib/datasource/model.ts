@@ -11,7 +11,6 @@ export type FilterDescriptor = Record<string, string | string[]> & { search?: st
 
 export declare type Dictionary<T = string> = Record<string, T>;
 
-
 export declare type DataLoaderOptions<T> = {
     terms?: Term<T>[];
     page?: Partial<PageDescriptor>;
@@ -35,6 +34,7 @@ export type NormalizedItem<T = any> = {
     defaultSearchTerm?: string;
     state: "loading" | "loaded" | "disabled" | "error";
     error: string | null;
+    selected?: boolean;
 };
 
 export type Term<T> = { field: keyof T; type: "string" | "like" | "number" | "date" | "boolean" };
@@ -45,16 +45,13 @@ export type ReadResult<T = any> = {
     query: any[];
 };
 
-export abstract class TableDataSource<T = any, WriteResult = any> {
-    constructor(readonly mapper: (items: T[]) => T[] = (items) => items) {}
-    abstract load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<ReadResult<T>>;
-    abstract getItems(value: (string | number | symbol)[], key: string | number | symbol): Promise<T[]>;
-    abstract create(value: Partial<T>): Promise<WriteResult>;
-    abstract put(item: T, value: Partial<T>): Promise<WriteResult>;
-    abstract patch(item: T, patches: Patch[]): Promise<WriteResult>;
-    abstract delete(item: T): Promise<WriteResult>;
-
-    map(items: T[]): T[] {
-        return this.mapper(items);
-    }
+export interface TableDataSource<T = any, WriteResult = any> {
+    load(
+        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
+        mapper?: (raw: unknown) => T[],
+    ): Promise<ReadResult<T>>;
+    create(value: Partial<T>): Promise<WriteResult>;
+    put(item: T, value: Partial<T>): Promise<WriteResult>;
+    patch(item: T, patches: Patch[]): Promise<WriteResult>;
+    delete(item: T): Promise<WriteResult>;
 }

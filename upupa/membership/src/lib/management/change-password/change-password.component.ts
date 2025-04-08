@@ -9,11 +9,10 @@ import { FormsModule } from "@angular/forms";
 
 
 @Component({
-    standalone: true,
     selector: "change-password",
     templateUrl: "./change-password.component.html",
     styleUrls: ["./change-password.component.css"],
-    imports: [FormsModule, MatFormFieldModule],
+    imports: [FormsModule, MatFormFieldModule]
 })
 export class ChangePasswordComponent {
     loading = false;

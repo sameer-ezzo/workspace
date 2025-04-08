@@ -16,10 +16,9 @@ import { MatButtonModule } from "@angular/material/button";
 
 @Component({
     selector: "toolbar-user-menu",
-    standalone: true,
     imports: [CommonModule, MatIconModule, MatDividerModule, AuthorizeModule, MatMenuModule, MatButtonModule, RouterLink],
     templateUrl: "./tool-bar-user-menu.component.html",
-    styleUrls: ["./tool-bar-user-menu.component.scss"],
+    styleUrls: ["./tool-bar-user-menu.component.scss"]
 })
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarItem[];

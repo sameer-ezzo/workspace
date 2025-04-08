@@ -16,7 +16,6 @@ import { FilesViewerComponent } from "../file-viewer/file-viewer.component";
 
 type ViewType = "list" | "grid";
 @Component({
-    standalone: true,
     selector: "file-select",
     templateUrl: "./file-select.component.html",
     styleUrls: ["./file-select.component.scss"],
@@ -31,7 +30,7 @@ type ViewType = "list" | "grid";
         "[class]": "view()",
         "[attr.name]": "name()",
     },
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, ErrorsDirective, MatFormFieldModule, MatIconModule, FilesViewerComponent],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, ErrorsDirective, MatFormFieldModule, MatIconModule, FilesViewerComponent]
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");

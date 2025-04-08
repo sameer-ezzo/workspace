@@ -2,14 +2,13 @@ import { Field } from "../types";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { Class, PasswordStrength } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
-import { DynamicComponent } from "@upupa/common";
+import { ComponentInputs, ComponentOutputsHandlers, DynamicComponent } from "@upupa/common";
+import type { MatChipsComponent } from "@upupa/dynamic-form-material-theme";
 
 export class TextFieldOptions {}
 export class NumberFieldOptions {}
 export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
-    minAllowed?: number = 1;
-    maxAllowed?: number = 1;
     multiple?: boolean = false;
     adapter: DataAdapterDescriptor | DataAdapter = { type: "client", data: [] };
 }
@@ -110,7 +109,7 @@ export type FieldOptions =
                         selectable?: boolean;
                         removable?: boolean;
                         separatorKeysCodes?: string[];
-                    })
+                    } & { outputs?: ComponentOutputsHandlers<MatChipsComponent>; inputs?: Partial< ComponentInputs<MatChipsComponent>> })
               | ({ input: "group" } & BaseFormFieldOptions)
               | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));

@@ -15,7 +15,6 @@ import { User, randomString, randomDigits, UserDevice, Principle } from "@noah-a
 import { UserDocument } from "./user.document";
 import { ObjectId } from "mongodb";
 
-
 export type SignOptions = {
     issuer?: string;
     expiresIn: string;
@@ -64,29 +63,11 @@ export class AuthService {
         delete payload["password"];
         payload.securityCode = randomString(5);
 
-        const errors = this.verifyUser(payload);
-        if (errors.length) throw new AuthException(AuthExceptions.InvalidSignup, errors);
-
         try {
             return this.data.post("user", payload);
         } catch (err) {
             throw new AuthException(AuthExceptions.InvalidSignup, err);
         }
-    }
-
-    verifyUser(user: Partial<User>): string[] {
-        const result = [];
-        // if (user.username === null) result.push('USERNAME_REQUIRED');
-        // else user.username = user.username.toLowerCase();
-
-        // if (user.email === null) result.push('EMAIL_REQUIRED');
-        // else user.email = user.email.toLowerCase();
-
-        //TODO validate user object size and nesting and maybe capatcha
-
-        if (user.roles != null) result.push("ROLES_OVER_POST");
-        if (user.phone && !user.phone.startsWith("+")) result.push("PHONE_MUST_STARTS_WITH_PLUS");
-        return result;
     }
 
     async verifyToken(token: string): Promise<TokenBase> {

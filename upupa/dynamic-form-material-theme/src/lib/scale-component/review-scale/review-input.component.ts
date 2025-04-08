@@ -4,7 +4,6 @@ import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/fo
 import { ReviewScaleComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-review-input",
     templateUrl: "./review-input.component.html",
     styleUrls: ["./review-input.component.css"],
@@ -15,6 +14,6 @@ import { ReviewScaleComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule]
 })
 export class MatReviewScaleComponent extends ReviewScaleComponent {}

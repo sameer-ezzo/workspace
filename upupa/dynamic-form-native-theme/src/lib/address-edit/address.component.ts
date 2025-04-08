@@ -17,7 +17,6 @@ export type AddressModel = {
 };
 
 @Component({
-    standalone: true,
     selector: "address-edit",
     imports: [FormsModule, ReactiveFormsModule, CommonModule],
     templateUrl: "./address.component.html",
@@ -28,7 +27,7 @@ export type AddressModel = {
             useExisting: forwardRef(() => AddressComponent),
             multi: true,
         },
-    ],
+    ]
 })
 export class AddressComponent extends InputBaseComponent<AddressModel> {
     label = input("Address");

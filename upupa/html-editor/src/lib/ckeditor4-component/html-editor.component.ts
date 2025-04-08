@@ -40,8 +40,6 @@ export const SMART_TOOLBAR = [
     selector: "form-html",
     templateUrl: "./html-editor.component.html",
     styleUrls: ["./html-editor.component.scss"],
-
-    standalone: true,
     imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
     providers: [
         {
@@ -49,7 +47,7 @@ export const SMART_TOOLBAR = [
             useExisting: forwardRef(() => CKEditor4Component),
             multi: true,
         },
-    ],
+    ]
 })
 export class CKEditor4Component extends InputBaseComponent<string> {
     private static isScriptLoaded: Record<string, boolean> = {};

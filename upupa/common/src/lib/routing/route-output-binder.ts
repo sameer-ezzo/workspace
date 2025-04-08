@@ -1,11 +1,10 @@
-import { APP_INITIALIZER, ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext } from "@angular/core";
+import { ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext, provideAppInitializer, EnvironmentProviders } from "@angular/core";
 import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
 import { Subscription } from "rxjs";
 
-export function provideRouteOutputBinder(): Provider {
-    return {
-        provide: APP_INITIALIZER,
-        useFactory: (outputBinder: RouteOutputBinder) => () => {
+export function provideRouteOutputBinder(): EnvironmentProviders {
+    return provideAppInitializer(() => {
+        const initializerFn = ((outputBinder: RouteOutputBinder) => () => {
             const originalDeactivate = RouterOutlet.prototype.deactivate;
             const originalActivateWith = RouterOutlet.prototype.activateWith;
             RouterOutlet.prototype.activateWith = function (...args) {
@@ -20,10 +19,9 @@ export function provideRouteOutputBinder(): Provider {
                 outputBinder.unbindOutputs(componentRef);
                 return originalDeactivate.apply(this, args);
             };
-        },
-        deps: [RouteOutputBinder],
-        multi: true,
-    };
+        })(inject(RouteOutputBinder));
+        return initializerFn();
+    });
 }
 
 @Injectable({ providedIn: "root" })

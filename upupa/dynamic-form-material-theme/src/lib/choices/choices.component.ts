@@ -8,12 +8,11 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatRadioModule } from "@angular/material/radio";
 import { ChoicesComponent, ParagraphComponent } from "@upupa/dynamic-form-native-theme";
 @Component({
-    standalone: true,
     selector: "mat-form-choices-input",
     templateUrl: "./choices.component.html",
     styleUrls: ["./choices.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatChoicesComponent), multi: true }],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModule, MatCheckboxModule, MatRadioModule, MatIconModule, ParagraphComponent],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModule, MatCheckboxModule, MatRadioModule, MatIconModule, ParagraphComponent]
 })
 export class MatChoicesComponent extends ChoicesComponent {}

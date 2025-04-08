@@ -1,4 +1,3 @@
-
 import { MatAddressComponent } from "./address-edit/address.component";
 import { MatAutoCompleteTextComponent } from "./autocomplete-text-input/autocomplete-text.component";
 import { MatChipsComponent } from "./chips-input/chips-input.component";
@@ -55,20 +54,10 @@ export const DF_MATERIAL_THEME_INPUTS = {
     // file: { component: MatFileSelectComponent },
     // 'local-file': { component: MatLocalFileInputComponent },
     tree: { component: MatTreeComponent },
-    radios: {
-        component: MatChoicesComponent,
-        field: {
-            inputs: { maxAllowed: 1 },
-        },
-    },
+    radios: { component: MatChoicesComponent },
     array: { component: MatArrayInputComponent },
     table: { component: MatArrayInputComponent },
-    checks: {
-        component: MatChoicesComponent,
-        field: {
-            inputs: { maxAllowed: 1000 },
-        },
-    },
+    checks: { component: MatChoicesComponent },
     switch: { component: MatSwitchComponent },
     color: { component: MatColorInputComponent },
     chips: { component: MatChipsComponent },

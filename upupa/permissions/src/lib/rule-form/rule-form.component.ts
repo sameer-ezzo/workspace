@@ -9,12 +9,11 @@ import { MatButtonModule } from "@angular/material/button";
 import { NodeModel } from "../node-model";
 
 @Component({
-    standalone: true,
     selector: "rule-form",
     templateUrl: "./rule-form.component.html",
     styleUrls: ["./rule-form.component.scss"],
     imports: [RulePermissionsTableComponent, MatIconModule, MatButtonModule, TitleCasePipe, MatProgressBarModule],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RuleFormComponent {
     public permissionsService = inject(PermissionsService);

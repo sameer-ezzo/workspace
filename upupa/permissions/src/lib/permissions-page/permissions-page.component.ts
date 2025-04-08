@@ -9,12 +9,11 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @Component({
-    standalone: true,
     selector: "permissions-page",
     templateUrl: "./permissions-page.component.html",
     styleUrls: ["./permissions-page.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RuleFormComponent, MatProgressBarModule, PermissionsSideBarComponent, MatButtonModule, MatIconModule],
+    imports: [RuleFormComponent, MatProgressBarModule, PermissionsSideBarComponent, MatButtonModule, MatIconModule]
 })
 export class PermissionsPageComponent {
     nodes = model<NodeModel[]>([]);

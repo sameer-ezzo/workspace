@@ -2,11 +2,10 @@ import { Component, Input, EventEmitter, Output } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 @Component({
-    standalone: true,
     selector: "page-navigation",
     templateUrl: "./page-navigation.component.html",
     styleUrls: ["./page-navigation.component.scss"],
-    imports: [RouterLink],
+    imports: [RouterLink]
 })
 export class PageNavigationComponent {
     private _links: any[];

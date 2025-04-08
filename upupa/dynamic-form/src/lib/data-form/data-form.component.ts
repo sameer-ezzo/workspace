@@ -24,7 +24,6 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
 
 @Component({
     selector: "data-form",
-    standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormComponent, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: "./data-form.component.html",
     styleUrls: ["./data-form.component.scss"],
@@ -50,7 +49,7 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
             useFactory: (self: DataFormComponent) => self.value(),
             deps: [DataFormComponent],
         },
-    ],
+    ]
 })
 export class DataFormComponent<T = any> {
     private readonly injector = inject(Injector);

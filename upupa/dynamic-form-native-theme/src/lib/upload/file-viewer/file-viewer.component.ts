@@ -7,7 +7,6 @@ import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { FileTemplateComponent } from "./file-template/file-template.component";
 
 @Component({
-    standalone: true,
     selector: "file-viewer",
     templateUrl: "./file-viewer.component.html",
     styleUrls: ["./file-viewer.component.scss"],
@@ -15,7 +14,7 @@ import { FileTemplateComponent } from "./file-template/file-template.component";
     host: {
         "[class]": "'content'+ ' ' + view()",
     },
-    imports: [FileTemplateComponent],
+    imports: [FileTemplateComponent]
 })
 export class FilesViewerComponent {
     focused = model<ViewerExtendedFileVm>();

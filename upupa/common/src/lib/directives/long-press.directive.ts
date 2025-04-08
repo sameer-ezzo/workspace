@@ -3,7 +3,10 @@
 import { Directive, Output, EventEmitter, HostListener, Input, NgZone, ViewContainerRef } from '@angular/core';
 
 
-@Directive({ selector: '[long-press]' })
+@Directive({
+    selector: '[long-press]',
+    standalone: false
+})
 export class LongPressDirective {
 
     @Input() duration: number = 300;

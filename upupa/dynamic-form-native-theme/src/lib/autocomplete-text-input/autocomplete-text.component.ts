@@ -1,5 +1,5 @@
 import { Component, forwardRef, input } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
 import { DataComponentBase } from "@upupa/table";
 import { InputDefaults } from "../defaults";
@@ -19,6 +19,11 @@ import { DataAdapter } from "@upupa/data";
             provide: DataAdapter,
             useFactory: (self: AutoCompleteTextComponent) => self.adapter(),
             deps: [AutoCompleteTextComponent],
+        },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => AutoCompleteTextComponent),
+            multi: true,
         },
     ],
 })

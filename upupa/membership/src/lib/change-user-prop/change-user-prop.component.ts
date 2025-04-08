@@ -10,10 +10,9 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 
 @Component({
-    standalone: true,
     selector: "change-user-prop",
     templateUrl: "./change-user-prop.component.html",
-    imports: [MatIconModule, DynamicFormComponent, MatButtonModule],
+    imports: [MatIconModule, DynamicFormComponent, MatButtonModule]
 })
 export class ChangeUserPropComponent<T = any> extends MatInputComponent {
     propToBeChanged = input<"phone" | "email" | "name">("name", {

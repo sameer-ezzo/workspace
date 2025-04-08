@@ -7,11 +7,10 @@ import { ErrorsDirective } from "@upupa/common";
 import { NumberComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-number-input",
     templateUrl: "./number.component.html",
     styleUrls: ["./number.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatNumberComponent), multi: true }],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
 })
 export class MatNumberComponent extends NumberComponent {}

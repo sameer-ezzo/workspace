@@ -9,7 +9,6 @@ import { ErrorsDirective } from "@upupa/common";
 import { PasswordInputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-password-input",
     templateUrl: "./password.component.html",
     styleUrls: ["./password.component.scss"],
@@ -22,6 +21,6 @@ import { PasswordInputComponent } from "@upupa/dynamic-form-native-theme";
         },
         { provide: MatFormFieldControl, useExisting: MatPasswordInputComponent },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatIconModule, MatButtonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatIconModule, MatButtonModule]
 })
 export class MatPasswordInputComponent extends PasswordInputComponent {}

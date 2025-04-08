@@ -1,3 +1,4 @@
+{{value() | json}}
 <mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
@@ -8,7 +9,7 @@
             #selectInput
             multiple
             [value]="value()"
-            (selectionChange)="_select(selectInput.value)"
+            (selectionChange)="select(selectInput.value, { clearSelection: true })"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
@@ -26,11 +27,11 @@
             }
 
             <div class="selected-wrapper">
-                <span>{{ selected().length }} Selected</span>
+                <span>{{ adapter().selection().length }} Selected</span>
                 <span style="flex: 1 1 auto"></span>
-                <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
+                <!-- <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
                     >Show only selected</mat-checkbox
-                >
+                >-->
             </div>
 
             @for (item of items(); track $index) {
@@ -56,7 +57,7 @@
         <mat-select
             #selectInput
             [value]="value()"
-            (selectionChange)="_select(selectInput.value)"
+            (selectionChange)="select(selectInput.value, { clearSelection: true })"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"

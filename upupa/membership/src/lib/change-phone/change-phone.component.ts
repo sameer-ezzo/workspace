@@ -9,10 +9,9 @@ import { CommonModule } from "@angular/common";
 import { ChangeUserPropComponent } from "../change-user-prop/change-user-prop.component";
 
 @Component({
-    standalone: true,
     imports: [FormsModule, ReactiveFormsModule, CommonModule, ChangeUserPropComponent],
     selector: "change-phone",
-    templateUrl: "./change-phone.component.html",
+    templateUrl: "./change-phone.component.html"
 })
 export class ChangePhoneComponent {
     @Input() appearance = "fill";

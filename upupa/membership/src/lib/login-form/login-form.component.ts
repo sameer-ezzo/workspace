@@ -11,11 +11,10 @@ import { MembershipFormExternalLinksComponent } from "../membership-form-externa
 import { defaultLoginFormFields } from "../default-values";
 
 @Component({
-    standalone: true,
     selector: "login-form",
     styleUrls: ["./login-form.component.scss"],
     templateUrl: "./login-form.component.html",
-    imports: [CollectorComponent, CommonModule, PortalComponent],
+    imports: [CollectorComponent, CommonModule, PortalComponent]
 })
 export class LoginFormComponent {
     loginForm = viewChild<CollectorComponent>("loginForm");

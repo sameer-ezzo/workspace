@@ -8,7 +8,6 @@ import { ColorInputComponent } from "@upupa/dynamic-form-native-theme";
 // import { jscolor } from '@eastdesire/jscolor'
 
 @Component({
-    standalone: true,
     selector: "mat-form-color-input",
     templateUrl: "./color-input.component.html",
     styleUrls: ["./color-input.component.css"],
@@ -19,7 +18,7 @@ import { ColorInputComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
 })
 export class MatColorInputComponent extends ColorInputComponent {
     // myPicker

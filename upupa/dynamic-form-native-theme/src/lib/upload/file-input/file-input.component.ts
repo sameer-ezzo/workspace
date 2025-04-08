@@ -1,5 +1,5 @@
 import { Component, Input, forwardRef, SimpleChanges, computed, inject, DestroyRef } from "@angular/core";
-import { NG_VALUE_ACCESSOR } from "@angular/forms";
+import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { ThemePalette } from "@angular/material/core";
 import { DataService, ClientDataSource, DataAdapter } from "@upupa/data";
@@ -28,6 +28,11 @@ import { DOCUMENT } from "@angular/common";
             provide: DataAdapter,
             useFactory: (self: FileInputComponent) => self.adapter(),
             deps: [FileInputComponent],
+        },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => FileInputComponent),
+            multi: true,
         },
     ],
 })

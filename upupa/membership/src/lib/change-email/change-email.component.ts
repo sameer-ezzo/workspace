@@ -8,10 +8,9 @@ import { SnackBarService } from "@upupa/dialog";
 import { ChangeUserPropComponent } from "../change-user-prop/change-user-prop.component";
 
 @Component({
-    standalone: true,
     selector: "change-email",
     templateUrl: "./change-email.component.html",
-    imports: [ChangeUserPropComponent],
+    imports: [ChangeUserPropComponent]
 })
 export class ChangeEmailComponent {
     @Input() appearance = "fill";

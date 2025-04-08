@@ -5,7 +5,6 @@ import { MaterializedWidget, materializeWidget, Widget, WidgetBlueprint } from "
 
 @Component({
     selector: "widget-layout",
-    standalone: true,
     imports: [PortalComponent, NgStyle],
     template: `
         <div style="display: grid; grid-template-columns: repeat(12, 1fr); grid-gap: 5px;">
@@ -15,7 +14,7 @@ import { MaterializedWidget, materializeWidget, Widget, WidgetBlueprint } from "
                 </div>
             }
         </div>
-    `,
+    `
 })
 export class WidgetLayoutComponent {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });

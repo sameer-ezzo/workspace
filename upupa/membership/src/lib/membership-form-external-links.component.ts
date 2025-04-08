@@ -3,7 +3,6 @@ import { Component, computed, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 @Component({
-    standalone: true,
     selector: "external-links",
     styles: [
         `
@@ -16,7 +15,7 @@ import { RouterLink } from "@angular/router";
     template: ` @for (link of links(); track $index) {
         <a i18n [routerLink]="link.routerLink" [queryParams]="link.queryParams">{{ link.text }}</a>
     }`,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink]
 })
 export class MembershipFormExternalLinksComponent {
     links = input.required<({ text: string } & RouterLink)[]>();

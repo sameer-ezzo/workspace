@@ -18,10 +18,8 @@ import { MatSelectComponent } from "../select/select.component";
             multi: true,
         },
     ],
-    standalone: true,
     imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModule, MatSelectComponent],
-
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatAddressComponent extends AddressComponent {
     appearance = input<MatFormFieldAppearance>("outline");

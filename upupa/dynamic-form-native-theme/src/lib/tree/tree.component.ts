@@ -18,13 +18,12 @@ if drag drop were to be added:
 */
 
 @Component({
-    standalone: true,
     selector: "form-tree",
     templateUrl: "./tree.component.html",
     styleUrls: ["./tree.component.css"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => TreeComponent), multi: true }],
     exportAs: "TreeInput",
-    imports: [MatTreeModule, MatIconModule, MatButtonModule],
+    imports: [MatTreeModule, MatIconModule, MatButtonModule]
 })
 export class TreeComponent {
     treeControl = new NestedTreeControl<HierarchicalNode>((node) => node.children, { trackBy: (node) => node.key });
