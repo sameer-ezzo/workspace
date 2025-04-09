@@ -23,3 +23,4 @@ export * from "./lib/adapter-submit.fun";
 export * from "./lib/friendly-error";
 export * from "./lib/cp.module";
 export * from "./lib/meta-forms/index";
+export * from "./lib/open-form-dialog.fun";

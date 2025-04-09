@@ -5,7 +5,7 @@ import { DynamicTemplate } from "@upupa/common";
 export type PipeDescriptor = { pipe: Type<any>; args: string[] };
 export type PipesDescriptor = { [column: string]: PipeDescriptor | Type<any> };
 
-export type ColumnDescriptor = {
+export type ColumnDescriptor<Template = any> = {
     displayPath?: string;
     class?: string; // css class
     order?: number;
@@ -17,7 +17,7 @@ export type ColumnDescriptor = {
     sortId?: string;
     sortArrowPosition?: SortHeaderArrowPosition;
     pipe?: PipeDescriptor | Type<any>;
-    template?: DynamicTemplate | DynamicTemplate[];
+    template?: DynamicTemplate<Template> | DynamicTemplate<Template>[];
 };
 
 export type ColumnsDescriptor<T = any> =

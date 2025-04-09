@@ -51,67 +51,8 @@ export function readValueFromApi<T = any>(path: string) {
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
-function isFormViewModelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
-    return "viewModelType" in vm;
-}
 
-export async function openFormDialog<TViewModelClass extends Class | FormViewModelMirror, TViewModel = ExtractViewModel<TViewModelClass>>(
-    vm: TViewModelClass,
-    value: TViewModel,
-    context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean; closeOnSuccess?: boolean } = {},
-) {
-    const _injector = context?.injector ?? inject(Injector);
-    const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
-    const dialog = injector.get(DialogService);
-    const _mirror = isFormViewModelMirror(vm) ? vm : reflectFormViewModelType(vm);
-    const mirror = { ..._mirror, actions: [] };
 
-    const v = await value;
-
-    let formActions = [...(_mirror.actions ?? [])] as ActionDescriptor[];
-    let defaultAction = formActions.find((x) => x.type === "submit");
-    if (context.defaultAction && !defaultAction) {
-        defaultAction = context.defaultAction === true ? ({ text: "Submit", icon: "save", color: "primary", type: "submit" } as ActionDescriptor) : context.defaultAction;
-        formActions = [defaultAction, ...formActions];
-    }
-    const options: DialogConfig = {
-        width: "90%",
-        maxWidth: "750px",
-        maxHeight: "95vh",
-        disableClose: true,
-        ...context?.dialogOptions,
-        footer: [
-            ...formActions.map((descriptor) =>
-                provideComponent({
-                    component: MatBtnComponent,
-                    inputs: { buttonDescriptor: descriptor },
-                    outputs: {
-                        action: async () => {
-                            if (descriptor.type === "submit") {
-                                const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                componentInstance.submit();
-                            }
-                        },
-                    },
-                }),
-            ),
-        ],
-    };
-
-    const dialogRef = dialog.open<DataFormComponent<TViewModel>, TViewModel, SubmitResult<TViewModel>>(
-        { component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value: v }, injector },
-        options,
-    );
-    const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
-
-    if (context?.closeOnSuccess !== false) {
-        const sub = componentRef.instance.submitted.subscribe((result) => {
-            if (result.submitResult) dialogRef.close(result);
-        });
-    }
-
-    return { dialogRef, componentRef, submit: waitForOutput(componentRef.instance, "submitted") };
-}
 
 export function translationButtons<TItem = unknown>(
     formViewModel: Class,

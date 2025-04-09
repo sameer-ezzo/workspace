@@ -8,8 +8,7 @@ export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K
     const emitter = instance[output as any] as OutputEmitterRef<TOut[K]>;
     if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
     return new Promise<any>((resolve) => {
-        const sub = emitter.subscribe((e) => {
-            sub.unsubscribe();
+        emitter.subscribe((e) => {
             resolve(e);
         });
     });

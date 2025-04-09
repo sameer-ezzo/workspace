@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, PLATFORM_ID, viewChild, ViewEncapsulation } from "@angular/core";
 import { LanguageService } from "@upupa/language";
 import { AuthService } from "@upupa/auth";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -9,7 +9,7 @@ import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansi
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { ToolbarUserMenuComponent } from "../tool-bar-user-menu/tool-bar-user-menu.component";
 import { RouterModule } from "@angular/router";
-import { CommonModule } from "@angular/common";
+import { CommonModule, isPlatformBrowser, isPlatformServer } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { AuthorizeModule, AuthzDirective } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
@@ -43,7 +43,7 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
 })
 export class CpLayoutComponent {
     loginUrl = input("/login");
@@ -66,7 +66,16 @@ export class CpLayoutComponent {
 
     userMenuCommands = input<SideBarItem[]>();
     sideBarMode = model<MatDrawerMode>("side");
-    isSidebarOpened = model(true);
+    isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+    _isSidebarOpened() {
+        return this.isBrowser ? localStorage.getItem("isSidebarOpened") === "true" : true;
+    }
+    isSidebarOpened = input<boolean, boolean>(this._isSidebarOpened(), { transform: (v) => v ?? this._isSidebarOpened() });
+
+    onSidebarOpened(open: boolean) {
+        if (this.isBrowser) localStorage.setItem("isSidebarOpened", open.toString());
+    }
 
     public languageService = inject(LanguageService);
     public breakPointObserver = inject(BreakpointObserver);
@@ -92,7 +101,6 @@ export class CpLayoutComponent {
         this.breakPointObserver.observe([Breakpoints.XSmall]).subscribe(() => {
             const xs = this.breakPointObserver.isMatched(Breakpoints.XSmall);
             this.sideBarMode.set(xs ? "over" : "side");
-            this.isSidebarOpened.set(!xs);
         });
     }
 }

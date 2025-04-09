@@ -31,3 +31,4 @@ export * from "./lib/membership-routing.module";
 export * from "./lib/reset-password-form/reset-password-form.component";
 export * from "./lib/idp-button.directive";
 
+export * from "./lib/management/users-list/users-list-actions.component";
