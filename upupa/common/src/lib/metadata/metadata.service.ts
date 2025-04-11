@@ -28,6 +28,7 @@ export function appendTagToHead(
         metaTag.setAttribute("href", content);
     } else throw new Error(`Invalid tag type ${tagType}`);
 
+    dom.head.appendChild(dom.createTextNode("\n"));
     dom.head.appendChild(metaTag);
 }
 
@@ -81,14 +82,17 @@ export class MetadataService {
     extractMetadataForRoute(route: ActivatedRouteSnapshot) {
         const content = route.data["content"];
         const metaDataExtractor = route.data["meta"] ?? ((content: any) => content);
-        const meta = metaDataExtractor(content);
+        const meta = typeof metaDataExtractor === "function" ? metaDataExtractor(content) : metaDataExtractor;
         return meta;
     }
 
     async updateMeta(meta: PageMetadata, config: ContentMetadataConfig<PageMetadata>, route: ActivatedRouteSnapshot) {
+        const dom = this.dom;
+        dom.head.appendChild(dom.createTextNode("\n"));
         for (const strategy of this.metadataUpdateStrategies) {
             await strategy.update(meta, config);
         }
+        dom.head.appendChild(dom.createTextNode("\n"));
     }
 
     defineMetadataUpdateStrategy(strategy: MetadataUpdateStrategy) {

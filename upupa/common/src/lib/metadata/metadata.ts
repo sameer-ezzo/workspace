@@ -35,9 +35,9 @@ export function providePageMetadata(config: ContentMetadataConfig | Omit<Factory
 
         ...features,
         provideAppInitializer(() => {
-        const initializerFn = ((metaService: MetadataService) => initializeMetData(metaService))(inject(MetadataService));
-        return initializerFn();
-      }),
+            const initializerFn = ((metaService: MetadataService) => initializeMetData(metaService))(inject(MetadataService));
+            return initializerFn();
+        }),
     ]);
 }
 

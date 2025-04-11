@@ -263,5 +263,5 @@ export interface PageMetadata {
     twitter?: Partial<TwitterCardMetadata>;
     og?: Partial<OpenGraphMetadata>;
     schema?: Partial<SchemaOrgMetadata>;
-    externalLinks?: { rel: HTMLLinkElement["href"]; href: string }[];
+    externalLinks?: { rel: HTMLLinkElement["href"]; href: string; priority?: "high" | "low" }[];
 }

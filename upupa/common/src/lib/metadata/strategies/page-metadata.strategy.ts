@@ -1,4 +1,4 @@
-import { inject, Injectable, InjectionToken } from "@angular/core";
+import { inject, Injectable, InjectionToken, Injector, runInInjectionContext } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
 import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
 import { PageMetadata } from "../models";
@@ -25,7 +25,8 @@ export type ContentMetadataConfig<M = PageMetadata> = {
 @Injectable()
 export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetadataConfig> {
     readonly config = inject(PAGE_METADATA_CONFIG);
-    private readonly dom = inject(DOCUMENT);
+    readonly dom = inject(DOCUMENT);
+    readonly injector = inject(Injector);
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const dom = this.dom;
@@ -37,7 +38,7 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         delete meta.og;
         delete meta.schema;
 
-        const title = this.config.titleTemplate?.(meta.title) ?? meta.title;
+        const title = runInInjectionContext(this.injector, () => meta.titleTemplate?.(meta.title) ?? this.config.titleTemplate?.(meta.title) ?? meta.title);
         appendTagToHead(dom, "title", title, "title");
         appendTagToHead(dom, "canonical", meta["canonical"], "link", "rel");
 
