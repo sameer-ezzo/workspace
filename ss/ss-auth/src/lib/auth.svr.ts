@@ -1,7 +1,6 @@
 import { hash, compare } from "bcryptjs";
 const bcrypt = { hash, compare };
 import * as jose from "jose";
-import * as crypto from "crypto";
 import mongoose from "mongoose";
 
 import { Model } from "mongoose";
@@ -14,6 +13,7 @@ import { logger } from "./logger";
 import { User, randomString, randomDigits, UserDevice, Principle } from "@noah-ark/common";
 import { UserDocument } from "./user.document";
 import { ObjectId } from "mongodb";
+import { sha256 } from "@ss/common";
 
 export type SignOptions = {
     issuer?: string;
@@ -254,11 +254,7 @@ export class AuthService {
         const model = await this.data.getModel("api_key");
         const key = randomString(20);
         const secret = randomString(20);
-        const secrethash = crypto
-            .createHash("sha256")
-            .update(key + secret)
-            .digest()
-            .toString("base64");
+        const secrethash = sha256(key + secret).toString("base64");
 
         await this.model.create({
             _id: new mongoose.Types.ObjectId(),
