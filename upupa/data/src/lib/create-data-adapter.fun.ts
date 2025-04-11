@@ -40,8 +40,15 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
     }
 
     let adapter: DataAdapter<T>;
+    const options = {
+        terms: descriptor.terms ?? descriptor.options?.terms,
+        page: descriptor.page ?? descriptor.options?.page,
+        sort: descriptor.sort ?? descriptor.options?.sort,
+        filter: descriptor.filter ?? descriptor.options?.filter,
+        autoRefresh: descriptor.autoRefresh ?? descriptor.options?.autoRefresh,
+    };
     runInInjectionContext(injector, () => {
-        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, descriptor.options);
+        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, options);
     });
 
     return adapter!;
