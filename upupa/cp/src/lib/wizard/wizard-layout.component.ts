@@ -1,13 +1,54 @@
-import { Component, ComponentRef, computed, ElementRef, inject, Injector, input, model, OnChanges, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
-import { AbstractControl } from "@angular/forms";
+import {
+    Component,
+    ComponentRef,
+    computed,
+    Directive,
+    ElementRef,
+    inject,
+    Injector,
+    input,
+    model,
+    OnChanges,
+    output,
+    runInInjectionContext,
+    SimpleChanges,
+    viewChild,
+    ViewRef,
+} from "@angular/core";
+import { AbstractControl, ReactiveFormsModule, StatusChangeEvent } from "@angular/forms";
 import { MatStepper, MatStepperModule } from "@angular/material/stepper";
 import { ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature, waitForOutput } from "@upupa/common";
 import { CommonModule } from "@angular/common";
-import { MatButtonModule } from "@angular/material/button";
+import { MatButton, MatButtonModule } from "@angular/material/button";
 import { Route } from "@angular/router";
 import { CdkStep, STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation, StepperSelectionEvent } from "@angular/cdk/stepper";
 import { Observable, switchMap } from "rxjs";
 import { toObservable, toSignal } from "@angular/core/rxjs-interop";
+
+@Directive({
+    selector: "[buttonControl]",
+    standalone: true,
+})
+export class ButtonControl implements OnChanges {
+    buttonControl = input<AbstractControl | undefined>(undefined);
+    host = inject(ElementRef<HTMLElement>);
+
+    ngOnChanges() {
+        const control = this.buttonControl();
+        if (control) {
+            control.events.subscribe((event) => {
+                if (event instanceof StatusChangeEvent) {
+                    const status = event.status;
+                    if (status === "INVALID" || status === "DISABLED") {
+                        this.host.nativeElement.setAttribute("disabled", "true");
+                    } else {
+                        this.host.nativeElement.removeAttribute("disabled");
+                    }
+                }
+            });
+        }
+    }
+}
 
 export function observeInlineSize(el: HTMLElement): Observable<number> {
     return new Observable<number>((observer) => {
@@ -34,10 +75,14 @@ export type WizardStep = {
     actions?: DynamicComponent[];
 };
 
+export type WizardStepRef = {
+    componentRef: ComponentRef<unknown>;
+    step: WizardStep;
+};
 @Component({
     selector: "wizard-layout",
     templateUrl: "./wizard-layout.component.html",
-    imports: [MatStepperModule, PortalComponent, CommonModule, MatButtonModule],
+    imports: [MatStepperModule, PortalComponent, CommonModule, MatButtonModule, ReactiveFormsModule, ButtonControl],
     providers: [
         {
             provide: STEPPER_GLOBAL_OPTIONS,
@@ -46,7 +91,7 @@ export type WizardStep = {
                 showError: true,
             } as StepperOptions,
         },
-    ]
+    ],
 })
 export class WizardLayoutComponent implements OnChanges {
     _stepper = viewChild("stepper", { read: ElementRef });
@@ -67,35 +112,39 @@ export class WizardLayoutComponent implements OnChanges {
     orientation = input<StepperOrientation, StepperOrientation>("horizontal", { transform: (v) => v ?? "horizontal" }); // preferred orientation
     tightThreshold = input<number, number>(600, { transform: (v) => v ?? 600 }); // automatically switch to vertical layout when width is less than this value
 
-    attached = output<ComponentRef<unknown>>();
+    attached = output<WizardStepRef>();
     selectedIndex = model(0);
     selected = input<CdkStep | undefined>();
 
-    async getSelectedComponent(): Promise<ComponentRef<unknown>> {
-        return this._componentRefs[this.selectedIndex()] ?? (await waitForOutput(this as WizardLayoutComponent, "attached"));
+    async getSelectedStepRef(): Promise<WizardStepRef> {
+        const ref = this.gtWizardStepRef(this.selectedIndex());
+        if (ref) return ref;
+
+        return await waitForOutput(this as WizardLayoutComponent, "attached");
     }
 
     selectionChange = output<StepperSelectionEvent>();
     done = output();
 
-    _componentRefs: ComponentRef<unknown>[] = []; // instance of each step component
+    _stepsRefs: WizardStepRef[] = []; // instance of each step component
 
     _width$ = toObservable(this._stepper).pipe(switchMap((stepper) => observeInlineSize(stepper.nativeElement)));
     _width = toSignal(this._width$);
     _tight = computed(() => (this.tightThreshold() == 0 ? false : this._width() <= this.tightThreshold()));
 
-    onAttach({ componentRef }: { componentRef: ComponentRef<unknown> }, index: number) {
-        this._componentRefs[index] = componentRef;
-        this.attached.emit(componentRef);
+    onAttach(step: WizardStep, { componentRef }: { componentRef: ComponentRef<unknown> }, index: number) {
+        const stepRef = { componentRef, step };
+        this._stepsRefs[index] = stepRef;
+        this.attached.emit(stepRef);
     }
 
     onDetach(index: number) {
-        this._componentRefs[index] = undefined;
+        this._stepsRefs[index] = undefined;
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes["steps"]) {
-            this._componentRefs = this.steps().map(() => undefined);
+            this._stepsRefs = this.steps().map(() => undefined);
         }
         if (changes["selectedIndex"]) {
             if (this.selectedIndex() == null || this.selectedIndex() < 0) {
@@ -114,8 +163,8 @@ export class WizardLayoutComponent implements OnChanges {
         this.selectionChange.emit(e);
     }
 
-    getComponentRef(index: number) {
-        return this._componentRefs[index];
+    gtWizardStepRef(index: number): WizardStepRef {
+        return this._stepsRefs[index];
     }
 
     // getTemplate(step: WizardStep) {
