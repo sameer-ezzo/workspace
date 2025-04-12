@@ -1,7 +1,8 @@
-import { CommonModule, isPlatformBrowser } from "@angular/common";
-import { Component, ElementRef, forwardRef, HostListener, inject, input, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { Component, ElementRef, forwardRef, HostListener, inject, input, LOCALE_ID, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { UtilsModule, ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { UploadModule, UploadClient, UploadService } from "@upupa/upload";
@@ -47,7 +48,7 @@ export const SMART_TOOLBAR = [
             useExisting: forwardRef(() => CKEditor4Component),
             multi: true,
         },
-    ]
+    ],
 })
 export class CKEditor4Component extends InputBaseComponent<string> {
     private static isScriptLoaded: Record<string, boolean> = {};
@@ -64,6 +65,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     hint = input("");
     upload = inject(UploadClient);
     auth = inject(AuthService);
+    lang = inject(LOCALE_ID);
+    doc = inject(DOCUMENT);
 
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -75,7 +78,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private async loadEditor(): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await CKEditor4Component.loadScript("/ckeditor/ckeditor.js?v=0.0.1");
+        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.lang}/ckeditor/ckeditor.js?v=0.0.1`);
 
         const config = {
             licenseKey: "GPL",
@@ -151,25 +154,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     override writeValue(value: string | null): void {
         super.writeValue(value);
         if (this.editor) this.editor.setData(value || "", { internal: true });
-    }
-
-    private static loadScript(src: string): Promise<void> {
-        if (this.isScriptLoaded[src]) return Promise.resolve();
-        if (this.loadPromise[src]) return this.loadPromise[src];
-
-        this.loadPromise[src] = new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = src;
-            script.async = true;
-            script.onload = () => {
-                this.isScriptLoaded[src] = true;
-                resolve();
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-
-        return this.loadPromise[src];
     }
 
     ngOnChanges(changes: SimpleChanges): void {

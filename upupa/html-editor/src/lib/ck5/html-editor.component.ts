@@ -1,7 +1,7 @@
 import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, viewChild, SimpleChanges, effect, HostListener, PLATFORM_ID, InjectionToken } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
-import { HtmlUploadAdapter } from "../html-upload-adapter";
+import { HtmlUploadAdapter } from "./html-upload-adapter";
 import { ErrorsDirective, InputBaseComponent, UtilsModule } from "@upupa/common";
 import { UploadClient, UploadModule } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
