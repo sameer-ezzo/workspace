@@ -1,6 +1,6 @@
-import { uniqueId } from "lodash";
 import { EMPTY, Observable, of, ReplaySubject } from "rxjs";
 import { filter, map, timeout } from "rxjs/operators";
+import { uniqueId } from "@noah-ark/common";
 
 
 export type EventRecord<T> = { source: any, payload: T, match?: RegExpMatchArray };

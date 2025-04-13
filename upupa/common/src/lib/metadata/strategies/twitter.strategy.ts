@@ -9,15 +9,6 @@ export const TWITTER_CARD_CONFIG = new InjectionToken<TwitterCardConfig>("TWITTE
 
 export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCardMetadata>, "imageLoading">;
 
-export const DEFAULT_TWITTER_CARD_CONFIG: TwitterCardConfig = {
-    imageLoading: (config: { src?: string; size?: string }) => {
-        const src = config.src ?? "";
-        if (!src) return "";
-        const size = config.size ?? "1200x675";
-        return `${src}?size=${size}`;
-    },
-};
-
 @Injectable()
 export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> {
     readonly config = inject(TWITTER_CARD_CONFIG);
@@ -38,7 +29,8 @@ export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> 
 
         const twitter = { ...fallback, ...pageMetadata.twitter, ...meta?.twitter };
 
-        const image = this.config?.imageLoading ? this.config.imageLoading({ src: twitter["twitter:image"] }) : twitter["twitter:image"];
+        const image_path = twitter["twitter:image"] ?? metaFallback.fallback?.image ?? "";
+        const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
         this.metaUpdateFn("twitter:image", image);
         delete twitter["twitter:image"];
 

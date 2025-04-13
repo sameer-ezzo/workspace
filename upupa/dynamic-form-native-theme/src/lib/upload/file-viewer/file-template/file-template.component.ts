@@ -59,7 +59,7 @@ const actions = [
     host: {
         "[class]": "class()",
     },
-    imports: [MatIconModule, MatButtonModule, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe]
+    imports: [MatIconModule, MatButtonModule, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe],
 })
 export class FileTemplateComponent {
     private readonly auth = inject(AuthService);

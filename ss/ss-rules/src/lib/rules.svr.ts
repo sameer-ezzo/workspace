@@ -4,7 +4,7 @@ import { JsonPointer } from "@noah-ark/json-patch";
 import { DataService } from "@ss/data";
 import { EndpointsInfo, _controllerPrefix, EndpointInfoRecord } from "@ss/common";
 import { join } from "path";
-import { groupBy } from "lodash";
+import { groupBy } from "lodash-es";
 
 import { logger } from "./logger";
 import { AUTHORIZE_PERMISSIONS } from "./constants";

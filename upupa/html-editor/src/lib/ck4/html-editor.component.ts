@@ -1,11 +1,10 @@
-import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
-import { Component, ElementRef, forwardRef, HostListener, inject, input, LOCALE_ID, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { APP_BASE_HREF, DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
+import { Component, ElementRef, forwardRef, inject, input, LOCALE_ID, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
 import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
-import { UtilsModule, ErrorsDirective, InputBaseComponent } from "@upupa/common";
-import { UploadModule, UploadClient, UploadService } from "@upupa/upload";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
+import { UploadClient } from "@upupa/upload";
 
 declare var CKEDITOR: any;
 
@@ -41,7 +40,7 @@ export const SMART_TOOLBAR = [
     selector: "form-html",
     templateUrl: "./html-editor.component.html",
     styleUrls: ["./html-editor.component.scss"],
-    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
+    imports: [ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -65,7 +64,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     hint = input("");
     upload = inject(UploadClient);
     auth = inject(AuthService);
-    lang = inject(LOCALE_ID);
     doc = inject(DOCUMENT);
 
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -77,8 +75,10 @@ export class CKEditor4Component extends InputBaseComponent<string> {
         await this.loadEditor();
     }
 
+    private baseHref = inject(LocationStrategy).getBaseHref();
+
     private async loadEditor(): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.lang}/ckeditor/ckeditor.js?v=0.0.1`);
+        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`);
 
         const config = {
             licenseKey: "GPL",

@@ -5,13 +5,11 @@ import { Observable, of } from "rxjs";
 
 import { map, shareReplay, switchMap, tap } from "rxjs/operators";
 import { Tag } from "./tag.model";
-import { LanguageService } from "@upupa/language";
 
 @Injectable({ providedIn: "root" })
 export class TagsService {
     private readonly idTagMap: Map<string, Tag> = new Map();
     private readonly tagsMap: Map<string, Tag[]> = new Map();
-    private readonly langService = inject(LanguageService);
 
     constructor(private dataService: DataService) {
         this.getTags().subscribe();
@@ -37,7 +35,7 @@ export class TagsService {
         const rx = () =>
             this.dataService.get<any>(`/tag`, filter).pipe(
                 map((res) => res.data as Tag[]),
-                map((tags) => tags.map((t) => ({ ...t, name: typeof t.name === "string" ? t.name : t.name[this.langService.language ?? this.langService.defaultLang] }))),
+                map((tags) => tags.map((t) => ({ ...t, name: typeof t.name === "string" ? t.name : t.name["en"] }))),
                 tap((tags) => {
                     this.tagsMap.set(parentPath, tags);
                     tags.forEach((t) => this.idTagMap.set(t._id, t));

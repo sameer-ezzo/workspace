@@ -1,8 +1,7 @@
-import { ChangeDetectorRef, Pipe, inject } from "@angular/core";
+import { Pipe, inject } from "@angular/core";
 import { TagsService } from "./tags.service";
-import { Observable, Subscribable, map, tap } from "rxjs";
+import { map } from "rxjs";
 import { AsyncPipe } from "@angular/common";
-import { LanguageService } from "@upupa/language";
 
 @Pipe({
     name: 'tags',
@@ -38,7 +37,7 @@ export class TagsPipe {
 //     override transform<T>(obj: Observable<T> | Subscribable<T> | Promise<T>): any;
 //     override transform(obj: unknown): any {
 //         console.log('TagsPipe.transform() called', obj);
-        
+
 //         if (this._rx) return super.transform(this._rx)
 //         const ids = (Array.isArray(obj) ? obj : [obj]).filter(v => !!v)
 //         this._rx = this.tagsService.getTags()

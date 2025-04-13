@@ -3,7 +3,7 @@ import { AuthService } from "@upupa/auth";
 import { DataService } from "@upupa/data";
 import { Subscription, takeWhile } from "rxjs";
 import { DynamicFormComponent, emailField, Field, textField } from "@upupa/dynamic-form";
-import { languageDir, LanguageService } from "@upupa/language";
+import { languageDir } from "@upupa/language";
 import { MatInputComponent } from "@upupa/dynamic-form-material-theme";
 import { SnackBarService } from "@upupa/dialog";
 import { MatIconModule } from "@angular/material/icon";
@@ -30,7 +30,6 @@ export class ChangeUserPropComponent<T = any> extends MatInputComponent {
 
     constructor(
         public data: DataService,
-        private ls: LanguageService,
         public auth: AuthService,
         public snack: SnackBarService,
     ) {
@@ -82,7 +81,7 @@ export class ChangeUserPropComponent<T = any> extends MatInputComponent {
                 };
                 break;
             case "name":
-                this.dir = languageDir(this.ls.language);
+                // this.dir = languageDir(this.ls.language);
                 this.fileds = {
                     [this.propToBeChanged()]: textField(this.propToBeChanged(), this.label(), this.placeholder(), this.hint(), this.appearance(), [{ name: "latin" }]),
                 };

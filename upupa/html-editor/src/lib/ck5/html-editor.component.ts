@@ -1,4 +1,4 @@
-import { Component, forwardRef, ViewEncapsulation, inject, input, ElementRef, viewChild, SimpleChanges, effect, HostListener, PLATFORM_ID, InjectionToken } from "@angular/core";
+import { Component, forwardRef, inject, input, ElementRef, viewChild, SimpleChanges, HostListener, PLATFORM_ID } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { HtmlUploadAdapter } from "./html-upload-adapter";
@@ -25,7 +25,7 @@ declare type EditorConfig = any;
             useExisting: forwardRef(() => HtmlEditorComponent),
             multi: true,
         },
-    ]
+    ],
 })
 export class HtmlEditorComponent extends InputBaseComponent<string> {
     readonly = input(false);

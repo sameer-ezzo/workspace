@@ -8,14 +8,14 @@ import { firstValueFrom } from "rxjs";
 
 import { NgControl } from "@angular/forms";
 import { DataFormComponent, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 @Component({
     selector: "embed-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent]
+    imports: [MatBtnComponent],
 })
 export class EmbedTranslationButton<TItem = unknown> {
     injector = inject(Injector);
@@ -104,7 +104,7 @@ export class EmbedTranslationButton<TItem = unknown> {
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent]
+    imports: [MatBtnComponent],
 })
 export class LinkTranslationButton<TItem = unknown> {
     injector = inject(Injector);

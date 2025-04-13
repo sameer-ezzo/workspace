@@ -4,7 +4,7 @@ import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult } from
 import { _isSuperAdmin, authorize, evaluatePermission, selectPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 
-import { isEmpty } from "lodash";
+import { isEmpty } from "lodash-es";
 import { ReplaySubject, firstValueFrom } from "rxjs";
 import { PERMISSIONS_BASE_URL } from "./di.tokens";
 
