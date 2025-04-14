@@ -28,7 +28,6 @@ import { signalLink } from "./routing/signals";
 @Component({
     selector: "portal",
     imports: [CommonModule],
-    // host: { ngSkipHydration: "true" },
     template: ` <ng-container #portal></ng-container> `
 })
 export class PortalComponent<TCom = any> {

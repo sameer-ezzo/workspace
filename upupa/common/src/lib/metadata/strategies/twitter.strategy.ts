@@ -27,9 +27,16 @@ export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> 
     private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "name");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
-        const fallback = (metaFallback.fallback ?? {}) as any;
+        const pageMetadata = metaFallback.fallback ?? {};
+        const fallback = {
+            "twitter:title": meta?.title ?? pageMetadata.title,
+            "twitter:description": meta?.description ?? pageMetadata.description,
+            "twitter:url": meta?.canonicalUrl ?? pageMetadata.canonicalUrl,
+            "twitter:image": meta?.image ?? pageMetadata.image,
+            "twitter:card": meta?.card ?? pageMetadata?.twitter?.["twitter:card"] ?? "summary_large_image",
+        };
 
-        const twitter = { ...(fallback.twitter ?? {}), ...(meta.twitter ?? {}) }; // as TwitterCardFormViewModel;
+        const twitter = { ...fallback, ...pageMetadata.twitter, ...meta?.twitter };
 
         const image = this.config?.imageLoading ? this.config.imageLoading({ src: twitter["twitter:image"] }) : twitter["twitter:image"];
         this.metaUpdateFn("twitter:image", image);

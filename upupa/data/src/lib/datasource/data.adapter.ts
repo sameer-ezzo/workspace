@@ -35,6 +35,13 @@ export type DataAdapterDescriptor<TData = any> = {
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
     options?: DataLoaderOptions<TData>;
+
+    terms?: Term<any>[];
+    page?: Partial<PageDescriptor>;
+    sort?: SortDescriptor;
+    filter?: Partial<FilterDescriptor>;
+    autoRefresh?: boolean;
+
     mapper?: (items: TData[]) => TData[];
 } & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] } | { type: "signal"; data: WritableSignal<TData[]> });
 
