@@ -10,7 +10,7 @@ export type LayoutConfig = {
     layout?: Type<CpLayoutComponent>;
     logo?: string;
     sidebar: SideBarViewModel | { useFactory: (...args: any[]) => SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>; deps?: any[] };
-    topbar?: DynamicComponent[];
+    topbar?: (DynamicComponent | "spacer")[];
     loginUrl?: string;
 };
 

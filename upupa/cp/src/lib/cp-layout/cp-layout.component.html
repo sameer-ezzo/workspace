@@ -8,9 +8,15 @@
         }
         <img [src]="logo()" class="logo" />
         @for (item of topBarItems(); track $index) {
-            <portal [component]="item.component"></portal>
+            @if (item === 'spacer') {
+                <span class="spacer"></span>
+            } @else {
+                <portal [component]="item.component"></portal>
+            }
         }
-        <span class="spacer"></span>
+        @if (!topBarItems()?.length) {
+            <span class="spacer"></span>
+        }
         <toolbar-user-menu [commands]="userMenuCommands()" [loginUrl]="loginUrl()"></toolbar-user-menu>
     </mat-toolbar>
     <mat-drawer-container autosize [dir]="languageService.dir$ | async" style="flex: 1" >

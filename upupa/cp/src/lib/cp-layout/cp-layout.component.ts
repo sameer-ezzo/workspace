@@ -55,7 +55,7 @@ export class CpLayoutComponent {
         return sideBarItemsTransform(this.cp_side_bar_items).pipe(map((items) => items.concat(sidebar ?? [])));
     });
 
-    topBarItems = input<DynamicComponent[]>();
+    topBarItems = input<(DynamicComponent | "spacer")[]>();
 
     getId = (g, i) => "accordion_" + (g.name || i);
     hasActiveChild(el: MatExpansionPanel) {
