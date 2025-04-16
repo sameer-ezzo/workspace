@@ -19,4 +19,6 @@ import { PhoneInputComponent } from "@upupa/dynamic-form-native-theme";
     ],
     imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
 })
-export class MatPhoneInputComponent extends PhoneInputComponent {}
+export class MatPhoneInputComponent extends PhoneInputComponent {
+
+}

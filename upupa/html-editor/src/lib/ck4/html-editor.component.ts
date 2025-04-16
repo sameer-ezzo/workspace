@@ -96,6 +96,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
             // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
             extraAllowedContent: "*[style,id](*);",
+            disallowedContent: "*{font-family,font-size}",
             ...this.config(),
         };
         this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
