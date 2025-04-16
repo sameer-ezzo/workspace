@@ -17,7 +17,7 @@ export class NewsArticlePersonSchema {
     @formInput({ input: "text", placeholder: "https://example.com/profile/janedoe123" })
     url = "";
 
-    @column({ header: " ", template: [editButton(NewsArticlePersonSchema, (btn) => cloneDeep(btn.item()), { updateAdapter: true }), deleteButton()] })
+    @column({ header: " ", template: [editButton(NewsArticlePersonSchema, (btn) => cloneDeep(btn.item())), deleteButton()] })
     actions: any;
 
     async onSubmit() {
@@ -45,7 +45,6 @@ export class NewsArticleSchema {
                     title: "Add Author",
                 },
                 descriptor: { icon: "add", text: "Add Author" },
-                updateAdapter: true,
             }),
         ],
     })

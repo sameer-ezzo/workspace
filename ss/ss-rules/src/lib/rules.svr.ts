@@ -4,7 +4,7 @@ import { JsonPointer } from "@noah-ark/json-patch";
 import { DataService } from "@ss/data";
 import { EndpointsInfo, _controllerPrefix, EndpointInfoRecord } from "@ss/common";
 import { join } from "path";
-const { groupBy } = await import("lodash-es");
+import { groupBy } from "@noah-ark/common";
 import { logger } from "./logger";
 import { AUTHORIZE_PERMISSIONS } from "./constants";
 
@@ -114,7 +114,7 @@ function createRulesTreeFromEndpoints(endPoints, rulesService: RulesService) {
         return result;
     });
 
-    const groups = groupBy(list, "fullPath");
+    const groups = groupBy(list, (g) => g?.["fullPath"]);
     for (const fullPath in groups) {
         const g = groups[fullPath];
         if (g.length === 0) continue;

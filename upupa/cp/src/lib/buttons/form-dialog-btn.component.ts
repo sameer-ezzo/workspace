@@ -52,7 +52,6 @@ export function formDialogButton<TItem = unknown>(
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
-        updateAdapter?: boolean;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
@@ -73,7 +72,6 @@ export function createButton<TItem = unknown>(
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
-        updateAdapter?: boolean;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
@@ -86,7 +84,7 @@ export function createButton<TItem = unknown>(
     };
     const btn = { ...defaultCreateDescriptor, ...options?.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Create", ...options?.dialogOptions };
-    return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, updateAdapter: options?.updateAdapter, outputs: options?.outputs });
+    return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, outputs: options?.outputs });
 }
 
 export function editButton<TItem = unknown>(
@@ -95,7 +93,6 @@ export function editButton<TItem = unknown>(
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
-        updateAdapter?: boolean;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
@@ -110,5 +107,5 @@ export function editButton<TItem = unknown>(
     const btn = { ...defaultEditDescriptor, ...options?.descriptor } as ActionDescriptor;
     const dialogOptions = { title: "Edit", ...options?.dialogOptions };
 
-    return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, updateAdapter: options?.updateAdapter, outputs: options?.outputs });
+    return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, outputs: options?.outputs });
 }
