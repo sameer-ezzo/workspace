@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HtmlEditorComponent } from './html-editor.component';
+import { HtmlEditorComponent } from './html-component/html-editor.component';
 
 describe('InputComponent', () => {
   let component: HtmlEditorComponent;

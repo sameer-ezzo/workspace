@@ -30,7 +30,7 @@ type ViewType = "list" | "grid";
         "[class]": "view()",
         "[attr.name]": "name()",
     },
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, ErrorsDirective, MatFormFieldModule, MatIconModule, FilesViewerComponent]
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MatError, MatButtonModule, ErrorsDirective, MatFormFieldModule, MatIconModule, FilesViewerComponent],
 })
 export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     color = input<ThemePalette>("accent");
@@ -98,17 +98,14 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
         this.base.set(new URL(uploadClient.baseUrl).origin + "/");
 
-        effect(
-            () => {
-                const v = this.value();
-                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
-            },
-            { allowSignalWrites: true },
-        );
+        effect(() => {
+            const v = this.value();
+            this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
+        });
 
         this.clipboard?.paste$
             .pipe(
-                filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
+                filter((e) => !this.readonly() && this.host.nativeElement.contains(e.target)),
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(async (event) => {

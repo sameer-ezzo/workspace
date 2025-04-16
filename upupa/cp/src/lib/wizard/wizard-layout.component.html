@@ -3,7 +3,7 @@
         <mat-step [stepControl]="step.control" [label]="step.label" [state]="step.state" [editable]="step.editable ?? true" [optional]="step.optional">
             <ng-template matStepContent>
                 @let template = step["_template"];
-                <portal [template]="template" (attached)="onAttach($event, i)" (detached)="onDetach(i)"></portal>
+                <portal [template]="template" (attached)="onAttach(step, $event, i)" (detached)="onDetach(i)"></portal>
                 <div style="display: flex; justify-content: end; gap: 1rem">
                     @for (action of step.actions ?? []; track action) {
                         <portal [template]="action"></portal>
@@ -13,11 +13,9 @@
                         <button mat-stroked-button (click)="prev()">Back</button>
                     }
                     @if (stepper.selectedIndex < steps().length - 1) {
-                        <button mat-stroked-button [disabled]="step.control?.touched && step.control?.invalid" (click)="next()">Next</button>
+                        <button mat-stroked-button [disabled]="step.control?.disabled || (step.control?.touched && step.control?.invalid)" (click)="next()">Next</button>
                     } @else {
-                        <button mat-flat-button [disabled]="step.control?.touched && step.control?.invalid" (click)="onDone()" color="primary">
-                            Done
-                        </button>
+                        <button mat-flat-button [buttonControl]="step.control" (click)="onDone()" color="primary">Done</button>
                     }
                 </div>
             </ng-template>

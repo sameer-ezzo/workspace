@@ -35,6 +35,13 @@ export type DataAdapterDescriptor<TData = any> = {
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
     options?: DataLoaderOptions<TData>;
+
+    terms?: Term<any>[];
+    page?: Partial<PageDescriptor>;
+    sort?: SortDescriptor;
+    filter?: Partial<FilterDescriptor>;
+    autoRefresh?: boolean;
+
     mapper?: (items: TData[]) => TData[];
 } & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] } | { type: "signal"; data: WritableSignal<TData[]> });
 
@@ -182,10 +189,19 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         try {
             patchState(this, { loading: true });
             const readResult: ReadResult = await this.dataSource.load(_options);
+            const selectionMap = this.selectionMap(); // to reserve the selected items
+
             const p = _options.page ?? this.page() ?? { pageIndex: 0 };
             const page = { ...p, length: readResult.total, previousPageIndex: p.pageIndex > 0 ? p.pageIndex - 1 : undefined } as PageDescriptor;
 
-            const entities = readResult.data.map((x) => this.normalize(x));
+            const entities = readResult.data.map((x) => {
+                const entity = this.normalize(x);
+                if (selectionMap[entity.key]) {
+                    entity.selected = selectionMap[entity.key].selected;
+                    delete selectionMap[entity.key];
+                }
+                return entity;
+            });
 
             switch (options?.behavior) {
                 case "prepend":
@@ -238,14 +254,16 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         }
 
         for (const record of records) {
-            entities.push(this.normalize(record.value as T));
+            const entity = this.normalize(record.value as T);
+            entity.selected = options?.select === "select" ? true : false;
+            entities.push(entity);
         }
+        if (entities.length) patchState(this, setAllEntities(entities));
+
         if (records.length) {
             // some keys are not loaded
             this.load({ keys: records.map((x) => x.key), behavior: "prepend" });
         }
-
-        patchState(this, setAllEntities(entities));
 
         return this.selection();
     }
@@ -270,6 +288,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     }
 
     selection = computed(() => this.entities().filter((x) => x.selected));
+    selectionMap = computed(() => Object.fromEntries(this.selection().map((x) => [x.key, x])));
 
     refresh() {
         return this.load();
@@ -352,7 +371,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     //     }).filter((x) => x);
     // }
 
-    normalize(item: T): NormalizedItem<T> {
+    normalize(item: T, selected?: boolean): NormalizedItem<T> {
         if (!item)
             return {
                 id: null,
@@ -362,13 +381,15 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 image: null,
                 item: null,
                 state: null,
+                selected: selected,
                 error: `Item ${item} Not Found`,
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
         const id = `${key}`;
+        const item_t = typeof item;
 
-        const display = this.extract(item, this.displayProperty, item, true);
+        const display = this.extract(item, this.displayProperty, item_t == "string" || item_t == "number" ? item : undefined, true);
         let valueProperty = Array.isArray(this.valueProperty) ? [this.keyProperty, ...this.valueProperty] : [this.keyProperty, this.valueProperty];
         valueProperty = Array.from(new Set(valueProperty)).filter((x) => x != null);
 
@@ -379,7 +400,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         else if (valueProps.length === 1) value = valueProps[0] ? item[valueProps[0]] : item; //to handle keyProperty = null (take the item itself as a key)
 
         const image = this.extract(item, this.imageProperty, undefined);
-        return { id, key, display, value, image, item: item, state: "loaded", error: null };
+        return { id, key, display, value, image, item: item, state: "loaded", error: null, selected };
     }
 
     extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {
@@ -390,7 +411,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 property.forEach((k) => (result[k] = JsonPointer.get(item, k as string, ".")));
                 if (flatten) return Object.values(result).join(" ");
                 else return result;
-            } else return JsonPointer.get(item, property as string, ".") ?? item;
+            } else return JsonPointer.get(item, property as string, ".") ?? fallback;
         } else return fallback;
     }
 }

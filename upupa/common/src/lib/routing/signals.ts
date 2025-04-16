@@ -25,7 +25,7 @@ export function routeParams(injector = inject(Injector)) {
     const route = injector.get(ActivatedRoute);
     const params = toSignal(route.params);
     const result = signal<Params>(params());
-    effect(() => result.set(params()), { allowSignalWrites: true });
+    effect(() => result.set(params()));
     effect(() => {
         const value = result();
         const _value = Object.fromEntries(Object.entries(value).map(([key, value]) => [`:${key}`, value]));
@@ -47,7 +47,7 @@ export function routeParam(paramName: string, injector = inject(Injector)) {
     const route = injector.get(ActivatedRoute);
     const result = signal<string>(route.snapshot.params[paramName]);
     const params = toSignal(route.params.pipe(map((x) => x[paramName])));
-    effect(() => result.set(params()), { allowSignalWrites: true });
+    effect(() => result.set(params()));
     effect(() => {
         const value = result();
         const _name = `:${paramName}`;
@@ -67,7 +67,7 @@ export function fragment(injector = inject(Injector)) {
     const fragment = toSignal(route.fragment);
 
     // from route to model
-    effect(() => result.set(fragment()), { allowSignalWrites: true });
+    effect(() => result.set(fragment()));
 
     // from model to route
     effect(() => {
@@ -87,7 +87,7 @@ export function queryParams(injector = inject(Injector)) {
     const queryParams = toSignal(route.queryParams);
     const result = signal<Params>(queryParams());
 
-    effect(() => result.set(queryParams()), { allowSignalWrites: true });
+    effect(() => result.set(queryParams()));
     effect(() => {
         const value = result();
         const query = route.snapshot.queryParams;
@@ -105,7 +105,7 @@ export function queryParam(paramName: string, injector = inject(Injector)) {
     const route = injector.get(ActivatedRoute);
     const queryParam = toSignal(route.queryParams.pipe(map((x) => x[paramName])));
     const result = signal<string>(queryParam());
-    effect(() => result.set(queryParam()), { allowSignalWrites: true });
+    effect(() => result.set(queryParam()));
     effect(() => {
         const value = result();
         const query = route.snapshot.queryParams;
@@ -134,8 +134,8 @@ export function signalLink<T = unknown>(
     const branch = SIGNAL in _branch ? _branch : _branch();
 
     //order of effects matters so fill the derived signal first then bypass first write on base signal
-    const ref1 = options.mainToBranch && "set" in branch ? effect(() => branch.set(main()), { allowSignalWrites: true }) : undefined;
-    const ref2 = options.branchToMain && "set" in main ? effect(() => main.set(branch()), { allowSignalWrites: true }) : undefined;
+    const ref1 = options.mainToBranch && "set" in branch ? effect(() => branch.set(main())) : undefined;
+    const ref2 = options.branchToMain && "set" in main ? effect(() => main.set(branch())) : undefined;
 
     return {
         destroy() {

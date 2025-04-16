@@ -24,9 +24,15 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
     private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "property");
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
-        const fallback = (metaFallback.fallback ?? {}) as any;
+        const pageMetadata = metaFallback.fallback ?? {};
+        const fallback = {
+            "og:title": meta?.title ?? pageMetadata.title,
+            "og:description": meta?.description ?? pageMetadata.description,
+            "og:url": meta?.canonicalUrl ?? pageMetadata.canonicalUrl,
+            "og:image": meta?.image ?? pageMetadata.image,
+        };
 
-        const og = { ...(fallback.og ?? {}), ...(meta.og ?? {}) }; //as OpenGraphData;
+        const og = { ...fallback, ...pageMetadata.og, ...meta?.og }; //as OpenGraphData;
 
         const image = this.config?.imageLoading ? this.config.imageLoading({ src: og["og:image"] }) : og["og:image"];
         this.metaUpdateFn("og:image", image);

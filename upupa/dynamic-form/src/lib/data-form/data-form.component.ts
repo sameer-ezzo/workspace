@@ -49,7 +49,7 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
             useFactory: (self: DataFormComponent) => self.value(),
             deps: [DataFormComponent],
         },
-    ]
+    ],
 })
 export class DataFormComponent<T = any> {
     private readonly injector = inject(Injector);
@@ -122,6 +122,9 @@ export class DataFormComponent<T = any> {
     no = 0;
 
     submitted = output<{ submitResult?: T; error?: any }>();
+    submit_success = output<T>();
+    submit_error = output<any>();
+
     submitting = signal(false);
     async onSubmit(event: { result?: any; error?: any }) {
         // IMPORTANT! Skip for event.error == FORM_IS_PRISTINE since user can submit form with default values (no interaction needed)
@@ -129,6 +132,7 @@ export class DataFormComponent<T = any> {
             const result = { error: event.error, no: this.no };
             this.no++;
             this.submitted.emit(result);
+            this.submit_error.emit(event.error);
             return result;
         }
         const vm = this.value();
@@ -144,6 +148,8 @@ export class DataFormComponent<T = any> {
 
         this.submitting.set(false);
         this.submitted.emit(result);
+        if (result.submitResult) this.submit_success.emit(result.submitResult);
+        else this.submit_error.emit(result.error);
         return result;
     }
 

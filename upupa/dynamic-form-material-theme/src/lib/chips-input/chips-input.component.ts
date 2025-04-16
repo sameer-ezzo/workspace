@@ -1,18 +1,18 @@
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ChangeDetectionStrategy, Component, computed, forwardRef, input, InputSignal, model, output, runInInjectionContext } from "@angular/core";
-import { ControlValueAccessor, FormsModule, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
-import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
+import { ChangeDetectionStrategy, Component, forwardRef, input, model, output, runInInjectionContext } from "@angular/core";
+import { ControlValueAccessor, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
+import { FloatLabelType, MatError, MatFormField, MatFormFieldAppearance, MatLabel, MatSuffix } from "@angular/material/form-field";
 
-import { MatInputModule } from "@angular/material/input";
+import { MatInput } from "@angular/material/input";
 import { ErrorsDirective } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
-import { MatChipsModule } from "@angular/material/chips";
-import { CommonModule } from "@angular/common";
-import { MatIconModule } from "@angular/material/icon";
-import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { MatChipGrid, MatChipInput, MatChipRow } from "@angular/material/chips";
+import { MatIcon } from "@angular/material/icon";
+import { MatAutocomplete, MatAutocompleteTrigger, MatOption } from "@angular/material/autocomplete";
+import { DataAdapter } from "@upupa/data";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { debounceTime, distinctUntilChanged } from "rxjs";
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
 
 @Component({
     selector: "mat-form-chips-input",
@@ -35,7 +35,24 @@ import { debounceTime, distinctUntilChanged } from "rxjs";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatChipsModule, MatIconModule, MatAutocompleteModule],
+    imports: [
+        ReactiveFormsModule,
+        MatFormField,
+        MatInput,
+        MatLabel,
+        MatChipGrid,
+        MatChipInput,
+        MatAutocomplete,
+        MatChipRow,
+        MatIcon,
+        MatAutocompleteTrigger,
+        MatProgressSpinner,
+        MatSuffix,
+        MatOption,
+        MatError,
+        ErrorsDirective,
+    ],
+    styleUrls: ["./chips-input.component.scss"],
 })
 export class MatChipsComponent<T = any> extends DataComponentBase implements ControlValueAccessor {
     appearance = input<MatFormFieldAppearance>("outline");
