@@ -6,17 +6,17 @@ import { SideBarItem } from "../side-bar-group-item";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { USER_PICTURE_RESOLVER } from "../di.token";
 import { getUserInitialsImage } from "../user-image.service";
-import { Router, RouterLink } from "@angular/router";
-import { MatIconModule } from "@angular/material/icon";
+import { RouterLink } from "@angular/router";
+import { MatIcon } from "@angular/material/icon";
 import { CommonModule, DOCUMENT } from "@angular/common";
-import { MatDividerModule } from "@angular/material/divider";
-import { AuthorizeModule } from "@upupa/authz";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatButtonModule } from "@angular/material/button";
+import { MatDivider } from "@angular/material/divider";
+import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
+import { MatIconButton } from "@angular/material/button";
+import { AuthorizeActionDirective } from "@upupa/authz";
 
 @Component({
     selector: "toolbar-user-menu",
-    imports: [CommonModule, MatIconModule, MatDividerModule, AuthorizeModule, MatMenuModule, MatButtonModule, RouterLink],
+    imports: [ CommonModule, MatIcon, MatDivider, MatMenu, MatIconButton, RouterLink, MatMenuTrigger, AuthorizeActionDirective, MatMenuItem],
     templateUrl: "./tool-bar-user-menu.component.html",
     styleUrls: ["./tool-bar-user-menu.component.scss"]
 })

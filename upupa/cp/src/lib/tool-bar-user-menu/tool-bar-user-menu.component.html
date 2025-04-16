@@ -6,7 +6,7 @@
                 <mat-icon>theater_comedy</mat-icon>
             </button>
         } @else {
-            <div style="display: flex; align-items: center" [matMenuTriggerFor]="menu">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
                 @if (userImageResolver | async; as userImage) {
                     @if (userImage) {
                         <img [src]="userImage" (error)="handelImageError($event)" [attr.alt]="auth.userSignal().name || auth.userSignal().email" />
@@ -17,7 +17,7 @@
                 } @else {
                     <mat-icon style="flex: 0 0 25px">person</mat-icon>
                 }
-            </div>
+            </button>
         }
     </div>
     <mat-menu #menu="matMenu">
