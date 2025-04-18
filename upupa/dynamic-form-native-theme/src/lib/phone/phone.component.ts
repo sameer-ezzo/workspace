@@ -2,12 +2,16 @@ import { Component, forwardRef, ElementRef, input, viewChild, model, inject } fr
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { fromEvent, merge, Subscription } from "rxjs";
 import { InputDefaults } from "../defaults";
-import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
-import { countries, FilterService, InputBaseComponent } from "@upupa/common";
+// import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
+// import * as libphonenumber from "google-libphonenumber";
+import { InputBaseComponent } from "@upupa/common";
 import { takeWhile, tap } from "rxjs/operators";
-import * as libphonenumber from "google-libphonenumber";
 import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
 import { DOCUMENT } from "@angular/common";
+import { loadScript } from "@noah-ark/common";
+
+declare const libphonenumber: any;
+
 export type PhoneNumber = {
     raw: string;
     number: string;
@@ -42,9 +46,15 @@ export class PhoneInputComponent extends InputBaseComponent {
     hint = input("");
     readonly = input(false);
 
-    countriesService = new FilterService(countries, ["name", "name", "phone_code"]);
+    countriesService = null//new FilterService(countries, ["name", "name", "phone_code"]);
 
-    private phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance();
+    private phoneNumberUtil;
+
+    async ngOnInit() {
+        await loadScript(this.doc, "https://cdnjs.cloudflare.com/ajax/libs/google-libphonenumber/3.2.40/libphonenumber.min.js");
+
+        this.phoneNumberUtil = libphonenumber.PhoneNumberUtil.getInstance();
+    }
 
     //TODO
     // override _updateViewModel() {
@@ -67,9 +77,10 @@ export class PhoneInputComponent extends InputBaseComponent {
 
     number = model<string>("");
 
-    private _getNumber(value: string): PhoneNumber & { formatted: string } {
+    private async _getNumber(value: string): Promise<PhoneNumber & { formatted: string }> {
+        await loadScript(this.doc, "https://cdnjs.cloudflare.com/ajax/libs/google-libphonenumber/3.2.40/libphonenumber.min.js");
         if (value?.length === 0) return null;
-        let ph_no: libphonenumber.PhoneNumber;
+        let ph_no: any;
         try {
             ph_no = this.phoneNumberUtil.parseAndKeepRawInput(value, this.country.phone_code.toUpperCase());
         } catch (e) {
@@ -86,7 +97,7 @@ export class PhoneInputComponent extends InputBaseComponent {
                 raw: ph_no.getRawInput(),
                 countryCode: ph_no.getCountryCode(),
                 isValid: this.phoneNumberUtil.isValidNumber(ph_no),
-                formatted: this.phoneNumberUtil.format(ph_no, PhoneNumberFormat.E164),
+                formatted: this.phoneNumberUtil.format(ph_no, libphonenumber.PhoneNumberFormat.E164),
                 code: `${ph_no.getCountryCode()}`,
                 number: ph_no.getNationalNumberOrDefault().toString(),
             };
@@ -97,14 +108,14 @@ export class PhoneInputComponent extends InputBaseComponent {
                 raw: ph_no.getRawInput(),
                 countryCode: ph_no.getCountryCode(),
                 isValid: this.phoneNumberUtil.isValidNumber(ph_no),
-                formatted: this.phoneNumberUtil.format(ph_no, PhoneNumberFormat.E164),
+                formatted: this.phoneNumberUtil.format(ph_no, libphonenumber.PhoneNumberFormat.E164),
                 code: `${ph_no.getCountryCode()}`,
                 number: ph_no.getNationalNumberOrDefault().toString(),
             };
         }
     }
 
-    onNumberInputChange(event, _value: string) {
+    async onNumberInputChange(event, _value: string) {
         if (!this.numberInput()) return;
         this.number.set(this.numberInput().nativeElement.value.trim());
 
@@ -112,12 +123,12 @@ export class PhoneInputComponent extends InputBaseComponent {
 
         if (this.number().length < 3) return this.handleUserInput(_value);
         try {
-            const r = this._getNumber(_value);
+            const r = await this._getNumber(_value);
             this.handleUserInput(r.formatted);
         } catch (error) {}
     }
 
-    private _country: any = this.countriesService.all[0];
+    private _country: any = []; // this.countriesService.all[0];
     public get country(): any {
         return this._country;
     }
@@ -129,7 +140,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     showCodes = false;
     id = `${Math.random()}`.substring(2);
     filterCountries(f: string) {
-        this.countriesService.filter = f;
+        //this.countriesService.filter = f;
     }
 
     onOverlayClick($event) {
@@ -174,7 +185,7 @@ export class PhoneInputComponent extends InputBaseComponent {
     }
 
     enterOnFilter(event) {
-        if (this.countriesService.filtered?.length > 0) this.country = this.countriesService.filtered[0];
+        //if (this.countriesService.filtered?.length > 0) this.country = this.countriesService.filtered[0];
         this.toggleCodes(false);
     }
 

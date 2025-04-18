@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, PLATFORM_ID, viewChild, ViewEncapsulation } from "@angular/core";
-import { LanguageService } from "@upupa/language";
 import { AuthService } from "@upupa/auth";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { MatDrawer, MatDrawerMode, MatSidenavModule } from "@angular/material/sidenav";
@@ -77,7 +76,6 @@ export class CpLayoutComponent {
         if (this.isBrowser) localStorage.setItem("isSidebarOpened", open.toString());
     }
 
-    public languageService = inject(LanguageService);
     public breakPointObserver = inject(BreakpointObserver);
     public auth = inject(AuthService);
     private readonly el = inject(ElementRef);

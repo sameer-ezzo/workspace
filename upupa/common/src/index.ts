@@ -11,7 +11,6 @@ export * from "./lib/routing/route-output-binder";
 
 export * from "./lib/deep-assign.func";
 export * from "./lib/utils.module";
-export * from "./lib/counties-list";
 
 export * from "./lib/models/models";
 export * from "./lib/event.bus";

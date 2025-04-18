@@ -19,7 +19,7 @@
         }
         <toolbar-user-menu [commands]="userMenuCommands()" [loginUrl]="loginUrl()"></toolbar-user-menu>
     </mat-toolbar>
-    <mat-drawer-container autosize [dir]="languageService.dir$ | async" style="flex: 1" >
+    <mat-drawer-container autosize style="flex: 1">
         @if (sideBarItems() | async; as sItems) {
             <mat-drawer class="sidenav" [mode]="sideBarMode()" [opened]="isSidebarOpened()" (openedChange)="onSidebarOpened($event)">
                 @for (g of sItems; track i; let i = $index) {

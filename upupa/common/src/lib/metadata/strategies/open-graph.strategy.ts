@@ -1,20 +1,11 @@
 import { DOCUMENT } from "@angular/common";
 import { Injectable, InjectionToken, inject } from "@angular/core";
 import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
-import { ContentMetadataConfig } from "./page-metadata.strategy";
+import { ContentMetadataConfig, resourceLinkNormalize } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";
 
 export const OPEN_GRAPH_CONFIG = new InjectionToken<OpenGraphConfig>("OPEN_GRAPH_CONFIG");
-
 export type OpenGraphConfig = Pick<ContentMetadataConfig<OpenGraphMetadata>, "imageLoading">;
-export const DEFAULT_OPEN_GRAPH_CONFIG: OpenGraphConfig = {
-    imageLoading: (config: { src?: string; size?: string }) => {
-        const src = config.src ?? "";
-        if (!src) return "";
-        const size = config.size ?? "1200x630";
-        return `${src}?size=${size}`;
-    },
-};
 
 @Injectable()
 export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
@@ -34,7 +25,8 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
 
         const og = { ...fallback, ...pageMetadata.og, ...meta?.og }; //as OpenGraphData;
 
-        const image = this.config?.imageLoading ? this.config.imageLoading({ src: og["og:image"] }) : og["og:image"];
+        const image_path = og["og:image"] ?? metaFallback.fallback?.image ?? "";
+        const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
         this.metaUpdateFn("og:image", image);
         delete og["og:image"];
 

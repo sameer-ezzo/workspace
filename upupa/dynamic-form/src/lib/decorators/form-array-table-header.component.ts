@@ -18,9 +18,8 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
 
             #search-box-wrapper {
-                min-height: 40px; // to prevent jumping when no actions are present
-                // use all parent width
-                width: 100%;
+                min-height: 40px; /* to prevent jumping when no actions are present */
+                width: 100%; /* use all parent width */
                 padding: 0 0.5rem;
                 display: flex;
                 flex-flow: row nowrap;
