@@ -17,6 +17,8 @@ import {
     InjectionToken,
     DestroyRef,
     forwardRef,
+    InjectFlags,
+    InjectOptions,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -56,11 +58,11 @@ import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
-export function injectRowItem() {
-    return inject(ROW_ITEM);
+export function injectRowItem(options?: InjectOptions) {
+    return inject(ROW_ITEM, options);
 }
-export function injectDataAdapter() {
-    return inject(DataAdapter);
+export function injectDataAdapter(options?: InjectOptions) {
+    return inject(DataAdapter, options);
 }
 
 @Component({
