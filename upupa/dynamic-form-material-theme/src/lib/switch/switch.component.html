@@ -4,8 +4,7 @@
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             [checked]="value()"
-            (change)="_handleUserInput($event.checked)"
-            [checked]="value"
+            (change)="handleUserInput($event.checked)"
             (blur)="markAsTouched()"
             [attr.name]="name()"
             [formControl]="control()"
@@ -17,8 +16,7 @@
             #_inputElement
             style="max-width: 40px; margin-inline-end: 0.5rem"
             [checked]="value()"
-            (change)="_handleUserInput($event.checked)"
-            [checked]="value"
+            (change)="handleUserInput($event.checked)"
             (blur)="markAsTouched()"
             [attr.name]="name()"
             [formControl]="control()"
