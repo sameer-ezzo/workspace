@@ -4,7 +4,6 @@ import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult } from
 import { _isSuperAdmin, authorize, evaluatePermission, selectPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 
-import { isEmpty } from "lodash-es";
 import { ReplaySubject, firstValueFrom } from "rxjs";
 import { PERMISSIONS_BASE_URL } from "./di.tokens";
 
@@ -36,7 +35,7 @@ export class AuthorizationService {
 
     async authorize(path: string, action: string, principle: Principle, payload?: unknown, query?: unknown, ctx?: unknown): Promise<AuthorizeResult> {
         await firstValueFrom(this.rules$);
-        if (isEmpty(action ?? "")) action = undefined;
+        if ((action ?? "").trim().length === 0) action = undefined;
         const message = this.buildAuthorizationMsg(path, action, principle, payload, query, ctx);
         const segments = path.split("/");
         while (segments.length > 0) {
