@@ -5,14 +5,6 @@ import { ContentMetadataConfig } from "./page-metadata.strategy";
 import { ImageObjectSchema, SchemaOrgMetadata } from "../models";
 
 export type SchemaOrgConfig = Pick<ContentMetadataConfig<SchemaOrgMetadata>, "imageLoading">;
-export const DEFAULT_SCHEMA_ORG_CONFIG: SchemaOrgConfig = {
-    imageLoading: (config: { src?: string; size?: string }) => {
-        const src = config.src ?? "";
-        if (!src) return "";
-        const size = config.size ?? "1200x630";
-        return `${src}?size=${size}`;
-    },
-};
 export const SCHEMA_ORG_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
 
 @Injectable()

@@ -1,28 +1,47 @@
-import * as request from 'request';
-export function post(url: string, options: { headers?: any, body?: any | string, form?: any }): Promise<string> {
 
+export async function post(url: string, options: { headers?: any, body?: any | string, form?: any }): Promise<string> {
     if (options.form) {
-        options.headers = Object.assign({}, options.headers, { 'Content-Type': 'application/x-www-form-urlencoded' });
-        return new Promise<string>((resolve, reject) => {
-            request.post(url, { headers: options.headers, form: options.form }, (err, res, body) => {
-                if (res.statusCode >= 200 && res.statusCode <= 300) resolve(body);
-                else reject(err);
-            })
-        });
-    }
-    else {
-        let body: any;
-        if (typeof options.body === 'string') body = options.body
-        else {
-            body = JSON.stringify(options.body);
-            options.headers = Object.assign({}, options.headers, { 'Content-Type': 'application/json' });
+        const formData = new URLSearchParams();
+        for (const key in options.form) {
+            formData.append(key, options.form[key]);
         }
 
-        return new Promise<string>((resolve, reject) => {
-            request.post(url, { headers: options.headers, body }, (err, res, body) => {
-                if (res.statusCode >= 200 && res.statusCode <= 300) resolve(body);
-                else reject(err);
-            })
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                ...options.headers,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString(),
         });
+
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    } else {
+        let body: any;
+        if (typeof options.body === 'string') {
+            body = options.body;
+        } else {
+            body = JSON.stringify(options.body);
+            options.headers = {
+                ...options.headers,
+                'Content-Type': 'application/json',
+            };
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: options.headers,
+            body,
+        });
+
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
     }
 }

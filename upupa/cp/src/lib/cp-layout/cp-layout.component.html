@@ -8,17 +8,23 @@
         }
         <img [src]="logo()" class="logo" />
         @for (item of topBarItems(); track $index) {
-            <portal [component]="item.component"></portal>
+            @if (item === 'spacer') {
+                <span class="spacer"></span>
+            } @else {
+                <portal [component]="item.component"></portal>
+            }
         }
-        <span class="spacer"></span>
+        @if (!topBarItems()?.length) {
+            <span class="spacer"></span>
+        }
         <toolbar-user-menu [commands]="userMenuCommands()" [loginUrl]="loginUrl()"></toolbar-user-menu>
     </mat-toolbar>
-    <mat-drawer-container autosize [dir]="languageService.dir$ | async" style="flex: 1">
+    <mat-drawer-container autosize style="flex: 1">
         @if (sideBarItems() | async; as sItems) {
-            <mat-drawer #drawer class="sidenav" [mode]="sideBarMode()" [opened]="isSidebarOpened()">
+            <mat-drawer class="sidenav" [mode]="sideBarMode()" [opened]="isSidebarOpened()" (openedChange)="onSidebarOpened($event)">
                 @for (g of sItems; track i; let i = $index) {
                     @if (g["items"]?.length) {
-                        <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g, i)" displayMode="flat">
+                        <mat-accordion #accordion class="cp-accordion" [attr.id]="getId(g, i)" displayMode="flat" [authz]="g.action">
                             <mat-expansion-panel #panel [expanded]="hasActiveChild(panel) || g['expanded']" class="mat-elevation-z0">
                                 @if (g.text) {
                                     <mat-expansion-panel-header>
@@ -29,11 +35,11 @@
                                     </mat-expansion-panel-header>
                                 }
                                 @for (item of g["items"]; track j; let j = $index) {
-                                    <ng-container *ngTemplateOutlet="linkTemplate; context: { item: item, index: j }"></ng-container>
+                                    <ng-container *ngTemplateOutlet="linkTemplate; context: { item: item, index: j, indent: i }"></ng-container>
                                 }
                             </mat-expansion-panel>
                         </mat-accordion>
-                        <mat-divider style="opacity: 0.3"></mat-divider>
+                        <mat-divider [authz]="g.action"></mat-divider>
                     } @else {
                         <ng-container *ngTemplateOutlet="linkTemplate; context: { item: g }"></ng-container>
                     }
@@ -45,16 +51,20 @@
     <ng-content select="footer"></ng-content>
 </main>
 
-<ng-template #linkTemplate let-item="item" let-index="index">
+<ng-template #linkTemplate let-item="item" let-index="index" let-indent="indent">
     <a
         class="cp-item-link"
         [attr.id]="item.name || index"
+        [authz]="item.action"
         authAction
         [path]="item.path"
         [action]="item.action"
         [routerLink]="item.link"
         [queryParams]="item.queryParams"
         routerLinkActive="active"
+        [ngStyle]="{
+            'padding-inline-start': indent ? indent * 0.25 + 'rem' : '12px',
+        }"
     >
         <ng-container *ngTemplateOutlet="iconTemplate; context: { item: item }"></ng-container>
         <span style="margin: 0 0.5rem">{{ item.text ?? item.name }}</span>

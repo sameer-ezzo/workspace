@@ -18,8 +18,7 @@ import { ParagraphComponent, SwitchComponent } from "@upupa/dynamic-form-native-
         },
     ],
     imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule, ErrorsDirective],
-    standalone: true,
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatSwitchComponent extends SwitchComponent {
     inputEl = viewChild.required<MatSlideToggle | MatCheckbox>("_inputElement");

@@ -3,12 +3,12 @@
         <mat-label>{{ label() }}</mat-label>
     }
 
-    @if (maxAllowed() !== 1) {
+    @if (multiple() === true) {
         <mat-select
             #selectInput
             multiple
             [value]="value()"
-            (selectionChange)="_select(selectInput.value)"
+            (selectionChange)="select(selectInput.value, { clearSelection: true })"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
@@ -26,11 +26,11 @@
             }
 
             <div class="selected-wrapper">
-                <span>{{ selected().length }} Selected</span>
+                <span>{{ adapter().selection().length }} Selected</span>
                 <span style="flex: 1 1 auto"></span>
-                <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
+                <!-- <mat-checkbox [checked]="itemsSource() === 'selected'" (change)="itemsSource.set($event.checked ? 'selected' : 'adapter')" [disabled]="!selected().length"
                     >Show only selected</mat-checkbox
-                >
+                >-->
             </div>
 
             @for (item of items(); track $index) {
@@ -45,8 +45,8 @@
 
             @for (item of actions; track $index) {
                 <mat-option (click)="onAction($event, item)">
-                    @if (item['icon']?.length) {
-                        <mat-icon>{{ item['icon'] }}</mat-icon>
+                    @if (item["icon"]?.length) {
+                        <mat-icon>{{ item["icon"] }}</mat-icon>
                     }
                     <span>{{ item.text }}</span>
                 </mat-option>
@@ -56,7 +56,7 @@
         <mat-select
             #selectInput
             [value]="value()"
-            (selectionChange)="_select(selectInput.value)"
+            (selectionChange)="select(selectInput.value, { clearSelection: true })"
             [formControl]="control()"
             (openedChange)="selectInput.panelOpen ? loadData() : null"
             [compareWith]="compareWithFn"
@@ -86,8 +86,8 @@
 
             @for (item of actions; track i; let i = $index) {
                 <mat-option (click)="onAction($event, item)">
-                    @if (item['icon']?.length) {
-                        <mat-icon>{{ item['icon'] }}</mat-icon>
+                    @if (item["icon"]?.length) {
+                        <mat-icon>{{ item["icon"] }}</mat-icon>
                     }
                     <span>{{ item.text }}</span>
                 </mat-option>

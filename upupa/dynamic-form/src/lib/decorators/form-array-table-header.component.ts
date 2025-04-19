@@ -18,25 +18,51 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
 
             #search-box-wrapper {
-                flex: 1;
-                max-width: 320px;
-                min-width: 250px;
-                width: 100%;
-                display: flex;
-                border: var(--mat-table-row-item-outline-width, 1px) solid var(--mat-table-row-item-outline-color, rgba(0, 0, 0, 0.12));
+                min-height: 40px; /* to prevent jumping when no actions are present */
+                width: 100%; /* use all parent width */
                 padding: 0 0.5rem;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                height: 100%;
+                width: fit-content;
+                overflow: hidden;
+                position: relative;
+                justify-content: center;
+                background-color: var(--mat-sys-surface-container-low);
+                border: 1px solid var(--mat-sys-outline);
+                color: var(--mat-sys-on-surface-bright);
+                transition: all 0.2s ease-in-out;
+                border-radius: 0.5rem;
 
-                & > input {
-                    color: var(--mat-app-text-color);
-                    letter-spacing: (--mat-table-header-headline-tracking);
-                    &::placeholder {
-                        color: var(--mat-select-placeholder-text-color);
+                &:hover,
+                &:focus-within {
+                    background-color: var(--mat-sys-surface-container-lowest);
+                    border-color: var(--mat-sys-outline-variant);
+                    color: var(--mat-sys-on-surface);
+                    box-shadow: var(--mat-sys-level1, 0 2px 5px rgba(0, 0, 0, 0.2));
+                }
+                input,
+                select {
+                    background-color: transparent;
+                    transition: background-color 0.2s ease-in-out;
+                    outline: none;
+                    border: none;
+                    height: 100%;
+                }
+                .filter-input {
+                    flex: 1 1 auto;
+                }
+                input.filter-input {
+                    min-width: 220px;
+                    padding: 0.5rem;
+                    ::placeholder {
+                        color: var(--mat-sys-outline);
                     }
                 }
             }
         `,
     ],
-    standalone: true,
     imports: [PortalComponent, MatIconModule, FormsModule, MatButtonModule],
     template: `
         @if (showSearch()) {
@@ -61,7 +87,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
             <ng-content select></ng-content>
         </div>
-    `,
+    `
 })
 export class ArrayFormTableHeaderComponent {
     injector = inject(Injector);

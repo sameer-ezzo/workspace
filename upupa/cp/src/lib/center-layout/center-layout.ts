@@ -3,7 +3,6 @@ import { RouterOutlet } from "@angular/router";
 
 @Component({
     selector: "center-layout",
-    standalone: true,
     imports: [RouterOutlet],
     encapsulation: ViewEncapsulation.None,
     styles: `
@@ -21,6 +20,6 @@ import { RouterOutlet } from "@angular/router";
             flex: 1 1 0;
         }
     `,
-    template: ` <router-outlet style="display: none"></router-outlet> `,
+    template: ` <router-outlet style="display: none"></router-outlet> `
 })
 export class CenterLayoutComponent {}

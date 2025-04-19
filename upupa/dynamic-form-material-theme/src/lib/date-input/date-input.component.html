@@ -6,14 +6,15 @@
         #input
         matInput
         [value]="value()"
-        (input)="value.set(input.value)"
-        [formControl]="control()"
-        [matDatepicker]="picker"
+        (blur)="setDate(input.value)"
         [readonly]="readonly()"
         [placeholder]="placeholder()"
         [attr.name]="name()"
+        [matDatepicker]="picker"
         [min]="min()"
         [max]="max()"
+
+        (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); setDate(input.value);"
     />
     <mat-datepicker-toggle matSuffix touchUi [for]="picker"></mat-datepicker-toggle>
     @if (hint()) {
@@ -21,4 +22,4 @@
     }
     <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
 </mat-form-field>
-<mat-datepicker #picker [startView]="startView()" [touchUi]="touchUi()"></mat-datepicker>
+<mat-datepicker #picker [startView]="startView()" [touchUi]="touchUi()" (closed)="setDate(input.value)"></mat-datepicker>

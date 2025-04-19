@@ -2,13 +2,13 @@ import { OutputEmitterRef, DestroyRef } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Observable, ReplaySubject } from "rxjs";
 import { ComponentOutputs } from "./dynamic-component";
+import { SIGNAL } from "@angular/core/primitives/signals";
 
 export async function waitForOutput<TCom = any, TOut = ComponentOutputs<TCom>, K extends keyof TOut = keyof TOut>(instance: TCom, output: K): Promise<TOut[K]> {
     const emitter = instance[output as any] as OutputEmitterRef<TOut[K]>;
     if (!emitter) throw new Error(`Output ${output as any} not found in ${instance.constructor.name}`);
     return new Promise<any>((resolve) => {
-        const sub = emitter.subscribe((e) => {
-            sub.unsubscribe();
+        emitter.subscribe((e) => {
             resolve(e);
         });
     });
@@ -30,12 +30,10 @@ export function listenOnOutput<TCom = any, TOut = ComponentOutputs<TCom>, K exte
     return stream$;
 }
 
-function readInput(input: string, instance = this) {
-    if (!(input in instance)) throw new Error(`Input ${input} not found in ${instance.constructor.name}`);
-    const inputRef = instance[input];
-    if (typeof inputRef === "function") return inputRef();
-    return inputRef;
+export function isClass(func) {
+    return typeof func === "function" && func.prototype?.constructor !== undefined;
 }
 
-
-export type TypeOrFunc<T> = T | (() => T);
+export function isSignal(func) {
+    return typeof func === "function" && func[SIGNAL];
+}

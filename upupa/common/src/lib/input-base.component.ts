@@ -17,12 +17,12 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     });
     disabled = model(false);
     required = input(false);
-    value = model<T>();
 
+    value = model<T>();
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
     _defaultControl = _defaultControl(this);
-    control = input<FormControl>(this._control ?? this._defaultControl);
+    control = input<FormControl<T>>(this._control ?? this._defaultControl);
     handleUserInput(v: T) {
         this.value.set(v);
 
@@ -31,7 +31,8 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
             this.markAsTouched();
             this.propagateChange();
         } else {
-            this.control().setValue(v);
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
         }
     }
 

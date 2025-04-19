@@ -7,8 +7,7 @@ import { CommonModule } from "@angular/common";
 @Component({
     selector: "mat-action",
     templateUrl: "./action-descriptor.component.html",
-    imports: [CommonModule, MatBtnComponent],
-    standalone: true,
+    imports: [CommonModule, MatBtnComponent]
 })
 export class ActionDescriptorComponent {
     @Input() descriptor: ActionDescriptor;

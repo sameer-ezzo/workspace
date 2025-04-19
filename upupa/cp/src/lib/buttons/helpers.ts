@@ -1,5 +1,5 @@
-import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef } from "@angular/core";
-import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent } from "@upupa/common";
+import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef, viewChild } from "@angular/core";
+import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent, waitForOutput } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
@@ -11,21 +11,21 @@ import { TranslationModule } from "@upupa/language";
 import { EmbedTranslationButton, LinkTranslationButton, translateButton } from "./translate-btn.component";
 import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
+import { SubmitResult } from "../adapter-submit.fun";
 
 @Component({
     selector: "inline-button",
-    standalone: true,
     imports: [MatBtnComponent],
-    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn #btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
     buttonDescriptor = input.required<ActionDescriptor>();
     item = input<any>(null);
-    clicked = output();
-
+    clicked = output<{ e: ActionEvent; instance: InlineButtonComponent; btn: MatBtnComponent }>();
+    btn = viewChild(MatBtnComponent);
     async onClick(e: ActionEvent) {
-        this.clicked.emit();
+        this.clicked.emit({ e, instance: this, btn: this.btn() });
     }
 }
 
@@ -38,7 +38,7 @@ export function inlineButton<T = unknown>(options: { descriptor?: Partial<Action
         },
         outputs: {
             clicked: (source, e) => {
-                runInInjectionContext(source.injector, () => options.clickHandler(source.instance));
+                runInInjectionContext(source.injector, () => options.clickHandler(source.instance.btn()));
             },
         },
     } as DynamicComponent;
@@ -51,57 +51,6 @@ export function readValueFromApi<T = any>(path: string) {
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
-function isFormViewModelMirror(vm: FormViewModelMirror | Class): vm is FormViewModelMirror {
-    return "viewModelType" in vm;
-}
-
-export async function openFormDialog<TViewModelClass extends Class | FormViewModelMirror, TViewModel = ExtractViewModel<TViewModelClass>>(
-    vm: TViewModelClass,
-    value: TViewModel,
-    context: { injector?: Injector; dialogOptions?: DialogConfig; defaultAction?: ActionDescriptor | boolean } = {},
-) {
-    const _injector = context?.injector ?? inject(Injector);
-    const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
-    const dialog = injector.get(DialogService);
-    const _mirror = isFormViewModelMirror(vm) ? vm : reflectFormViewModelType(vm);
-    const mirror = { ..._mirror, actions: [] };
-
-    const v = await value;
-
-    let formActions = [...(_mirror.actions ?? [])] as ActionDescriptor[];
-    let defaultAction = formActions.find((x) => x.type === "submit");
-    if (context.defaultAction && !defaultAction) {
-        defaultAction = context.defaultAction === true ? ({ text: "Submit", icon: "save", color: "primary", type: "submit" } as ActionDescriptor) : context.defaultAction;
-        formActions = [defaultAction, ...formActions];
-    }
-    const options: DialogConfig = {
-        width: "90%",
-        maxWidth: "750px",
-        maxHeight: "95vh",
-        disableClose: true,
-        ...context?.dialogOptions,
-        footer: [
-            ...formActions.map((descriptor) =>
-                provideComponent({
-                    component: MatBtnComponent,
-                    inputs: { buttonDescriptor: descriptor },
-                    outputs: {
-                        action: async () => {
-                            if (descriptor.type === "submit") {
-                                const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                componentInstance.submit();
-                            }
-                        },
-                    },
-                }),
-            ),
-        ],
-    };
-
-    const dialogRef = dialog.open({ component: DataFormComponent<TViewModel>, inputs: { viewModel: mirror, value: v }, injector }, options);
-    const componentRef: ComponentRef<DataFormComponent<TViewModel>> = await firstValueFrom(dialogRef.afterAttached());
-    return { dialogRef, componentRef };
-}
 
 export function translationButtons<TItem = unknown>(
     formViewModel: Class,
@@ -118,7 +67,6 @@ export function translationButtons<TItem = unknown>(
         translateButton(formViewModel, value, { locale, translationStrategy: options.translationStrategy, dialogOptions: options?.dialogOptions }),
     );
 }
-
 
 export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean> {
     const confirm = inject(ConfirmService);

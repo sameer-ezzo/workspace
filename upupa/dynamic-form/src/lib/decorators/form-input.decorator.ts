@@ -226,8 +226,6 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     if (fieldOptions["adapter"]) {
         const descriptor: DataAdapterDescriptor = fieldOptions["adapter"] ?? { type: "client", data: [] };
         field.inputs["_adapter"] = descriptor;
-        field.inputs["minAllowed"] = fieldOptions["minAllowed"];
-        field.inputs["maxAllowed"] = fieldOptions["maxAllowed"];
     }
 
     if (fieldOptions["required"]) {
@@ -246,6 +244,11 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
         case "select":
             break;
         case "array":
+            break;
+        case "list":
+            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
+            field.inputs["_adapter"] = fieldOptions.inputs?.["adapter"] ?? fieldOptions.adapter;
+            field.inputs["tableHeaderComponent"] = fieldOptions["tableHeaderComponent"];
             break;
         case "checks":
         case "radios":

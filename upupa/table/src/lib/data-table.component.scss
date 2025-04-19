@@ -1,3 +1,7 @@
+// :root{
+//     --mat-table-row-item-outline-color: var(--mat-sys-outline);
+// }
+
 :not([dir="rtl"]) {
     th.mat-header-cell:last-of-type,
     td.mat-cell:last-of-type,
@@ -41,6 +45,7 @@
     overflow: hidden;
     position: relative;
     box-sizing: border-box;
+    // background-color: var(--mat-sys-surface);
 
     display: grid;
     // grid-template-rows: auto minmax(0, 1fr);
@@ -64,27 +69,31 @@
 
         table {
             width: 100%;
-            background: var(--mat-table-background-color) !important;
             contain: content;
         }
     }
+}
+th,
+td {
+    // background-color: var(--mat-sys-surface);
 }
 .sticky-header {
     th {
         position: sticky !important;
         top: 0;
+
         // z-index: 99 !important;
     }
 }
 th {
-    border-top: solid 1px;
+    // border-top: solid 1px var(--mat-sys-outline);
 }
 
 tr[cdk-header-row] > th {
-    background: var(--mat-toolbar-container-background-color) !important;
+    // background-color: var(--mat-sys-surface-bright);
 }
 [mat-row]:hover {
-    background: var(--mat-option-hover-state-layer-color) !important;
+    background-color: var(--mat-sys-surface-container-highest, rgba(0, 0, 0, 0.12)) !important;
 }
 
 /* select */
@@ -120,18 +129,17 @@ tr td.mat-column-select {
 
 tr > td:first-child,
 tr > th:first-child {
-    border-inline-start: solid transparent 5px;
+    border-inline-start: solid transparent 4px;
 }
 
 tr {
-    --bg-focused-button: var(--mdc-outlined-text-field-focus-outline-color, #6200ee);
     content-visibility: auto;
-    contain-intrinsic-height: 60px;
+    contain-intrinsic-height: var(--mat-table-row-item-container-height, 52px);
     & > td:first-child {
-        border-inline-start: solid transparent 5px;
+        border-inline-start: solid transparent 4px;
     }
     &.focused > td:first-child {
-        border-inline-start-color: var(--bg-focused-button);
+        border-inline-start-color: var(--mat-sys-secondary);
     }
 }
 
@@ -236,4 +244,12 @@ tr.selected div.actions {
     inset: 0;
     background: rgba(255, 255, 255, 0.5);
     z-index: 9999;
+}
+
+.no-data {
+    text-align: center;
+    padding: 0.5rem;
+    p {
+        margin: 0;
+    }
 }

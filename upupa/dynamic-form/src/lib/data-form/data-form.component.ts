@@ -24,7 +24,6 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
 
 @Component({
     selector: "data-form",
-    standalone: true,
     imports: [CommonModule, MatBtnComponent, DynamicFormComponent, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: "./data-form.component.html",
     styleUrls: ["./data-form.component.scss"],
@@ -107,7 +106,7 @@ export class DataFormComponent<T = any> {
 
     onInitialized(e: DynamicFormInitializedEvent) {
         const vm = this.value() as any;
-        if (!("onInit" in vm && typeof vm["onInit"] === "function")) return;
+        if (!(vm && "onInit" in vm && typeof vm["onInit"] === "function")) return;
         runInInjectionContext(this._injector(), async () => {
             await vm["onInit"](e);
         });
@@ -123,12 +122,17 @@ export class DataFormComponent<T = any> {
     no = 0;
 
     submitted = output<{ submitResult?: T; error?: any }>();
+    submit_success = output<T>();
+    submit_error = output<any>();
+
     submitting = signal(false);
     async onSubmit(event: { result?: any; error?: any }) {
-        if (!event || event.error) {
+        // IMPORTANT! Skip for event.error == FORM_IS_PRISTINE since user can submit form with default values (no interaction needed)
+        if (event?.error && event.error !== "FORM_IS_PRISTINE") {
             const result = { error: event.error, no: this.no };
             this.no++;
             this.submitted.emit(result);
+            this.submit_error.emit(event.error);
             return result;
         }
         const vm = this.value();
@@ -144,6 +148,8 @@ export class DataFormComponent<T = any> {
 
         this.submitting.set(false);
         this.submitted.emit(result);
+        if (result.submitResult) this.submit_success.emit(result.submitResult);
+        else this.submit_error.emit(result.error);
         return result;
     }
 

@@ -1,10 +1,10 @@
-import { CommonModule, isPlatformBrowser } from "@angular/common";
-import { Component, ElementRef, forwardRef, HostListener, inject, input, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { APP_BASE_HREF, DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
+import { Component, ElementRef, forwardRef, inject, input, LOCALE_ID, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
+import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
-import { UtilsModule, ErrorsDirective, InputBaseComponent } from "@upupa/common";
-import { UploadModule, UploadClient, UploadService } from "@upupa/upload";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
+import { UploadClient } from "@upupa/upload";
 
 declare var CKEDITOR: any;
 
@@ -40,9 +40,7 @@ export const SMART_TOOLBAR = [
     selector: "form-html",
     templateUrl: "./html-editor.component.html",
     styleUrls: ["./html-editor.component.scss"],
-
-    standalone: true,
-    imports: [CommonModule, UtilsModule, MatFormFieldModule, UploadModule, ErrorsDirective],
+    imports: [ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -66,6 +64,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     hint = input("");
     upload = inject(UploadClient);
     auth = inject(AuthService);
+    doc = inject(DOCUMENT);
 
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -76,15 +75,17 @@ export class CKEditor4Component extends InputBaseComponent<string> {
         await this.loadEditor();
     }
 
+    private baseHref = inject(LocationStrategy).getBaseHref();
+
     private async loadEditor(): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await CKEditor4Component.loadScript("/ckeditor/ckeditor.js?v=0.0.1");
+        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`);
 
         const config = {
             licenseKey: "GPL",
             versionCheck: false,
             uiColor: "#fff7f9",
             toolbar: SMART_TOOLBAR,
-            extraPlugins: "image2",
+            extraPlugins: "image2,pastefromword, pastefromgdocs",
             uploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
             filebrowserImageUploadUrl: `${this.upload.baseUrl}/${this.uploadPath()}`,
@@ -92,6 +93,10 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             //filebrowserImageBrowseUrl,
             image2_alignClasses: ["image-left", "image-center", "image-right"],
             image2_captionedClass: "image-captioned",
+
+            // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
+            extraAllowedContent: "*[style,id](*);",
+            disallowedContent: "*{font-family,font-size}",
             ...this.config(),
         };
         this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
@@ -150,29 +155,6 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     override writeValue(value: string | null): void {
         super.writeValue(value);
         if (this.editor) this.editor.setData(value || "", { internal: true });
-    }
-
-    private static loadScript(src: string): Promise<void> {
-        console.log("LOADING: ", src);
-
-        if (this.isScriptLoaded[src]) return Promise.resolve();
-        if (this.loadPromise[src]) return this.loadPromise[src];
-
-        this.loadPromise[src] = new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = src;
-            script.async = true;
-            script.onload = () => {
-                console.log("LOADED: ", src);
-
-                this.isScriptLoaded[src] = true;
-                resolve();
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-
-        return this.loadPromise[src];
     }
 
     ngOnChanges(changes: SimpleChanges): void {

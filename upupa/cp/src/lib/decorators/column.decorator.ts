@@ -1,5 +1,5 @@
 
-import { _LISTS_INFO } from "./scheme.router.decorator";
+// import { _LISTS_INFO } from "./scheme.router.decorator";
 
 // export function column(options: ColumnOptions = { order: 1, includeInDataSelect: true }) {
 //     return function (target: any, propertyKey: string) {

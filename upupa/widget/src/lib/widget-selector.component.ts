@@ -7,7 +7,6 @@ import { DialogRef } from "@upupa/dialog";
 
 @Component({
     selector: "widget-selector",
-    standalone: true,
     imports: [MatButtonModule, MatIconModule, FormsModule],
     styles: `
         .widget-selector {
@@ -65,7 +64,7 @@ import { DialogRef } from "@upupa/dialog";
                 </div>
             }
         </div>
-    `,
+    `
 })
 export class WidgetBlueprintSelectorComponent {
     blueprints = input<WidgetBlueprint[]>();

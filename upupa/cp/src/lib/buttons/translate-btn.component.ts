@@ -8,10 +8,9 @@ import { firstValueFrom } from "rxjs";
 
 import { NgControl } from "@angular/forms";
 import { DataFormComponent, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 @Component({
-    standalone: true,
     selector: "embed-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
@@ -101,7 +100,6 @@ export class EmbedTranslationButton<TItem = unknown> {
 }
 
 @Component({
-    standalone: true,
     selector: "link-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>

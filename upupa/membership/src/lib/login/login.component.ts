@@ -11,12 +11,11 @@ import { loginErrorHandler, loginSuccessHandler } from "../types";
 import { GoogleIdProviderButton } from "../idps-buttons/google-login-button.component";
 
 @Component({
-    standalone: true,
     selector: "login",
     styleUrls: ["./login.component.scss"],
     templateUrl: "./login.component.html",
     imports: [LoginFormComponent, MatButtonModule, CommonModule, GoogleIdProviderButton],
-    host: { class: "login-page" },
+    host: { class: "login-page" }
 })
 export class LoginComponent implements AfterViewInit {
     readonly auth = inject(AuthService);

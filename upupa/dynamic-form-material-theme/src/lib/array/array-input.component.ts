@@ -10,7 +10,6 @@ import { DataTableComponent } from "@upupa/table";
 @Component({
     selector: "mat-form-array-input",
     templateUrl: "./array-input.component.html",
-    standalone: true,
     imports: [DataTableComponent, PortalComponent, MatFormFieldModule, MatInputModule],
     styleUrl: "./array-input.component.scss",
     providers: [
@@ -19,6 +18,6 @@ import { DataTableComponent } from "@upupa/table";
             useExisting: forwardRef(() => MatArrayInputComponent),
             multi: true,
         },
-    ],
+    ]
 })
 export class MatArrayInputComponent<T = any> extends ArrayInputComponent<T> {}

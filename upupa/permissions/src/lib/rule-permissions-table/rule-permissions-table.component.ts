@@ -17,19 +17,17 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({
     selector: "info-cell-template",
-    standalone: true,
     imports: [MatIconModule, MatTooltipModule],
     template: `
         @if (item().builtIn === true) {
             <mat-icon style="transform: scale(0.8)" matTooltip="Built in permission">info</mat-icon>
         }
-    `,
+    `
 })
 export class InfoCellTemplateComponent extends DefaultTableCellTemplate {}
 @Component({
     selector: "access-cell-template",
     imports: [TitleCasePipe, FormsModule],
-    standalone: true,
     template: `
         @if (item().builtIn === true) {
             {{ item().access | titlecase }}
@@ -40,7 +38,7 @@ export class InfoCellTemplateComponent extends DefaultTableCellTemplate {}
                 <option value="grant">Grant</option>
             </select>
         }
-    `,
+    `
 })
 export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -61,7 +59,6 @@ export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
 @Component({
     selector: "by-cell-template",
     imports: [FormsModule],
-    standalone: true,
     template: ` @if (item().builtIn === true) {
             {{ permissionType(item().by).display }}
         } @else {
@@ -72,7 +69,7 @@ export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
                     </option>
                 }
             </select>
-        }`,
+        }`
 })
 export class ByCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -105,7 +102,6 @@ export class ByCellTemplateComponent extends DefaultTableCellTemplate {
 }
 @Component({
     selector: "value-cell-template",
-    standalone: true,
     imports: [MatIconModule, MatButtonModule, FormsModule, JsonPipe],
     template: `
         @if (item().builtIn === true) {
@@ -154,7 +150,7 @@ export class ByCellTemplateComponent extends DefaultTableCellTemplate {
                 }
             }
         }
-    `,
+    `
 })
 export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
     private readonly rolesService = inject(PermissionsService);
@@ -175,7 +171,6 @@ export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
 @Component({
     selector: "selectors-cell-template",
     imports: [MatIconModule, MatButtonModule, JsonPipe],
-    standalone: true,
     template: `
         <div style="display: flex; align-items: center; overflow: hidden; max-width: 300px">
             <span>
@@ -187,7 +182,7 @@ export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
                 </button>
             }
         </div>
-    `,
+    `
 })
 export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -229,9 +224,8 @@ export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
 
 @Component({
     selector: "delete-permission-button",
-    standalone: true,
     imports: [MatBtnComponent],
-    template: ` <mat-btn [buttonDescriptor]="btn" (action)="deletePermission()" [disabled]="item().builtIn"></mat-btn> `,
+    template: ` <mat-btn [buttonDescriptor]="btn" (action)="deletePermission()" [disabled]="item().builtIn"></mat-btn> `
 })
 export class DeletePermissionButtonComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -271,12 +265,11 @@ export class PermissionRowViewModel {
     actions: any;
 }
 @Component({
-    standalone: true,
     selector: "rule-permissions-table",
     templateUrl: "./rule-permissions-table.component.html",
     styleUrls: ["./rule-permissions-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule, CommonModule],
+    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule, CommonModule]
 })
 export class RulePermissionsTableComponent {
     focused = model<SimplePermission>();

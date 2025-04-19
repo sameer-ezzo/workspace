@@ -9,11 +9,10 @@ import { DynamicFormComponent, Field, FormScheme } from "@upupa/dynamic-form";
 
 @Component({
     selector: "cp-data-filter-form",
-    standalone: true,
     imports: [DynamicFormComponent],
     templateUrl: "./data-filter-form.component.html",
     styleUrls: ["./data-filter-form.component.scss"],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataFilterFormComponent extends InputBaseComponent<Record<string, any>> {
     @ViewChild("dynForm") form: DynamicFormComponent;

@@ -8,7 +8,6 @@ import { ErrorsDirective } from "@upupa/common";
 import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-calendar-input",
     templateUrl: "./calendar-input.component.html",
     providers: [
@@ -31,6 +30,6 @@ import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
                 min-height: 300px;
             }
         `,
-    ],
+    ]
 })
 export class MatCalendarInputComponent extends DateInputComponent {}

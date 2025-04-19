@@ -40,8 +40,6 @@ declare let Delimiter: any;
     selector: "editor-js-input",
     templateUrl: "./editor-js.component.html",
     styleUrls: ["./editor-js.component.scss"],
-
-    standalone: true,
     imports: [CommonModule, UploadModule, ErrorsDirective],
     providers: [
         {
@@ -53,7 +51,7 @@ declare let Delimiter: any;
     host: {
         "[attr.id]": "id",
         "[class]": "classList()",
-    },
+    }
 })
 export class EditorJsInputComponent extends InputBaseComponent<OutputData> implements OnChanges, AfterViewInit, OnDestroy {
     readOnly = input(false);

@@ -14,7 +14,6 @@ import { DialogRef } from "./dialog-ref";
 
 @Component({
     selector: "dialog-wrapper",
-    standalone: true,
     imports: [MatDialogModule, MatButtonModule, MatIconModule, PortalComponent],
     templateUrl: "./dialog-wrapper.component.html",
     styleUrls: ["./dialog-wrapper.component.scss"],

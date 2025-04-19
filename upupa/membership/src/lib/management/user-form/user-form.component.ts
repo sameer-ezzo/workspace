@@ -20,11 +20,10 @@ type UserFormOptions = {
 };
 
 @Component({
-    standalone: true,
     selector: "user-form",
     templateUrl: "./user-form.component.html",
     styleUrls: ["./user-form.component.scss"],
-    imports: [MatButtonModule, DynamicFormComponent],
+    imports: [MatButtonModule, DynamicFormComponent]
 })
 export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
     @ViewChild("userForm") form: any;

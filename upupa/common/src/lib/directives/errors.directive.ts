@@ -20,7 +20,7 @@ export class ErrorsDirective {
     }
 
     getError(errorCodeName: string, validatorArgument: any) {
-        if (typeof validatorArgument === "object" && "message" in validatorArgument) return validatorArgument.message;
+        if (validatorArgument && typeof validatorArgument === "object" && "message" in validatorArgument) return validatorArgument.message;
 
         let fieldName = "Field";
         let value = undefined;

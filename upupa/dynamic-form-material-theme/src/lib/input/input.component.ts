@@ -7,7 +7,6 @@ import { ErrorsDirective } from "@upupa/common";
 import { InputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-input",
     templateUrl: "./input.component.html",
     styleUrls: ["./input.component.scss"],
@@ -20,7 +19,7 @@ import { InputComponent } from "@upupa/dynamic-form-native-theme";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule,ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
 })
 export class MatInputComponent extends InputComponent {}
 

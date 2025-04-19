@@ -3,10 +3,10 @@
         <mat-label>{{ label() }}</mat-label>
     }
     <mat-chip-grid #chipGrid [formControl]="control()" [attr.aria-label]="label()">
-        @for (item of selectedNormalized(); track item.key) {
-            <mat-chip-row [value]="item.value">
-                {{ item.display }}
-                <button matChipRemove (click)="deselect(item.value)" [attr.aria-label]="'remove ' + item.key">
+        @for (item of isSelected(); track item.key) {
+            <mat-chip-row [class.loading]="adapter().loading()" [value]="item.value" (removed)="unselect([item.value])">
+                {{ item.display ?? "..." }}
+                <button matChipRemove (click)="unselect([item.value])" [attr.aria-label]="'remove ' + item.display">
                     <mat-icon>cancel</mat-icon>
                 </button>
             </mat-chip-row>
@@ -22,17 +22,22 @@
             [matChipInputFor]="chipGrid"
             [matAutocomplete]="auto"
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
-            (matChipInputTokenEnd)="onAddChip(textInput.value); textInput.value = ''"
+            (matChipInputTokenEnd)="textInput.value?.length ? onAddChip(textInput.value) : null; textInput.value = ''"
         />
     </mat-chip-grid>
+    <div matSuffix style="display: flex; align-items: center">
+        @if (adapter().loading()) {
+            <mat-progress-spinner style="margin: 0.5rem" [diameter]="20" mode="indeterminate"></mat-progress-spinner>
+        }
+    </div>
 
-    <mat-autocomplete #auto (optionSelected)="$event.option.value ? select($event.option.value) : undefined">
+    <mat-autocomplete #auto (optionSelected)="select([$event.option.value])" [hideSingleSelectionIndicator]="true">
         @if (autoComplete()) {
             @if (adapter().loading()) {
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
             } @else {
-                @for (item of _items(); track $index) {
+                @for (item of notSelected(); track $index) {
                     <mat-option [value]="item.value">
                         @if (item.image) {
                             <img [src]="item.image" [attr.alt]="item.display" />
@@ -45,7 +50,7 @@
                     }
                 }
                 @if (canAdd()) {
-                    <mat-option (click)="onAddChip(text())" > <mat-icon>add</mat-icon> <span>Add</span></mat-option>
+                    <mat-option (click)="onAddChip(text())"> <mat-icon>add</mat-icon> <span>Add</span></mat-option>
                 }
             }
         }

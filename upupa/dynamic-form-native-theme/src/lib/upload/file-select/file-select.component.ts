@@ -4,7 +4,7 @@ import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
-import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
+import { FileEvent, RemoveFileEvent, UploadFileSuccessEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
@@ -16,7 +16,6 @@ import { FilesViewerComponent } from "../file-viewer/file-viewer.component";
 
 type ViewType = "list" | "grid";
 @Component({
-    standalone: true,
     selector: "file-select",
     templateUrl: "./file-select.component.html",
     styleUrls: ["./file-select.component.scss"],
@@ -99,17 +98,14 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
         this.base.set(new URL(uploadClient.baseUrl).origin + "/");
 
-        effect(
-            () => {
-                const v = this.value();
-                this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
-            },
-            { allowSignalWrites: true },
-        );
+        effect(() => {
+            const v = this.value();
+            this.viewModel.set((v ?? []).map((f, id) => ({ id, file: f, error: null }) as ViewerExtendedFileVm));
+        });
 
         this.clipboard?.paste$
             .pipe(
-                filter((e) => !this.readonly && this.host.nativeElement.contains(e.target)),
+                filter((e) => !this.readonly() && this.host.nativeElement.contains(e.target)),
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(async (event) => {
@@ -201,13 +197,13 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
 
     viewerEventsHandler(e: FileEvent) {
         this.events.emit(e);
-        if (e.name === "remove") {
+        if (e instanceof RemoveFileEvent) {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()
                 .filter((f) => !f.error && !(f.file instanceof File))
                 .map((f) => f.file as FileInfo);
             this.handleUserInput(vm);
-        } else if (e.name === "uploadSuccess") {
+        } else if (e instanceof UploadFileSuccessEvent) {
             const f = e.file as File;
             const fileInfo = e.fileInfo as FileInfo;
             const vm = this.viewModel().map((vf) => {

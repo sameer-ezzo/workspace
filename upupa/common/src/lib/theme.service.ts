@@ -1,67 +1,63 @@
 import { DOCUMENT, isPlatformBrowser, isPlatformServer } from "@angular/common";
 import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 
-export const THEMES = ['light-theme', 'dark-theme'];
-export type Theme = typeof THEMES[number];
-
-
+export type Theme = {
+    name: string;
+    className: string[];
+    colorScheme?: "light" | "dark";
+    icon?: string;
+};
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: "root",
 })
 export class ThemeService {
-
     isBrowser!: boolean;
     isServer!: boolean;
+    themes: Theme[] = [];
+    selectedTheme: Theme;
 
-    defaultTheme: Theme = 'light-theme';
-    theme: Theme;
-
-    constructor(@Inject(DOCUMENT) private document: Document,
-        @Inject(PLATFORM_ID) platformId: any) {
+    constructor(
+        @Inject(DOCUMENT) private document: Document,
+        @Inject(PLATFORM_ID) platformId: any,
+    ) {
         this.isBrowser = isPlatformBrowser(platformId);
         this.isServer = isPlatformServer(platformId);
     }
 
-    init(applySystemTheme = true, defaultTheme: Theme = 'light-theme') {
-        this.defaultTheme = defaultTheme ?? 'light-theme';
-        let currentPreference = this.isBrowser ? localStorage?.getItem('theme') as Theme | null : defaultTheme;
+    init(themes: Theme[], autoApplySystemTheme: boolean = true) {
+        this.themes = themes;
+        const themesHasLight = themes.some((theme) => theme.colorScheme === "light");
+        const themesHasDark = themes.some((theme) => theme.colorScheme === "dark");
 
-        if (this.isBrowser && window) {
-            const mediaPrefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+        if (this.isBrowser && themesHasLight && themesHasDark) {
+            const mediaPrefersDark = window.matchMedia("(prefers-color-scheme: dark)");
 
-            currentPreference ??= applySystemTheme ? mediaPrefersDark.matches ? 'dark-theme' : 'light-theme' : defaultTheme;
-            this.apply(currentPreference);
-
-            mediaPrefersDark.addEventListener('change', e => {
-                const newColorScheme = e.matches ? 'dark-theme' : 'light-theme';
-                if (applySystemTheme) this.apply(newColorScheme);
-            })
-        }
-
-        this.apply(currentPreference ?? defaultTheme);
-    }
-
-    applySystemTheme() {
-        if (this.isBrowser && window) {
-            const mediaPrefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-            const newColorScheme = mediaPrefersDark.matches ? 'dark-theme' : 'light-theme';
-            this.apply(newColorScheme);
+            if (autoApplySystemTheme) {
+                mediaPrefersDark.addEventListener("change", (e) => {
+                    const theme = this.findDefaultTheme();
+                    this.apply(theme.name);
+                });
+            }
+            const theme = this.findDefaultTheme();
+            this.apply(theme.name);
         }
     }
 
-    apply(theme: Theme) {
-        this.theme = theme;
-        this.document.body.classList.remove(...THEMES);
-        this.document.body.classList.add(theme);
+    findDefaultTheme() {
+        const mediaPrefersDark = window.matchMedia("(prefers-color-scheme: dark)");
+        const currentPreference = mediaPrefersDark.matches ? "dark" : "light";
+        const lastTheme = localStorage.getItem("theme");
+        let currentTheme = this.themes.find((theme) => theme.name === lastTheme);
+        currentTheme ??= this.themes.find((theme) => theme.colorScheme === currentPreference) ?? this.themes[0];
+        return currentTheme;
     }
 
-    toggle() {
-        const theme_index = THEMES.indexOf(this.theme);
-        const theme = THEMES[(theme_index + 1) % THEMES.length];
-        this.apply(theme);
-
-        if (this.isBrowser) localStorage?.setItem('theme', this.theme);
+    apply(themeName: string) {
+        const theme = this.themes.find((theme) => theme.name === themeName);
+        this.selectedTheme = theme;
+        this.document.documentElement.classList.remove(...this.themes.flatMap((theme) => theme.className));
+        this.document.documentElement.classList.add(...theme.className);
+        localStorage.setItem("theme", themeName);
     }
-
 }

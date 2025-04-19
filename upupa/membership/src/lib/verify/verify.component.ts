@@ -10,11 +10,10 @@ import { PromptService, SnackBarService } from "@upupa/dialog";
 import { TitleCasePipe } from "@angular/common";
 
 @Component({
-    standalone: true,
     selector: "verify",
     templateUrl: "./verify.component.html",
     styleUrls: ["./verify.component.scss"],
-    imports: [TitleCasePipe],
+    imports: [TitleCasePipe]
 })
 export class VerifyComponent {
     name = input<"phone" | "email" | "name">("email"); //what is to be verified (email,phone)

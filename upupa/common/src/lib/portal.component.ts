@@ -28,9 +28,7 @@ import { signalLink } from "./routing/signals";
 @Component({
     selector: "portal",
     imports: [CommonModule],
-    // host: { ngSkipHydration: "true" },
-    template: ` <ng-container #portal></ng-container> `,
-    standalone: true,
+    template: ` <ng-container #portal></ng-container> `
 })
 export class PortalComponent<TCom = any> {
     environmentInjector = inject(EnvironmentInjector);
@@ -144,12 +142,16 @@ export class PortalComponent<TCom = any> {
             injector: template.injector,
         });
 
-        const cssClass = (template.class ?? "").split(" ").filter(Boolean);
-        if (cssClass.length && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(...cssClass);
+        try {
+            const cssClass = (template.class ?? "").split(" ").filter(Boolean);
+            if (cssClass.length && this.componentRef.location) this.componentRef.location.nativeElement.classList.add(...cssClass);
 
-        this.subscribeToOutputs(template.outputs ?? {});
-        this.setInputs(template.inputs ?? {});
-        // this.applyBindings(template.bindings ?? {});
+            this.subscribeToOutputs(template.outputs ?? {});
+            this.setInputs(template.inputs ?? {});
+            // this.applyBindings(template.bindings ?? {});
+        } catch (error) {
+            console.error("Error during component attach:", error);
+        }
 
         this.attached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });
     }

@@ -6,7 +6,6 @@ import { ErrorsDirective } from "@upupa/common";
 import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-text-area-input",
     templateUrl: "./text-area.component.html",
     styleUrls: ["./text-area.component.css"],
@@ -17,6 +16,6 @@ import { TextAreaComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule],
+    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule]
 })
 export class MatTextAreaComponent extends TextAreaComponent {}

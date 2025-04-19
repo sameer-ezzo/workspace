@@ -15,8 +15,7 @@ export * from "./lib/decorators/scheme.router.decorator";
 export * from "./lib/decorators/form-view-model.decorator";
 
 export * from "./lib/buttons/helpers";
-export * from "./lib/buttons/edit-btn.component";
-export * from "./lib/buttons/create-btn.component";
+export * from "./lib/buttons/form-dialog-btn.component";
 export * from "./lib/buttons/translate-btn.component";
 export * from "./lib/wizard/wizard-layout.component";
 
@@ -24,3 +23,7 @@ export * from "./lib/adapter-submit.fun";
 export * from "./lib/friendly-error";
 export * from "./lib/cp.module";
 export * from "./lib/meta-forms/index";
+export * from "./lib/open-form-dialog.fun";
+
+export * from "./lib/image.cell";
+export * from "./lib/base-url.pipe";

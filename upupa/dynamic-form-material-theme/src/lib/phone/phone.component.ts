@@ -7,7 +7,6 @@ import { ErrorsDirective } from "@upupa/common";
 import { PhoneInputComponent } from "@upupa/dynamic-form-native-theme";
 
 @Component({
-    standalone: true,
     selector: "mat-form-phone-input",
     templateUrl: "./phone.component.html",
     styleUrls: ["./phone.component.scss"],
@@ -18,6 +17,8 @@ import { PhoneInputComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
 })
-export class MatPhoneInputComponent extends PhoneInputComponent {}
+export class MatPhoneInputComponent extends PhoneInputComponent {
+
+}

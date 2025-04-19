@@ -17,6 +17,8 @@ import {
     InjectionToken,
     DestroyRef,
     forwardRef,
+    InjectFlags,
+    InjectOptions,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -52,18 +54,18 @@ import { PortalComponent } from "@upupa/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatIconModule } from "@angular/material/icon";
 import { DynamicComponent } from "@upupa/common";
+import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
-export function injectRowItem() {
-    return inject(ROW_ITEM);
+export function injectRowItem(options?: InjectOptions) {
+    return inject(ROW_ITEM, options);
 }
-export function injectDataAdapter() {
-    return inject(DataAdapter);
+export function injectDataAdapter(options?: InjectOptions) {
+    return inject(DataAdapter, options);
 }
 
 @Component({
-    standalone: true,
     selector: "data-table",
     templateUrl: "./data-table.component.html",
     styleUrls: ["./data-table.component.scss"],
@@ -99,6 +101,16 @@ export function injectDataAdapter() {
             useFactory: (self: DataTableComponent) => self.adapter(),
             deps: [forwardRef(() => DataTableComponent)],
         },
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataTableComponent),
+            multi: true,
+        },
+        {
+            provide: NG_ASYNC_VALIDATORS,
+            useExisting: forwardRef(() => DataTableComponent),
+            multi: true,
+        },
         DatePipe,
         PercentPipe,
         DecimalPipe,
@@ -119,7 +131,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     host: ElementRef<HTMLElement> = inject(ElementRef);
     breakpointObserver = inject(BreakpointObserver);
     stickyHeader = input(false);
-    override maxAllowed = input<number, number>(Number.MAX_SAFE_INTEGER, { transform: (v) => Number.MAX_SAFE_INTEGER });
+
     contentChanged = output<void>();
     name = input<string, string>(`table_${Date.now()}`, {
         alias: "tableName",
@@ -175,7 +187,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     constructor() {
         super();
         effect(() => {
-            const s = this.selectedNormalized();
+            const s = this.adapter().selection();
             this.selectionChange.emit(s);
         });
     }
@@ -286,7 +298,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     shiftKeyPressed = false;
     @HostListener("document:keydown", ["$event"])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === "Shift") this.shiftKeyPressed = this.maxAllowed() !== 1;
+        if (event.key === "Shift") this.shiftKeyPressed = this.multiple();
     }
 
     @HostListener("document:keyup", ["$event"])
@@ -307,7 +319,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
         for (const r of rows) {
             if (event.checked) this.select(r.key);
-            else this.deselect(r.key);
+            else this.unselect(r.key);
         }
 
         this.focusedItem.set(row);

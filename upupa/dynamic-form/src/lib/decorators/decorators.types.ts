@@ -2,16 +2,17 @@ import { Field } from "../types";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { Class, PasswordStrength } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
+import { ComponentInputs, ComponentOutputsHandlers, DynamicComponent } from "@upupa/common";
+import type { MatChipsComponent } from "@upupa/dynamic-form-material-theme";
 
 export class TextFieldOptions {}
 export class NumberFieldOptions {}
 export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
-    minAllowed?: number = 1;
-    maxAllowed?: number = 1;
+    multiple?: boolean = false;
     adapter: DataAdapterDescriptor | DataAdapter = { type: "client", data: [] };
 }
-export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any>, hidden?: boolean };
+export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any>; hidden?: boolean };
 export type BaseFormFieldOptions = Field & {
     required?: boolean;
     group?: string | FieldGroup;
@@ -39,6 +40,7 @@ export type FileInputOptions = {
     dateFormat?: string;
     minAllowedFiles?: number;
     maxAllowedFiles?: number;
+    capture?: string;
     minSize?: number;
     maxSize?: number;
     accept?: string;
@@ -90,6 +92,7 @@ export type FieldOptions =
               | ({ input: "checks" } & ChoicesFieldOptions)
               | ({ input: "radios" } & ChoicesFieldOptions)
               | ({ input: "select" } & AdapterFieldOptions)
+              | ({ input: "list" } & AdapterFieldOptions & { viewModel: Class; tableHeaderComponent?: DynamicComponent }) // this is used to render table with selection capability (like select input but with table view)
               | { input: "date" }
               | { input: "time" }
               | { input: "calendar" }
@@ -106,7 +109,7 @@ export type FieldOptions =
                         selectable?: boolean;
                         removable?: boolean;
                         separatorKeysCodes?: string[];
-                    })
+                    } & { outputs?: ComponentOutputsHandlers<MatChipsComponent>; inputs?: Partial< ComponentInputs<MatChipsComponent>> })
               | ({ input: "group" } & BaseFormFieldOptions)
               | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));

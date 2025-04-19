@@ -147,8 +147,7 @@ $border-radius: 2px;
     dynamic-form.collector-dform ::placeholder,
     dynamic-form.collector-dform ::-ms-input-placeholder,
     dynamic-form.collector-dform :-ms-input-placeholder {
-        opacity: 0.8;
-        color: var(--text-value-color) !important;
+        color: var(--mat-sys-outline);
     }
     .form-actions {
         bottom: 0;

@@ -1,9 +1,9 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
-import { computed, Signal, WritableSignal } from "@angular/core";
+import { computed, WritableSignal } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
-import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities } from "@ngrx/signals/entities";
+import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
 import { ReplaySubject } from "rxjs";
 
 export type DataAdapterType = "server" | "api" | "client" | "http" | "signal";
@@ -35,6 +35,13 @@ export type DataAdapterDescriptor<TData = any> = {
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
     options?: DataLoaderOptions<TData>;
+
+    terms?: Term<any>[];
+    page?: Partial<PageDescriptor>;
+    sort?: SortDescriptor;
+    filter?: Partial<FilterDescriptor>;
+    autoRefresh?: boolean;
+
     mapper?: (items: TData[]) => TData[];
 } & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] } | { type: "signal"; data: WritableSignal<TData[]> });
 
@@ -60,7 +67,6 @@ function DataAdapterStore<T>() {
             filter: {} as FilterDescriptor,
             terms: [] as Term<T>[],
         }),
-        // withSelectedEntity(),
     );
 }
 
@@ -116,6 +122,8 @@ export class DataAdapterDeleteItemEvent<T = any> extends DataAdapterCRUDEvent<T>
  * @template T - The type of data items being managed.
  */
 export class DataAdapter<T = any> extends DataAdapterStore<any>() {
+    // data: [] as T[],
+
     private readonly _events = new ReplaySubject<DataAdapterCreateItemEvent | DataAdapterUpdateItemEvent | DataAdapterDeleteItemEvent>();
     readonly events = this._events.asObservable();
 
@@ -145,23 +153,142 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
     normalized = computed(() => this.entities());
 
-    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[] }): Promise<NormalizedItem<T>[]> {
-        const _options = { ...{ page: this.page(), filter: this.filter(), sort: this.sort(), terms: this.terms() }, ...options };
+    async load(options?: {
+        page?: PageDescriptor;
+        sort?: SortDescriptor;
+        filter?: FilterDescriptor;
+        terms?: Term<T>[];
+        keys?: (keyof T)[];
+        behavior?: "prepend" | "append" | "replace";
+        freshness?: "fresh" | "stale";
+    }): Promise<NormalizedItem<T>[]> {
+        // should we load all data or only the keys that are not loaded already
+        // if (options?.keys?.length && options?.freshness === "stale") {
+        //     const loadedEntities = [];
+        //     const notLoadedKeys = [];
+
+        //     const map = this.entityMap();
+        //     for (const key of options.keys) {
+        //         const entity = map[key as EntityId];
+        //         if (entity) loadedEntities.push(entity);
+        //         else notLoadedKeys.push(key);
+        //     }
+
+        //     if (!notLoadedKeys.length) return loadedEntities;
+        //     options = { ...options, keys: notLoadedKeys };
+        // }
+
+        const _options = {
+            page: options?.page ?? this.page(),
+            filter: options?.filter ?? this.filter(),
+            sort: options?.sort ?? this.sort(),
+            terms: this.terms(),
+            keys: options?.keys,
+        };
+
         try {
             patchState(this, { loading: true });
             const readResult: ReadResult = await this.dataSource.load(_options);
+            const selectionMap = this.selectionMap(); // to reserve the selected items
+
             const p = _options.page ?? this.page() ?? { pageIndex: 0 };
             const page = { ...p, length: readResult.total, previousPageIndex: p.pageIndex > 0 ? p.pageIndex - 1 : undefined } as PageDescriptor;
 
-            patchState(this, { ..._options, page, loading: false });
-            patchState(this, setAllEntities(readResult.data.map((x) => this.normalize(x))));
+            const entities = readResult.data.map((x) => {
+                const entity = this.normalize(x);
+                if (selectionMap[entity.key]) {
+                    entity.selected = selectionMap[entity.key].selected;
+                    delete selectionMap[entity.key];
+                }
+                return entity;
+            });
+
+            switch (options?.behavior) {
+                case "prepend":
+                    patchState(this, { ..._options, page, loading: false }, setAllEntities([...entities, ...this.entities()]));
+                    break;
+                case "append":
+                    patchState(this, { ..._options, page, loading: false }, setAllEntities([...this.entities(), ...entities]));
+                    break;
+                case "replace":
+                default:
+                    patchState(this, { ..._options, page, loading: false }, setAllEntities(entities));
+                    break;
+            }
+
             return this.entities();
         } catch (error) {
-            patchState(this, { error, loading: false });
-            patchState(this, setAllEntities([]));
+            patchState(this, { error, loading: false }, setAllEntities([]));
             return [];
         }
     }
+
+    protected _select(
+        value: Partial<T> | Partial<T>[],
+        options: {
+            select?: "select" | "unselect" | "toggle";
+            clearSelection?: boolean;
+        } = {
+            select: "select",
+            clearSelection: false,
+        },
+    ) {
+        if (!value) throw new Error("No value provided");
+        const _v = Array.isArray(value) ? value : [value];
+
+        const records = _v.map((x) => ({ key: this.extract(x, this.keyProperty, x), value: x }));
+        const entities = [];
+        for (const entity of this.entities()) {
+            const _i = records.findIndex((k) => k.key === entity.key);
+            if (_i == -1) {
+                if (options?.clearSelection) entities.push({ ...entity, selected: false } as NormalizedItem<T>);
+                else entities.push(entity);
+            } else {
+                records.splice(_i, 1);
+
+                if (!options?.select || options.select === "select") entity.selected = true;
+                else if (options.select === "unselect") entity.selected = false;
+                else if (options.select === "toggle") entity.selected = !entity.selected;
+                entities.push({ ...entity, selected: entity.selected } as NormalizedItem<T>);
+            }
+        }
+
+        for (const record of records) {
+            const entity = this.normalize(record.value as T);
+            entity.selected = options?.select === "select" ? true : false;
+            entities.push(entity);
+        }
+        if (entities.length) patchState(this, setAllEntities(entities));
+
+        if (records.length) {
+            // some keys are not loaded
+            this.load({ keys: records.map((x) => x.key), behavior: "prepend" });
+        }
+
+        return this.selection();
+    }
+
+    select(v: Partial<T> | Partial<T>[], options: { clearSelection?: boolean } = { clearSelection: false }) {
+        return this._select(v, { ...options, select: "select" });
+    }
+    unselect(v: Partial<T> | Partial<T>[]) {
+        return this._select(v, { select: "unselect" });
+    }
+    toggle(v: Partial<T> | Partial<T>[]) {
+        return this._select(v, { select: "toggle" });
+    }
+
+    selectAll() {
+        const entities = this.entities().map((x) => ({ ...x, selected: true }) as NormalizedItem<T>);
+        patchState(this, setAllEntities(entities));
+    }
+    unselectAll() {
+        const entities = this.entities().map((x) => ({ ...x, selected: false }) as NormalizedItem<T>);
+        patchState(this, setAllEntities(entities));
+    }
+
+    selection = computed(() => this.entities().filter((x) => x.selected));
+    selectionMap = computed(() => Object.fromEntries(this.selection().map((x) => [x.key, x])));
 
     refresh() {
         return this.load();
@@ -219,29 +346,32 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         return v.map((x) => this.extract(x, this.keyProperty, x));
     }
 
-    async getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
-        if (!keys?.length) return [];
+    // async getItems(keys: (keyof T)[]): Promise<NormalizedItem<T>[]> {
+    //     if (!keys?.length) return [];
 
-        const KEYS = Array.isArray(keys) ? keys : [keys];
-        const normalized = this.entities() ?? [];
-        const itemsInAdapter: NormalizedItem<T>[] = [];
-        const toBeLoaded: Key<T> = [];
-        for (const key of KEYS) {
-            const n = normalized.find((n) => n.id === key);
-            if (n) itemsInAdapter.push(n);
-            else toBeLoaded.push(key);
-        }
-        if (itemsInAdapter.length === KEYS.length) return itemsInAdapter;
+    //     const KEYS = Array.isArray(keys) ? keys : [keys];
+    //     const normalized = this.entities() ?? [];
+    //     const itemsInAdapter: NormalizedItem<T>[] = [];
+    //     const toBeLoaded: Key<T> = [];
+    //     for (const key of KEYS) {
+    //         const n = normalized.find((n) => n.id === key);
+    //         if (n) itemsInAdapter.push(n);
+    //         else toBeLoaded.push(key);
+    //     }
+    //     if (itemsInAdapter.length === KEYS.length) return itemsInAdapter;
 
-        const _items = await this.dataSource.getItems(toBeLoaded, this.keyProperty);
-        const _normalized = _items.map((i) => this.normalize(i));
-        const _dic = Object.fromEntries(_normalized.map((i) => [i.key, i]));
-        return KEYS.map((key) => {
-            return toBeLoaded.includes(key) ? _dic[key] : itemsInAdapter.find((i) => i.key === key);
-        }).filter((x) => x);
-    }
+    //     patchState(this, { loading: true });
+    //     const _items = await this.dataSource.getItems(toBeLoaded, this.keyProperty);
+    //     patchState(this, { loading: false });
 
-    normalize(item: T): NormalizedItem<T> {
+    //     const _normalized = _items.map((i) => this.normalize(i));
+    //     const _dic = Object.fromEntries(_normalized.map((i) => [i.key, i]));
+    //     return KEYS.map((key) => {
+    //         return toBeLoaded.includes(key) ? _dic[key] : itemsInAdapter.find((i) => i.key === key);
+    //     }).filter((x) => x);
+    // }
+
+    normalize(item: T, selected?: boolean): NormalizedItem<T> {
         if (!item)
             return {
                 id: null,
@@ -251,13 +381,15 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 image: null,
                 item: null,
                 state: null,
+                selected: selected,
                 error: `Item ${item} Not Found`,
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
         const id = `${key}`;
+        const item_t = typeof item;
 
-        const display = this.extract(item, this.displayProperty, item, true);
+        const display = this.extract(item, this.displayProperty, item_t == "string" || item_t == "number" ? item : undefined, true);
         let valueProperty = Array.isArray(this.valueProperty) ? [this.keyProperty, ...this.valueProperty] : [this.keyProperty, this.valueProperty];
         valueProperty = Array.from(new Set(valueProperty)).filter((x) => x != null);
 
@@ -268,7 +400,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         else if (valueProps.length === 1) value = valueProps[0] ? item[valueProps[0]] : item; //to handle keyProperty = null (take the item itself as a key)
 
         const image = this.extract(item, this.imageProperty, undefined);
-        return { id, key, display, value, image, item: item, state: "loaded", error: null };
+        return { id, key, display, value, image, item: item, state: "loaded", error: null, selected };
     }
 
     extract(item: Partial<T>, property: Key<T>, fallback: Partial<T>, flatten = false) {
@@ -279,7 +411,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 property.forEach((k) => (result[k] = JsonPointer.get(item, k as string, ".")));
                 if (flatten) return Object.values(result).join(" ");
                 else return result;
-            } else return JsonPointer.get(item, property as string, ".") ?? item;
+            } else return JsonPointer.get(item, property as string, ".") ?? fallback;
         } else return fallback;
     }
 }

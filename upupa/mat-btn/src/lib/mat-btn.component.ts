@@ -1,4 +1,4 @@
-import { Component, output, input, computed, runInInjectionContext, Injector, inject } from "@angular/core";
+import { Component, output, input, computed, runInInjectionContext, Injector, inject, model } from "@angular/core";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -11,7 +11,6 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     selector: "mat-btn",
     templateUrl: "./mat-btn.component.html",
     imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, MatProgressSpinnerModule],
-    standalone: true,
     host: {
         "[attr.disabled]": "isDisabled()",
     },
@@ -19,9 +18,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 export class MatBtnComponent {
     action = output<ActionEvent | any>();
 
-    loading = input(false);
+    loading = model(false);
     buttonDescriptor = input.required<ActionDescriptor>();
-    disabled = input(false);
+    disabled = model(false);
     isDisabled = computed(() => this.loading() || this.disabled() || this.buttonDescriptor().disabled);
     variant = computed(() => this.buttonDescriptor().variant ?? "button");
     color = computed(() => {

@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from "@angular/core";
-import { LanguageService } from "@upupa/language";
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, PLATFORM_ID, viewChild, ViewEncapsulation } from "@angular/core";
 import { AuthService } from "@upupa/auth";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { MatDrawer, MatDrawerMode, MatSidenavModule } from "@angular/material/sidenav";
@@ -9,9 +8,9 @@ import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansi
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { ToolbarUserMenuComponent } from "../tool-bar-user-menu/tool-bar-user-menu.component";
 import { RouterModule } from "@angular/router";
-import { CommonModule } from "@angular/common";
+import { CommonModule, isPlatformBrowser, isPlatformServer } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
-import { AuthorizeModule } from "@upupa/authz";
+import { AuthorizeModule, AuthzDirective } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
 import { MatDivider } from "@angular/material/divider";
@@ -26,7 +25,6 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
 }
 @Component({
     selector: "cp-layout",
-    standalone: true,
     imports: [
         CommonModule,
         MatButtonModule,
@@ -38,7 +36,8 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
         AuthorizeModule,
         MatExpansionModule,
         MatDivider,
-        PortalComponent
+        PortalComponent,
+        AuthzDirective,
     ],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
@@ -55,7 +54,7 @@ export class CpLayoutComponent {
         return sideBarItemsTransform(this.cp_side_bar_items).pipe(map((items) => items.concat(sidebar ?? [])));
     });
 
-    topBarItems = input<DynamicComponent[]>();
+    topBarItems = input<(DynamicComponent | "spacer")[]>();
 
     getId = (g, i) => "accordion_" + (g.name || i);
     hasActiveChild(el: MatExpansionPanel) {
@@ -66,9 +65,17 @@ export class CpLayoutComponent {
 
     userMenuCommands = input<SideBarItem[]>();
     sideBarMode = model<MatDrawerMode>("side");
-    isSidebarOpened = model(true);
+    isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-    public languageService = inject(LanguageService);
+    _isSidebarOpened() {
+        return this.isBrowser ? localStorage.getItem("isSidebarOpened") === "true" : true;
+    }
+    isSidebarOpened = input<boolean, boolean>(this._isSidebarOpened(), { transform: (v) => v ?? this._isSidebarOpened() });
+
+    onSidebarOpened(open: boolean) {
+        if (this.isBrowser) localStorage.setItem("isSidebarOpened", open.toString());
+    }
+
     public breakPointObserver = inject(BreakpointObserver);
     public auth = inject(AuthService);
     private readonly el = inject(ElementRef);
@@ -80,7 +87,9 @@ export class CpLayoutComponent {
                 cpItems.forEach((accEl: HTMLElement) => {
                     const links = accEl.querySelectorAll(".cp-item-link");
                     const allHidden = Array.from(links).every((l: HTMLElement) => l.style.display === "none");
-                    accEl.style.display = allHidden === true ? "none" : "block";
+                    if (allHidden) {
+                        accEl.style.display = "hidden";
+                    }
                 });
             }, 500);
         });
@@ -90,7 +99,6 @@ export class CpLayoutComponent {
         this.breakPointObserver.observe([Breakpoints.XSmall]).subscribe(() => {
             const xs = this.breakPointObserver.isMatched(Breakpoints.XSmall);
             this.sideBarMode.set(xs ? "over" : "side");
-            this.isSidebarOpened.set(!xs);
         });
     }
 }

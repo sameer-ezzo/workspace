@@ -2,10 +2,10 @@
     <mat-label>{{ label() }}</mat-label>
 }
 @if (template() === "normal") {
-    @if (maxAllowed() !== 1) {
+    @if (multiple() == true) {
         <div class="{{ direction() }} {{ template() }} choices" [attr.name]="name()">
             @for (item of items(); track item.key) {
-                <mat-checkbox class="choice" (change)="toggle(item.key)" [checked]="selectionModel.isSelected(item.key)">
+                <mat-checkbox class="choice" (change)="toggle(item.key)" [checked]="item.selected">
                     <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
                 </mat-checkbox>
             }
@@ -13,7 +13,7 @@
     } @else {
         <mat-radio-group class="{{ direction() }} {{ template() }} choices" [formControl]="control()" [attr.name]="name()">
             @for (item of items(); track item.key) {
-                <mat-radio-button class="choice" [value]="item.key">
+                <mat-radio-button class="choice" [value]="item.value">
                     <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
                 </mat-radio-button>
             }
@@ -30,7 +30,7 @@
                         alt="{{ item.display }}"
                     />
                 }
-                @if (selectionModel.isSelected(item.key)) {
+                @if (item.selected) {
                     <mat-icon>check</mat-icon>
                 }
             </button>

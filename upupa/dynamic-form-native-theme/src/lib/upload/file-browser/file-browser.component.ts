@@ -13,7 +13,7 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatButtonModule } from "@angular/material/button";
-import { FileEvent } from "../viewer-file.vm";
+import { FileEvent, RemoveFileEvent } from "../viewer-file.vm";
 import { FileUploadService } from "../file-upload.service";
 
 const valueProperty = [
@@ -33,7 +33,6 @@ const valueProperty = [
 ] as (keyof FileInfo)[];
 
 @Component({
-    standalone: true,
     selector: "file-browser",
     templateUrl: "./file-browser.component.html",
     styleUrls: ["./file-browser.component.scss"],
@@ -44,7 +43,7 @@ const valueProperty = [
             multi: true,
         },
     ],
-    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule,MatButtonModule, MatButtonToggleModule],
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule]
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);
@@ -80,26 +79,23 @@ export class FileBrowserComponent {
     public fileUploader = inject(FileUploadService);
 
     async onFileEvent(event: FileEvent) {
-        if (event.name === "remove") {
-            if('path' in event.file) {
-                try{
+        if (event instanceof RemoveFileEvent) {
+            if ("path" in event.file) {
+                try {
                     await this.fileUploader.uploadClient.delete(event.file.path);
-                }
-                catch(e){
-                    if(e.status !== 404) throw e
-
+                } catch (e) {
+                    if (e.status !== 404) throw e;
                 }
             }
         }
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['path']) {
+        if (changes["path"]) {
             const _path = this.path() ?? "/";
             const filter = { destination: `storage${_path == "/" ? "" : _path}*` };
             this.adapter.load({ filter });
         }
-
     }
 
     selectFile(fileSelect: FileSelectComponent) {
@@ -119,8 +115,9 @@ export class FileBrowserComponent {
     }
 
     writeValue(v: FileInfo[]): void {
-        this.value.set(v);
-        this.adapter.getItems(this.adapter.getKeysFromValue(v));
+        throw new Error("Method not implemented."); // extend data-base component ?
+        // this.value.set(v);
+        // this.adapter.getItems(this.adapter.getKeysFromValue(v));
     }
 
     registerOnChange(fn: (value: FileInfo[]) => void): void {

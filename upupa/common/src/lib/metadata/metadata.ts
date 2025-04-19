@@ -1,10 +1,10 @@
-import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, APP_INITIALIZER, FactoryProvider } from "@angular/core";
+import { Provider, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, FactoryProvider, inject, provideAppInitializer } from "@angular/core";
 import { MetadataService, PAGE_METADATA_STRATEGIES } from "./metadata.service";
-import { DEFAULT_OPEN_GRAPH_CONFIG, OPEN_GRAPH_CONFIG, OpenGraphConfig, OpenGraphMetadataStrategy } from "./strategies/open-graph.strategy";
+import { OPEN_GRAPH_CONFIG, OpenGraphConfig, OpenGraphMetadataStrategy } from "./strategies/open-graph.strategy";
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG, PageMetadataStrategy } from "./strategies/page-metadata.strategy";
-import { DEFAULT_TWITTER_CARD_CONFIG, TWITTER_CARD_CONFIG, TwitterCardConfig, TwitterCardMetadataStrategy } from "./strategies/twitter.strategy";
+import { TWITTER_CARD_CONFIG, TwitterCardConfig, TwitterCardMetadataStrategy } from "./strategies/twitter.strategy";
 import { ActivatedRoute } from "@angular/router";
-import { DEFAULT_SCHEMA_ORG_CONFIG, SCHEMA_ORG_METADATA_CONFIG, SchemaOrgConfig, SchemaOrgMetadataStrategy } from "./strategies/schema-org.strategy";
+import { SCHEMA_ORG_METADATA_CONFIG, SchemaOrgConfig, SchemaOrgMetadataStrategy } from "./strategies/schema-org.strategy";
 
 export const CONTENT = new InjectionToken("CONTENT");
 
@@ -34,12 +34,10 @@ export function providePageMetadata(config: ContentMetadataConfig | Omit<Factory
         { provide: CONTENT, useFactory: (route: ActivatedRoute) => route.snapshot.data["content"], deps: [ActivatedRoute] },
 
         ...features,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: (metaService: MetadataService) => initializeMetData(metaService),
-            deps: [MetadataService],
-            multi: true,
-        },
+        provideAppInitializer(() => {
+            const initializerFn = ((metaService: MetadataService) => initializeMetData(metaService))(inject(MetadataService));
+            return initializerFn();
+        }),
     ]);
 }
 
@@ -59,9 +57,9 @@ export function withMetadataStrategy(feature: MetadataFeatureProvider): Provider
  * @param config
  * @returns
  */
-export function withTwitterCard(config: Partial<TwitterCardConfig> = DEFAULT_TWITTER_CARD_CONFIG) {
+export function withTwitterCard(config: Partial<TwitterCardConfig>) {
     return makeEnvironmentProviders([
-        { provide: TWITTER_CARD_CONFIG, useValue: { ...DEFAULT_TWITTER_CARD_CONFIG, ...config } },
+        { provide: TWITTER_CARD_CONFIG, useValue: config },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: TwitterCardMetadataStrategy },
     ]);
 }
@@ -71,21 +69,21 @@ export function withTwitterCard(config: Partial<TwitterCardConfig> = DEFAULT_TWI
  * @param config
  * @returns
  */
-export function withOpenGraph(config: Partial<OpenGraphConfig> = DEFAULT_OPEN_GRAPH_CONFIG) {
+export function withOpenGraph(config: OpenGraphConfig) {
     return makeEnvironmentProviders([
         {
             provide: OPEN_GRAPH_CONFIG,
-            useValue: { ...DEFAULT_OPEN_GRAPH_CONFIG, ...config },
+            useValue: config,
         },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: OpenGraphMetadataStrategy },
     ]);
 }
 
-export function withSchemaOrg(config: Partial<SchemaOrgConfig> = DEFAULT_SCHEMA_ORG_CONFIG) {
+export function withSchemaOrg(config: SchemaOrgConfig) {
     return makeEnvironmentProviders([
         {
             provide: SCHEMA_ORG_METADATA_CONFIG,
-            useValue: { ...DEFAULT_SCHEMA_ORG_CONFIG, ...config },
+            useValue: config,
         },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: SchemaOrgMetadataStrategy },
     ]);

@@ -187,13 +187,12 @@ export class AuthService {
         try {
             return await httpFetch(url, body, 5000);
         } catch (error) {
-            if (error.status === 400) {
-                throw error.body;
-            } else if (error.status) throw error.error;
-            else if (error.status === 0) throw "CONNECTION_ERROR";
+            const status = error.status == null ? "0" : `${error.status}`;
+
+            if (status.startsWith("0")) throw "CONNECTION_ERROR";
+            if (status.startsWith("4")) throw error.body ? error.body : error;
             else throw error;
         }
-        return null;
     }
 
     private setTokens(tokens: { access_token: string; refresh_token: string }) {
@@ -367,5 +366,8 @@ export class AuthService {
     }
     hasClaim(claim: string, value?: string) {
         return this.user?.claims?.[claim] === value;
+    }
+    hasAnyRole(...roles: string[]) {
+        return this.user?.roles?.some((role) => roles.includes(role));
     }
 }

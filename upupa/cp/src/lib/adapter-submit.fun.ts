@@ -42,14 +42,7 @@ export function openSnackFailed(
 type OnSuccess = (result: any) => any;
 type OnError = (error: FriendlyError<any>) => any;
 
-export async function adapterSubmit<T = any>(
-    form: T,
-    onSuccess: OnSuccess = (result) => {
-        openSnackSuccess(result);
-        closeDialog(result);
-    },
-    onError: OnError = openSnackFailed,
-): Promise<T> {
+export async function adapterSubmit<T = any>(form: T, onSuccess?: OnSuccess, onError: OnError = openSnackFailed): Promise<T> {
     const injector = inject(Injector);
     const _adapter = inject(DataAdapter, { optional: true });
 

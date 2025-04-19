@@ -1,10 +1,9 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult } from "@noah-ark/common";
-import { _isSuperAdmin, authorize, evaluatePermission, matchPermissions } from "@noah-ark/expression-engine";
+import { _isSuperAdmin, authorize, evaluatePermission, selectPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 
-import { isEmpty } from "lodash";
 import { ReplaySubject, firstValueFrom } from "rxjs";
 import { PERMISSIONS_BASE_URL } from "./di.tokens";
 
@@ -36,12 +35,20 @@ export class AuthorizationService {
 
     async authorize(path: string, action: string, principle: Principle, payload?: unknown, query?: unknown, ctx?: unknown): Promise<AuthorizeResult> {
         await firstValueFrom(this.rules$);
-        if (isEmpty(action ?? "")) action = undefined;
+        if ((action ?? "").trim().length === 0) action = undefined;
         const message = this.buildAuthorizationMsg(path, action, principle, payload, query, ctx);
-        const rule = this.rulesManager.getRule(path, true);
-        const res = authorize(message, rule, action, true);
+        const segments = path.split("/");
+        while (segments.length > 0) {
+            const rule = this.rulesManager.getRule(path, true);
+            const res = authorize(message, rule, action, true);
 
-        return res;
+            if (res.access) return res;
+
+            segments.pop();
+            path = segments.join("/");
+        }
+
+        return { rule: undefined, action, access: "deny" };
     }
 
     async getEvaluatedSelector(
@@ -73,6 +80,6 @@ export class AuthorizationService {
         await firstValueFrom(this.rules$);
         const rule = this.rulesManager.getRule(path, true);
         const msg = this.buildAuthorizationMsg(path, action, principle);
-        return matchPermissions(rule, action, { msg }, bypassSelectors);
+        return selectPermissions(rule, action, { msg }, bypassSelectors);
     }
 }

@@ -34,7 +34,6 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
 }
 
 @Component({
-    standalone: true,
     selector: "cell-template",
     imports: [DynamicPipe],
     template: `
@@ -83,9 +82,7 @@ export type LinkRouterCellInputs = {
     routerLinkActiveOptions?: { exact: boolean; ignoreQueryParams: boolean } | undefined;
 };
 @Component({
-    standalone: true,
     imports: [RouterModule],
-
     template: `
         <a
             [routerLink]="routerLink().routerLink"
@@ -104,6 +101,14 @@ export type LinkRouterCellInputs = {
             >{{ text() }}</a
         >
     `,
+    styles: [
+        `
+            :host {
+                display: inline-block;
+                min-width: 150px;
+            }
+        `,
+    ],
 })
 export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTemplate<TValue> {
     textFn = input<(ref: RouterLinkCellTemplate) => string>();
@@ -113,7 +118,6 @@ export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTe
 }
 
 @Component({
-    standalone: true,
     imports: [RouterModule],
     template: `
         @let _href = href() ? href()(value()) : null;

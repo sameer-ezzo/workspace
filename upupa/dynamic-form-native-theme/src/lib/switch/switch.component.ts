@@ -6,7 +6,6 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DynamicComponent } from "@upupa/common";
 
 @Component({
-    standalone: true,
     selector: "form-switch",
     templateUrl: "./switch.component.html",
     styleUrls: ["./switch.component.css"],
@@ -17,7 +16,7 @@ import { DynamicComponent } from "@upupa/common";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatSlideToggleModule, MatCheckboxModule],
+    imports: [FormsModule, ReactiveFormsModule, MatSlideToggleModule, MatCheckboxModule]
 })
 export class SwitchComponent extends InputComponent {
     template = input<"checkbox" | "toggle", "checkbox" | "toggle">("toggle", { transform: (v) => v ?? "toggle" });

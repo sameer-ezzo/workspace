@@ -1,7 +1,7 @@
-import { provideRoute, DynamicComponent, RouteFeature, ComponentOutputs, TypeOrFunc } from "@upupa/common";
+import { provideRoute, DynamicComponent, RouteFeature, ComponentOutputs } from "@upupa/common";
 import { makeEnvironmentProviders, output, Provider, Type } from "@angular/core";
 
-import { Route } from "@angular/router";
+import { ResolveFn, Route } from "@angular/router";
 
 import { TableHeaderComponent } from "./table-header.component";
 import { DataListComponent } from "./data-list/data-list.component";
@@ -42,89 +42,36 @@ const pipes = [
     I18nSelectPipe,
 ];
 
-// const imports = [
-//     MatCardModule,
-//     MatTableModule,
-//     MatChipsModule,
-//     MatDialogModule,
-//     MatTooltipModule,
-//     MatProgressBarModule,
-//     MatMenuModule,
-//     MatFormFieldModule,
-//     MatInputModule,
-//     MatCheckboxModule,
-//     MatSortModule,
-//     MatPaginatorModule,
-//     MatIconModule,
-//     MatButtonModule,
-//     MatToolbarModule,
-//     DataTableComponent,
-//     DefaultTableCellTemplate,
-//     ColumnsSelectComponent,
-//     DynamicPipe,
-//     NonePureDynamicPipe,
-//     JsonPointerPipe,
-//     TableColumnSelectorPipe,
-//     DataComponentBase,
-//     DataComponentBase,
-//     MatBtnComponent,
-//     ActionDescriptorComponent,
-//     PortalComponent,
-//     TableHeaderComponent,
-//     CommonModule,
-//     UtilsModule,
-//     RouterModule,
-//     FormsModule,
-//     UtilsModule,
-//     DragDropModule,
-// ];
-// const declarations = [];
-
-// @NgModule({
-//     declarations: declarations,
-//     imports: [...imports, ...pipes],
-//     exports: [...imports, DragDropModule],
-//     providers: [...pipes, { provide: DATA_TABLE_OPTIONS, useValue: new DataTableOptions() }],
-// })
-// export class DataTableModule {
-//     static forRoot(providers: Provider[]): ModuleWithProviders<DataTableModule> {
-//         return {
-//             ngModule: DataTableModule,
-//             providers: [
-//                 ...pipes,
-//                 ...providers,
-//                 {
-//                     provide: DATA_TABLE_OPTIONS,
-//                     useValue: { ...new DataTableOptions() },
-//                 },
-//             ],
-//         };
-//     }
-// }
 export function provideDataTable(options: DataTableOptions, providers: Provider[] = []) {
     return makeEnvironmentProviders([...pipes, ...providers, { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions(), ...options } }]);
 }
 
+type _DataAdapter<T = unknown> = DataAdapter<T> | DataAdapterDescriptor<T>;
+
 export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
-    dataAdapter:TypeOrFunc< DataAdapter<T> | DataAdapterDescriptor>;
+    dataAdapter: _DataAdapter<T> | ResolveFn<_DataAdapter<T>>;
     tableHeaderComponent?: Type<any> | DynamicComponent;
     expandable?: "single" | "multi" | "none";
     expandableComponent?: DynamicComponent;
     outputs?: ComponentOutputs<DataListComponent>;
 };
 export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFeature {
+    const _dataAdapter = typeof config.dataAdapter === "function" ? config.dataAdapter : () => config.dataAdapter;
+
     return {
         name: "withTableComponent",
         modify: () => ({
             component: DataListComponent,
             data: {
                 viewModel: config.viewModel,
-                dataAdapter: config.dataAdapter,
                 tableHeaderComponent: config.tableHeaderComponent,
                 expandableComponent: config.expandableComponent,
                 expandable: "single",
                 outputs: config.outputs,
+            },
+            resolve: {
+                dataAdapter: _dataAdapter,
             },
         }),
     };

@@ -1,7 +1,6 @@
 import { Component, forwardRef, input } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { InputBaseComponent } from "@upupa/common";
-import { InputDefaults } from "../defaults";
 
 @Component({
     standalone: true,
@@ -15,16 +14,23 @@ import { InputDefaults } from "../defaults";
         },
     ],
 })
-export class DateInputComponent extends InputBaseComponent {
+export class DateInputComponent extends InputBaseComponent<Date> {
     inlineError = true;
 
     placeholder = input("");
-    
+
     label = input("");
     hint = input("");
     readonly = input(false);
 
+    now = new Date();
+
     min = input<Date | number | null>(null);
     max = input<Date | number | null>(null);
-    
+
+    setDate(value: string) {
+        const date = new Date(value);
+        this.value.set(date);
+        this.control()?.setValue(this.value());
+    }
 }

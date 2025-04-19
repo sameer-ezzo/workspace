@@ -7,7 +7,6 @@ import { FieldRef } from "./field-ref";
 import { ComponentType } from "@angular/cdk/portal";
 
 @Component({
-    standalone: true,
     selector: "field",
     providers: [
         {
@@ -33,10 +32,9 @@ import { ComponentType } from "@angular/cdk/portal";
             <div class="error">Template not found for {{ fieldRef().name }}</div>
         }
     `,
-
     host: {
         "[class]": "classList()",
-    },
+    }
 })
 export class DynamicFormFieldComponent implements ControlValueAccessor, Validator {
     formService = inject(DynamicFormService);

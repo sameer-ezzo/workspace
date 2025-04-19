@@ -8,11 +8,10 @@ import { FormControl } from "@angular/forms";
 import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 
 @Component({
-    standalone: true,
     selector: "forgot-password-form",
     templateUrl: "./forgot-password-form.component.html",
     styleUrls: ["./forgot-password-form.component.scss"],
-    imports: [CollectorComponent, PortalComponent],
+    imports: [CollectorComponent, PortalComponent]
 })
 export class ForgotPasswordFormComponent {
     control = new FormControl();

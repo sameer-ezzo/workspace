@@ -13,11 +13,10 @@ export class TemplateBase<T = any> {
     @Input() model?: T;
 }
 
-@Component({ standalone: true,
+@Component({
     selector: "upupa-template",
-    standalone: true,
     imports: [],
-    template: ``,
+    template: ``
 })
 export class TemplateComponent<T = any> implements OnDestroy {
     host = inject(ViewContainerRef);

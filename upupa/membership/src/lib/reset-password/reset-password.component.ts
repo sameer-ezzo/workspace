@@ -4,11 +4,10 @@ import { AuthService } from "@upupa/auth";
 import { ResetPasswordFormComponent } from "../reset-password-form/reset-password-form.component";
 
 @Component({
-    standalone: true,
     selector: "reset-password",
     templateUrl: "./reset-password.component.html",
     styleUrls: ["./reset-password.component.scss"],
-    imports: [ResetPasswordFormComponent],
+    imports: [ResetPasswordFormComponent]
 })
 export class ResetPasswordComponent {
     public readonly auth: AuthService = inject(AuthService);

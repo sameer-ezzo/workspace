@@ -383,7 +383,10 @@ export class QueryParser {
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
             if (x.key === "page" && !isNaN(+x.value)) page = +x.value;
-            else if (x.key === "per_page" && !isNaN(+x.value)) per_page = Math.min(+x.value, 500);
+            else if (x.key === "per_page" && !isNaN(+x.value)) 
+            {
+                per_page = Math.min(+x.value, 500);
+            }
             else if (x.key === "group_by") {
                 const g = x.value.split(",");
                 const key = g.length > 1 ? g.shift() : x.value;

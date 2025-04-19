@@ -7,7 +7,6 @@ const _defaultRows = 3;
 const _defaultMaxRows = 5;
 
 @Component({
-    standalone: true,
     selector: "form-text-area",
     templateUrl: "./text-area.component.html",
     styleUrls: ["./text-area.component.css"],
@@ -18,7 +17,7 @@ const _defaultMaxRows = 5;
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule],
+    imports: [FormsModule, ReactiveFormsModule]
 })
 export class TextAreaComponent extends InputBaseComponent<string> {
     inlineError = true;

@@ -9,11 +9,10 @@ import { DialogRef, DialogWrapperComponent } from "@upupa/dialog";
 import { MatButtonModule } from "@angular/material/button";
 
 @Component({
-    standalone: true,
     selector: "admin-userpwd-reset",
     templateUrl: "./admin-userpwd-reset.component.html",
     styleUrls: ["./admin-userpwd-reset.component.scss"],
-    imports: [DynamicFormComponent, MatButtonModule],
+    imports: [DynamicFormComponent, MatButtonModule]
 })
 export class AdminUserPasswordRestComponent {
     users = inject(UsersService);

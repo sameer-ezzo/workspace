@@ -1,3 +1,4 @@
-export * from './lib/html-component/html-editor.component';
-export * from './lib/ckeditor4-component/html-editor.component';
-export * from './lib/html-editor.module';
+export * from "./lib/ck4/html-editor.component";
+export * from "./lib/ck5/html-editor.component";
+export * from "./lib/ck5/di.token";
+export * from "./lib/ck5/html-upload-adapter";

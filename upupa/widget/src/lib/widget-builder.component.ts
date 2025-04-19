@@ -19,13 +19,12 @@ import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@
 @Component({
     selector: "widget-header",
     imports: [MatIconModule, MatButtonModule],
-    standalone: true,
     template: ` <div style="display: flex; place-items: center; border-bottom: 1px dashed #e5e7eb;">
         <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="settings.emit(widget())"><mat-icon>settings</mat-icon></button>
         <h3>{{ widget().title }}</h3>
         <div style="flex: 1"></div>
         <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove.emit(widget())"><mat-icon>clear</mat-icon></button>
-    </div>`,
+    </div>`
 })
 export class WidgetHeaderComponent {
     widget = input.required<Widget>();
@@ -51,7 +50,6 @@ export class InputsViewModel {
 
 @Component({
     selector: "widget-builder",
-    standalone: true,
     imports: [GridstackComponent, GridstackItemComponent, PortalComponent, MatButtonModule, MatIconModule],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: WidgetBuilderComponent, multi: true }],
     styles: `
@@ -107,7 +105,7 @@ export class InputsViewModel {
         <button mat-fab color="accent" (click)="add()">
             <mat-icon>add</mat-icon>
         </button>
-    `,
+    `
 })
 export class WidgetBuilderComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });

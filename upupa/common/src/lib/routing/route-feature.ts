@@ -1,12 +1,39 @@
-import { ResolveFn, Route, RouterOutlet } from "@angular/router";
+import {
+    ActivatedRouteSnapshot,
+    InMemoryScrollingOptions,
+    Navigation,
+    NavigationEnd,
+    NavigationError,
+    provideRouter,
+    RedirectCommand,
+    ResolveEnd,
+    ResolveFn,
+    ResolveStart,
+    Route,
+    Router,
+    RouterConfigOptions,
+    RouterEvent,
+    RouterFeatures,
+    RouterOutlet,
+    Routes,
+    withComponentInputBinding,
+    withDebugTracing,
+    withInMemoryScrolling,
+    withNavigationErrorHandler,
+    withRouterConfig,
+    withViewTransitions,
+} from "@angular/router";
 import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
+import { makeEnvironmentProviders, provideAppInitializer, inject, EnvironmentProviders } from "@angular/core";
+import { provideRouteOutputBinder } from "./route-output-binder";
 
 export type NamedRoute = Route & { name: string };
 export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component" | "resolve"> & {
     component: DynamicComponent<T>;
     resolve: { [key in keyof ComponentInputs<T>]?: ResolveFn<unknown> } & Record<string, ResolveFn<unknown>>;
     data: { [key in keyof ComponentInputs<T>]?: any } & Record<string, any>;
+    on?: (event: RouterEvent, snapshot: ActivatedRouteSnapshot) => void;
 };
 
 /**
@@ -59,6 +86,7 @@ export function provideRoute<T = any>(
     features = features.filter((f) => f); // remove undefined features
 
     let route = _route as Route;
+    route.runGuardsAndResolvers ??= "always";
     if (isDynamicComponentRoute(_route)) {
         const dynamicComponent = _route.component;
         route.component = dynamicComponent.component;
@@ -91,4 +119,106 @@ export function withAction(
             };
         },
     };
+}
+
+function flattenRouterSnapshot(route: ActivatedRouteSnapshot): ActivatedRouteSnapshot[] {
+    const routes: ActivatedRouteSnapshot[] = [];
+    routes.push(route);
+    for (const child of route.children) {
+        routes.push(...flattenRouterSnapshot(child));
+    }
+    return routes;
+}
+
+export type EnhancedRouterConfig = RouterConfigOptions & {
+    withComponentInputBinding?: boolean;
+    withInMemoryScrolling?: InMemoryScrollingOptions;
+    withViewTransitions?: boolean;
+    withDebugTracing?: boolean;
+    withNavigationErrorHandler?: (error: NavigationError) => unknown | RedirectCommand;
+    withRouteOutputBinder?: boolean;
+    withEventHandler?: (event: RouterEvent, route: ActivatedRouteSnapshot) => void;
+};
+
+const DEFAULT_ROUTER_CONFIG: EnhancedRouterConfig = {
+    withComponentInputBinding: true,
+    withInMemoryScrolling: { anchorScrolling: "enabled" },
+    withViewTransitions: true,
+    withDebugTracing: false,
+    withNavigationErrorHandler: (error) => {
+        console.error(error);
+        return null;
+    },
+    withRouteOutputBinder: false,
+};
+export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterConfig = DEFAULT_ROUTER_CONFIG) {
+    const _config = { ...DEFAULT_ROUTER_CONFIG, ...config };
+    // TODO add reuse strategy and preloading strategy config
+    const features: RouterFeatures[] = [withRouterConfig(_config)];
+    const additionalProviders: EnvironmentProviders[] = [];
+
+    if (_config.withInMemoryScrolling) {
+        features.push(
+            withInMemoryScrolling({
+                anchorScrolling: "enabled",
+                ...withInMemoryScrolling,
+                get scrollPositionRestoration() {
+                    if (typeof window === "undefined") return "disabled";
+                    const navigation = window["_navigation"] as Navigation;
+                    return navigation?.extras.info?.["scrollPositionRestoration"] ?? "enabled";
+                },
+            }),
+        );
+    }
+
+    if (_config.withComponentInputBinding) {
+        features.push(withComponentInputBinding());
+    }
+    if (_config.withViewTransitions) {
+        // withRichViewTransitionsService(),
+        features.push(withViewTransitions());
+    }
+
+    if (_config.withDebugTracing) {
+        features.push(withDebugTracing());
+    }
+
+    if (_config.withNavigationErrorHandler) {
+        features.push(withNavigationErrorHandler(_config.withNavigationErrorHandler));
+    }
+
+    if (_config.withRouteOutputBinder) {
+        additionalProviders.push(provideRouteOutputBinder());
+    }
+
+    return makeEnvironmentProviders([
+        provideAppInitializer(async () => {
+            const router = inject(Router);
+            router.events.subscribe((event) => {
+                if (typeof window !== "undefined" && event instanceof NavigationEnd) {
+                    window["_navigation"] = router.getCurrentNavigation();
+                }
+
+                if ("state" in event) {
+                    const snapshots = flattenRouterSnapshot(event.state.root);
+                    for (const snapshot of snapshots) {
+                        _config.withEventHandler?.(event, snapshot);
+                    }
+
+                    for (const snapshot of snapshots.filter((r) => r.routeConfig?.["on"])) {
+                        const on = snapshot.routeConfig["on"];
+                        if (typeof on === "function") {
+                            try {
+                                on(event, snapshot);
+                            } catch (e) {
+                                console.error("Error in route event handler:", e);
+                            }
+                        }
+                    }
+                }
+            });
+        }),
+        provideRouter(routes, ...features),
+        ...additionalProviders,
+    ]);
 }

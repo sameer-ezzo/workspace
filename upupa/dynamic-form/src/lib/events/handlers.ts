@@ -1,12 +1,12 @@
-import { EventRecord } from '@noah-ark/event-bus';
-import { JsonPointer } from '@noah-ark/json-patch';
+import { EventRecord } from "@noah-ark/event-bus";
+import { JsonPointer } from "@noah-ark/json-patch";
 
-import { DynamicFormComponent } from '../dynamic-form.component';
-import { DynamicFormCommands, DynamicFormMessage } from './events';
-import * as _ from 'lodash';
-import { PathInfo } from '@noah-ark/path-matcher';
-import { Field } from '../types';
-import { AbstractControl } from '@angular/forms';
+import { DynamicFormComponent } from "../dynamic-form.component";
+import { DynamicFormCommands, DynamicFormMessage } from "./events";
+import { PathInfo } from "@noah-ark/path-matcher";
+import { Field } from "../types";
+import { AbstractControl } from "@angular/forms";
+import { deepMerge } from "@noah-ark/common";
 
 function _pattern(msg: string) {
     return new RegExp(`^${msg}(\\.[^\\.|\\s]+)?(\\.[^\\.|\\s]+)?$`);
@@ -14,7 +14,7 @@ function _pattern(msg: string) {
 
 function _path(path: string) {
     const segments = PathInfo.segments(path);
-    return segments.join('/items/');
+    return segments.join("/items/");
 }
 function state(control: AbstractControl, state: any) {
     if (state?.disabled === true) control.disable();
@@ -93,7 +93,7 @@ export function MergeFormSchemeHandler(targetForm: DynamicFormComponent) {
         const path = _path(cmd.payload.fields);
         const newField = cmd.payload.newField;
         const existingField = JsonPointer.get<Field>(form.fields, path);
-        if (newField) JsonPointer.set(form.fields, path, _.merge({}, existingField, newField));
+        if (newField) JsonPointer.set(form.fields, path, deepMerge({}, existingField, newField));
         else JsonPointer.unset(form.fields, path);
 
         form._fieldsChanged();

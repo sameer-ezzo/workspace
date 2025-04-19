@@ -6,6 +6,7 @@ import {
     OnDestroy,
     Type,
     computed,
+    forwardRef,
     inject,
     input,
     model,
@@ -15,16 +16,16 @@ import {
 } from "@angular/core";
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
-import { DynamicComponent, PortalComponent } from "@upupa/common";
+import { _defaultControl, DynamicComponent, PortalComponent } from "@upupa/common";
 
 import { CommonModule } from "@angular/common";
 import { Class } from "@noah-ark/common";
 import { DataTableComponent } from "../data-table.component";
 import { reflectTableViewModel } from "../decorator";
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
 
 @Component({
     selector: "data-list",
-    standalone: true,
     imports: [CommonModule, PortalComponent, DataTableComponent],
     templateUrl: "./data-list.component.html",
     styleUrls: ["./data-list.component.scss"],
@@ -35,9 +36,14 @@ import { reflectTableViewModel } from "../decorator";
             useFactory: (component) => component.dataAdapter(),
             deps: [DataListComponent],
         },
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataListComponent),
+            multi: true,
+        },
     ],
 })
-export class DataListComponent implements AfterViewInit, OnDestroy {
+export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, ControlValueAccessor {
     readonly injector = inject(Injector);
     readonly route = inject(ActivatedRoute);
 
@@ -57,7 +63,7 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         },
     });
 
-    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor<DataAdapterType>>({
+    dataAdapter = input.required<DataAdapter, DataAdapter | DataAdapterDescriptor>({
         transform: (adapterOrDescriptor) => {
             if (adapterOrDescriptor instanceof DataAdapter) {
                 return adapterOrDescriptor;
@@ -71,16 +77,6 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     secondaryRows = computed(() => reflectTableViewModel(this.viewModel()).secondaryRows);
     columns = computed(() => reflectTableViewModel(this.viewModel()).columns);
     instance: Class;
-    // vm = computed(() => {
-    //     const viewModel = this.viewModel();
-
-    //     runInInjectionContext(this.injector, () => {
-    //         this.instance = new viewModel();
-    //         this.instance["onInit"]?.();
-    //     });
-
-    //     return this.instance;
-    // });
 
     async ngAfterViewInit() {
         await this.instance?.["afterViewInit"]?.();
@@ -91,24 +87,11 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
     }
 
     onSelectionChange(event: any) {
-        // const vm = this.vm();
-        // if ('onSelect' in vm) {
-        //     runInInjectionContext(this.injector, () => {
-        //         vm['onSelect'](event);
-        //     });
-        // }
+        this.handleUserInput(this.dataTable().value() as any);
     }
-    onPageChange(event: any) {
-        // const vm = this.vm();
-        // runInInjectionContext(this.injector, () => {
-        //     vm.onPageChange?.(event);
-        // });
-    }
+    onPageChange(event: any) {}
     onSortChange(event: any) {
-        // const vm = this.vm();
-        // runInInjectionContext(this.injector, () => {
-        //     vm.onSort?.(event);
-        // });
+        // this should reflect the sorting in the selected items as well as the data table
     }
 
     focusedItem = model();
@@ -116,5 +99,59 @@ export class DataListComponent implements AfterViewInit, OnDestroy {
         runInInjectionContext(this.injector, () => {
             this.focusedItem.set($event);
         });
+    }
+
+    // >>>>> ControlValueAccessor ----------------------------------------
+
+    name = input<string, string>(`field_${Date.now()}`, {
+        alias: "fieldName",
+        transform: (v) => {
+            return v ? v : `field_${Date.now()}`;
+        },
+    });
+    disabled = model(false);
+    required = input(false);
+
+    value = model<T>();
+    _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
+    _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = _defaultControl(this);
+    control = input<FormControl>(this._control ?? this._defaultControl);
+    handleUserInput(v: T) {
+        this.value.set(v);
+
+        if (this._ngControl) {
+            // only notify changes if control was provided externally
+            this.markAsTouched();
+            this.propagateChange();
+        } else {
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
+        }
+    }
+
+    _onChange: (value: T) => void;
+    _onTouch: () => void;
+
+    propagateChange() {
+        this._onChange?.(this.value());
+    }
+
+    markAsTouched() {
+        if (this._onTouch) this._onTouch();
+    }
+
+    writeValue(v: T): void {
+        this.value.set(v);
+    }
+
+    registerOnChange(fn: (value: T) => void): void {
+        this._onChange = fn;
+    }
+    registerOnTouched(fn: () => void): void {
+        this._onTouch = fn;
+    }
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled.set(isDisabled);
     }
 }

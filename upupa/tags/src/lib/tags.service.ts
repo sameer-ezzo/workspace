@@ -1,52 +1,55 @@
 import { inject, Injectable } from "@angular/core";
 import { DataService } from "@upupa/data";
 import { ObjectId } from "@upupa/data";
-import { Observable, of } from "rxjs";
+import { firstValueFrom, Observable, of } from "rxjs";
+import { slugify } from "@noah-ark/common";
 
-import { map, shareReplay, switchMap, tap } from "rxjs/operators";
+import { map, shareReplay, tap } from "rxjs/operators";
 import { Tag } from "./tag.model";
-import { LanguageService } from "@upupa/language";
 
+function constructPath(p) {
+    return (p || "")
+        .split("/")
+        .map((x) => x.trim())
+        .filter((x) => x.length)
+        .join("/");
+}
 @Injectable({ providedIn: "root" })
 export class TagsService {
-    private readonly idTagMap: Map<string, Tag> = new Map();
+    private readonly dataService = inject(DataService);
+
     private readonly tagsMap: Map<string, Tag[]> = new Map();
-    private readonly langService = inject(LanguageService);
+    private readonly idTagMap: Map<string, Tag> = new Map();
+    private readonly slugTagMap: Map<string, Tag> = new Map();
 
-    constructor(private dataService: DataService) {
-        this.getTags().subscribe();
+    _get(filter?: Record<string, unknown>): Observable<Tag[]> {
+        return this.dataService.get<any>(`/tag`, filter).pipe(
+            map((res) => res.data as Tag[]),
+            tap((tags: Tag[]) => {
+                tags.forEach((tag: Tag) => {
+                    this.idTagMap.set(tag._id, tag);
+                    this.slugTagMap.set(tag.slug, tag);
+                });
+            }),
+            shareReplay(1),
+        );
     }
+    getChildrenOf(parentPath: string): Observable<Tag[]> {
+        parentPath = constructPath(`/${parentPath}`);
 
-    private readonly gettingByPath: Map<string, Observable<Tag[]>> = new Map();
-    getTags(parentPath?: string): Observable<Tag[]> {
-        parentPath = (parentPath || "")
-            .trim()
-            .split("/")
-            .filter((x) => x.length)
-            .join("/");
-        parentPath =
-            "/" +
-            parentPath
-                ?.split("/")
-                .filter((x) => x.length)
-                .join("/");
-        if (this.gettingByPath.has(parentPath)) return this.gettingByPath.get(parentPath);
         const tags = this.tagsMap.get(parentPath) ?? [];
         if (tags.length) return of(tags);
-        const filter = { parentPath: `${parentPath}*`, select: `_id,name,order,meta` };
-        const rx = () =>
-            this.dataService.get<any>(`/tag`, filter).pipe(
-                map((res) => res.data as Tag[]),
-                map((tags) => tags.map((t) => ({ ...t, name: typeof t.name === "string" ? t.name : t.name[this.langService.language ?? this.langService.defaultLang] }))),
-                tap((tags) => {
-                    this.tagsMap.set(parentPath, tags);
-                    tags.forEach((t) => this.idTagMap.set(t._id, t));
-                    this.gettingByPath.delete(parentPath);
-                }),
-                shareReplay(1),
-            );
-        this.gettingByPath.set(parentPath, rx());
-        return this.gettingByPath.get(parentPath);
+        const filter = { parentPath: `${parentPath}*` };
+        return this._get(filter).pipe(tap((tags: Tag[]) => this.tagsMap.set(parentPath, tags)));
+    }
+
+    getByPath(path: string): Observable<Tag | null> {
+        path = constructPath(`/${path}`);
+
+        const tag = (this.tagsMap.get(path) ?? []).find((x) => x.parentPath === path);
+        if (tag) return of(tag);
+        const filter = { parentPath: path };
+        return this._get(filter).pipe(map((res) => res?.[0] ?? null));
     }
 
     getTagById(id: string) {
@@ -65,52 +68,23 @@ export class TagsService {
 
     convertNameToId(name: string) {
         const n = (name || "").trim();
-        return n.length > 0
-            ? n
-                  .split(" ")
-                  .filter((s) => s.length > 0)
-                  .join("-")
-            : ObjectId.generate();
+        return n.length > 0 ? slugify(n) : ObjectId.generate();
     }
 
-    private pathSegments(path: string): string[] {
-        return path
-            .split("/")
-            .map((s) => s.trim())
-            .filter((s) => s.length);
-    }
-    async createTag(tag: Pick<Tag, "_id"> & Partial<Tag>, parentPath?: string): Promise<Tag> {
-        let id = tag._id ?? "";
-        if (id.trim().length === 0) throw new Error("tag id must be provided");
-
-        id = this.convertNameToId(tag._id);
-        const post = { ...tag, _id: id, name: tag.name ?? tag._id } as Tag;
-        parentPath = parentPath ? parentPath : (tag.parentPath ?? "/");
-        post.parent = this.pathSegments(parentPath).pop();
-        post.parentPath = parentPath;
-
-        try {
-            await this.dataService.post(`/tag`, post);
-            this.tagsMap.set(parentPath, [...(this.tagsMap.get(parentPath) ?? []), post]);
-            this.idTagMap.set(post._id, post);
-        } catch (error) {
-            console.error(error);
-            // if (error.statusCode === 406)
-            //   console.log("CANNOT_POST_OVER_EXISTING_DOCUMENT")
-        }
-        return post;
+    async getTagByPath(path: string): Promise<Tag> {
+        return firstValueFrom(this.getByPath(path));
     }
 
     async saveTag(tag: Tag, parentPath?: string): Promise<Tag> {
-        const _id = this.convertNameToId(tag._id);
-        const post = { ...tag } as Tag;
-        parentPath = parentPath ? parentPath : (tag.parentPath ?? "/");
-        post.parent = this.pathSegments(parentPath).pop();
+        const slug = tag.slug ? tag.slug : this.convertNameToId(tag.name);
+        const post = { ...tag, slug } as Tag;
+        parentPath = constructPath(parentPath ? parentPath : (tag.parentPath ?? "/"));
+        post.parentId = post.parentId ? post.parentId : (await this.getTagByPath(parentPath))?._id;
         post.parentPath = parentPath;
-        delete post._id;
+        post._id ??= ObjectId.generate();
 
-        await this.dataService.put(`/tag/${_id}`, post);
-        post._id = _id;
+        await this.dataService.put(`/tag/${post._id}`, post);
+
         this.tagsMap.set(parentPath, [...(this.tagsMap.get(parentPath) ?? []), post]);
         this.idTagMap.set(post._id, post);
 

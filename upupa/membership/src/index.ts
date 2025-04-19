@@ -1,7 +1,6 @@
 export * from "./lib/types";
 export * from "./lib/default-values";
 export * from "./lib/verify/verify.component";
-export * from "./lib/profile/profile.component";
 export * from "./lib/forgot-password/forgot-password.component";
 export * from "./lib/forgot-password-form/forgot-password-form.component";
 export * from "./lib/login/login.component";
@@ -9,12 +8,7 @@ export * from "./lib/login/login.component";
 export * from "./lib/signup/signup.component";
 export * from "./lib/signup-form/signup-form.component";
 export * from "./lib/reset-password/reset-password.component";
-export * from "./lib/change-avatar/change-avatar.component";
-export * from "./lib/change-email/change-email.component";
-export * from "./lib/change-phone/change-phone.component";
 export * from "./lib/page-navigation/page-navigation.component";
-export * from "./lib/change-user-prop/change-user-prop.component";
-
 export * from "./lib/management/users.service";
 export * from "./lib/management/users.component";
 export * from "./lib/management/types";
@@ -31,3 +25,4 @@ export * from "./lib/membership-routing.module";
 export * from "./lib/reset-password-form/reset-password-form.component";
 export * from "./lib/idp-button.directive";
 
+export * from "./lib/management/users-list/users-list-actions.component";

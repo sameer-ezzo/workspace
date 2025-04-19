@@ -1,7 +1,7 @@
 import { Component, SimpleChanges, effect, forwardRef, input } from "@angular/core";
 
 import { NG_VALUE_ACCESSOR, UntypedFormGroup, UntypedFormControl, Validators, FormControl, ReactiveFormsModule, FormsModule } from "@angular/forms";
-import { countries, InputBaseComponent } from "@upupa/common";
+import { InputBaseComponent } from "@upupa/common";
 import { ClientDataSource, DataAdapter } from "@upupa/data";
 import { CommonModule } from "@angular/common";
 
@@ -17,7 +17,6 @@ export type AddressModel = {
 };
 
 @Component({
-    standalone: true,
     selector: "address-edit",
     imports: [FormsModule, ReactiveFormsModule, CommonModule],
     templateUrl: "./address.component.html",
@@ -70,7 +69,8 @@ export class AddressComponent extends InputBaseComponent<AddressModel> {
         return this.addressFormGroup.get(name) as FormControl;
     }
 
-    countryAdapter = new DataAdapter(new ClientDataSource(Object.values(countries)), "alpha_2", "native_name", undefined, undefined, {
+    countries = {};
+    countryAdapter = new DataAdapter(new ClientDataSource(Object.values(this.countries)), "alpha_2", "native_name", undefined, undefined, {
         terms: [
             { field: "native_name", type: "like" },
             { field: "alpha_2", type: "like" },

@@ -279,14 +279,14 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             if (query.select) pipeline.push({ $project: query.select });
         } else {
             const page = query.page || 1;
-            const max_page_number = 100;
+            const max_page_number = 1000;
             const per_page = million ? 1000000 : Math.min(query.per_page || max_page_number, max_page_number);
 
             const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
             const pre_filter = [];
             const post_filter = [];
             for (const f of $and) {
-                if (Object.keys(f).some((k) => k.startsWith('$') || k.includes("."))) {
+                if (Object.keys(f).some((k) => k.startsWith("$") || k.includes("."))) {
                     post_filter.push(f);
                 } else {
                     pre_filter.push(f);
@@ -351,6 +351,106 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         }
         const result = await model.aggregate(pipeline);
         return <T[]>result;
+    }
+
+    async aggCount<T>(path: string, million = false, ...q: { [key: string]: string }[]): Promise<number> {
+        const Q: any = q;
+        if (Q != null && !Array.isArray(Q))
+            q = Object.keys(Q).map((key) => {
+                return { key, value: Q[key] };
+            }); //convert to array if passed as object
+
+        let pathInfo;
+        try {
+            pathInfo = PathInfo.parse(path);
+        } catch (error) {
+            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+        }
+
+        const model = await this.getModel(pathInfo.collection);
+        if (!model) return Promise.resolve(0);
+        const query: any = q ? this.queryParser.parse(q, model) : {};
+        const pipeline = [];
+        let _id = undefined;
+        if (pathInfo.id) {
+            _id = this.convertToModelId(pathInfo.id, "_id", model, `agg ${path} ${q}`);
+            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+
+            pipeline.push({ $match: { _id } });
+            if (query.select) pipeline.push({ $project: query.select });
+        } else {
+            const page = query.page || 1;
+            const max_page_number = 100;
+            const per_page = million ? 1000000 : Math.min(query.per_page || max_page_number, max_page_number);
+
+            const $and = (query.filter?.$and as Record<string, any>[]) ?? [];
+            const pre_filter = [];
+            const post_filter = [];
+
+            for (const f of $and) {
+                if (Object.keys(f).some((k) => k.startsWith("$") || k.includes("."))) {
+                    post_filter.push(f);
+                } else {
+                    pre_filter.push(f);
+                }
+            }
+
+            if (query.fields1) pipeline.push({ $addFields: query.fields1 });
+            if (query.fields2) pipeline.push({ $addFields: query.fields2 });
+            if (pre_filter.length) pipeline.push({ $match: { $and: pre_filter } });
+            if (query.lookups)
+                query.lookups.forEach((l: any) => {
+                    l.from = this.prefix + l.from;
+                    const unwind = l.unwind;
+                    delete l.unwind;
+                    pipeline.push({ $lookup: l });
+                    if (unwind) pipeline.push({ $unwind: { path: "$" + l.as, preserveNullAndEmptyArrays: true } });
+                });
+            if (query.lookupsMatch) {
+                query.lookupsMatch.forEach((l: any) => {
+                    pipeline.push({
+                        $lookup: {
+                            from: this.prefix + l.from,
+                            let: { l: "$" + l.localField },
+                            pipeline: [
+                                {
+                                    $addFields: {
+                                        joined: {
+                                            $in: ["$" + l.foreignField, "$$l"],
+                                        },
+                                    },
+                                },
+                                {
+                                    $match: {
+                                        $and: [{ joined: true }, ...l.match],
+                                    },
+                                },
+                                { $project: { joined: 0 } },
+                            ],
+                            as: l.as,
+                        },
+                    });
+                });
+            }
+            if (query.fields3) pipeline.push({ $addFields: query.fields3 });
+            if (post_filter.length) pipeline.push({ $match: { $and: post_filter } });
+            if (query.sort) pipeline.push({ $sort: query.sort });
+            if (query.select) pipeline.push({ $project: query.select });
+
+            const setLimitsBeforeGrouping = query.group === null || query.group?.items !== null; //limit before if document is included
+
+            if (setLimitsBeforeGrouping) {
+                pipeline.push({ $count: "count" });
+            }
+
+            if (query.group) pipeline.push({ $group: query.group });
+
+            if (!setLimitsBeforeGrouping) {
+                pipeline.push({ $count: "count" });
+            }
+        }
+        const result = (await model.aggregate(pipeline)) as [{ count: number }];
+        return result?.[0].count ?? 0;
     }
 
     public async post<T = any>(path: string | PathInfo, newData: any, user?: any): Promise<WriteResult<T>> {

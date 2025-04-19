@@ -10,9 +10,8 @@ class MarkdownWidgetSettings {
 
 @Component({
     selector: "md-widget",
-    standalone: true,
     imports: [MarkdownPipe],
-    template: ` <div [innerHTML]="text() | markdown"></div> `,
+    template: ` <div [innerHTML]="text() | markdown"></div> `
 })
 export class MarkdownWidget {
     text = input<string>();

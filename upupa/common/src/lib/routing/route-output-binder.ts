@@ -1,27 +1,16 @@
-import { APP_INITIALIZER, ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext } from "@angular/core";
-import { SIGNAL } from "@angular/core/primitives/signals";
+import { ComponentRef, inject, Injectable, Injector, Provider, reflectComponentType, runInInjectionContext, provideAppInitializer, EnvironmentProviders } from "@angular/core";
 import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
 import { Subscription } from "rxjs";
 
-function isClass(func) {
-    return typeof func === "function" && func.prototype?.constructor !== undefined;
-}
-
-function isSignal(func) {
-    return typeof func === "function" && func[SIGNAL];
-}
-
-export function provideRouteOutputBinder(): Provider {
-    return {
-        provide: APP_INITIALIZER,
-        useFactory: (outputBinder: RouteOutputBinder) => () => {
+export function provideRouteOutputBinder(): EnvironmentProviders {
+    return provideAppInitializer(() => {
+        const initializerFn = ((outputBinder: RouteOutputBinder) => () => {
             const originalDeactivate = RouterOutlet.prototype.deactivate;
             const originalActivateWith = RouterOutlet.prototype.activateWith;
             RouterOutlet.prototype.activateWith = function (...args) {
                 const res = originalActivateWith.apply(this, args);
                 const componentRef = this.activated;
                 const [activatedRoute] = args;
-                outputBinder.setInputs(activatedRoute, componentRef);
                 outputBinder.bindOutputs(activatedRoute, componentRef);
                 return res;
             };
@@ -30,10 +19,9 @@ export function provideRouteOutputBinder(): Provider {
                 outputBinder.unbindOutputs(componentRef);
                 return originalDeactivate.apply(this, args);
             };
-        },
-        deps: [RouteOutputBinder],
-        multi: true,
-    };
+        })(inject(RouteOutputBinder));
+        return initializerFn();
+    });
 }
 
 @Injectable({ providedIn: "root" })
@@ -73,28 +61,5 @@ export class RouteOutputBinder {
             }
             this._map.delete(componentRef);
         }
-    }
-
-    setInputs(activatedRoute: ActivatedRoute, componentRef: ComponentRef<any>): void {
-        if (!componentRef) return;
-
-        const { queryParams, params, data } = activatedRoute.snapshot;
-        const inputs = { ...queryParams, ...params, ...data };
-        const mirror = reflectComponentType(componentRef.componentType);
-
-        for (const input of mirror.inputs) {
-            if (input.propName in inputs) {
-                const inputValue = this._getInputValue(inputs[input.propName]);
-                componentRef.setInput(input.propName, inputValue);
-            }
-        }
-    }
-
-    _getInputValue(inputValue: any) {
-        if (typeof inputValue == "function" && !isClass(inputValue) && !isSignal(inputValue)) {
-            console.log("Running input function", inputValue);
-            return runInInjectionContext(this.injector, () => inputValue());
-        }
-        return inputValue;
     }
 }

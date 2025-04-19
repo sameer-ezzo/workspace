@@ -7,7 +7,6 @@ import { FileEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 import { FileTemplateComponent } from "./file-template/file-template.component";
 
 @Component({
-    standalone: true,
     selector: "file-viewer",
     templateUrl: "./file-viewer.component.html",
     styleUrls: ["./file-viewer.component.scss"],
@@ -15,7 +14,7 @@ import { FileTemplateComponent } from "./file-template/file-template.component";
     host: {
         "[class]": "'content'+ ' ' + view()",
     },
-    imports: [FileTemplateComponent],
+    imports: [FileTemplateComponent]
 })
 export class FilesViewerComponent {
     focused = model<ViewerExtendedFileVm>();
@@ -48,9 +47,6 @@ export class FilesViewerComponent {
     protected breakpointObserver = inject(BreakpointObserver);
 
     async onFileEvent(event: FileEvent) {
-        if (event.name === "remove") {
-        }
-
         this.events.emit(event);
     }
 

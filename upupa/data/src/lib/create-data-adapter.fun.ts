@@ -15,7 +15,7 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
         case "api":
             descriptor.displayProperty ??= "name" as keyof T;
             descriptor.keyProperty ??= "_id" as keyof T;
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.mapper);
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path);
             break;
         case "client":
             if (!descriptor.keyProperty) {
@@ -24,7 +24,7 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
                     descriptor.keyProperty ??= "_id" as keyof T;
                 }
             }
-            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty, descriptor.mapper);
+            dataSource = new ClientDataSource(descriptor.data ?? [], descriptor.keyProperty);
             break;
         case "signal":
             if (!descriptor.keyProperty) {
@@ -33,15 +33,22 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
                     descriptor.keyProperty = "_id" as keyof T;
                 }
             }
-            dataSource = new SignalDataSource(descriptor.data, descriptor.keyProperty, descriptor.mapper);
+            dataSource = new SignalDataSource(descriptor.data, descriptor.keyProperty);
             break;
         default:
             throw unreachable("data adapter type:", descriptor);
     }
 
     let adapter: DataAdapter<T>;
+    const options = {
+        terms: descriptor.terms ?? descriptor.options?.terms,
+        page: descriptor.page ?? descriptor.options?.page,
+        sort: descriptor.sort ?? descriptor.options?.sort,
+        filter: descriptor.filter ?? descriptor.options?.filter,
+        autoRefresh: descriptor.autoRefresh ?? descriptor.options?.autoRefresh,
+    };
     runInInjectionContext(injector, () => {
-        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, descriptor.options);
+        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, options);
     });
 
     return adapter!;
