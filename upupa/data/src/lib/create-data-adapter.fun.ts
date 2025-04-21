@@ -1,4 +1,4 @@
-import { effect, Injector, runInInjectionContext } from "@angular/core";
+import { effect, inject, Injector, runInInjectionContext } from "@angular/core";
 import { DataAdapter, DataAdapterDescriptor, DataAdapterType } from "./datasource/data.adapter";
 import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
@@ -6,7 +6,8 @@ import { ClientDataSource, SignalDataSource } from "./datasource/client.data.sou
 import { ApiDataSource } from "./datasource/api.data.source";
 import { TableDataSource } from "./datasource/model";
 
-export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector): DataAdapter<T> {
+
+export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector = inject(Injector)): DataAdapter<T> {
     let dataSource: TableDataSource;
 
     descriptor.mapper ??= (items) => items;
