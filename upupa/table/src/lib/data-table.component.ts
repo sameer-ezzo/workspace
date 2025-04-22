@@ -17,7 +17,6 @@ import {
     InjectionToken,
     DestroyRef,
     forwardRef,
-    InjectFlags,
     InjectOptions,
 } from "@angular/core";
 
@@ -47,7 +46,6 @@ import {
     TitleCasePipe,
     UpperCasePipe,
 } from "@angular/common";
-import { DragDropModule } from "@angular/cdk/drag-drop";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
@@ -85,7 +83,6 @@ export function injectDataAdapter(options?: InjectOptions) {
         MatProgressBarModule,
         CommonModule,
         MatIconModule,
-        DragDropModule,
         DefaultTableCellTemplate,
         PortalComponent,
         JsonPointerPipe,
@@ -291,7 +288,7 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                 if (typeof wdth === "string") {
                     const match = wdth.match(/(\d+)(\D+)/);
                     if (!match) continue;
-                    
+
                     const value = match[1];
                     const unit = match[2];
 

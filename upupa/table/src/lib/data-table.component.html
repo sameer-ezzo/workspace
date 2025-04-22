@@ -102,9 +102,6 @@
         <tr
             mat-row
             *matRowDef="let row; let i = $index; columns: _columns"
-            cdkDrag
-            cdkDragDisabled="true"
-            [cdkDragData]="row"
             class="{{ rowClass()(row) }}"
             [class.focused]="focusedItem() === row.item"
             [class.selected]="row.selected"
