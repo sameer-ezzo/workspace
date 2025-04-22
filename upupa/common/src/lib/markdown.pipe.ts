@@ -1,7 +1,8 @@
-import { Pipe } from "@angular/core";
-import { MarkedOptions, parse as md } from "marked";
+import { AsyncPipe } from "@angular/common";
+import { inject, Pipe } from "@angular/core";
+import { from, map } from "rxjs";
 
-const options: MarkedOptions = {
+const options = {
     // smartLists: true,
     // baseUrl: null,
     // highlight: null,
@@ -18,9 +19,18 @@ const options: MarkedOptions = {
 
 @Pipe({ name: "markdown", pure: false, standalone: true })
 export class MarkdownPipe {
-    transform(markdown: string): string {
+    private readonly _asyncPipe = inject(AsyncPipe);
+
+    transform(markdown: string): any {
         markdown ??= "";
-        if (!markdown || markdown.trim().length === 0) return "";
-        return md(markdown, options).toString();
+        // lazyload marked to reduce bundle size
+        const rx = from(import("marked")).pipe(
+            map(({ marked }) => {
+                if (!markdown || markdown.trim().length === 0) return "";
+                return marked(markdown, options);
+            }),
+        );
+
+        return this._asyncPipe.transform(rx);
     }
 }

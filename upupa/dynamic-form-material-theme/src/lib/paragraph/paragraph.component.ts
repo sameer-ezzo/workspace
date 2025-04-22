@@ -1,3 +1,4 @@
+import { AsyncPipe } from "@angular/common";
 import { Component, InjectionToken, computed, inject, input } from "@angular/core";
 import { UntypedFormControl } from "@angular/forms";
 import { DynamicComponent, HtmlPipe, MarkdownPipe, PortalComponent, UtilsModule } from "@upupa/common";

@@ -18,6 +18,7 @@ import {
     DestroyRef,
     forwardRef,
     InjectOptions,
+    viewChild,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -123,6 +124,8 @@ export function injectDataAdapter(options?: InjectOptions) {
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
+    table = viewChild(MatTable);
+
     showPaginator = input(true, { transform: (v) => (v === false ? false : true) });
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
@@ -349,19 +352,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     isGroup(row: any): boolean {
         return row.group;
     }
-
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    @ViewChild(MatTable) table: MatTable<T>;
-
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    // @Output() rowDropped = new EventEmitter()
-    // drop(event: CdkDragDrop<any[]>) {
-    //     this.table.renderRows()
-    //     this.rowDropped.emit({ event, from: event.previousIndex, to: event.currentIndex })
-
-    //     // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
-    //     // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
-    // }
 
     isPurePipe(pipe: Type<any>): boolean {
         return !!pipe.prototype.constructor.ɵpipe.pure;
