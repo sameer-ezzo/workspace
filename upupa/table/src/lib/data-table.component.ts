@@ -281,6 +281,29 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             }
         }
 
+        for (const _prop in this._properties) {
+            const wdth = this._properties[_prop].width;
+            if (wdth) {
+                if (typeof wdth === "number") {
+                    this._properties[_prop].width = `${wdth}px`;
+                    continue;
+                }
+                if (typeof wdth === "string") {
+                    const match = wdth.match(/(\d+)(\D+)/);
+                    if (!match) continue;
+                    
+                    const value = match[1];
+                    const unit = match[2];
+
+                    const validUnits = ["px", "%", "em", "rem", "vh", "vw"];
+                    if (validUnits.includes(unit)) {
+                        this._properties[_prop].width = `${parseInt(value)}${unit}`;
+                    } else {
+                        this._properties[_prop].width = `${parseInt(value)}px`;
+                    }
+                }
+            }
+        }
         this._columns = [];
 
         const selectCol = this._properties["select"];

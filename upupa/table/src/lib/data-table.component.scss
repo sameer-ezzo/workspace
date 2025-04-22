@@ -1,7 +1,3 @@
-// :root{
-//     --mat-table-row-item-outline-color: var(--mat-sys-outline);
-// }
-
 :not([dir="rtl"]) {
     th.mat-header-cell:last-of-type,
     td.mat-cell:last-of-type,
@@ -45,10 +41,8 @@
     overflow: hidden;
     position: relative;
     box-sizing: border-box;
-    // background-color: var(--mat-sys-surface);
 
     display: grid;
-    // grid-template-rows: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
 
     mat-progress-bar {
@@ -73,27 +67,24 @@
         }
     }
 }
-th,
-td {
-    // background-color: var(--mat-sys-surface);
-}
+
 .sticky-header {
     th {
         position: sticky !important;
         top: 0;
-
-        // z-index: 99 !important;
     }
-}
-th {
-    // border-top: solid 1px var(--mat-sys-outline);
 }
 
 tr[cdk-header-row] > th {
     // background-color: var(--mat-sys-surface-bright);
 }
 [mat-row]:hover {
-    background-color: var(--mat-sys-surface-container-highest, rgba(0, 0, 0, 0.12)) !important;
+    background-color: var(--mat-sys-surface-container-low) !important;
+}
+
+[mat-row].focused,
+[mat-row].selected {
+    background-color: var(--mat-sys-surface-container-high);
 }
 
 /* select */
@@ -121,10 +112,6 @@ tr td.mat-column-select {
     white-space: nowrap;
 }
 
-tr td.mat-column-select {
-    padding-inline-start: 12px;
-}
-
 /* focused */
 
 tr > td:first-child,
@@ -135,9 +122,7 @@ tr > th:first-child {
 tr {
     content-visibility: auto;
     contain-intrinsic-height: var(--mat-table-row-item-container-height, 52px);
-    & > td:first-child {
-        border-inline-start: solid transparent 4px;
-    }
+
     &.focused > td:first-child {
         border-inline-start-color: var(--mat-sys-secondary);
     }
@@ -147,37 +132,6 @@ th.mat-header-cell,
 td.mat-cell,
 td.mat-footer-cell {
     padding: 0 8px;
-}
-
-tr {
-    .mat-column-select {
-        min-width: 45px;
-        min-height: 45px;
-        mat-checkbox {
-            display: none;
-        }
-        img.avatar {
-            display: block;
-            border-radius: 50%;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-    }
-
-    &:hover,
-    &:focus-within,
-    &.selected {
-        .mat-column-select {
-            mat-checkbox {
-                display: block;
-            }
-            img.avatar {
-                display: none;
-            }
-        }
-    }
 }
 
 tr + tr.expandable-row td {
@@ -200,29 +154,29 @@ tr.expandable-row {
     display: flex;
 }
 
-tr .visible-on-hover > * {
-    visibility: hidden;
-}
+// tr .visible-on-hover > * {
+//     visibility: hidden;
+// }
 
-tr:hover > .visible-on-hover > * {
-    visibility: visible;
-}
+// tr:hover > .visible-on-hover > * {
+//     visibility: visible;
+// }
 
-tr .visible-on-focus > * {
-    visibility: hidden;
-}
+// tr .visible-on-focus > * {
+//     visibility: hidden;
+// }
 
-tr.focused .visible-on-focus > * {
-    visibility: visible;
-}
+// tr.focused .visible-on-focus > * {
+//     visibility: visible;
+// }
 
-tr .visible-on-select > * {
-    visibility: hidden;
-}
+// tr .visible-on-select > * {
+//     visibility: hidden;
+// }
 
-tr.selected .visible-on-select > * {
-    visibility: visible;
-}
+// tr.selected .visible-on-select > * {
+//     visibility: visible;
+// }
 
 tr div.actions {
     visibility: hidden;

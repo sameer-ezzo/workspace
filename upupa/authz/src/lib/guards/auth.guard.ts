@@ -1,47 +1,70 @@
 import { inject, InjectionToken, Injector, PLATFORM_ID, runInInjectionContext } from "@angular/core";
-import { ActivatedRouteSnapshot, CanActivateFn, RouterStateSnapshot } from "@angular/router";
+import { ActivatedRoute, ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from "@angular/router";
 import { AuthService } from "@upupa/auth";
 import { AuthorizationService } from "../authorization.service";
 import { firstValueFrom } from "rxjs";
 import { isPlatformServer } from "@angular/common";
 
-export const LOGIN_REDIRECT = new InjectionToken<() => void>("LOGIN_REDIRECT");
-export const FORBIDDEN_REDIRECT = new InjectionToken<() => void>("FORBIDDEN_REDIRECT");
+export type AuthGuardOptions = {
+    path?: string;
+    action?: string;
+    payload?: unknown;
+    query?: unknown;
+    ctx?: unknown;
+    loginRedirect?: () => void;
+    forbiddenRedirect?: () => void;
+};
+const defaultLoginRedirect = () => {
+    const router = inject(Router);
+    const route = inject(ActivatedRoute);
+    const redirectTo = router.routerState.snapshot.root.queryParams["redirectTo"] ?? route.snapshot.url.join("/");
 
-export const authGuardFn: CanActivateFn = async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-    if (isPlatformServer(PLATFORM_ID)) {
-        // If not in browser, we don't need to check auth. To avoid having login page rendered if the user is logged in.
-        // on the server side there is no auth token stored in local storage therefore the user is not logged in. while he is logged in on the client side.
-        return true;
-    }
+    router.navigate(["/login"], { queryParams: redirectTo ? { redirectTo } : null });
+};
 
-    const authService = inject(AuthService);
-    const authz = inject(AuthorizationService);
-    const injector = inject(Injector);
-    const loginRedirect = inject(LOGIN_REDIRECT, { optional: true });
-    const forbiddenRedirect = inject(FORBIDDEN_REDIRECT, { optional: true });
+const defaultForbiddenRedirect = () => {
+    const router = inject(Router);
+    router.navigateByUrl("/forbidden");
+};
+export const authGuardFn = (options: AuthGuardOptions) => {
+    let { path, action, payload, query, ctx, loginRedirect, forbiddenRedirect } = options;
+    loginRedirect = loginRedirect || defaultLoginRedirect;
+    forbiddenRedirect = forbiddenRedirect || defaultForbiddenRedirect;
 
-    const user = await firstValueFrom(authService.user$);
-    if (!user) {
-        runInInjectionContext(injector, loginRedirect);
-        return false;
-    }
-
-    const path = route.data["$path"];
-    const action = route.data["$action"];
-    const payload = route.data["$payload"];
-    const query = route.queryParams["query"] || null;
-    const ctx = route.data["ctx"] || null;
-    if (path) {
-        const res = await authz.authorize(path, action, user, payload, query, ctx);
-        if (res.access === "deny") {
-            runInInjectionContext(injector, forbiddenRedirect);
-            return false;
-        }
-        if (res.access === "grant") {
+    return async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+        if (isPlatformServer(PLATFORM_ID)) {
+            // If not in browser, we don't need to check auth. To avoid having login page rendered if the user is logged in.
+            // on the server side there is no auth token stored in local storage therefore the user is not logged in. while he is logged in on the client side.
             return true;
         }
-    }
 
-    return true;
+        const authService = inject(AuthService);
+        const authz = inject(AuthorizationService);
+        const injector = inject(Injector);
+
+        const user = await firstValueFrom(authService.user$);
+        if (!user) {
+            runInInjectionContext(injector, loginRedirect);
+            return false;
+        }
+
+        path = path || route.data["$path"];
+        action = action || route.data["$action"];
+        payload = payload || route.data["$payload"];
+        query = query || route.queryParams["query"] || null;
+        ctx = ctx || route.data["ctx"] || null;
+
+        if (path) {
+            const res = await authz.authorize(path, action, user, payload, query, ctx);
+            if (res.access === "deny") {
+                runInInjectionContext(injector, forbiddenRedirect);
+                return false;
+            }
+            if (res.access === "grant") {
+                return true;
+            }
+        }
+
+        return true;
+    };
 };
