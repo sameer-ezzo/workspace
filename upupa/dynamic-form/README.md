@@ -6,7 +6,7 @@ A library for dynamically generating forms in Angular applications.
 
 *   Generate forms based on a configuration object (schema).
 *   Supports different input types.
-*   Themable component structure (requires a theme implementation, e.g., `@upupa/dynamic-form-native-theme`).
+*   Themable component structure (requires a theme implementation, e.g., `@upupa/dynamic-form-material-theme`).
 *   Conditional logic for fields.
 *   Data collection capabilities (likely via `CollectorComponent` or `DataFormComponent`).
 
@@ -16,16 +16,16 @@ A library for dynamically generating forms in Angular applications.
 
 *   Angular v18.2.1 or later.
 *   Node.js (LTS version recommended).
-*   A theme implementation (e.g., `@upupa/dynamic-form-native-theme`).
+*   A theme implementation (e.g., `@upupa/dynamic-form-material-theme`).
 
 **Steps:**
 
 1.  Install the core library and a theme (e.g., native theme):
 
     ```bash
-    npm install @upupa/dynamic-form @upupa/dynamic-form-native-theme
+    npm install @upupa/dynamic-form @upupa/dynamic-form-material-theme
     # or
-    yarn add @upupa/dynamic-form @upupa/dynamic-form-native-theme
+    yarn add @upupa/dynamic-form @upupa/dynamic-form-material-theme
     ```
 
 2.  Configure the library in your application (e.g., `app.config.ts` for standalone apps):
@@ -35,7 +35,7 @@ A library for dynamically generating forms in Angular applications.
     import { provideRouter } from '@angular/router';
     import { provideHttpClient } from '@angular/common/http';
     import { provideDynamicForm } from '@upupa/dynamic-form';
-    import { DF_NATIVE_THEME_INPUTS, NATIVE_THEME_NAME } from '@upupa/dynamic-form-native-theme';
+    import { DF_NATIVE_THEME_INPUTS, NATIVE_THEME_NAME } from '@upupa/dynamic-form-material-theme';
 
     import { appRoutes } from './app.routes';
 
@@ -92,7 +92,7 @@ A library for dynamically generating forms in Angular applications.
     }
     ```
 
-2.  **Define the Form Schema:** Create a `FormScheme` object that defines the fields, types, validations, and layout of your form. The available `type` values depend on the registered theme (`@upupa/dynamic-form-native-theme` in this example).
+2.  **Define the Form Schema:** Create a `FormScheme` object that defines the fields, types, validations, and layout of your form. The available `type` values depend on the registered theme (`@upupa/dynamic-form-material-theme` in this example).
 
 3.  **Use the Component:** Add the `<upupa-dynamic-form>` (or `<upupa-data-form>`) tag to your template, binding the `scheme` input and optionally listening to `valueChange` or other outputs.
 

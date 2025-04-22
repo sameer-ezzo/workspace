@@ -20,7 +20,6 @@ Here's a brief overview of the likely purpose of each library based on its name:
 -   `@upupa/common`: Foundational utilities, services, base components, directives, pipes. (See its README for details)
 -   `@upupa/dynamic-form`: Core library for generating forms dynamically from configuration.
 -   `@upupa/dynamic-form-material-theme`: Material Design theme/components for `@upupa/dynamic-form`.
--   `@upupa/dynamic-form-native-theme`: Basic/native theme/components for `@upupa/dynamic-form`.
 -   `@upupa/auth`: Handles frontend authentication logic (login forms, token storage, session management).
 -   `@upupa/authz`: Likely provides directives or services for checking authorization/permissions in the UI.
 -   `@upupa/permissions`: Related to managing or displaying user permissions.
