@@ -49,8 +49,9 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansion";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 import { FormScheme } from "./types";
-import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+
 import { LoadDirective } from "./load.directive";
+import { ParagraphComponent } from "@upupa/dynamic-form-material-theme";
 
 @Pipe({
     name: "orderedKeyValue",
@@ -119,8 +120,8 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
-        DynamicFormNativeThemeModule,
         DynamicFormFieldComponent,
+        ParagraphComponent,
         MatExpansionModule,
         LoadDirective,
     ],

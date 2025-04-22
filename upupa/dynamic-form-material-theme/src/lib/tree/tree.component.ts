@@ -1,10 +1,8 @@
 import { Component, Input, forwardRef, SimpleChanges } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
-
 import { NestedTreeControl } from "@angular/cdk/tree";
 import { DataAdapter, NormalizedItem } from "@upupa/data";
 import { HierarchicalNode } from "./hierarchy";
-import { map } from "rxjs/operators";
 import { MatTreeNestedDataSource } from "@angular/material/tree";
 
 /*

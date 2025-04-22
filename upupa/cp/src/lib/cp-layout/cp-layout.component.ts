@@ -8,9 +8,9 @@ import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansi
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { ToolbarUserMenuComponent } from "../tool-bar-user-menu/tool-bar-user-menu.component";
 import { RouterModule } from "@angular/router";
-import { CommonModule, isPlatformBrowser, isPlatformServer } from "@angular/common";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
-import { AuthorizeModule, AuthzDirective } from "@upupa/authz";
+import { AuthorizeActionDirective, AuthzDirective } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
 import { MatDivider } from "@angular/material/divider";
@@ -33,11 +33,11 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
         ToolbarUserMenuComponent,
         RouterModule,
         MatSidenavModule,
-        AuthorizeModule,
         MatExpansionModule,
         MatDivider,
         PortalComponent,
         AuthzDirective,
+        AuthorizeActionDirective,
     ],
     templateUrl: "./cp-layout.component.html",
     styleUrls: ["./cp-layout.component.scss"],
@@ -68,7 +68,7 @@ export class CpLayoutComponent {
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     _isSidebarOpened() {
-        return this.isBrowser ? localStorage.getItem("isSidebarOpened") === "true" : true;
+        return this.isBrowser && localStorage.getItem("isSidebarOpened") !== "false";
     }
     isSidebarOpened = input<boolean, boolean>(this._isSidebarOpened(), { transform: (v) => v ?? this._isSidebarOpened() });
 

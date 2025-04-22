@@ -27,3 +27,4 @@ export * from "./lib/open-form-dialog.fun";
 
 export * from "./lib/image.cell";
 export * from "./lib/base-url.pipe";
+export * from "../../authz/src/lib/guards/guards";

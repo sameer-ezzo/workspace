@@ -1,7 +1,7 @@
 import { Component, forwardRef, inject, input, computed, model, ComponentRef } from "@angular/core";
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, Validator, AbstractControl, NG_VALIDATORS, ValidationErrors } from "@angular/forms";
 import { PortalComponent } from "@upupa/common";
-import { ParagraphComponent } from "@upupa/dynamic-form-native-theme";
+import { ParagraphComponent } from "@upupa/dynamic-form-material-theme";
 import { DynamicFormService } from "./dynamic-form.service";
 import { FieldRef } from "./field-ref";
 import { ComponentType } from "@angular/cdk/portal";

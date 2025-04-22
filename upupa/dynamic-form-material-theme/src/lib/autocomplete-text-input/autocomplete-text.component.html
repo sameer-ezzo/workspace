@@ -15,7 +15,7 @@
             [formControl]="control()"
             [placeholder]="placeholder()"
         />
-        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="optionSelected($event)">
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="select($event.option.value)">
             @for (item of adapter().normalized(); track item) {
                 <mat-option [value]="item.display">
                     @if (item.image) {

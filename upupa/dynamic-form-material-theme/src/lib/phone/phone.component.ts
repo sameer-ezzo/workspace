@@ -1,11 +1,30 @@
 import { CommonModule } from "@angular/common";
 import { Component, forwardRef } from "@angular/core";
+import { ElementRef, input, viewChild, model, inject } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { ErrorsDirective } from "@upupa/common";
-import { PhoneInputComponent } from "@upupa/dynamic-form-native-theme";
 
+import { fromEvent, merge, Subscription } from "rxjs";
+import { InputDefaults } from "../defaults";
+// import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
+// import * as libphonenumber from "google-libphonenumber";
+import { InputBaseComponent } from "@upupa/common";
+import { takeWhile, tap } from "rxjs/operators";
+import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
+import { DOCUMENT } from "@angular/common";
+import { loadScript } from "@noah-ark/common";
+
+declare const libphonenumber: any;
+
+export type PhoneNumber = {
+    raw: string;
+    number: string;
+    code: string;
+    countryCode: number;
+    isValid: boolean;
+};
 @Component({
     selector: "mat-form-phone-input",
     templateUrl: "./phone.component.html",
@@ -17,8 +36,164 @@ import { PhoneInputComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
 })
-export class MatPhoneInputComponent extends PhoneInputComponent {
+export class MatPhoneInputComponent extends InputBaseComponent {
+    inlineError = true;
 
+    numberInput = viewChild<ElementRef>("input");
+    appearance = input<MatFormFieldAppearance>(InputDefaults.appearance);
+    floatLabel = input<FloatLabelType>(InputDefaults.floatLabel);
+    placeholder = input("(xxx) xxx xx xx");
+
+    type = input("phone");
+    label = input("");
+    hint = input("");
+    readonly = input(false);
+
+    countriesService = null; //new FilterService(countries, ["name", "name", "phone_code"]);
+
+    private phoneNumberUtil;
+
+    async ngOnInit() {
+        await loadScript(this.doc, "https://cdnjs.cloudflare.com/ajax/libs/google-libphonenumber/3.2.40/libphonenumber.min.js");
+
+        this.phoneNumberUtil = libphonenumber.PhoneNumberUtil.getInstance();
+    }
+
+    //TODO
+    // override _updateViewModel() {
+    //     if (this.value) {
+    //         const res = this._getNumber(this.value());
+    //         if (!res) return;
+    //         if (res.formatted) {
+    //             this.number.set(res.number);
+    //             this.country = this.countriesService.all.find((x) => x.phone_code === `${res.code}`);
+    //         }
+
+    //         this.country = this.countriesService.all?.[0];
+    //     }
+    // }
+
+    filterClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    number = model<string>("");
+
+    private async _getNumber(value: string): Promise<PhoneNumber & { formatted: string }> {
+        await loadScript(this.doc, "https://cdnjs.cloudflare.com/ajax/libs/google-libphonenumber/3.2.40/libphonenumber.min.js");
+        if (value?.length === 0) return null;
+        let ph_no: any;
+        try {
+            ph_no = this.phoneNumberUtil.parseAndKeepRawInput(value, this.country.phone_code.toUpperCase());
+        } catch (e) {
+            // this.control().setErrors({ 'invalid-no': true });
+            return null;
+        }
+
+        const isValidNo = this.phoneNumberUtil.isValidNumber(ph_no);
+
+        if (!isValidNo) {
+            // this.control().setErrors({ 'invalid-no': true });
+
+            return {
+                raw: ph_no.getRawInput(),
+                countryCode: ph_no.getCountryCode(),
+                isValid: this.phoneNumberUtil.isValidNumber(ph_no),
+                formatted: this.phoneNumberUtil.format(ph_no, libphonenumber.PhoneNumberFormat.E164),
+                code: `${ph_no.getCountryCode()}`,
+                number: ph_no.getNationalNumberOrDefault().toString(),
+            };
+        } else {
+            // this.control().setErrors(null);
+
+            return {
+                raw: ph_no.getRawInput(),
+                countryCode: ph_no.getCountryCode(),
+                isValid: this.phoneNumberUtil.isValidNumber(ph_no),
+                formatted: this.phoneNumberUtil.format(ph_no, libphonenumber.PhoneNumberFormat.E164),
+                code: `${ph_no.getCountryCode()}`,
+                number: ph_no.getNationalNumberOrDefault().toString(),
+            };
+        }
+    }
+
+    async onNumberInputChange(event, _value: string) {
+        if (!this.numberInput()) return;
+        this.number.set(this.numberInput().nativeElement.value.trim());
+
+        _value = _value.startsWith("+") ? _value : this.country?.phone_code ? `+${this.country.phone_code}${_value}` : _value;
+
+        if (this.number().length < 3) return this.handleUserInput(_value);
+        try {
+            const r = await this._getNumber(_value);
+            this.handleUserInput(r.formatted);
+        } catch (error) {}
+    }
+
+    private _country: any = []; // this.countriesService.all[0];
+    public get country(): any {
+        return this._country;
+    }
+    public set country(v: any) {
+        this._country = v;
+        // this.onNumberInputChange(this.number());
+    }
+
+    showCodes = false;
+    id = `${Math.random()}`.substring(2);
+    filterCountries(f: string) {
+        //this.countriesService.filter = f;
+    }
+
+    onOverlayClick($event) {
+        if ($event.target.id === this.id) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            this.toggleCodes(false);
+        }
+    }
+
+    private readonly doc = inject(DOCUMENT);
+    setPosition() {
+        const trigger = this.doc.getElementById("codes-trigger");
+        const rec = trigger.getBoundingClientRect();
+        const panel = this.doc.getElementById(this.id);
+        const box = panel.querySelector(`#box`) as HTMLDivElement;
+        box.style.top = `${rec.top + rec.height + 10}px`;
+        box.style.left = `${rec.left}px`;
+
+        panel.style.display = "inline-block";
+    }
+
+    sub: Subscription;
+    private readonly scroll$ = fromEvent(window, "scroll");
+    private readonly resize$ = fromEvent(window, "resize");
+    reposition$ = merge(this.scroll$, this.resize$).pipe(
+        takeWhile(() => this.showCodes === true),
+        tap(() => this.setPosition()),
+    );
+
+    toggleCodes(f: boolean = undefined) {
+        this.showCodes = f != undefined ? f : !this.showCodes;
+        if (this.showCodes === true) {
+            this.setPosition();
+            this.sub = this.reposition$.subscribe(() => {});
+
+            setTimeout(() => this.doc.getElementById(`${this.id}-input`)?.focus(), 250);
+        } else {
+            if (this.sub) this.sub.unsubscribe();
+            this.doc.getElementById(this.id).style.display = "none";
+        }
+    }
+
+    enterOnFilter(event) {
+        //if (this.countriesService.filtered?.length > 0) this.country = this.countriesService.filtered[0];
+        this.toggleCodes(false);
+    }
+
+    filter_arrowup(event) {}
+    filter_arrowdown(event) {}
 }

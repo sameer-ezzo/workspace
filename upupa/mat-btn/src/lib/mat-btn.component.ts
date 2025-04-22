@@ -3,14 +3,14 @@ import { Component, output, input, computed, runInInjectionContext, Injector, in
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatBadgeModule } from "@angular/material/badge";
-import { AuthorizeModule } from "@upupa/authz";
+
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-
+import { AuthorizeActionDirective } from "@upupa/authz";
 @Component({
     selector: "mat-btn",
     templateUrl: "./mat-btn.component.html",
-    imports: [AuthorizeModule, MatButtonModule, MatIconModule, MatBadgeModule, MatProgressSpinnerModule],
+    imports: [MatButtonModule, MatIconModule, AuthorizeActionDirective, MatBadgeModule, MatProgressSpinnerModule],
     host: {
         "[attr.disabled]": "isDisabled()",
     },

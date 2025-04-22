@@ -10,10 +10,9 @@ import {
     NgControl,
     NgForm,
     ReactiveFormsModule,
-    Validator,
 } from "@angular/forms";
 import { MatFormField, MatFormFieldControl } from "@angular/material/form-field";
-import { PasswordStrength, verifyPassword } from "@upupa/auth";
+import { PasswordStrength } from "@noah-ark/common";
 import { Subject } from "rxjs";
 
 class Password {
@@ -53,7 +52,7 @@ class Password {
         role: "group",
         "[attr.aria-describedby]": "describedBy",
         "[attr.aria-labelledby]": "parentFormField?.getLabelId()",
-    }
+    },
 })
 export class PasswordInput implements ControlValueAccessor {
     static nextId = 0;

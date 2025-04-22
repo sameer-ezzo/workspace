@@ -1,11 +1,10 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, forwardRef } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 
-import { ErrorsDirective } from "@upupa/common";
-import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 
 @Component({
     selector: "mat-form-calendar-input",
@@ -30,6 +29,25 @@ import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
                 min-height: 300px;
             }
         `,
-    ]
+    ],
 })
-export class MatCalendarInputComponent extends DateInputComponent {}
+export class MatCalendarInputComponent extends InputBaseComponent<Date> {
+    inlineError = true;
+
+    placeholder = input("");
+
+    label = input("");
+    hint = input("");
+    readonly = input(false);
+
+    now = new Date();
+
+    min = input<Date | number | null>(null);
+    max = input<Date | number | null>(null);
+
+    setDate(value: string) {
+        const date = new Date(value);
+        this.value.set(date);
+        this.control()?.setValue(this.value());
+    }
+}

@@ -8,7 +8,7 @@ import { catchError, map, of, switchMap } from "rxjs";
 import { DOCUMENT } from "@angular/common";
 import { makeEnvironmentProviders } from "@angular/core";
 
-const userImageProvider = {
+export const DEFAULT_USER_AVATAR_PROVIDER = {
     provide: USER_PICTURE_RESOLVER,
     useFactory: (auth: AuthService, data: DataService, document) => {
         if (!auth.user$) return of(getUserInitialsImage(document, ""));
@@ -29,7 +29,7 @@ export function provideControlPanel(
     options: {
         providers?: any[];
     } = {
-        providers: [userImageProvider],
+        providers: [DEFAULT_USER_AVATAR_PROVIDER],
     },
 ) {
     return makeEnvironmentProviders([
@@ -37,7 +37,7 @@ export function provideControlPanel(
             provide: CP_OPTIONS,
             useValue: options ?? {},
         },
-        userImageProvider,
+        DEFAULT_USER_AVATAR_PROVIDER,
         ...(options.providers ?? []),
     ]);
 }

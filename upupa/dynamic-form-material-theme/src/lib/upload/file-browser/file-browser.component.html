@@ -1,0 +1,48 @@
+<mat-drawer-container autosize style="flex: 1">
+    <mat-drawer #editPanel class="sidenav" [opened]="focused() !== undefined" mode="push" position="end">
+        <!-- Edit File info and meta -->
+    </mat-drawer>
+    <mat-drawer-content>
+        <mat-toolbar class="toolbar">
+            <mat-icon>folder_open</mat-icon> &nbsp; <span>/</span>
+            @for (s of segments(); track $index) {
+                <span>{{ s }}</span>
+            }
+
+            <button mat-raised-button color="primary" class="mbe-1" type="button" (click)="selectFile(fileSelect)"><mat-icon>upload_file</mat-icon> Upload</button>
+            <span class="spacer"></span>
+            <!-- add native search input paced inside wrapper -->
+            <!-- <div class="search-wrapper">
+                <input #searchInput matInput placeholder="Search" [value]="q" (input)="q$.next(searchInput.value)">
+            </div> -->
+
+            <mat-button-toggle-group #viewGroup="matButtonToggleGroup" [value]="view()" (change)="view.set($event.value)">
+                <mat-button-toggle value="list">
+                    <mat-icon>list</mat-icon>
+                </mat-button-toggle>
+                <mat-button-toggle value="grid">
+                    <mat-icon>grid_on</mat-icon>
+                </mat-button-toggle>
+            </mat-button-toggle-group>
+            @if (focused() !== undefined) {
+                <button mat-icon-button (click)="editPanel.toggle()">
+                    <mat-icon>{{ editPanel.opened ? "close" : "edit" }}</mat-icon>
+                </button>
+            }
+        </mat-toolbar>
+
+        <file-select #fileSelect [hideSelectButton]="true" [readonly]="false" [maxAllowedFiles]="maxAllowedFiles" (events)="onFileEvent($event)" [value]="files()" [view]="view()" [path]="path()"></file-select>
+
+        <mat-paginator
+            (page)="adapter.load({ page: $event })"
+            [pageIndex]="adapter.page().pageIndex"
+            [length]="adapter.page().length"
+            [pageSize]="adapter.page().pageSize"
+            showFirstLastButtons
+        ></mat-paginator>
+
+        <!-- [disabled]="(loading$ | async) === true"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)"  -->
+    </mat-drawer-content>
+</mat-drawer-container>

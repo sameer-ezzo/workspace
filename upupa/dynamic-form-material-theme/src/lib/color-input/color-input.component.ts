@@ -1,10 +1,11 @@
 import { CommonModule } from "@angular/common";
-import { Component, forwardRef } from "@angular/core";
+import { Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { ErrorsDirective } from "@upupa/common";
-import { ColorInputComponent } from "@upupa/dynamic-form-native-theme";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
+import { InputDefaults } from "../defaults";
+
 // import { jscolor } from '@eastdesire/jscolor'
 
 @Component({
@@ -18,9 +19,22 @@ import { ColorInputComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
 })
-export class MatColorInputComponent extends ColorInputComponent {
+export class MatColorInputComponent extends InputBaseComponent<string> {
+    appearance = input(InputDefaults.appearance);
+    floatLabel = input(InputDefaults.floatLabel);
+    placeholder = input("");
+
+    label = input("");
+    hint = input("");
+    readonly = input(false);
+
+    inputChange(target: EventTarget, closable: { close: () => void } & any) {
+        this.value.set((target as HTMLInputElement).value);
+        closable.close();
+    }
+
     // myPicker
     ngOnInit(): void {
         // this.myPicker = new jscolor('#colorInput1', { format: 'rgba' });

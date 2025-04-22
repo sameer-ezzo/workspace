@@ -4,7 +4,7 @@ import { FileInfo } from "@noah-ark/common";
 import { DialogService } from "@upupa/dialog";
 import { BaseUrlPipe } from "./base-url.pipe";
 import { UploadClient } from "@upupa/upload";
-import { ImageViewerComponent } from "@upupa/dynamic-form-native-theme";
+import { ImageViewerComponent } from "@upupa/dynamic-form-material-theme";
 
 @Component({
     standalone: true,

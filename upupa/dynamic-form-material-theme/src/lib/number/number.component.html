@@ -4,10 +4,10 @@
     }
     <input
         matInput
-        #input
+        #numInput
         type="number"
         [value]="value()"
-        (input)="value.set(input.value)"
+        (input)="value.set(+numInput.value)"
         [formControl]="control()"
         [attr.name]="name()"
         [readonly]="readonly()"
