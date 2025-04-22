@@ -45,10 +45,8 @@ An Angular library for handling authorization based on rules and user principles
       providers: [
         provideHttpClient(),
         // ... other providers (including auth)
-        {
-          provide: PERMISSIONS_BASE_URL,
-          useValue: '/api/permissions' // Your backend endpoint for authz rules
-        }
+        // Your backend endpoint for authz rules (when using ss RulesModule the permissions controller is on http://localhost:SS_APP_PORT/permissions)
+        provideAuthorization(`${environment.baseUrl}/permissions`)
       ],
     };
     ```

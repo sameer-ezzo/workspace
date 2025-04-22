@@ -32,7 +32,7 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
             this.propagateChange();
         } else {
             const control = this.control();
-            if (control?.value !== v) control.setValue(v);
+            if (control && control.value !== v) control.setValue(v);
         }
     }
 
