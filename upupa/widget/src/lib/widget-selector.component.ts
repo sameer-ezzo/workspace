@@ -21,7 +21,7 @@ import { createDataAdapter } from "@upupa/data";
             border: 1px solid var(--mat-sys-outline-variant);
             padding: 0.5rem;
             background: var(--mat-sys-surface-container-high);
-            border-radius: var(--mat-sys-shape-small);
+            border-radius: var(--mat-sys-corner-small);
             cursor: pointer;
         }
 
@@ -30,7 +30,7 @@ import { createDataAdapter } from "@upupa/data";
         }
         input {
             border: none;
-            border-radius: 0;
+            border-radius: var(--mat-sys-corner-small);
             background: none;
         }
 

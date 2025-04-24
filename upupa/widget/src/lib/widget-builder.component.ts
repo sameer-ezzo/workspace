@@ -59,12 +59,12 @@ export class InputsViewModel {
                 // --tw-gradient-to: rgb(229 231 235 / 0) var(--tw-gradient-to-position);
                 // --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
                 // background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-                border-radius: var(--mat-sys-shape-corner);
+                border-radius: var(--mat-sys-corner-large);
                 border: 1px solid var(--mat-sys-outline-variant);
                 position: relative;
             }
             .grid-stack-item-content {
-                border-radius: 8px;
+                border-radius: var(--mat-sys-corner-large);
                 cursor: grab;
                 border: 1px solid var(--mat-sys-outline-variant);
                 background: var(--mat-sys-surface-container-low);

@@ -32,7 +32,6 @@
 //     );
 // }
 
-
 // @media (prefers-color-scheme: dark) {
 //     html {
 //         color-scheme: dark;
@@ -49,9 +48,8 @@
 //             ),
 //             $overrides: ('surface': rgb(22, 22, 22), 'background': rgb(22, 22, 22), 'on-surface': #e0e0e0)
 //         );
-//     }   
-// }   
-
+//     }
+// }
 
 main {
     height: 100vh;
@@ -90,7 +88,7 @@ main {
         box-sizing: border-box;
         margin: 0;
 
-        border-radius: var(--mat-expansion-container-shape, 12px);
+        border-radius: var(--mat-sys-corner-medium);
         &:hover,
         &.active,
         &:focus-within {

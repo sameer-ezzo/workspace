@@ -12,7 +12,7 @@
         flex: 1 1 auto;
         overflow-y: auto;
         border: 2px dashed #b2b2b2;
-        border-radius: 4px;
+        border-radius: var(--mat-sys-corner-small);
         transition: all 200ms ease-in;
         position: relative;
         cursor: pointer;
@@ -39,7 +39,7 @@
         }
     }
 
-    fieldset{
+    fieldset {
         padding: 1rem;
     }
     .drop-zone.dragging {

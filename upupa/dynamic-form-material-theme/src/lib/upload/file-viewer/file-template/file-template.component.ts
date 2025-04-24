@@ -226,7 +226,7 @@ export class FileTemplateComponent {
             img {
                 max-width: 100%;
                 max-height: 100%;
-                border-radius: 8px;
+                border-radius: var(--mat-sys-corner-small);
             }
         `,
     ],

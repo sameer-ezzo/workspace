@@ -3,7 +3,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot, CanActivateFn, Router, RouterSt
 import { AuthService } from "@upupa/auth";
 import { AuthorizationService } from "../authorization.service";
 import { firstValueFrom } from "rxjs";
-import { isPlatformServer } from "@angular/common";
+import { isPlatformServer, Location } from "@angular/common";
 
 export type AuthGuardOptions = {
     path?: string;
@@ -14,12 +14,16 @@ export type AuthGuardOptions = {
     loginRedirect?: () => void;
     forbiddenRedirect?: () => void;
 };
-const defaultLoginRedirect = () => {
+export const defaultLoginRedirect = (loginRoute: string | string[] = ["/login"], redirectToParamName = "redirectTo") => {
     const router = inject(Router);
     const route = inject(ActivatedRoute);
-    const redirectTo = router.routerState.snapshot.root.queryParams["redirectTo"] ?? route.snapshot.url.join("/");
+    const location = inject(Location);
+    const qps = route.snapshot.queryParams;
+    let redirectTo = ((redirectToParamName ? (qps[redirectToParamName] ?? location.path()) : location.path()) || "").trim();
 
-    router.navigate(["/login"], { queryParams: redirectTo ? { redirectTo } : null });
+    redirectTo = redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`;
+
+    router.navigate(Array.isArray(loginRoute) ? loginRoute : [loginRoute], { queryParams: { ...qps, redirectTo } });
 };
 
 const defaultForbiddenRedirect = () => {
