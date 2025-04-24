@@ -1,7 +1,8 @@
 import { ObjectId } from "@noah-ark/common";
 import { formInput, formInputArray } from "@upupa/dynamic-form";
 import { column } from "@upupa/table";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from "@noah-ark/common";
+
 import { adapterSubmit, closeDialogOrNavigateTo } from "../adapter-submit.fun";
 import { createButton, editButton } from "../buttons/form-dialog-btn.component";
 import { deleteButton } from "../buttons/helpers";

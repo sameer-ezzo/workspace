@@ -10,11 +10,10 @@ import {
     inject,
     input,
     model,
-    output,
     runInInjectionContext,
     viewChild,
 } from "@angular/core";
-import { createDataAdapter, DataAdapter, DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
+import { createDataAdapter, DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
 import { _defaultControl, DynamicComponent, PortalComponent } from "@upupa/common";
 

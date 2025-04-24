@@ -8,7 +8,8 @@ import { firstValueFrom } from "rxjs";
 
 import { NgControl } from "@angular/forms";
 import { DataFormComponent, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from "@noah-ark/common";
+
 
 @Component({
     selector: "embed-translation-btn",

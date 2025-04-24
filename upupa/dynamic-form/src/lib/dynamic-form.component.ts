@@ -35,7 +35,7 @@ import {
 } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { Subscription } from "rxjs";
-import { _defaultControl, EventBus, UtilsModule } from "@upupa/common";
+import { _defaultControl, EventBus } from "@upupa/common";
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormModuleOptions } from "./dynamic-form.options";
@@ -52,6 +52,7 @@ import { FormScheme } from "./types";
 
 import { LoadDirective } from "./load.directive";
 import { ParagraphComponent } from "@upupa/dynamic-form-material-theme";
+import { MatIconModule } from "@angular/material/icon";
 
 @Pipe({
     name: "orderedKeyValue",
@@ -116,7 +117,6 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     imports: [
         OrderedKeyValuePipe,
         CommonModule,
-        UtilsModule,
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
@@ -124,6 +124,7 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
         ParagraphComponent,
         MatExpansionModule,
         LoadDirective,
+        MatIconModule,
     ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
