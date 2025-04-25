@@ -81,9 +81,19 @@ export function provideTableRoute<T = unknown>(config: Route & TableConfig<T>, .
     return provideRoute(config, withTableComponent(config), ...features);
 }
 
+/**
+ * @deprecated Use `withHeader` instead.
+ */
 export function withTableHeader(showSearch: boolean, ...inlineEndSlot: (DynamicComponent | Class)[]): DynamicComponent {
     return {
         component: TableHeaderComponent,
         inputs: { showSearch, inlineEndSlot: inlineEndSlot.map((c) => ("component" in c ? c : { component: c })) },
+    };
+}
+
+export function withHeader(showSearch: boolean, ...components: (DynamicComponent | Class | "spacer")[]): DynamicComponent {
+    return {
+        component: TableHeaderComponent,
+        inputs: { showSearch, components },
     };
 }

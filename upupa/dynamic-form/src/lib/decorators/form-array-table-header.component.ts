@@ -17,7 +17,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
                 gap: 0.25rem;
             }
 
-            #search-box-wrapper {
+            .search-box-wrapper {
                 min-height: 40px; /* to prevent jumping when no actions are present */
                 width: 100%; /* use all parent width */
                 padding: 0 0.5rem;
@@ -66,7 +66,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
     imports: [PortalComponent, MatIconModule, FormsModule, MatButtonModule],
     template: `
         @if (showSearch()) {
-            <div id="search-box-wrapper">
+            <div class="search-box-wrapper">
                 <input
                     style="background: transparent; outline: none; border: none; display: flex; flex: 1"
                     placeholder="Search"
@@ -87,7 +87,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
             }
             <ng-content select></ng-content>
         </div>
-    `
+    `,
 })
 export class ArrayFormTableHeaderComponent {
     injector = inject(Injector);
