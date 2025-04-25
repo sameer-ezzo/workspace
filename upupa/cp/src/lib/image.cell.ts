@@ -70,7 +70,7 @@ export class ImageCellTemplate {
         transform: (files) =>
             files.map((f) => {
                 const file: FileInfo = { ...f };
-                file.path = f.path.startsWith("http") ? f.path : `${this.upload.baseOrigin}${f.path}`;
+                if (f.path) file.path = f.path.startsWith("http") ? f.path : `${this.upload.baseOrigin}${f.path}`;
                 return file;
             }),
     });
