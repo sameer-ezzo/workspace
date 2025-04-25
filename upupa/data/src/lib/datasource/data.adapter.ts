@@ -414,6 +414,10 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } else return JsonPointer.get(item, property as string, ".") ?? fallback;
         } else return fallback;
     }
+    find(key: Key<T>) {
+        return this.entities().find((x) => x.key === key);
+
+    }
 }
 
 export class SmartMap<V> {
@@ -440,4 +444,5 @@ export class SmartMap<V> {
         if (t === "object") return this._weak.set(key, value);
         else return this._strong.set(key, value);
     }
+
 }

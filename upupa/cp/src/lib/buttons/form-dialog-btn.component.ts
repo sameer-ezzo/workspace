@@ -48,7 +48,7 @@ export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
 
 export function formDialogButton<TItem = unknown>(
     formVM: Class,
-    value: TItem | ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
+    value:  ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -68,7 +68,7 @@ export function formDialogButton<TItem = unknown>(
 
 export function createButton<TItem = unknown>(
     formVM: Class,
-    value: TItem | ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
+    value: ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -89,7 +89,7 @@ export function createButton<TItem = unknown>(
 
 export function editButton<TItem = unknown>(
     formVM: Class,
-    value: TItem | ((btn: FormDialogButton<TItem>) => TItem) = (btn) => btn.item(),
+    value: ((btn: FormDialogButton<TItem>) => TItem) = (btn) => btn.item(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
