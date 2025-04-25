@@ -1,21 +1,34 @@
 import {
     ActivatedRouteSnapshot,
+    ActivationEnd,
+    ActivationStart,
+    ChildActivationEnd,
+    ChildActivationStart,
+    GuardsCheckEnd,
+    GuardsCheckStart,
     InMemoryScrollingOptions,
     Navigation,
+    NavigationCancel,
     NavigationEnd,
     NavigationError,
+    NavigationSkipped,
+    NavigationStart,
     provideRouter,
     RedirectCommand,
     ResolveEnd,
     ResolveFn,
     ResolveStart,
     Route,
+    RouteConfigLoadEnd,
+    RouteConfigLoadStart,
     Router,
     RouterConfigOptions,
     RouterEvent,
     RouterFeatures,
     RouterOutlet,
     Routes,
+    RoutesRecognized,
+    Scroll,
     withComponentInputBinding,
     withDebugTracing,
     withInMemoryScrolling,
@@ -25,7 +38,7 @@ import {
 } from "@angular/router";
 import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
-import { makeEnvironmentProviders, provideAppInitializer, inject, EnvironmentProviders } from "@angular/core";
+import { makeEnvironmentProviders, provideAppInitializer, inject, EnvironmentProviders, Injector, runInInjectionContext } from "@angular/core";
 import { provideRouteOutputBinder } from "./route-output-binder";
 
 export type NamedRoute = Route & { name: string };
@@ -130,6 +143,25 @@ function flattenRouterSnapshot(route: ActivatedRouteSnapshot): ActivatedRouteSna
     return routes;
 }
 
+type Event =
+    | NavigationStart
+    | NavigationEnd
+    | NavigationCancel
+    | NavigationError
+    | RoutesRecognized
+    | GuardsCheckStart
+    | GuardsCheckEnd
+    | RouteConfigLoadStart
+    | RouteConfigLoadEnd
+    | ChildActivationStart
+    | ChildActivationEnd
+    | ActivationStart
+    | ActivationEnd
+    | Scroll
+    | ResolveStart
+    | ResolveEnd
+    | NavigationSkipped;
+
 export type EnhancedRouterConfig = RouterConfigOptions & {
     withComponentInputBinding?: boolean;
     withInMemoryScrolling?: InMemoryScrollingOptions;
@@ -137,7 +169,7 @@ export type EnhancedRouterConfig = RouterConfigOptions & {
     withDebugTracing?: boolean;
     withNavigationErrorHandler?: (error: NavigationError) => unknown | RedirectCommand;
     withRouteOutputBinder?: boolean;
-    withEventHandler?: (event: RouterEvent, route: ActivatedRouteSnapshot) => void;
+    withEventHandler?: (event: Event, route?: ActivatedRouteSnapshot) => void;
 };
 
 const DEFAULT_ROUTER_CONFIG: EnhancedRouterConfig = {
@@ -193,6 +225,7 @@ export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterCon
 
     return makeEnvironmentProviders([
         provideAppInitializer(async () => {
+            const injector = inject(Injector);
             const router = inject(Router);
             router.events.subscribe((event) => {
                 if (typeof window !== "undefined" && event instanceof NavigationEnd) {
@@ -201,9 +234,11 @@ export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterCon
 
                 if ("state" in event) {
                     const snapshots = flattenRouterSnapshot(event.state.root);
-                    for (const snapshot of snapshots) {
-                        _config.withEventHandler?.(event, snapshot);
-                    }
+                    runInInjectionContext(injector, () => {
+                        for (const snapshot of snapshots) {
+                            _config.withEventHandler?.(event, snapshot);
+                        }
+                    });
 
                     for (const snapshot of snapshots.filter((r) => r.routeConfig?.["on"])) {
                         const on = snapshot.routeConfig["on"];
@@ -215,7 +250,7 @@ export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterCon
                             }
                         }
                     }
-                }
+                } else runInInjectionContext(injector, () => _config.withEventHandler?.(event));
             });
         }),
         provideRouter(routes, ...features),
