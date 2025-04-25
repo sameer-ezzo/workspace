@@ -21,7 +21,7 @@
 
 // import { MatProgressBarModule } from "@angular/material/progress-bar";
 // import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
-// import { AuthorizeModule } from "@upupa/authz";
+
 // import { DataTableComponent } from "@upupa/table";
 
 // // const components = [];
@@ -31,7 +31,7 @@
 // //     RuleFormComponent,
 // //     RulePermissionsTableComponent,
 // //     CommonModule,
-// //     AuthorizeModule,
+
 // //     FormsModule,
 // //     RouterModule,
 // //     MatFormFieldModule,

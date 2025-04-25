@@ -62,7 +62,7 @@ export function withTableComponent<T = unknown>(config: TableConfig<T>): RouteFe
     return {
         name: "withTableComponent",
         modify: () => ({
-            component: DataListComponent,
+            loadComponent: () => import("./data-list/data-list.component").then((m) => m.DataListComponent),
             data: {
                 viewModel: config.viewModel,
                 tableHeaderComponent: config.tableHeaderComponent,

@@ -4,28 +4,28 @@ import { map } from "rxjs";
 import { AsyncPipe } from "@angular/common";
 
 @Pipe({
-    name: 'tags',
+    name: "tags",
     standalone: true,
-    pure: false
+    pure: false,
 })
-
 export class TagsPipe {
-    private readonly tagsService = inject(TagsService)
-    private readonly _asyncPipe = inject(AsyncPipe)
+    private readonly tagsService = inject(TagsService);
+    private readonly _asyncPipe = inject(AsyncPipe);
 
     transform(obj: unknown): any {
-
-        const ids = (Array.isArray(obj) ? obj : [obj]).filter(v => !!v)
-        const rx = this.tagsService.getTags().pipe(
+        const ids = (Array.isArray(obj) ? obj : [obj]).filter((v) => !!v);
+        const rx = this.tagsService._get().pipe(
             map(() =>
-            this.tagsService.getTagsByIds(ids).map(t => t?.name ?? '').join(', ')
-        )
-    )
+                this.tagsService
+                    .getTagsByIds(ids)
+                    .map((t) => t?.name ?? "")
+                    .join(", "),
+            ),
+        );
 
         return this._asyncPipe.transform(rx);
     }
 }
-
 
 // export class TagsPipe extends AsyncPipe {
 //     private readonly tagsService = inject(TagsService)

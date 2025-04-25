@@ -1,3 +1,56 @@
+// @use '@angular/material' as mat;
+
+// $typography: (
+//     plain-family: 'Source Sans 3',
+//     brand-family: 'Source Sans 3',
+//     bold-weight: 900,
+//     medium-weight: 600,
+//     regular-weight: 400,
+// );
+// $density: -2;
+
+// html {
+//     color-scheme: light;
+//     @include mat.theme(
+//         (
+//             color: (
+//                 primary: mat.$violet-palette,
+//                 tertiary: mat.$magenta-palette,
+//                 theme-type: light,
+//             ),
+
+//             typography: $typography,
+//             density: $density,
+//         ),
+//         $overrides: ('surface': rgb(230, 230, 230), 'background': rgb(230, 230, 230), 'on-surface': #2b2b2b)
+//     );
+
+//     @include mat.table-overrides(
+//         (
+//             row-item-outline-color: var(--mat-sys-outline-variant),
+//         )
+//     );
+// }
+
+// @media (prefers-color-scheme: dark) {
+//     html {
+//         color-scheme: dark;
+//         @include mat.theme(
+//             (
+//                 color: (
+//                     primary: mat.$violet-palette,
+//                     tertiary: mat.$magenta-palette,
+//                     theme-type: dark,
+//                 ),
+
+//                 typography: $typography,
+//                 density: $density,
+//             ),
+//             $overrides: ('surface': rgb(22, 22, 22), 'background': rgb(22, 22, 22), 'on-surface': #e0e0e0)
+//         );
+//     }
+// }
+
 main {
     height: 100vh;
     display: flex;
@@ -35,7 +88,7 @@ main {
         box-sizing: border-box;
         margin: 0;
 
-        border-radius: var(--mat-expansion-container-shape, 12px);
+        border-radius: var(--mat-sys-corner-medium);
         &:hover,
         &.active,
         &:focus-within {

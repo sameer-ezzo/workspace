@@ -46,7 +46,7 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
         } @else {
             {{ value() }}
         }
-    `
+    `,
 })
 export class DefaultTableCellTemplate<TValue = any, TRow = any> implements ITableCellTemplate<TValue, TRow> {
     value = input.required<TValue>();
@@ -100,7 +100,15 @@ export type LinkRouterCellInputs = {
             [routerLinkActiveOptions]="routerLink().routerLinkActiveOptions ?? { exact: true, ignoreQueryParams: true }"
             >{{ text() }}</a
         >
-    `
+    `,
+    styles: [
+        `
+            :host {
+                display: inline-block;
+                min-width: 150px;
+            }
+        `,
+    ],
 })
 export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTemplate<TValue> {
     textFn = input<(ref: RouterLinkCellTemplate) => string>();
@@ -118,7 +126,7 @@ export class RouterLinkCellTemplate<TValue = unknown> extends DefaultTableCellTe
         } @else {
             {{ value()?.[textProp()] }}
         }
-    `
+    `,
 })
 export class ObjectCellTemplate<TValue = unknown> implements ITableCellTemplate<TValue> {
     textProp = input.required<keyof TValue>();

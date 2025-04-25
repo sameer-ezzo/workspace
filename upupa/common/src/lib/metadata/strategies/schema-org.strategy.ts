@@ -14,8 +14,8 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         this.clearSchemaOrgTags();
         const fallback = metaFallback.fallback as any;
-        const schema = { ...fallback?.schema, ...meta?.schema };
-
+        const schema = { ...(fallback.schema ?? {}), ...(meta.schema ?? {}) };
+        if (!schema || !schema["@type"]) return;
         this.makeSchemaOrgTag(schema["@type"].toLocaleLowerCase(), schema);
     }
 

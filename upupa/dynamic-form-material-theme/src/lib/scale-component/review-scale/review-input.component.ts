@@ -1,8 +1,14 @@
 import { CommonModule } from "@angular/common";
-import { Component, forwardRef } from "@angular/core";
+import { Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
-import { ReviewScaleComponent } from "@upupa/dynamic-form-native-theme";
+import { MatSliderComponent } from "../slider/slider.component";
 
+function dir(el: any): "rtl" | "ltr" {
+    if (window.getComputedStyle)
+        return <any>window.getComputedStyle(el, null).getPropertyValue("direction"); // all browsers
+    else return el.currentStyle.direction; // IE5-8
+}
+const off = Number.MAX_SAFE_INTEGER;
 @Component({
     selector: "mat-form-review-input",
     templateUrl: "./review-input.component.html",
@@ -14,6 +20,53 @@ import { ReviewScaleComponent } from "@upupa/dynamic-form-native-theme";
             multi: true,
         },
     ],
-    imports: [CommonModule, FormsModule, ReactiveFormsModule]
+    imports: [CommonModule, FormsModule, ReactiveFormsModule],
 })
-export class MatReviewScaleComponent extends ReviewScaleComponent {}
+export class MatReviewScaleComponent extends MatSliderComponent {
+    readonly image = input<string>(undefined);
+
+    _offset = off;
+    _valueOffset = 600; //todo: Ramy's constant
+
+    _move(event: Event, target: any, eventArgs: { clientX: number }) {
+        event.stopPropagation();
+        const _dir = dir(target);
+        const rect = target.getClientRects()[0];
+        const percentage = this._normalizePercentage((eventArgs.clientX - rect.x) / rect.width, _dir);
+
+        this._offset = this._normalizeOffset(rect.width, percentage, _dir);
+    }
+
+    _end(event: Event, target?: any, eventArgs?: { clientX: number }) {
+        event.stopPropagation();
+
+        if (target) {
+            const _dir = dir(target);
+            const rect = target.getClientRects()[0];
+            this.percentage = this._normalizePercentage((eventArgs.clientX - rect.x) / rect.width, _dir);
+            this._valueOffset = this._normalizeOffset(rect.width, this.percentage, _dir);
+            this.propagateChange();
+        }
+
+        this._offset = off;
+    }
+
+    _normalizePercentage(percentage: number, _dir: "rtl" | "ltr") {
+        if (this.step() > 0) {
+            const interval = this.ceil() - this.floor();
+            const stepPercentage = this.step() / interval;
+            const x = percentage / stepPercentage;
+            const y = _dir === "rtl" ? Math.floor(x) : Math.ceil(x);
+            return stepPercentage * y;
+        }
+        return percentage;
+    }
+
+    _normalizeOffset(width: number, percentage: number, _dir: "rtl" | "ltr"): number {
+        let offset = 0;
+        if (_dir === "rtl") offset = percentage * width;
+        else offset = (percentage - 1) * width;
+
+        return Math.round(offset);
+    }
+}

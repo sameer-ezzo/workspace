@@ -22,6 +22,8 @@ import { MatTreeComponent } from "./tree/tree.component";
 // import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from "@angular/material/form-field";
 // import { MatTimeInputComponent } from "./time-input/time-input.component";
 import { MatCalendarInputComponent } from "./calendar-input/calendar-input.component";
+import { FileSelectComponent } from "./upload/file-select/file-select.component";
+import { LocalFileInputComponent } from "./upload/local-file-input/local-file-input.component";
 
 export const DF_MATERIAL_THEME_INPUTS = {
     text: { component: MatInputComponent },
@@ -51,8 +53,8 @@ export const DF_MATERIAL_THEME_INPUTS = {
     "date-range": { component: MatDateRangeComponent },
     select: { component: MatSelectComponent },
     textarea: { component: MatTextAreaComponent },
-    // file: { component: MatFileSelectComponent },
-    // 'local-file': { component: MatLocalFileInputComponent },
+    file: { component: FileSelectComponent },
+    "local-file": { component: LocalFileInputComponent },
     tree: { component: MatTreeComponent },
     radios: { component: MatChoicesComponent },
     array: { component: MatArrayInputComponent },

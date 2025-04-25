@@ -2,7 +2,8 @@ import { ComponentRef, computed, Injector, signal, WritableSignal } from "@angul
 import { FormGroup, FormControl } from "@angular/forms";
 import { Field } from "./types";
 import { createDataAdapter, DataAdapter } from "@upupa/data";
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from "@noah-ark/common";
+
 import { DynamicComponent } from "@upupa/common";
 
 export class FieldRef<TCom = any> {

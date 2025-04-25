@@ -1,7 +1,8 @@
 import "reflect-metadata";
 import { DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
+
+import { camelCaseToTitle } from "@upupa/common";
 import { ColumnDescriptor, ColumnsDescriptor, ColumnsDescriptorStrict } from "./types";
-import { toTitleCase } from "@upupa/common";
 import { DatePipe } from "@angular/common";
 
 const dataListInputsMetadataKey = Symbol("custom:data_list_view_model_inputs");
@@ -51,7 +52,7 @@ export function secondaryRow(options: ColumnDescriptor = { visible: true }) {
                 ...secondaryRows,
                 [key]: {
                     ...options,
-                    header: options.header ?? toTitleCase(propertyKey),
+                    header: options.header ?? camelCaseToTitle(propertyKey),
                     template: normalizedTemplate,
                 },
             },
@@ -64,7 +65,7 @@ export function column(options: ColumnDescriptor = { visible: true }) {
         const inputs = reflectTableViewModel(target.constructor);
         const columns = !inputs?.columns ? [] : Array.isArray(inputs.columns) ? Array.from(inputs.columns) : Object.entries(inputs.columns);
 
-        const text = options.header ?? toTitleCase(propertyKey);
+        const text = options.header ?? camelCaseToTitle(propertyKey);
         options.header = text;
         const key = options.displayPath ?? propertyKey;
         if (options.pipe === undefined) {

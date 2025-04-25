@@ -4,7 +4,7 @@
     "peerDependencies": {
         "@angular/common": "^18.2.1",
         "@angular/core": "^18.2.1",
-        "@upupa/dynamic-form-native-theme": "0.0.1"
+        "@upupa/dynamic-form-material-theme": "0.0.1"
     },
     "dependencies": {
         "tslib": "^2.6.1"

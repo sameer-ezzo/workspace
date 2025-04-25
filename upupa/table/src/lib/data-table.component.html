@@ -53,7 +53,7 @@
                     [arrowPosition]="column.value?.sortArrowPosition || 'after'"
                     [disabled]="column.value?.sortDisabled === true"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngStyle]="{ width: column.value?.width }"
                     [ngClass]="column.value.class"
                 >
                     {{ column.value.header || column.key }}
@@ -62,7 +62,7 @@
                     mat-cell
                     *matCellDef="let element; let dataIndex = dataIndex"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngStyle]="{ width: column.value?.width }"
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">
@@ -102,9 +102,6 @@
         <tr
             mat-row
             *matRowDef="let row; let i = $index; columns: _columns"
-            cdkDrag
-            cdkDragDisabled="true"
-            [cdkDragData]="row"
             class="{{ rowClass()(row) }}"
             [class.focused]="focusedItem() === row.item"
             [class.selected]="row.selected"
@@ -159,7 +156,7 @@
                     *matCellDef="let element; let dataIndex = dataIndex"
                     [attr.colspan]="_columns.length"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width + 'px' }"
+                    [ngStyle]="{ width: column.value?.width }"
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">
@@ -200,12 +197,14 @@
         }
     </table>
     @if (adapter().normalized().length === 0) {
-        <div class="no-data">
-            @if (noDataImage()) {
-                <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
-            }
-            <p>{{ noDataMessage() }}</p>
-        </div>
+        <ng-content class="empty-state">
+            <div class="no-data">
+                @if (noDataImage()) {
+                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
+                }
+                <p>{{ noDataMessage() }}</p>
+            </div>
+        </ng-content>
     }
 
     <!-- @if (!adapter().loading()) {
