@@ -6,6 +6,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { InputDefaults } from "../defaults";
+import { MatNativeDateModule } from "@angular/material/core";
 
 @Component({
     selector: "mat-form-date-input",
@@ -18,7 +19,7 @@ import { InputDefaults } from "../defaults";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule, MatNativeDateModule],
 })
 export class MatDateInputComponent extends InputBaseComponent<Date> {
     appearance = input(InputDefaults.appearance);

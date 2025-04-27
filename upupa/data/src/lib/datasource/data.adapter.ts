@@ -245,11 +245,13 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 else entities.push(entity);
             } else {
                 records.splice(_i, 1);
-
-                if (!options?.select || options.select === "select") entity.selected = true;
-                else if (options.select === "unselect") entity.selected = false;
-                else if (options.select === "toggle") entity.selected = !entity.selected;
-                entities.push({ ...entity, selected: entity.selected } as NormalizedItem<T>);
+                let s = entity.selected;
+                // entity.selected = true; // this will not work because the entity is immutable
+                if (!options?.select || options.select === "select") s = true;
+                else if (options.select === "unselect") s = false;
+                else if (options.select === "toggle") s = !entity.selected;
+                patchState(this, updateEntity({ id: entity.id, changes: { ...entity, selected: s } }));
+                entities.push({ ...entity, selected: s } as NormalizedItem<T>);
             }
         }
 
@@ -416,7 +418,6 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     }
     find(key: Key<T>) {
         return this.entities().find((x) => x.key === key);
-
     }
 }
 
@@ -444,5 +445,4 @@ export class SmartMap<V> {
         if (t === "object") return this._weak.set(key, value);
         else return this._strong.set(key, value);
     }
-
 }

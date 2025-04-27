@@ -56,6 +56,7 @@ const actions = [
     templateUrl: "./file-template.component.html",
     styleUrls: ["./file-template.component.scss"],
     // encapsulation: ViewEncapsulation.None,
+    providers: [FileUploadService],
     host: {
         "[class]": "class()",
     },

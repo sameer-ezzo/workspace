@@ -1,5 +1,5 @@
 import { applyDecorators, UseInterceptors } from "@nestjs/common";
-import { AccessType, SimplePermission } from "@noah-ark/common";
+import { SimplePermission } from "@noah-ark/common";
 import { _controllerPrefix } from "@ss/common";
 import { AuthorizeInterceptor } from "./authorize.interceptor";
 import { AUTHORIZE_PERMISSIONS, PermissionsSource } from "./constants";

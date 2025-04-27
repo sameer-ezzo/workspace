@@ -10,11 +10,11 @@ import { FileTemplateComponent } from "./file-template/file-template.component";
     selector: "file-viewer",
     templateUrl: "./file-viewer.component.html",
     styleUrls: ["./file-viewer.component.scss"],
-    providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => FilesViewerComponent), multi: true }],
+    providers: [FileUploadService, { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => FilesViewerComponent), multi: true }],
     host: {
         "[class]": "'content'+ ' ' + view()",
     },
-    imports: [FileTemplateComponent]
+    imports: [FileTemplateComponent],
 })
 export class FilesViewerComponent {
     focused = model<ViewerExtendedFileVm>();

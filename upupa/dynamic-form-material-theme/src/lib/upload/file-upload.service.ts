@@ -2,7 +2,7 @@ import { DOCUMENT } from "@angular/common";
 import { inject, Injectable } from "@angular/core";
 import { DataService } from "@upupa/data";
 
-import {  openFileDialog, UploadClient, UploadStream } from "@upupa/upload";
+import { openFileDialog, UploadClient, UploadStream } from "@upupa/upload";
 export type UploadTask = {
     file?: File;
     content?: string;
@@ -12,9 +12,10 @@ export type UploadTask = {
 
 @Injectable({providedIn: "root"})
 export class FileUploadService {
-    constructor(public uploadClient: UploadClient, public data: DataService) {}
-
+    readonly uploadClient = inject(UploadClient);
+    readonly data = inject(DataService);
     private readonly doc = inject(DOCUMENT);
+
     async selectFromDevice(path: string, multiple = false, accept?: string): Promise<UploadStream[]> {
         const fileList = await openFileDialog(this.doc, accept, multiple);
         return Array.from(fileList).map((f) => this.upload(path, f));

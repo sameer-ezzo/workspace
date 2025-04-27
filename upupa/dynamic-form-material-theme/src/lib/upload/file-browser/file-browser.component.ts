@@ -42,8 +42,9 @@ const valueProperty = [
             useExisting: forwardRef(() => FileBrowserComponent),
             multi: true,
         },
+        FileUploadService,
     ],
-    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule]
+    imports: [FileSelectComponent, MatPaginatorModule, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule],
 })
 export class FileBrowserComponent {
     public auth = inject(AuthService);
