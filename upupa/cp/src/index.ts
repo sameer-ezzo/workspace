@@ -28,3 +28,4 @@ export * from "./lib/open-form-dialog.fun";
 export * from "./lib/image.cell";
 export * from "./lib/base-url.pipe";
 
+export * from "./lib/print-layout/print-layout.component";
