@@ -10,7 +10,7 @@ export type UploadTask = {
     stream?: UploadStream;
 };
 
-@Injectable()
+@Injectable({providedIn: "root"})
 export class FileUploadService {
     constructor(public uploadClient: UploadClient, public data: DataService) {}
 
