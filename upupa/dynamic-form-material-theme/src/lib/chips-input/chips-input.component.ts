@@ -15,7 +15,7 @@ import { debounceTime, distinctUntilChanged } from "rxjs";
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
 
 @Component({
-    selector: "mat-form-chips-input",
+    selector: "chips-input",
     templateUrl: "./chips-input.component.html",
     providers: [
         {
