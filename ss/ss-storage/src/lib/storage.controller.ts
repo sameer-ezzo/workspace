@@ -104,7 +104,7 @@ export class StorageController {
         @MessageStream(_uploadToTmp)
         msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>,
     ) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg$, "edit");
+        const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload Edit");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
 
         //          one file   //multi files
@@ -209,7 +209,7 @@ export class StorageController {
 
     @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
     async delete(@Message() msg: IncomingMessage) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg, "delete");
+        const { access, rule, source, action } = this.authorizeService.authorize(msg, "Delete");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
         await this.storageService.delete(msg.path, msg.principle);
@@ -217,7 +217,7 @@ export class StorageController {
 
     @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
     async download(@Message() msg: IncomingMessage, @Res() res: Response) {
-        const { access, rule, source, action } = this.authorizeService.authorize(msg, "read");
+        const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
         if (!isFile(msg.path)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
@@ -236,17 +236,14 @@ export class StorageController {
         const fullPath = join(__dirname, file ? file!.path : msg.path);
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
-        // if (msg.query!.view === '1') {
-        //     const img = await this.imageService.get(__dirname, msg.path, msg.query!);
-        //     if (!img) return res.status(404).send('');
-        //     res.type(`image/${msg.query!.format || '*'}`);
-        //     img.pipe(res);
-        // } else {
-        //     // const stream = fs.createReadStream(Path.join(__dirname, file.path))
-        //     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
-        //     res.download(fullPath, file ? file!.originalname : _id);
-        // }
         const { view, attachment, format } = msg.query!;
+        const originalFilename = file ? file!.originalname : _id;
+        // Percent-encode the filename for the header
+        const encodedFilename = encodeURIComponent(originalFilename);
+        // Construct the correct Content-Disposition value using filename*
+        const dispositionType = attachment === "inline" ? "inline" : "attachment"; // Default to attachment if not 'inline'
+        const contentDispositionValue = `${dispositionType}; filename*=UTF-8''${encodedFilename}`;
+
         // Handle Content-Disposition based on attachment query parameter
         // e.g., 'inline' or 'attachment'
         if (view === "1") {
@@ -255,33 +252,31 @@ export class StorageController {
 
             // Set MIME type for the image
             res.type(`image/${msg.query!.format || "jpeg"}`); // Default to 'jpeg' if format is not specified
-
-            if (attachment === "inline") {
-                // Serve the image inline (SEO-friendly) without forcing download
-                res.setHeader("Content-Disposition", `inline; filename="${file ? file!.originalname : _id}"`);
-            } else if (attachment === "attachment") {
-                // Serve as downloadable attachment
-                res.setHeader("Content-Disposition", `attachment; filename="${file ? file!.originalname : _id}"`);
-            }
+            res.setHeader("Content-Disposition", contentDispositionValue);
             img.pipe(res);
         } else {
+            res.setHeader("Content-Disposition", contentDispositionValue);
             if (attachment === "inline") {
                 // Serve file inline without Content-Disposition: attachment
                 const stream = fs.createReadStream(fullPath);
 
                 // Set inline headers
                 res.setHeader("Content-Type", "application/octet-stream"); // Adjust MIME type as needed
-                res.setHeader("Content-Disposition", `inline; filename="${file ? file!.originalname : _id}"`);
 
                 // Pipe the file stream to the response
                 stream.pipe(res);
             } else {
-                // Serve file as a downloadable attachment
-                res.setHeader("Content-Disposition", `attachment; filename="${file ? file!.originalname : _id}"`);
-
                 res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
 
-                res.download(fullPath, file ? file!.originalname : _id);
+                res.download(fullPath, encodedFilename, (err) => {
+                    if (err) {
+                        // Handle error, e.g., file not found or permission issues
+                        logger.error(`Error downloading file: ${fullPath}`, err);
+                        if (!res.headersSent) {
+                            res.status(err["status"] || 500).send(`Error downloading file ${encodedFilename} ${err.message}`);
+                        }
+                    }
+                });
             }
         }
     }

@@ -6,6 +6,7 @@ import { ExtractIncomingMessage } from "./extract-incoming-message.fun";
 import { IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { PostedFileHandler, _onFile, _onField } from "./model";
 import * as Path from "path";
+import { logger } from "../logger";
 
 const allowedExtensions = process.env["STORAGE_ALLOWED_EXTENSIONS"]?.split(",") ?? [
     ".jpg",
@@ -46,10 +47,8 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
                 };
 
                 const contentType = req.get("content-type")?.toLocaleLowerCase();
-                // if (contentType === 'application/x-www-form-urlencoded' || contentType === 'multipart/form-data') {
-                // Busboy could not handle these content types so I changed the check strategy to exclude the application/json which is used in Base64 upload.
 
-                if (contentType !== "application/json") {
+                if (contentType.startsWith("multipart/") || contentType !== "application/json") {
                     const busboy = Busboy({ headers: req.headers });
                     busboy.on("file", async (field, file, info) => {
                         const { filename, encoding, mimeType } = info;
@@ -57,10 +56,9 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
                         const destination = req.path
                             .split("/")
                             .filter((s) => s)
-                            .join();
+                            .join("/");
                         const path = Path.join(destination, filename);
                         const originalname = Buffer.from(filename, "binary").toString("utf8");
-
                         if (path.indexOf("..") > -1 || !allowedExtensions.includes(extension)) {
                             const incoming = ctx.switchToHttp().getRequest<Response>() as any;
                             const res = incoming.res;

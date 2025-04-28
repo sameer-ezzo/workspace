@@ -34,6 +34,7 @@ export function metaImageLinkNormalize(
     const attachment = options?.view?.attachment;
     delete options.view;
 
+    baseUrl = stripTrailingSlashes(baseUrl);
     path = stripLeadingSlashes((path || "").trim());
     let src = "";
     if (!path.length) src = baseUrl;
@@ -61,7 +62,7 @@ export function metaImageLinkNormalize(
             .map(([k, v]) => `${k}=${v}`)
             .join("&");
 
-    return base + "/" + qStr;
+    return base + qStr;
 }
 
 export type ContentMetadataConfig<M = PageMetadata> = {
