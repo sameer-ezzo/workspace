@@ -10,7 +10,7 @@ export type ColumnDescriptor<Template = any> = {
     class?: string; // css class
     order?: number;
     header?: string;
-    width?: number;
+    width?: string | number;
     visible?: boolean;
     sticky?: "start" | "end";
     sortDisabled?: boolean;

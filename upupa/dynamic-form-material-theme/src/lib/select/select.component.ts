@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, forwardRef, viewChild } from "@angular/core";
-import { FormsModule, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewEncapsulation, forwardRef, input, model, viewChild } from "@angular/core";
+import { FormControl, FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -8,8 +8,11 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelect, MatSelectModule } from "@angular/material/select";
-import { ErrorsDirective, FocusDirective } from "@upupa/common";
-import { SelectComponent } from "@upupa/dynamic-form-native-theme";
+import { ActionDescriptor, ErrorsDirective, FocusDirective } from "@upupa/common";
+import { DataComponentBase } from "@upupa/table";
+import { debounceTime } from "rxjs";
+import { InputDefaults } from "../defaults";
+import { DataAdapter } from "@upupa/data";
 
 @Component({
     imports: [
@@ -42,16 +45,55 @@ import { SelectComponent } from "@upupa/dynamic-form-native-theme";
             useExisting: forwardRef(() => MatSelectComponent),
             multi: true,
         },
-    ]
+        {
+            provide: DataAdapter,
+            useFactory: (self: MatSelectComponent) => self.adapter(),
+            deps: [MatSelectComponent],
+        },
+    ],
 })
-export class MatSelectComponent<T = any> extends SelectComponent<T> implements Validator {
+export class MatSelectComponent<T = any> extends DataComponentBase<T> implements Validator {
     selectInput = viewChild<MatSelect>(MatSelect);
 
-    // override ngAfterViewInit() {
-    //     super.ngAfterViewInit();
-    //     this.selectInput().selectionChange.subscribe((e) => {
-    //         this.value.set(this.control().value);
-    //         this.control().updateValueAndValidity();
-    //     });
-    // }
+    name = input("");
+    ngAfterViewInit() {
+        this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {
+            const filter = this.adapter().filter();
+            const _filter = { ...filter, search: v };
+            this.adapter().load({ filter: _filter });
+        });
+    }
+
+    inlineError = true;
+    showSearch = input(false);
+
+    appearance = input(InputDefaults.appearance);
+    floatLabel = input(InputDefaults.floatLabel);
+    label = input("");
+    panelClass = input("");
+    placeholder = input("");
+    hint = input("");
+
+    valueTemplate = input<TemplateRef<any>>();
+    itemTemplate = input<TemplateRef<any>>();
+
+    filterControl = new FormControl<string>("");
+    filterInputRef = viewChild.required<ElementRef>("filterInput");
+    filterModel = model<string>();
+
+    override multiple = input(false);
+
+    clearValue(e) {
+        e.stopPropagation();
+        this.select(undefined);
+        this.markAsTouched();
+        this.propagateChange();
+    }
+
+    @Output() action = new EventEmitter<ActionDescriptor>();
+    @Input() actions: ActionDescriptor[] = [];
+    onAction(event: any, action: ActionDescriptor) {
+        event.stopPropagation();
+        this.action.emit(action);
+    }
 }

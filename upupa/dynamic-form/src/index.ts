@@ -13,8 +13,6 @@ export * from "./lib/dynamic-form-field.component";
 
 export * from "./lib/di.token";
 
-export * from "./lib/dynamic-form.options";
-
 export * from "./lib/dynamic-form-themes.type";
 export * from "./lib/events/events";
 export * from "./lib/events/handlers";

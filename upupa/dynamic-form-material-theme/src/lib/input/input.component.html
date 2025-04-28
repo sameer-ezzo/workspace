@@ -3,11 +3,11 @@
         <mat-label>{{ label() }}</mat-label>
     }
     <input
-        #input
+        #_input
         matInput
         [type]="type()"
         [value]="value()"
-        (input)="value.set(input.value)"
+        (input)="updateValue(_input.value)"
         [formControl]="control()"
         [attr.name]="name()"
         [readonly]="readonly()"

@@ -21,6 +21,9 @@ mat-dialog-container {
         padding: 1rem;
         overflow: hidden;
         overflow-y: auto;
+        portal {
+            display: block;
+        }
     }
 
     & .toolbar.header:empty,

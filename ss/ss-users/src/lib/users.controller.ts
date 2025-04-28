@@ -9,7 +9,6 @@ import { Authorize, AuthorizeService } from "@ss/rules";
 import { appName, Broker, EndPoint, Message } from "@ss/common";
 import { DataChangedEvent, DataService } from "@ss/data";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
-import { Axios } from "axios";
 import { logger } from "./logger";
 import { Auth, AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
@@ -71,7 +70,6 @@ function validateUser(user: Partial<User>): string[] {
 
 @Controller("auth")
 export class UsersController {
-    private http: Axios;
     constructor(
         private auth: AuthService,
         @Inject("USERS_OPTIONS") private readonly options: UsersOptions,
@@ -79,9 +77,9 @@ export class UsersController {
         private authorizationService: AuthorizeService,
         private eventEmitter: EventEmitter2,
     ) {
-        this.http = new Axios({
-            transformResponse: [(data) => JSON.parse(data)],
-        });
+        // this.http = new Axios({
+        //     transformResponse: [(data) => JSON.parse(data)],
+        // });
     }
 
     @EndPoint({ event: "data-changed", path: "data-changed" })
@@ -414,8 +412,12 @@ export class UsersController {
         operation: "Auth with Facebook",
     })
     async fb_clientExternalAuth(@Body() req) {
-        const fbuser = await this.http.get("https://graph.facebook.com/v1.0" + "/me?fields=id,name,email" + "&access_token=" + req.access_token);
-        const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN);
+        // const fbuser = await this.http.get("https://graph.facebook.com/v1.0" + "/me?fields=id,name,email" + "&access_token=" + req.access_token);
+        const fbuser = await fetch("https://graph.facebook.com/v1.0/me?fields=id,name,email&access_token=" + req.access_token).then((res) => res.json());
+        // const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN);
+        const inspectToken = await fetch("https://graph.facebook.com/debug_token?input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN).then((res) =>
+            res.json(),
+        );
         // verifying the user token was issued by our app
         if (inspectToken.status !== 200) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
         const user = {

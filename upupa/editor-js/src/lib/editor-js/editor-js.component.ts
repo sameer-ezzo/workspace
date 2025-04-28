@@ -27,6 +27,7 @@ import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { OutputData, ToolConstructable } from "@editorjs/editorjs";
 import { languageDir } from "@upupa/language";
 import { FileInfo } from "@noah-ark/common";
+import { EDITOR_JS_AI_PROMPT } from "../di.token";
 
 declare let EditorJS: any;
 declare let Header: any;
@@ -64,6 +65,7 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     private readonly uploadClient = inject(UploadClient);
     private readonly auth = inject(AuthService);
 
+    private readonly aiPrompt = inject(EDITOR_JS_AI_PROMPT, { optional: true });
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
     private readonly el = inject(ElementRef<HTMLElement>);
     editorElement = viewChild<ElementRef<HTMLTextAreaElement>>("editor");
@@ -263,13 +265,15 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
                 config: {
                     // here you need to provide your own suggestion provider (e.g., request to your backend)
                     // this callback function must accept a string and return a Promise<string>
-                    callback: (text: string) => {
-                        return new Promise((resolve) => {
-                            setTimeout(() => {
-                                resolve(text);
-                            }, 1000);
-                        });
-                    },
+                    callback: this.aiPrompt
+                        ? this.aiPrompt
+                        : (text: string) => {
+                              return new Promise((resolve) => {
+                                  setTimeout(() => {
+                                      resolve(text);
+                                  }, 1000);
+                              });
+                          },
                 },
             };
         }

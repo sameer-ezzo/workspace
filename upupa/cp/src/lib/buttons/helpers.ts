@@ -1,4 +1,4 @@
-import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef } from "@angular/core";
+import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef, viewChild } from "@angular/core";
 import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent, waitForOutput } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
@@ -16,16 +16,16 @@ import { SubmitResult } from "../adapter-submit.fun";
 @Component({
     selector: "inline-button",
     imports: [MatBtnComponent],
-    template: ` <mat-btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
+    template: ` <mat-btn #btn [buttonDescriptor]="buttonDescriptor()" (action)="onClick($event)"></mat-btn> `,
     styles: [],
 })
 export class InlineButtonComponent {
     buttonDescriptor = input.required<ActionDescriptor>();
     item = input<any>(null);
-    clicked = output();
-
+    clicked = output<{ e: ActionEvent; instance: InlineButtonComponent; btn: MatBtnComponent }>();
+    btn = viewChild(MatBtnComponent);
     async onClick(e: ActionEvent) {
-        this.clicked.emit();
+        this.clicked.emit({ e, instance: this, btn: this.btn() });
     }
 }
 
@@ -38,7 +38,7 @@ export function inlineButton<T = unknown>(options: { descriptor?: Partial<Action
         },
         outputs: {
             clicked: (source, e) => {
-                runInInjectionContext(source.injector, () => options.clickHandler(source.instance));
+                runInInjectionContext(source.injector, () => options.clickHandler(source.instance.btn()));
             },
         },
     } as DynamicComponent;
@@ -51,8 +51,6 @@ export function readValueFromApi<T = any>(path: string) {
 }
 
 export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
-
-
 
 export function translationButtons<TItem = unknown>(
     formViewModel: Class,

@@ -1,4 +1,4 @@
-import { ComponentRef, Directive, inject, output } from "@angular/core";
+import { Directive, output } from "@angular/core";
 
 @Directive({
     selector: "[load]",

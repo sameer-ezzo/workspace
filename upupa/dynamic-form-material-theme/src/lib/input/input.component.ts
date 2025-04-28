@@ -1,10 +1,10 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, forwardRef, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, input, ViewEncapsulation } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
+import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { ErrorsDirective } from "@upupa/common";
-import { InputComponent } from "@upupa/dynamic-form-native-theme";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
+import { InputDefaults } from "../defaults";
 
 @Component({
     selector: "mat-form-input",
@@ -19,9 +19,27 @@ import { InputComponent } from "@upupa/dynamic-form-native-theme";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule]
+    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
 })
-export class MatInputComponent extends InputComponent {}
+export class MatInputComponent<T = string> extends InputBaseComponent<T> {
+    inlineError = true;
+
+    appearance = input<MatFormFieldAppearance>(InputDefaults.appearance);
+    floatLabel = input<FloatLabelType>(InputDefaults.floatLabel);
+    placeholder = input("");
+
+    type = input("text");
+    label = input("");
+    hint = input("");
+    readonly = input(false);
+    autocomplete = input("");
+
+    // since this component is using T as value type (to allow inheriting from it and using other types)
+    // we need to override the value setter to make sure it is of type string in this case (basic string input)
+    updateValue(value: string) {
+        this.value.set(value as T);
+    }
+}
 
 @Component({
     standalone: true,
@@ -37,4 +55,4 @@ export class MatInputComponent extends InputComponent {}
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HiddenInputComponent extends InputComponent {}
+export class HiddenInputComponent extends MatInputComponent {}

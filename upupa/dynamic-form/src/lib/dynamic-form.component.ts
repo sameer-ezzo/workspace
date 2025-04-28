@@ -35,11 +35,9 @@ import {
 } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { Subscription } from "rxjs";
-import { _defaultControl, EventBus, UtilsModule } from "@upupa/common";
+import { _defaultControl, EventBus } from "@upupa/common";
 import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { DynamicFormModuleOptions } from "./dynamic-form.options";
-import { DYNAMIC_FORM_OPTIONS } from "./di.token";
 import { DynamicFormBuilder } from "./dynamic-form-renderer";
 import { DynamicFormService } from "./dynamic-form.service";
 import { ConditionalLogicService } from "./conditional-logic.service";
@@ -49,8 +47,10 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatExpansionModule, MatExpansionPanel } from "@angular/material/expansion";
 import { DynamicFormFieldComponent } from "./dynamic-form-field.component";
 import { FormScheme } from "./types";
-import { DynamicFormNativeThemeModule } from "@upupa/dynamic-form-native-theme";
+
 import { LoadDirective } from "./load.directive";
+import { ParagraphComponent } from "@upupa/dynamic-form-material-theme";
+import { MatIconModule } from "@angular/material/icon";
 
 @Pipe({
     name: "orderedKeyValue",
@@ -115,20 +115,19 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
     imports: [
         OrderedKeyValuePipe,
         CommonModule,
-        UtilsModule,
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
-        DynamicFormNativeThemeModule,
         DynamicFormFieldComponent,
+        ParagraphComponent,
         MatExpansionModule,
         LoadDirective,
+        MatIconModule,
     ],
 })
 export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
     readonly conditionalService = inject(ConditionalLogicService);
     readonly injector = inject(Injector);
-    readonly options: DynamicFormModuleOptions = inject(DYNAMIC_FORM_OPTIONS);
     readonly bus = inject(EventBus);
     readonly _patches: Map<`group:${string}` | `/${string}`, unknown> = new Map();
     fields = input.required<FormScheme>();
@@ -139,6 +138,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     readonly = input(false);
     class = input("");
     theme = input<string>("material");
+    enableLogs = input(false);
 
     form = new FormGroup({});
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
@@ -272,7 +272,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
                 this.handleUserInput(value);
 
                 const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
-                if (this.options.enableLogs === true) console.log(`${this.name()}:${path} valueChanges`, ee);
+                if (this.enableLogs()) console.log(`${this.name()}:${path} valueChanges`, ee);
                 this.fieldValueChange.emit(ee);
             } else if (e instanceof PristineChangeEvent) {
                 if (!this.control().pristine) this.control().markAsPristine();
@@ -354,7 +354,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     _onTouched: () => void;
 
     writeValue(val: T): void {
-        if (this.options.enableLogs === true) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
+        if (this.enableLogs()) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
         this.value.set(val);
         this.form.patchValue(val, { emitEvent: false, onlySelf: true });
     }
@@ -371,7 +371,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     _fieldsChanged() {
-        if (this.options.enableLogs === true) console.log(`%c scheme changed! (name:${this.name()})`, "background: #ff6b00; color: #fff", this.fields());
+        if (this.enableLogs()) console.log(`%c scheme changed! (name:${this.name()})`, "background: #ff6b00; color: #fff", this.fields());
         // this.formRenderer.fields = Object.values(this.fields());
         // this.writeValue(this.value());
         this.propagateChange();

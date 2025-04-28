@@ -62,9 +62,14 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         const key = this._key(item);
         // const entries = this.entries();
         // const ref = entries.get(key);
-        this.all.update((v) => (v ?? []).map((x) => (this._key(x) === key ? (value as T) : x)));
-
-        return Promise.resolve(value);
+        const all = this.all()?? []
+        const ref = all.find((x) => this._key(x) === key);
+        if (ref) {
+            this.all.update((v) => (v ?? []).map((x) => (this._key(x) === key ? (value as T) : x)));
+            return Promise.resolve(value);
+        } else {
+            return this.create(value);
+        }
     }
 
     patch(item: T, patches: Patch[]) {

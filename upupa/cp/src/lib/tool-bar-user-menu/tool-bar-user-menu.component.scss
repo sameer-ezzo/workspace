@@ -6,20 +6,20 @@
   align-content: center;
   justify-content: space-around;
   height: fit-content;
-  border-radius: 4px;
+  border-radius: var(--mat-sys-corner-small);
   transition: all 200ms ease-in;
   user-select: none;
   cursor: pointer;
 
   &.impersonated {
     border: 1px solid var(--warn-lighter);
-    border-radius: 8px;
+    border-radius: var(--mat-sys-corner-small);
   }
   &:hover,
   &.active,
   &:focus-within {
     background-color: var(--bg-hover);
-    border-radius: 8px;
+    border-radius: var(--mat-sys-corner-small);
   }
   & img {
     height: 100%;

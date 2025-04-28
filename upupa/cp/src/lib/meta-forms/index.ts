@@ -11,3 +11,4 @@ export * from "./with-image-object.meta";
 export * from "./with-organization.meta";
 export * from "./organization.schema";
 export * from "./with-event.meta";
+export * from "./with-profile.meta";

@@ -19,3 +19,5 @@ export * from "./lib/rules/permission";
 export * from "./lib/rules/simple-permission";
 export * from "./lib/rules/rules-manager";
 export * from "./lib/password-strength-policy";
+export * from "./lib/func/group-by";
+export * from "./lib/func/clone-deep";

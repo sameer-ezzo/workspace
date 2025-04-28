@@ -1,4 +1,4 @@
-$border-radius: 2px;
+$border-radius: var(--mat-sys-corner-small);
 :root {
     --bg-img-url: transparent;
     --collector-bg-color: transparent;

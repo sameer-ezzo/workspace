@@ -27,7 +27,7 @@ values will be automatically converted to corresponding types
 'null' => null
 'undefined' => undefined
 -- Note:
-If {operator} is not provided it's considred as {eq} but value conversion for number,array won't happen ex: model=9 will not convert 9 to number it will be treated as '9'
+If {operator} is not provided it's considered as {eq} but value conversion for number,array won't happen ex: model=9 will not convert 9 to number it will be treated as '9'
 */
 
 /*
@@ -125,9 +125,7 @@ export class QueryParser {
         else if (operator === "btw") {
             const range = (val || "").split(",");
             const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
-            if ((min instanceof Date && max instanceof Date && min < max) || (!isNaN(min) && !isNaN(max) && min < max)) {
-                return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
-            } else return;
+            return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
         } else if (operator === "all" || operator === "in" || operator === "nin" || /in\d/.test(operator)) {
             const array = typeof val === "string" ? (val || "").split(",") : [val];
             if (/in\d/.test(operator)) {
@@ -383,11 +381,9 @@ export class QueryParser {
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
             if (x.key === "page" && !isNaN(+x.value)) page = +x.value;
-            else if (x.key === "per_page" && !isNaN(+x.value)) 
-            {
+            else if (x.key === "per_page" && !isNaN(+x.value)) {
                 per_page = Math.min(+x.value, 500);
-            }
-            else if (x.key === "group_by") {
+            } else if (x.key === "group_by") {
                 const g = x.value.split(",");
                 const key = g.length > 1 ? g.shift() : x.value;
                 group = { _id: "$" + key };

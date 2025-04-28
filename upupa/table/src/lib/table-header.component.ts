@@ -11,16 +11,32 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
     selector: "table-header",
     styleUrl: "./table-header.component.scss",
     imports: [PortalComponent, MatIconModule, FormsModule, MatButtonModule],
-    templateUrl: "./table-header.component.html"
+    templateUrl: "./table-header.component.html",
 })
 export class TableHeaderComponent {
     injector = inject(Injector);
     showSearch = input(true);
     // table = inject(DataTableComponent);
 
+    components = input<(DynamicComponent | "spacer")[], (Type<any> | DynamicComponent | "spacer")[]>([], {
+        transform: (components) =>
+            components.map((c) => {
+                if (c instanceof Type) return { component: c };
+                else if (c === "spacer") return c;
+                return c;
+            }),
+    });
+    readonly componentRefs: ComponentRef<any>[] = [];
+
+    /**
+     * @deprecated Use `withHeader` instead.
+     */
     inlineEndSlot = input<DynamicComponent[], (Type<any> | DynamicComponent)[]>([], {
         transform: (components) => components.map((c) => (c instanceof Type ? { component: c } : c)),
     });
+    /**
+     * @deprecated Use `withHeader` instead.
+     */
     readonly inlineEndSlotComponentRefs: ComponentRef<any>[] = [];
 
     q = model("");

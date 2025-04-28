@@ -168,7 +168,6 @@ export class DataService {
                 x.item.value.subject.complete();
                 x.item.value.subject.unsubscribe();
                 this.cache.remove(x.key);
-                console.info(`Cache cleared`, x.key);
             });
     }
 }

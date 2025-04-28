@@ -1,15 +1,15 @@
 {
-  "name": "rp7",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {},
-  "private": true,
-  "dependencies": {
-    "@types/platform": "^1.3.6",
-    "platform": "^1.3.6"
-  },
-  "devDependencies": {
-    "@nx/js": "17.2.7",
-    "nx": "17.2.7"
-  }
+    "name": "rp7",
+    "version": "0.0.0",
+    "license": "MIT",
+    "scripts": {},
+    "private": true,
+    "dependencies": {
+        "@types/platform": "^1.3.6",
+        "platform": "^1.3.6"
+    },
+    "devDependencies": {
+        "@nx/js": "17.2.7",
+        "nx": "17.2.7"
+    }
 }

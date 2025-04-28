@@ -1,8 +1,10 @@
 import "reflect-metadata";
 import { DataAdapterDescriptor, DataAdapterType } from "@upupa/data";
+
+import { camelCaseToTitle } from "@upupa/common";
 import { ColumnDescriptor, ColumnsDescriptor, ColumnsDescriptorStrict } from "./types";
-import { toTitleCase } from "@upupa/common";
 import { DatePipe } from "@angular/common";
+import { Class } from "@noah-ark/common";
 
 const dataListInputsMetadataKey = Symbol("custom:data_list_view_model_inputs");
 
@@ -10,7 +12,7 @@ export type DataListViewModelQueryParam = {
     param: string;
     propertyKey: string;
 };
-export type DataListViewModelInputs = {
+export type TableViewModelMirror = {
     secondaryRows: ColumnsDescriptorStrict;
     dataAdapterDescriptor: DataAdapterDescriptor<DataAdapterType>;
     // headerActions: {
@@ -25,8 +27,14 @@ export type DataListViewModelInputs = {
     queryParams: DataListViewModelQueryParam[];
 };
 
-export function reflectTableViewModel(target: any): DataListViewModelInputs {
-    return Reflect.getMetadata(dataListInputsMetadataKey, target) ?? {};
+export function reflectTableViewModel(target: Class, options?: { exclude?: string[]; include?: string[] }): TableViewModelMirror {
+    const mirror = Reflect.getMetadata(dataListInputsMetadataKey, target) ?? ({} as TableViewModelMirror);
+
+    let columns = mirror.columns ?? [];
+    if (options?.exclude) columns = columns.filter(([key]) => !options.exclude?.includes(key));
+    if (options?.include) columns = columns.filter(([key]) => options.include?.includes(key));
+
+    return { ...mirror, columns };
 }
 
 export const setDataListMetadataFor = (target: any, value: Record<string, unknown>) => {
@@ -51,7 +59,7 @@ export function secondaryRow(options: ColumnDescriptor = { visible: true }) {
                 ...secondaryRows,
                 [key]: {
                     ...options,
-                    header: options.header ?? toTitleCase(propertyKey),
+                    header: options.header ?? camelCaseToTitle(propertyKey),
                     template: normalizedTemplate,
                 },
             },
@@ -64,7 +72,7 @@ export function column(options: ColumnDescriptor = { visible: true }) {
         const inputs = reflectTableViewModel(target.constructor);
         const columns = !inputs?.columns ? [] : Array.isArray(inputs.columns) ? Array.from(inputs.columns) : Object.entries(inputs.columns);
 
-        const text = options.header ?? toTitleCase(propertyKey);
+        const text = options.header ?? camelCaseToTitle(propertyKey);
         options.header = text;
         const key = options.displayPath ?? propertyKey;
         if (options.pipe === undefined) {
@@ -72,6 +80,9 @@ export function column(options: ColumnDescriptor = { visible: true }) {
             if (colDataType === Date) {
                 options.pipe = { pipe: DatePipe, args: ["short"] };
             }
+        }
+        if (options.template && !Array.isArray(options.template)) {
+            options.template = [options.template];
         }
         const col = [key, options];
         columns.push(col);

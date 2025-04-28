@@ -4,9 +4,9 @@ import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/fo
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { ErrorsDirective } from "@upupa/common";
-import { DateInputComponent } from "@upupa/dynamic-form-native-theme";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { InputDefaults } from "../defaults";
+import { MatNativeDateModule } from "@angular/material/core";
 
 @Component({
     selector: "mat-form-date-input",
@@ -19,12 +19,31 @@ import { InputDefaults } from "../defaults";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule]
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatDatepickerModule, MatNativeDateModule],
 })
-export class MatDateInputComponent extends DateInputComponent {
+export class MatDateInputComponent extends InputBaseComponent<Date> {
     appearance = input(InputDefaults.appearance);
     floatLabel = input(InputDefaults.floatLabel);
     touchUi = input(false);
     startAt = input<Date | number | null>(null);
     startView = input<"month" | "year" | "multi-year">("month");
+
+    inlineError = true;
+
+    placeholder = input("");
+
+    label = input("");
+    hint = input("");
+    readonly = input(false);
+
+    now = new Date();
+
+    min = input<Date | number | null>(null);
+    max = input<Date | number | null>(null);
+
+    setDate(value: string) {
+        const date = new Date(value);
+        this.value.set(date);
+        this.control()?.setValue(this.value());
+    }
 }

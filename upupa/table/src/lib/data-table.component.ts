@@ -17,6 +17,8 @@ import {
     InjectionToken,
     DestroyRef,
     forwardRef,
+    InjectOptions,
+    viewChild,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -45,7 +47,6 @@ import {
     TitleCasePipe,
     UpperCasePipe,
 } from "@angular/common";
-import { DragDropModule } from "@angular/cdk/drag-drop";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
@@ -56,11 +57,11 @@ import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
 
-export function injectRowItem() {
-    return inject(ROW_ITEM);
+export function injectRowItem(options?: InjectOptions) {
+    return inject(ROW_ITEM, options);
 }
-export function injectDataAdapter() {
-    return inject(DataAdapter);
+export function injectDataAdapter(options?: InjectOptions) {
+    return inject(DataAdapter, options);
 }
 
 @Component({
@@ -83,7 +84,6 @@ export function injectDataAdapter() {
         MatProgressBarModule,
         CommonModule,
         MatIconModule,
-        DragDropModule,
         DefaultTableCellTemplate,
         PortalComponent,
         JsonPointerPipe,
@@ -124,6 +124,8 @@ export function injectDataAdapter() {
     ],
 })
 export class DataTableComponent<T = any> extends DataComponentBase<T> implements OnChanges {
+    table = viewChild(MatTable);
+
     showPaginator = input(true, { transform: (v) => (v === false ? false : true) });
     tabindex = input(-1);
     host: ElementRef<HTMLElement> = inject(ElementRef);
@@ -279,6 +281,29 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             }
         }
 
+        for (const _prop in this._properties) {
+            const wdth = this._properties[_prop].width;
+            if (wdth) {
+                if (typeof wdth === "number") {
+                    this._properties[_prop].width = `${wdth}px`;
+                    continue;
+                }
+                if (typeof wdth === "string") {
+                    const match = wdth.match(/(\d+)(\D+)/);
+                    if (!match) continue;
+
+                    const value = match[1];
+                    const unit = match[2];
+
+                    const validUnits = ["px", "%", "em", "rem", "vh", "vw"];
+                    if (validUnits.includes(unit)) {
+                        this._properties[_prop].width = `${parseInt(value)}${unit}`;
+                    } else {
+                        this._properties[_prop].width = `${parseInt(value)}px`;
+                    }
+                }
+            }
+        }
         this._columns = [];
 
         const selectCol = this._properties["select"];
@@ -327,19 +352,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     isGroup(row: any): boolean {
         return row.group;
     }
-
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    @ViewChild(MatTable) table: MatTable<T>;
-
-    // eslint-disable-next-line @typescript-eslint/member-ordering
-    // @Output() rowDropped = new EventEmitter()
-    // drop(event: CdkDragDrop<any[]>) {
-    //     this.table.renderRows()
-    //     this.rowDropped.emit({ event, from: event.previousIndex, to: event.currentIndex })
-
-    //     // const prevIndex = this.adapter.normalized.findIndex((d) => d === e.event.item.data)
-    //     // moveItemInArray(this.adapter.normalized, prevIndex, e.event.currentIndex)
-    // }
 
     isPurePipe(pipe: Type<any>): boolean {
         return !!pipe.prototype.constructor.ɵpipe.pure;

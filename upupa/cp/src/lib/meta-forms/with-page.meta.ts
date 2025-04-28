@@ -6,7 +6,6 @@ export class SeoMetaFormViewModel {
     @formInput({
         input: "text",
         label: "Title",
-        
     })
     title = "";
 

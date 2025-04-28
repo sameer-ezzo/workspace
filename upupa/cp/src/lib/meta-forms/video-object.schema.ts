@@ -102,7 +102,6 @@ export class VideoSchema {
                     title: "Add Publication",
                 },
                 descriptor: { icon: "add", text: "Add Publication" },
-                updateAdapter: true,
             }),
         ],
     })
@@ -118,7 +117,6 @@ export class VideoSchema {
                         title: "Add Video Part",
                     },
                     descriptor: { icon: "add", text: "Add Part" },
-                    updateAdapter: true,
                 }),
             ],
         },

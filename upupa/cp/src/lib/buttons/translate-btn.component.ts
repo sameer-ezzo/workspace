@@ -1,6 +1,6 @@
 import { Component, inject, Injector, input, runInInjectionContext } from "@angular/core";
 import { Class, ObjectId } from "@noah-ark/common";
-import { ActionDescriptor, DynamicComponent, provideComponent, toTitleCase } from "@upupa/common";
+import { ActionDescriptor, DynamicComponent, provideComponent, camelCaseToTitle } from "@upupa/common";
 import { DataAdapter } from "@upupa/data";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { DialogConfig, DialogService } from "@upupa/dialog";
@@ -8,14 +8,15 @@ import { firstValueFrom } from "rxjs";
 
 import { NgControl } from "@angular/forms";
 import { DataFormComponent, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "@noah-ark/common";
+
 
 @Component({
     selector: "embed-translation-btn",
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent]
+    imports: [MatBtnComponent],
 })
 export class EmbedTranslationButton<TItem = unknown> {
     injector = inject(Injector);
@@ -104,7 +105,7 @@ export class EmbedTranslationButton<TItem = unknown> {
     template: ` @if (item()["lang"] !== locale().code) {
         <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
     }`,
-    imports: [MatBtnComponent]
+    imports: [MatBtnComponent],
 })
 export class LinkTranslationButton<TItem = unknown> {
     injector = inject(Injector);
@@ -190,7 +191,7 @@ export function translateButton<TItem = unknown>(
     },
 ): DynamicComponent<EmbedTranslationButton<TItem>> {
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
-        text: toTitleCase(options.locale.code),
+        text: camelCaseToTitle(options.locale.code),
         variant: "stroked",
         color: "primary",
         type: "button",

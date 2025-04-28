@@ -1,11 +1,10 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, inject } from "@angular/core";
+import { Injectable, afterNextRender, inject } from "@angular/core";
 import { RulesManager, Rule, Principle, AuthorizeMessage, AuthorizeResult } from "@noah-ark/common";
-import { _isSuperAdmin, authorize, evaluatePermission, selectPermissions } from "@noah-ark/expression-engine";
+import { authorize, evaluatePermission, selectPermissions } from "@noah-ark/expression-engine";
 import { TreeBranch } from "@noah-ark/path-matcher";
 
-import { isEmpty } from "lodash";
-import { ReplaySubject, firstValueFrom } from "rxjs";
+import { ReplaySubject, firstValueFrom, shareReplay } from "rxjs";
 import { PERMISSIONS_BASE_URL } from "./di.tokens";
 
 @Injectable({ providedIn: "root" })
@@ -14,20 +13,28 @@ export class AuthorizationService {
     readonly rules$ = new ReplaySubject<TreeBranch<Rule>>(1);
     private readonly baseUrl? = inject(PERMISSIONS_BASE_URL, { optional: true });
     private readonly http = inject(HttpClient);
-
+    private updateRules = (rules: TreeBranch<Rule>) => {
+        if (!rules || !rules.item) return undefined;
+        const rootRule = rules.item!;
+        this.rulesManager = new RulesManager(rootRule);
+        this.rulesManager.tree = rules;
+        this.rules$.next(rules);
+        return rules;
+    };
     constructor() {
         if (!this.baseUrl) {
             console.warn("PERMISSIONS_BASE_URL is not provided, therefore the authorization service will not sync with the server");
             this.rulesManager = new RulesManager({ name: "root", path: "/", fallbackAuthorization: "grant" });
             return;
         }
-
-        this.http.get<TreeBranch<Rule>>(`${this.baseUrl}/rules`).subscribe((rules) => {
-            const rootRule = rules.item!;
-            this.rulesManager = new RulesManager(rootRule);
-            this.rulesManager.tree = rules;
-            this.rules$.next(rules);
-        });
+        afterNextRender(() =>
+            this.http
+                .get<TreeBranch<Rule>>(`${this.baseUrl}/rules`)
+                .pipe(shareReplay(1))
+                .subscribe((rules) => {
+                    this.updateRules(rules);
+                }),
+        );
     }
 
     buildAuthorizationMsg(path: string, action: string, principle: Principle, payload?: unknown, query?: unknown, ctx?: unknown): AuthorizeMessage {
@@ -36,7 +43,7 @@ export class AuthorizationService {
 
     async authorize(path: string, action: string, principle: Principle, payload?: unknown, query?: unknown, ctx?: unknown): Promise<AuthorizeResult> {
         await firstValueFrom(this.rules$);
-        if (isEmpty(action ?? "")) action = undefined;
+        if ((action ?? "").trim().length === 0) action = undefined;
         const message = this.buildAuthorizationMsg(path, action, principle, payload, query, ctx);
         const segments = path.split("/");
         while (segments.length > 0) {

@@ -1,7 +1,7 @@
 import { Component, computed, inject, model, viewChild, ViewEncapsulation, input, SimpleChanges, OnChanges, output } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { DynamicComponent, PortalComponent, provideComponent } from "@upupa/common";
+import { _defaultControl, DynamicComponent, PortalComponent, provideComponent } from "@upupa/common";
 import { DialogConfig, DialogService } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
@@ -24,7 +24,7 @@ import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@
         <h3>{{ widget().title }}</h3>
         <div style="flex: 1"></div>
         <button class="widget-button" style="scale: 0.8;" mat-icon-button (click)="remove.emit(widget())"><mat-icon>clear</mat-icon></button>
-    </div>`
+    </div>`,
 })
 export class WidgetHeaderComponent {
     widget = input.required<Widget>();
@@ -55,19 +55,19 @@ export class InputsViewModel {
     styles: `
         ::ng-deep {
             .grid-stack {
-                --tw-gradient-from: #e5e7eb var(--tw-gradient-from-position);
-                --tw-gradient-to: rgb(229 231 235 / 0) var(--tw-gradient-to-position);
-                --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-                background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-                border-radius: 0.5rem;
-                border: 1px solid #e5e7eb;
+                // --tw-gradient-from: #e5e7eb var(--tw-gradient-from-position);
+                // --tw-gradient-to: rgb(229 231 235 / 0) var(--tw-gradient-to-position);
+                // --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+                // background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+                border-radius: var(--mat-sys-corner-large);
+                border: 1px solid var(--mat-sys-outline-variant);
                 position: relative;
             }
             .grid-stack-item-content {
-                border-radius: 8px;
+                border-radius: var(--mat-sys-corner-large);
                 cursor: grab;
-                border: 1px solid #e5e7eb;
-                background: #fff;
+                border: 1px solid var(--mat-sys-outline-variant);
+                background: var(--mat-sys-surface-container-low);
             }
 
             .grid-stack-item-content:hover .widget-button,
@@ -81,31 +81,37 @@ export class InputsViewModel {
         :host {
             display: block;
             position: relative;
-            margin-block-end: calc(65px + 1.5rem);
+            // margin-block-end: calc(65px + 1.5rem);
+            box-sizing: border-box;
+            overflow-x: hidden;
             button {
                 position: absolute;
                 float: inline-end;
-                bottom: -65px;
+                bottom: 1.5rem;
                 z-index: 100;
                 inset-inline-end: 1.5rem;
             }
         }
     `,
     template: `
-        <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
-            @for (widget of materializedWidgets(); track widget.id) {
-                <gridstack-item [options]="widget" (click)="focused.set(widget)">
-                    @if (headerTemplate()) {
-                        <portal [template]="getHeaderTemplate(widget)"></portal>
-                    }
-                    <portal [template]="widget.template"></portal>
-                </gridstack-item>
-            }
-        </gridstack>
+        @if (materializedWidgets().length) {
+            <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
+                @for (widget of materializedWidgets(); track widget.id) {
+                    <gridstack-item [options]="widget" (click)="focused.set(widget)">
+                        @if (headerTemplate()) {
+                            <portal [template]="getHeaderTemplate(widget)"></portal>
+                        }
+                        <portal [template]="widget.template"></portal>
+                    </gridstack-item>
+                }
+            </gridstack>
+        } @else {
+            <ng-content class="empty-state"></ng-content>
+        }
         <button mat-fab color="accent" (click)="add()">
             <mat-icon>add</mat-icon>
         </button>
-    `
+    `,
 })
 export class WidgetBuilderComponent implements OnChanges {
     blueprints = input.required<WidgetBlueprint[], WidgetBlueprint[]>({ transform: (v) => v ?? [] });
@@ -240,8 +246,8 @@ export class WidgetBuilderComponent implements OnChanges {
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = new FormControl();
-    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, { transform: (v) => v ?? this._defaultControl });
+    _defaultControl = _defaultControl(this);
+    control = input<FormControl<Widget[]>>(this._control ?? this._defaultControl);
     handleUserInput(v: Widget[]) {
         this.value.set(v);
 
@@ -250,7 +256,8 @@ export class WidgetBuilderComponent implements OnChanges {
             this.markAsTouched();
             this.propagateChange();
         } else {
-            this.control().setValue(v);
+            const control = this.control();
+            if (control?.value !== v) control.setValue(v);
         }
     }
 

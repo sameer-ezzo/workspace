@@ -4,6 +4,8 @@ import { GoogleIdProviderOptions } from "./google/google.idp";
 import { authProviders } from "../auth.provider";
 import { FacebookIdProviderOptions } from "./facebook/facebook.idp";
 import { IdProviderService } from "./google/google-id-provider.service";
+import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
+import { interceptFn } from "../auth.interceptor";
 
 export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password";
 
@@ -22,9 +24,7 @@ export const AUTH_IDPs = new InjectionToken<AuthIdProvider[]>("AUTH_IdPs");
 
 export function provideAuth(options: Partial<AuthOptions>, ...features: (Provider | EnvironmentProviders)[][]): EnvironmentProviders {
     const providers = features.flat();
-    if (!options.base_url) 
-        throw new Error("Base URL must be provided in AuthOptions");
-    
+    if (!options.base_url) throw new Error("Base URL must be provided in AuthOptions");
 
-    return makeEnvironmentProviders([...authProviders(options), ...providers]);
+    return makeEnvironmentProviders([...authProviders(options), ...providers, provideHttpClient(withFetch(), withInterceptors([interceptFn]))]);
 }

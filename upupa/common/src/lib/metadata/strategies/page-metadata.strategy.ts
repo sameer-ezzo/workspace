@@ -5,21 +5,71 @@ import { PageMetadata } from "../models";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
 export const PAGE_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("PAGE_METADATA_CONFIG");
+const stripLeadingSlashes = (path: string) => path.replace(/^\/+/, "");
+const stripTrailingSlashes = (path: string) => path.replace(/\/+$/, "");
 
-export const DEFAULT_CONTENT_METADATA_CONFIG: ContentMetadataConfig = {
-    imageLoading: (config: { src?: string; size?: string }) => {
-        const src = config.src ?? "";
-        if (!src) return "";
-        const size = config.size ?? "";
-        return `${src}?size=${size}`;
+export function resourceLinkNormalize(baseUrl: string, path: string) {
+    path = stripLeadingSlashes((path || "").trim());
+    baseUrl = stripTrailingSlashes((baseUrl || "").trim());
+    let src = "";
+    if (!path.length) src = baseUrl;
+    else if (path.startsWith("http")) src = path;
+    else src = baseUrl + "/" + path;
+    return src;
+}
+
+export type MetaImageLinkOptions = {
+    view?: { w?: string; h?: string; attachment?: "inline" | "attachment" };
+} & Record<string, string | { w?: string; h?: string; attachment?: "inline" | "attachment" }>;
+
+export function metaImageLinkNormalize(
+    baseUrl: string,
+    path: string,
+    options: Partial<MetaImageLinkOptions> = {
+        view: { w: "100", h: "100", attachment: "inline" },
     },
-};
+): string {
+    const w = options?.view?.w;
+    const h = options?.view?.h;
+    const attachment = options?.view?.attachment;
+    delete options.view;
+
+    baseUrl = stripTrailingSlashes(baseUrl);
+    path = stripLeadingSlashes((path || "").trim());
+    let src = "";
+    if (!path.length) src = baseUrl;
+    else if (path.startsWith("http")) src = path;
+    else src = baseUrl + "/" + path;
+
+    const [base, qps] = src.split("?");
+    const queryParams = (qps || "").split("&").map((q) => q.split("="));
+
+    const imageResizeOptions = new Map<string, string>(Object.entries(options as Record<string, string>));
+    if (attachment) imageResizeOptions.set("attachment", attachment);
+    if (w || h || attachment) imageResizeOptions.set("view", "1");
+    if (w) imageResizeOptions.set("w", w + "");
+    if (h) imageResizeOptions.set("h", h + "");
+
+    for (const q of queryParams) {
+        if (q[0] === "attachment") continue;
+        if (!q[0] || !q[1]) continue;
+        if (q[1] === "undefined") continue;
+        imageResizeOptions.set(q[0], q[1]);
+    }
+    const qStr =
+        "?" +
+        Array.from(imageResizeOptions.entries())
+            .map(([k, v]) => `${k}=${v}`)
+            .join("&");
+
+    return base + qStr;
+}
 
 export type ContentMetadataConfig<M = PageMetadata> = {
     titleTemplate?: (title: string) => string;
+    imageLoading: (path: string) => string;
     canonicalBaseUrl?: string;
     fallback?: Partial<M>;
-    imageLoading?: (config: { src?: string; size?: string }) => string;
 };
 
 @Injectable()
@@ -42,7 +92,8 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         appendTagToHead(dom, "title", title, "title");
         appendTagToHead(dom, "canonical", meta["canonical"], "link", "rel");
 
-        const image = this.config?.imageLoading ? this.config.imageLoading({ src: meta.image }) : meta.image;
+        const image_path = meta.image ?? fallback?.image ?? "";
+        const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
         appendTagToHead(dom, "image", image);
 
         if (meta.externalLinks) {

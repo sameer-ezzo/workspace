@@ -2,7 +2,8 @@ import { ComponentRef, computed, Injector, signal, WritableSignal } from "@angul
 import { FormGroup, FormControl } from "@angular/forms";
 import { Field } from "./types";
 import { createDataAdapter, DataAdapter } from "@upupa/data";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "@noah-ark/common";
+
 import { DynamicComponent } from "@upupa/common";
 
 export class FieldRef<TCom = any> {
@@ -50,7 +51,7 @@ export class FieldRef<TCom = any> {
     }
 
     setVisibility(visible: boolean) {
-        this.inputs.set({ ...this.inputs(), hidden: !visible });
+        this.inputs.update((inputs) => ({ ...inputs, hidden: !visible }));
         this.hidden.set(!visible);
     }
 }
