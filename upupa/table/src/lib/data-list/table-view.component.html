@@ -1,0 +1,78 @@
+<div class="table-container">
+    @if (adapter().loading()) {
+        <mat-progress-bar style="position: absolute" mode="indeterminate"></mat-progress-bar>
+    }
+    <table #table mat-table multiTemplateDataRows [dataSource]="adapter().normalized()" [trackBy]="trackByFn" [class.loading]="adapter().loading()">
+        @for (field of columns() | keyvalue; track field.key; let i = $index) {
+            @let colName = field.key;
+            @let column = field.value;
+            <ng-container [matColumnDef]="colName">
+                <th mat-header-cell *matHeaderCellDef [class.none]="column?.visible === false" [ngStyle]="{ width: column?.width }" [ngClass]="column.class">
+                    {{ column.header || colName }}
+                </th>
+                <td
+                    mat-cell
+                    *matCellDef="let element; let dataIndex = dataIndex"
+                    [class.none]="column?.visible === false"
+                    [ngStyle]="{ width: column?.width }"
+                    [ngClass]="column.class"
+                >
+                    <div [ngClass]="column.class">
+                        @for (template of column.template ?? []; track colIdx; let colIdx = $index) {
+                            <portal
+                                [component]="template['component']"
+                                [inputs]="
+                                    merge(template.inputs, {
+                                        value: element.item | jpointer: colName,
+                                        item: element.item,
+                                        element,
+                                        row: element,
+                                        column,
+                                        dataIndex,
+                                    })
+                                "
+                                [injector]="getRowInjector(element)"
+                                [outputs]="template['outputs']"
+                                [bindings]="template['bindings']"
+                                [class]="template['class']"
+                            ></portal>
+                        } @empty {
+                            <cell-template
+                                [value]="element.item | jpointer: colName"
+                                [item]="element"
+                                [element]="element.item"
+                                [column]="field"
+                                [dataIndex]="dataIndex"
+                            ></cell-template>
+                        }
+                    </div>
+                </td>
+            </ng-container>
+        }
+        <tr mat-header-row *matHeaderRowDef="columnNames()" [class.selected]="adapter().selection().length > 0"></tr>
+        <tr mat-row *matRowDef="let row; let i = $index; columns: columnNames()" [class.selected]="row.selected"></tr>
+    </table>
+
+    <!-- @if (!adapter().loading()) {
+        @if (!items().length) {
+            <div id="no-data" style="text-align: center; padding: 2rem">
+                @if (noDataImage()) {
+                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="noDataMessage()" />
+                }
+                <p>{{ noDataMessage() }}</p>
+            </div>
+        } @else {}
+    } -->
+</div>
+
+<!-- Hide paginator when total data is lte page size -->
+<!-- <div class="mat-paginator">
+    @let page = adapter().page();
+    @let length = page.length ?? 0;
+    @let pageSize = page.pageSize ?? adapter().entities().length;
+    @let pageIndex = page.pageIndex ?? 0;
+    @if (pageIndex > 0 || (showPaginator() && length > pageSize)) {
+        <mat-paginator [disabled]="adapter().loading() === true" [pageIndex]="pageIndex" [length]="length" showFirstLastButtons></mat-paginator>
+    }
+     a placeholder to prevent layout damage
+</div> -->
