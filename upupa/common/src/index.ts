@@ -56,3 +56,4 @@ export * from "./lib/portal.component";
 export * from "./lib/portal.component";
 export * from "./lib/dynamic-component";
 export * from "./lib/utils";
+export * from "./lib/theme-picker-component"
