@@ -77,12 +77,16 @@ export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, C
     columns = computed(() => reflectTableViewModel(this.viewModel()).columns);
     instance: Class;
 
-    async ngAfterViewInit() {
-        await this.instance?.["afterViewInit"]?.();
+    ngOnInit() {
+        this.instance?.["onInit"]?.();
     }
 
-    async ngOnDestroy() {
-        await this.instance?.["onDestroy"]?.();
+    ngAfterViewInit() {
+        this.instance?.["afterViewInit"]?.();
+    }
+
+    ngOnDestroy() {
+        this.instance?.["onDestroy"]?.();
     }
 
     onSelectionChange(event: any) {

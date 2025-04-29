@@ -41,7 +41,6 @@ export interface ITableCellTemplate<TValue = any, TRow = any> {
             @if (column().value.pipe["pipe"]) {
                 <div [innerHTML]="value() | dynamic: column().value.pipe['pipe'] : column().value.pipe['args']"></div>
             } @else {
-                hi
                 <div [innerHTML]="value() | dynamic: column().value.pipe"></div>
             }
         } @else {
