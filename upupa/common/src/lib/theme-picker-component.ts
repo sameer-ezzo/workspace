@@ -2,7 +2,7 @@ import { Component, inject, signal } from "@angular/core";
 import { MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatMenu, MatMenuTrigger, MatMenuItem } from "@angular/material/menu";
-import { Theme, ThemeService } from "@upupa/common";
+import { Theme, ThemeService } from "./theme.service";
 
 @Component({
     selector: "app-theme-picket",
