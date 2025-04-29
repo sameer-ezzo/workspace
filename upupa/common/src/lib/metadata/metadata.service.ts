@@ -4,29 +4,65 @@ import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 
 import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
 import { PageMetadata } from "./models";
+import { LinkProps } from "./link";
+
+export abstract class BaseTag {
+    constructor(
+        public type: "title" | "link" | "meta",
+        public rel: string,
+        public name: string,
+        public content: string | undefined,
+        public attributes: Record<string, string> = {},
+    ) {}
+}
+export class TitleMetaTag extends BaseTag {
+    constructor(title: string | undefined, attributes: Record<string, string> = {}) {
+        super("title", "", "", title, attributes);
+    }
+}
+export class LinkTag extends BaseTag {
+    constructor(props: LinkProps) {
+        const { rel, href } = props;
+        delete props.rel;
+        delete props.href;
+        const attributes = { ...props } as Record<string, string>;
+
+        super("link", rel, undefined, href, attributes);
+    }
+}
+export class MetaTag extends BaseTag {
+    constructor(name: string, content: string | undefined, attributes: Record<string, string> = {}) {
+        super("meta", "", name, content, attributes);
+    }
+}
 
 export function appendTagToHead(
     dom: Document,
     name: string,
     content: string | undefined,
     tagType: "title" | "meta" | "link" = "meta",
-    key: "rel" | "property" | "name" = "name",
+    rel: "rel" | "property" | "name" | "icon" = "name",
+    attributes: Record<string, string> = {},
     shouldRemoveExisting = true,
 ): void {
     if (tagType === "title") {
         dom.title = content ?? "";
         return;
     }
-    if (shouldRemoveExisting) dom.querySelector(`${tagType}[${key}="${name}"]`)?.remove();
+    if (shouldRemoveExisting) dom.querySelector(`${tagType}[${rel}="${name}"]`)?.remove();
     if (!content) return;
     const metaTag = dom.createElement(tagType);
 
-    metaTag.setAttribute(key, name);
+    metaTag.setAttribute(rel, name);
     if (tagType === "meta") {
         metaTag.setAttribute("content", content);
     } else if (tagType === "link") {
         metaTag.setAttribute("href", content);
     } else throw new Error(`Invalid tag type ${tagType}`);
+
+    for (const [key, value] of Object.entries(attributes)) {
+        metaTag.setAttribute(key, value);
+    }
 
     dom.head.appendChild(dom.createTextNode("\n"));
     dom.head.appendChild(metaTag);

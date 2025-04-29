@@ -1,12 +1,12 @@
-import { APP_BASE_HREF, DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
-import { Component, ElementRef, forwardRef, inject, input, LOCALE_ID, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
+import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { UploadClient } from "@upupa/upload";
 
-declare var CKEDITOR: any;
+declare let CKEDITOR: any;
 
 export const FULL_TOOLBAR = [
     ["Source", "Save", "NewPage", "DocProps", "Preview", "Print", "Templates", "document"],
