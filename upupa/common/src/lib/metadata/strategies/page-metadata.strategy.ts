@@ -82,7 +82,7 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         const dom = this.dom;
         const fallback = metaFallback.fallback;
 
-        meta = { ...fallback, ...(meta ?? {}) }; //as PageMetadata;
+        meta = { ...fallback, ...meta }; //as PageMetadata;
 
         delete meta.twitter;
         delete meta.og;
@@ -98,7 +98,7 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
 
         if (meta.externalLinks) {
             for (const link of meta.externalLinks) {
-                appendTagToHead(dom, link.rel, link.href, "link", "rel", false);
+                appendTagToHead(dom, 'link', link.href, "link", link.rel ?? "rel", link.attributes ?? {}, false);
             }
         }
 
