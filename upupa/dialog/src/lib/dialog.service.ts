@@ -4,6 +4,7 @@ import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upup
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
 import { DialogRef } from "./dialog-ref";
 import { DataAdapter } from "@upupa/data";
+import { NavigationEnd, Router } from "@angular/router";
 
 export type UpupaDialogActionContext<C = any> = {
     host: DialogWrapperComponent<C>;
@@ -41,7 +42,20 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
 
 @Injectable({ providedIn: "root" })
 export class DialogService {
-    private readonly dialog = inject(MatDialog);
+    stack: DialogRef[] = [];
+    readonly dialog = inject(MatDialog);
+    readonly router = inject(Router);
+
+    constructor() {
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+                const stack = this.stack.slice();
+                for (const dialogRef of stack) {
+                    dialogRef.close();
+                }
+            }
+        });
+    }
 
     open<TCom, TData = any, TResult = any>(template: DynamicTemplate<TCom>, options?: DialogConfig): DialogRef<TCom, TResult> {
         if (!template) throw new Error("template is not provided for dialog!");
@@ -66,6 +80,11 @@ export class DialogService {
         );
         matDialogRef.componentRef.setInput("title", options?.title);
         matDialogRef.componentRef.setInput("hideCloseButton", options?.hideCloseButton);
+
+        this.stack.push(matDialogRef as any);
+        matDialogRef.afterClosed().subscribe(() => {
+            this.stack = this.stack.filter((d) => d !== matDialogRef);
+        });
 
         return matDialogRef as DialogRef<TCom, TResult>;
     }
