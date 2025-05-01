@@ -35,7 +35,8 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
         if (!s) return;
         const script = this.dom.createElement("script");
         script.type = "application/ld+json";
-        script.text = JSON.stringify(s, null, 4);
+        const value = extractOnlyFilledFields(s);
+        script.text = JSON.stringify(value, null, 4);
         this.dom.head.appendChild(script);
     }
 
@@ -99,4 +100,14 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
             "@type": "ImageObject",
         };
     }
+}
+function extractOnlyFilledFields(s: any) {
+    for (const key in s) {
+        if (s[key] && typeof s[key] === "object") {
+            extractOnlyFilledFields(s[key]);
+        } else if (s[key] === null || s[key] === undefined || s[key] === "") {
+            delete s[key];
+        }
+    }
+    return s;
 }

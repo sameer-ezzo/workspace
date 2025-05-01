@@ -1,7 +1,8 @@
 import { inject, Injectable, InjectionToken, Injector, runInInjectionContext } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
-import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
+import { MetadataUpdateStrategy } from "../metadata.service";
 import { PageMetadata } from "../models";
+import { createTag, LinkTag, MetaTag, TitleMetaTag } from "../link";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
 export const PAGE_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("PAGE_METADATA_CONFIG");
@@ -89,16 +90,16 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
         delete meta.schema;
 
         const title = runInInjectionContext(this.injector, () => meta.titleTemplate?.(meta.title) ?? this.config.titleTemplate?.(meta.title) ?? meta.title);
-        appendTagToHead(dom, "title", title, "title");
-        appendTagToHead(dom, "canonical", meta["canonical"], "link", "rel");
+        createTag(dom, new TitleMetaTag(title));
+        createTag(dom, new LinkTag({ rel: "canonical", href: meta["url"] }));
 
         const image_path = meta.image ?? fallback?.image ?? "";
         const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
-        appendTagToHead(dom, "image", image);
+        createTag(dom, new MetaTag("image", image));
 
         if (meta.externalLinks) {
             for (const link of meta.externalLinks) {
-                appendTagToHead(dom, 'link', link.href, "link", link.rel ?? "rel", link.attributes ?? {}, false);
+                createTag(dom, link);
             }
         }
 
@@ -109,7 +110,10 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
 
         for (const key in meta) {
             const k = key; //as keyof PageMetadata;
-            appendTagToHead(dom, key, meta[k] as string);
+            if (typeof meta[k] === "object" || typeof meta[k] === "function" || typeof meta[k] === "undefined") continue;
+            const content = (meta[k] ?? "").trim();
+            if (!content.length) continue;
+            createTag(dom, new MetaTag(key, content));
         }
     }
 }

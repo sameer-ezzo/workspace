@@ -170,3 +170,189 @@ export type LinkProps =
     | LinkPrev
     | LinkSearch
     | LinkPingback; // Add other less common ones (e.g., 'tag') if needed
+
+// export abstract class BaseTag {
+//     constructor(
+//         public type: "title" | "link" | "meta",
+//         public rel: string,
+//         public name: string,
+//         public content: string | undefined,
+//         public attributes: Record<string, string> = {},
+//     ) {}
+// }
+
+export class TitleMetaTag {
+    constructor(
+        public title: string | undefined,
+        public attributes: Record<string, string> = {},
+    ) {}
+}
+export class LinkTag {
+    rel: string;
+    href: string;
+    attributes: Record<string, string>;
+    constructor(props: LinkProps) {
+        this.rel = props.rel;
+        this.href = props.href;
+        delete props.rel;
+        delete props.href;
+        const attributes = { ...props } as Record<string, string>;
+        this.attributes = attributes;
+    }
+}
+export class MetaTag {
+    constructor(
+        public name: string,
+        public content: string | undefined,
+        public keyProperty: string | undefined = "name",
+        public attributes: Record<string, string> = {},
+    ) {}
+}
+
+export class StylesheetTag {
+    type = "text/css";
+    rel = "stylesheet";
+    content: string;
+    attributes?: Record<string, string>;
+
+    constructor(props: Partial<Omit<LinkStylesheet, "rel" | "type">> & { content: string }) {
+        this.content = props.content;
+        delete props.content;
+        this.attributes = { ...props } as unknown as Record<string, string>;
+    }
+}
+export class ScriptTag {
+    type = "text/javascript";
+    rel = "script";
+    content: string;
+    attributes?: Record<string, string>;
+
+    constructor(props: Partial<Omit<LinkStylesheet, "rel" | "type">> & { content: string }) {
+        this.content = props.content;
+        delete props.content;
+        this.attributes = { ...props } as unknown as Record<string, string>;
+    }
+}
+
+export function createTag(dom: Document, tag: LinkTag | StylesheetTag | TitleMetaTag | MetaTag | ScriptTag): void {
+    let el: HTMLLinkElement | HTMLStyleElement | HTMLMetaElement | HTMLTitleElement | HTMLScriptElement;
+    if (tag instanceof LinkTag) el = createLinkTag(dom, tag);
+    else if (tag instanceof StylesheetTag) el = createStylesheetTag(dom, tag);
+    else if (tag instanceof TitleMetaTag) el = createTitleTag(dom, tag);
+    else if (tag instanceof MetaTag) el = createMetaTag(dom, tag);
+    else if (tag instanceof ScriptTag) el = createScriptTag(dom, tag);
+    else throw new Error("Unknown tag type");
+    if (!el) {
+        console.debug("Tag creation failed", tag);
+        return;
+    }
+    dom.head.appendChild(dom.createTextNode("\n"));
+    dom.head.appendChild(el);
+}
+function createStylesheetTag(dom: Document, tag: StylesheetTag): HTMLStyleElement {
+    if (!tag.content) {
+        console.debug("Stylesheet tag is missing content", tag);
+        return undefined as unknown as HTMLStyleElement;
+    }
+    const el: HTMLStyleElement = dom.createElement("style");
+    el.type = tag.type;
+    el.textContent = tag.content;
+
+    if (tag.attributes) {
+        const id = tag.attributes["id"];
+        if (id) dom.querySelector(`style#${id}`)?.remove();
+        for (const [key, value] of Object.entries(tag.attributes)) {
+            el.setAttribute(key, value);
+        }
+    }
+
+    return el;
+}
+
+function createScriptTag(dom: Document, tag: ScriptTag): HTMLScriptElement {
+    if (!tag.content) {
+        console.debug("Script tag is missing content", tag);
+        return undefined as unknown as HTMLScriptElement;
+    }
+
+    const el: HTMLScriptElement = dom.createElement("script");
+    el.type = tag.type;
+    el.textContent = tag.content;
+    if (tag.attributes) {
+        const id = tag.attributes["id"];
+        if (id) dom.querySelector(`script#${id}`)?.remove();
+        for (const [key, value] of Object.entries(tag.attributes)) {
+            el.setAttribute(key, value);
+        }
+    }
+
+    return el;
+}
+
+function createMetaTag(dom: Document, tag: MetaTag): HTMLMetaElement {
+    if (!tag.name || !tag.content) {
+        console.debug("Meta tag is missing name or content", tag);
+        return undefined as unknown as HTMLMetaElement;
+    }
+    const el: HTMLMetaElement = dom.createElement("meta");
+    const key = tag.keyProperty ?? "name";
+    if (tag.name) {
+        el.setAttribute(key, tag.name);
+    }
+    if (tag.content) {
+        el.setAttribute("content", tag.content);
+    }
+
+    dom.querySelector(`meta[${key}="${tag.name}"]`)?.remove();
+
+    if (tag.attributes) {
+        for (const [key, value] of Object.entries(tag.attributes)) {
+            el.setAttribute(key, value);
+        }
+    }
+
+    return el;
+}
+function createTitleTag(dom: Document, tag: TitleMetaTag): HTMLTitleElement {
+    dom.querySelector("title")?.remove();
+    const title = (tag.title ?? "").trim();
+    if (!title) {
+        console.debug("Meta tag is missing title", tag);
+        return undefined as unknown as HTMLTitleElement;
+    }
+
+    const el: HTMLTitleElement = dom.createElement("title");
+    if (title.length) {
+        el.textContent = title;
+    }
+    if (tag.attributes) {
+        for (const [key, value] of Object.entries(tag.attributes)) {
+            el.setAttribute(key, value);
+        }
+    }
+    return el;
+}
+function createLinkTag(dom: Document, tag: LinkTag): HTMLLinkElement {
+    if (!tag.rel || !tag.href) {
+        console.debug("Link tag is missing rel or href", tag);
+        return undefined as unknown as HTMLLinkElement;
+    }
+    const el: HTMLLinkElement = dom.createElement("link");
+
+    if (tag.rel) {
+        el.setAttribute("rel", tag.rel);
+    }
+    if (tag.href) {
+        el.setAttribute("href", tag.href);
+    }
+    if (tag.rel && tag.href) {
+        dom.querySelector(`link[rel="${tag.rel}"][href="${tag.href}"]`)?.remove();
+    }
+    if (tag.attributes) {
+        for (const [key, value] of Object.entries(tag.attributes)) {
+            el.setAttribute(key, value);
+        }
+    }
+
+    return el;
+}

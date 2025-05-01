@@ -1,8 +1,9 @@
 import { DOCUMENT } from "@angular/common";
 import { Injectable, InjectionToken, inject } from "@angular/core";
-import { appendTagToHead, MetadataUpdateStrategy } from "../metadata.service";
-import { ContentMetadataConfig, resourceLinkNormalize } from "./page-metadata.strategy";
+import { MetadataUpdateStrategy } from "../metadata.service";
+import { ContentMetadataConfig } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";
+import { createTag, MetaTag } from "../link";
 
 export const OPEN_GRAPH_CONFIG = new InjectionToken<OpenGraphConfig>("OPEN_GRAPH_CONFIG");
 export type OpenGraphConfig = Pick<ContentMetadataConfig<OpenGraphMetadata>, "imageLoading">;
@@ -12,7 +13,10 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
     readonly config = inject(OPEN_GRAPH_CONFIG);
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => appendTagToHead(this.dom, name, content, "meta", "property");
+    private metaUpdateFn = (name: string, content: string | undefined) => {
+        createTag(this.dom, new MetaTag(name, content, "property"));
+        // appendTagToHead(this.dom, name, content, "meta", "property");
+    };
 
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const pageMetadata = metaFallback.fallback ?? {};
@@ -32,7 +36,9 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
 
         for (const key in og) {
             const k = key; //as keyof OpenGraphData;
-            this.metaUpdateFn(key, og[k] as string);
+            const content = (og[k] ?? "").trim();
+            if (!content.length) continue;
+            this.metaUpdateFn(key, content);
         }
     }
 }

@@ -1,3 +1,5 @@
+import { LinkTag } from "./link";
+
 export interface TwitterCardMetadata {
     "twitter:title": string;
     "twitter:description": string;
@@ -263,5 +265,5 @@ export interface PageMetadata {
     twitter?: Partial<TwitterCardMetadata>;
     og?: Partial<OpenGraphMetadata>;
     schema?: Partial<SchemaOrgMetadata>;
-    externalLinks?: { rel: HTMLLinkElement["href"]; href: string; priority?: "high" | "low" }[];
+    externalLinks?: LinkTag[];
 }
