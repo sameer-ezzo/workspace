@@ -27,7 +27,7 @@ export function metaImageLinkNormalize(
     baseUrl: string,
     path: string,
     options: Partial<MetaImageLinkOptions> = {
-        view: { w: "100", h: "100", attachment: "inline" },
+        view: { attachment: "inline" },
     },
 ): string {
     const w = options?.view?.w;

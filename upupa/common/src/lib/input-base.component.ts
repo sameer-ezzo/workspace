@@ -17,6 +17,22 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
     });
     disabled = model(false);
     required = input(false);
+    attributes = input<{ attribute: string; value: string }[], Record<string, string>>([], {
+        transform: (attrs: Record<string, string>) => {
+            if (!attrs) return [];
+            const entries = Object.entries(attrs);
+            if (!entries.length) return [];
+
+            const atts = entries
+                .filter(([attribute, value]) => value != null)
+                .reduce((acc, [attribute, value]) => {
+                    acc.push({ attribute, value: value });
+                    return acc;
+                }, []);
+
+            return atts;
+        },
+    });
 
     value = model<T>();
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
