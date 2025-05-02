@@ -28,7 +28,7 @@ import { signalLink } from "./routing/signals";
 @Component({
     selector: "portal",
     imports: [CommonModule],
-    template: ` <ng-container #portal></ng-container> `
+    template: ` <ng-container #portal></ng-container> `,
 })
 export class PortalComponent<TCom = any> {
     environmentInjector = inject(EnvironmentInjector);
@@ -173,7 +173,11 @@ export class PortalComponent<TCom = any> {
     setInputs(inputs: Record<string, any>) {
         for (const [key, value] of Object.entries(inputs)) {
             if (this.componentMirror.inputs.some((i) => i.templateName === key)) {
-                this.componentRef.setInput(key, value);
+                try {
+                    this.componentRef.setInput(key, value);
+                } catch (error) {
+                    console.error("Error setting input:", this.componentRef.instance.constructor.name, key, value);
+                }
             }
         }
         this.componentRef.changeDetectorRef.detectChanges();

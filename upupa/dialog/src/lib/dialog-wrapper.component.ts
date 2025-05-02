@@ -1,11 +1,7 @@
-import { AfterViewInit, ViewEncapsulation, inject, DestroyRef, PLATFORM_ID, input, computed, forwardRef } from "@angular/core";
+import { ViewEncapsulation, inject, input, computed, forwardRef } from "@angular/core";
 import { MatDialogRef, MatDialogModule } from "@angular/material/dialog";
 
 import { Component } from "@angular/core";
-import { fromEvent } from "rxjs";
-import { debounceTime, startWith } from "rxjs/operators";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { isPlatformBrowser, JsonPipe } from "@angular/common";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
@@ -29,7 +25,7 @@ import { DialogRef } from "./dialog-ref";
         },
     ],
 })
-export class DialogWrapperComponent<C = any> implements DialogPortal<C>, AfterViewInit {
+export class DialogWrapperComponent<C = any> implements DialogPortal<C> {
     hostClass = computed(() => [this.panelClass(), this.footer().length > 0 ? "y-scroll" : ""].join(" "));
     panelClass = input<string, string>("dialog-wrapper-container", {
         transform: (v: string) => `dialog-wrapper-container ${(v ?? "").replace("dialog-wrapper-container", "")}`,
@@ -49,22 +45,6 @@ export class DialogWrapperComponent<C = any> implements DialogPortal<C>, AfterVi
 
     constructor() {
         this.dialogRef.addPanelClass("dialog-wrapper-overlay");
-    }
-
-    private readonly platformId = inject(PLATFORM_ID);
-    ngAfterViewInit() {
-        this.registerWidthWatcher();
-    }
-
-    private readonly destroyRef = inject(DestroyRef);
-    private registerWidthWatcher() {
-        if (isPlatformBrowser(this.platformId))
-            fromEvent(window, "resize")
-                .pipe(startWith(0), debounceTime(50), takeUntilDestroyed(this.destroyRef))
-                .subscribe((e) => {
-                    if (window.innerWidth < 790) this.dialogRef.updateSize("80%");
-                    else this.dialogRef.updateSize("100%");
-                });
     }
 
     close() {

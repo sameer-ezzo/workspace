@@ -1,10 +1,11 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, inject } from "@angular/core";
 
-import { randomString, UserDevice } from "@noah-ark/common";
+import { loadScript, randomString, UserDevice } from "@noah-ark/common";
 
 import { firstValueFrom } from "rxjs";
 import { AUTH_OPTIONS } from "./di.token";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 
 export type Platform = {
     id: string;
@@ -20,6 +21,8 @@ export type Platform = {
     ua: string;
     version: string;
 };
+declare let platform: Platform & any;
+
 @Injectable({
     providedIn: "root",
 })
@@ -27,6 +30,8 @@ export class DeviceService {
     private readonly options = inject(AUTH_OPTIONS);
     readonly baseUrl = this.options.base_url;
     readonly http = inject(HttpClient);
+    private readonly doc = inject(DOCUMENT);
+    private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     getDeviceId() {
         let id = localStorage.getItem("device");
@@ -38,11 +43,13 @@ export class DeviceService {
     }
 
     async getDevice(): Promise<Platform> {
-        const { name, prerelease, description, layout, manufacturer, os, product, ua, version } = await import("platform").then((p) => p);
-        const platform = { name, prerelease, description, layout, manufacturer, os, product, ua, version } as Platform;
-        platform.id = this.getDeviceId();
-        platform.type = "Web";
-        return platform;
+        await loadScript(this.doc, "https://cdnjs.cloudflare.com/ajax/libs/platform/1.3.6/platform.min.js", { defer: true });
+        const { name, prerelease, description, layout, manufacturer, os, product, ua, version } = platform;
+
+        const _platform = { name, prerelease, description, layout, manufacturer, os, product, ua, version } as Platform;
+        _platform.id = this.getDeviceId();
+        _platform.type = "Web";
+        return _platform;
     }
 
     updateDeviceInfo(device: Partial<UserDevice>) {

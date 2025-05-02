@@ -27,3 +27,4 @@ export * from "./lib/decorators/decorators.types";
 export * from "./lib/data-form/viewmodels/form.viewmodel";
 export * from "./lib/data-form/data-form.component";
 export * from "./lib/providers";
+export * from './lib/decorators/form-array-table-header.component';
