@@ -220,6 +220,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
         hidden: fieldOptions.hidden ?? false,
         inputs: { ...fieldOptions.inputs },
         outputs: { ...fieldOptions.outputs },
+        updateOn: fieldOptions.updateOn,
         validations: [],
     };
 
@@ -292,6 +293,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             field.inputs["uploadPath"] = htmlOptions.uploadPath || fieldName;
             break;
         case "date":
+            field.updateOn ??= "blur";
             break;
         case "text":
             break;

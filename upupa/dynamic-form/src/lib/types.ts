@@ -21,6 +21,7 @@ export type FieldItem<TCom = any> = {
     inputs?: DynamicComponent<TCom>["inputs"];
     outputs?: DynamicComponent<TCom>["outputs"];
     hidden?: boolean;
+    updateOn?: 'change' | 'blur' | 'submit';
 };
 
 const INPUTS = [

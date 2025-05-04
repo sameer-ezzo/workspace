@@ -8,7 +8,10 @@ import { FormGraph } from "./dynamic-form.component";
 import { FieldRef } from "./field-ref";
 
 export class DynamicFormBuilder {
-    constructor(private readonly injector: Injector, private readonly formService: DynamicFormService) {}
+    constructor(
+        private readonly injector: Injector,
+        private readonly formService: DynamicFormService,
+    ) {}
 
     build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGraph {
         const graph = new Map<string, FieldRef>();
@@ -55,14 +58,18 @@ export class DynamicFormBuilder {
             {
                 validators: this.getValidators(name, field),
                 asyncValidators: this.getAsyncValidators(field),
-            }
+            },
         );
         const fieldRef = new FieldRef(this.injector, name, _path, field, rootForm, group);
         group["fieldRef"] = fieldRef;
         return group;
     }
     getControl(name: string, field: Field, value: any, path: `/${string}`, form: FormGroup) {
-        const control = new FormControl(value, { validators: this.getValidators(name, field), asyncValidators: this.getAsyncValidators(field) });
+        const control = new FormControl(value, {
+            validators: this.getValidators(name, field),
+            asyncValidators: this.getAsyncValidators(field),
+            updateOn: field.updateOn ?? "change",
+        });
         const fieldRef = new FieldRef(this.injector, name, path, field, form, control);
         control["fieldRef"] = fieldRef;
         return control;
