@@ -65,9 +65,13 @@ export function defaultValidator(name: Validator["name"]) {
             return (v) => (control) => (empty(control) || control.value.includes(v.arguments) ? null : _error(v));
         case "length":
             return (v) => (control) => (control.value?.length === v.arguments ? null : _error(v));
+        case "after":
+            return (v) => (control) => (control.value < v.arguments ? _error(v) : null);
+        case "before":
+            return (v) => (control) => (control.value > v.arguments ? _error(v) : null);
 
         default:
-            throw unreachable("default validator name", name as never);
+            throw unreachable("default validator name", name);
     }
 }
 

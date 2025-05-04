@@ -113,6 +113,10 @@ export type MinValidator = { name: "min"; arguments: number; message?: string };
 export type GreaterThanValidator = { name: "greaterThan"; arguments: number; message?: string };
 export type LessThanValidator = { name: "lessThan"; arguments: number; message?: string };
 
+export type BeforeValidator = { name: "before"; arguments: Date; message?: string };
+export type AfterValidator = { name: "after"; arguments: Date; message?: string };
+
+
 export type Validator =
     | RequiredValidator
     | EmailValidator
@@ -127,4 +131,6 @@ export type Validator =
     | MaxValidator
     | MinValidator
     | GreaterThanValidator
-    | LessThanValidator;
+    | LessThanValidator
+    | BeforeValidator
+    | AfterValidator;

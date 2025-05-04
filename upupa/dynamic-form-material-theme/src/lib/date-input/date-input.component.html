@@ -13,13 +13,17 @@
         [matDatepicker]="picker"
         [min]="min()"
         [max]="max()"
+        (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); setDate(input.value)"
 
-        (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); setDate(input.value);"
+        [formControl]="control()"
+        [required]="required()"
     />
     <mat-datepicker-toggle matSuffix touchUi [for]="picker"></mat-datepicker-toggle>
     @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
     }
-    <mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>
+    <mat-error>
+        <span *errors="control().errors; control: control(); let message">{{ message }}</span>
+    </mat-error>
 </mat-form-field>
 <mat-datepicker #picker [startView]="startView()" [touchUi]="touchUi()" (closed)="setDate(input.value)"></mat-datepicker>

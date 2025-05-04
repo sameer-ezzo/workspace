@@ -6,7 +6,6 @@ import { ClientDataSource, SignalDataSource } from "./datasource/client.data.sou
 import { ApiDataSource } from "./datasource/api.data.source";
 import { TableDataSource } from "./datasource/model";
 
-
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector = inject(Injector)): DataAdapter<T> {
     let dataSource: TableDataSource;
 

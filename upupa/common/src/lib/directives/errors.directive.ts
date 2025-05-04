@@ -19,8 +19,10 @@ export class ErrorsDirective {
         return Object.keys(errors).map((errorCodeName) => this.getError(errorCodeName, errors[errorCodeName]));
     }
 
-    getError(errorCodeName: string, validatorArgument: any) {
-        if (validatorArgument && typeof validatorArgument === "object" && "message" in validatorArgument) return validatorArgument.message;
+    getError(errorCodeName: string, validator: any) {
+        if (validator && typeof validator === "object" && "message" in validator) return validator.message;
+
+        const validatorArgument = validator?.["arguments"];
 
         let fieldName = "Field";
         let value = undefined;
@@ -58,6 +60,10 @@ export class ErrorsDirective {
                 return `${fieldName} must be maximum of ${validatorArgument}.`;
             case "timeSpanMin":
                 return `${fieldName} must be minimum of ${validatorArgument}.`;
+            case "before":
+                return `${fieldName} must be before ${validatorArgument}.`;
+            case "after":
+                return `${fieldName} must be after ${validatorArgument}.`;
             default:
                 return errorCodeName;
         }
