@@ -132,7 +132,7 @@ function extractMongooseRoot(options: DataOptions[]) {
             ...opts,
             connectionName: dbName,
             serverSelectionTimeoutMS: 10000, // Wait up to 10s for MongoDB to respond
-            socketTimeoutMS: 45000,          // Close sockets after 45s of inactivity
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
         });
     }) as any;
 }
@@ -144,10 +144,7 @@ function extractDataServiceProviders(options: DataOptions[]) {
     const providers: Provider[] = options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
         return {
             provide: getDataServiceToken(dbName),
-            useFactory: async (broker: Broker, connection: Connection) => {
-                const service = await DataService.create(dbName, connection, connectionOptions, broker, migrations);
-                return service;
-            },
+            useFactory: (broker: Broker, connection: Connection) => DataService.create(dbName, connection, connectionOptions, broker, migrations),
             inject: [Broker, getConnectionToken(dbName)],
         } as FactoryProvider;
     });

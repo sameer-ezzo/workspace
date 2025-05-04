@@ -377,10 +377,12 @@ export class QueryParser {
         let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
+        let $text: string;
 
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
             if (x.key === "page" && !isNaN(+x.value)) page = +x.value;
+            else if (x.key === "$text") $text = x.value;
             else if (x.key === "per_page" && !isNaN(+x.value)) {
                 per_page = Math.min(+x.value, 500);
             } else if (x.key === "group_by") {
@@ -460,7 +462,7 @@ export class QueryParser {
             }
         }
 
-        return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch };
+        return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch, $text };
     }
 }
 

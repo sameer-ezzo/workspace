@@ -42,6 +42,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         logger.info(`Creating DataService for ${dbName}`);
         const service = new DataService(dbName, connection, connectionOptions, broker);
         await MigrationsService.migrate(service, migrations);
+        await service.connection.syncIndexes();
         logger.info(`DataService for ${dbName} created successfully!`);
         return service;
     }
@@ -296,6 +297,10 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             if (query.fields1) pipeline.push({ $addFields: query.fields1 });
             if (query.fields2) pipeline.push({ $addFields: query.fields2 });
             if (pre_filter.length) pipeline.push({ $match: { $and: pre_filter } });
+            if (query.$text) {
+                pipeline.push({ $match: { $text: { $search: query.$text } } });
+                pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
+            }
             if (query.lookups)
                 query.lookups.forEach((l: any) => {
                     l.from = this.prefix + l.from;
@@ -434,6 +439,10 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             }
             if (query.fields3) pipeline.push({ $addFields: query.fields3 });
             if (post_filter.length) pipeline.push({ $match: { $and: post_filter } });
+            if (query.$text) {
+                pipeline.push({ $match: { $text: { $search: query.$text } } });
+                pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
+            }
             if (query.sort) pipeline.push({ $sort: query.sort });
             if (query.select) pipeline.push({ $project: query.select });
 
