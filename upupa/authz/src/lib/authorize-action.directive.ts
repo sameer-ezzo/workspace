@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input, computed } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input, computed, effect } from "@angular/core";
 import { Principle } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -143,4 +143,20 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
         if (authResult.access === "deny") this.deny(el);
         else this.grant(el);
     }
+}
+
+@Directive({
+    selector: "[hasRole]",
+    host: {
+        "[style.visibility]": "_hasRole() ?  'visible' : 'hidden'",
+    },
+})
+export class HasRoleDirective {
+    auth = inject(AuthService);
+    host = inject(ElementRef);
+    hasRole = input<string>(undefined);
+
+    _hasRole = computed(() => {
+        return this.auth.hasRole(this.hasRole());
+    });
 }

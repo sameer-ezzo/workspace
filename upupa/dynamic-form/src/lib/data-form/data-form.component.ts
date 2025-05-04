@@ -115,7 +115,7 @@ export class DataFormComponent<T = any> {
         const vm = this.value();
         runInInjectionContext(this._injector(), async () => {
             await vm["onValueChange"]?.(e);
-            this.control().patchValue(vm, { emitModelToViewChange:true });
+            this.control().patchValue(vm, { emitModelToViewChange: true });
         });
     }
 
