@@ -154,9 +154,10 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
 export class HasRoleDirective {
     auth = inject(AuthService);
     host = inject(ElementRef);
-    hasRole = input<string>(undefined);
+    hasRole = input<string[], string | string[]>(undefined, { transform: (value) => (typeof value === "string" ? [value] : value) });
 
     _hasRole = computed(() => {
-        return this.auth.hasRole(this.hasRole());
+        const requiredRoles = this.hasRole() ?? [];
+        return requiredRoles.some((r) => this.auth.hasRole(r));
     });
 }

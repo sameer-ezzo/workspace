@@ -197,14 +197,14 @@
         }
     </table>
     @if (adapter().normalized().length === 0) {
-        <ng-content class="empty-state">
-            <div class="no-data">
-                @if (noDataImage()) {
-                    <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
-                }
-                <p>{{ noDataMessage() }}</p>
-            </div>
-        </ng-content>
+        <!-- <ng-content class="empty-state">
+        </ng-content> -->
+        <div class="no-data">
+            @if (noDataImage()) {
+                <img style="width: 100%; max-width: 320px" [src]="noDataImage()" alt="no data" />
+            }
+            <p>{{ noDataMessage() }}</p>
+        </div>
     }
 
     <!-- @if (!adapter().loading()) {
