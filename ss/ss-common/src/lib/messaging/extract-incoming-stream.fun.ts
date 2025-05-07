@@ -6,29 +6,9 @@ import { ExtractIncomingMessage } from "./extract-incoming-message.fun";
 import { IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { PostedFileHandler, _onFile, _onField } from "./model";
 import * as Path from "path";
-import { logger } from "../logger";
-
-const allowedExtensions = process.env["STORAGE_ALLOWED_EXTENSIONS"]?.split(",") ?? [
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".gif",
-    ".bmp",
-    ".pdf",
-    ".docx",
-    ".xlsx",
-    ".txt",
-    ".zip",
-    ".7zip",
-    ".7z",
-    ".rtf",
-    ".csv",
-    ".mkv",
-    ".mp4",
-    ".iso",
-    ".tar",
-    ".tar.gz",
-];
+const _allowedExts = ".jpg,.jpeg,.png,.gif,.bmp,.pdf,.docx,.xlsx,.txt,.zip,.7zip,.7z,.rtf,.csv,.mkv,.mp4,.iso,.tar,.targz";
+const STORAGE_ALLOWED_EXTENSIONS = (process.env["STORAGE_ALLOWED_EXTENSIONS"] || "").trim();
+const allowedExtensions = (STORAGE_ALLOWED_EXTENSIONS.length ? STORAGE_ALLOWED_EXTENSIONS : _allowedExts).split(",");
 
 export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx: ExecutionContext) {
     switch (ctx.getType()) {
