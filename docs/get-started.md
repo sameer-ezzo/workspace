@@ -103,9 +103,15 @@ pnpm exec nx g @nx/nest:init --interactive=false
 ```bash
 pnpm exec nx g @nx/nest:application --directory=apps/your-ss-app-name --name=your-ss-app-name --useProjectJson=true
 ```
+4. Add the following dependencies:
+```bash
+pnpm add @nestjs/config @nestjs/event-emitter @nestjs/schedule @nestjs/websockets @nestjs/microservices express-handlebars @nestjs/platform-socket.io socket.io google-auth-library @nestjs/passport @nestjs/mongoose mongoose mongodb mongoose-unique-validator jsonpatch-to-mongodb jose @socket.io/redis-adapter socket.io-redis socket.io-client ioredis busboy object-to-csv bcryptjs passport-facebook passport-google-oauth20 sharp
+ 
+pnpm add -D @types/express-handlebars
+```
 
 #### Configuring Server-side app to use @ss modules
-*Documentation coming soon*
+  In you Server side app tsconfig use: `strict:false`
 
 #### Configuring Server-side app for Debugging
 modify the `webpack.config.js` file in the `apps/your-ss-app-name` directory to include the following:
