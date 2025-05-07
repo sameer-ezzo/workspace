@@ -90,8 +90,61 @@ Add the following to your `tsconfig.base.json` under the `paths` section:
 ## Configuration Guide
 
 ### Server-side Integration
+1. Add NestJs dependency:
+```bash
+pnpm add @nx/nest
+```
+2. Run the following command to initialize the NestJs application:
+```bash
+pnpm exec nx g @nx/nest:init --interactive=false
+```
+3. Create a new NestJs application:
+
+```bash
+pnpm exec nx g @nx/nest:application --directory=apps/your-ss-app-name --name=your-ss-app-name --useProjectJson=true
+```
+
 #### Configuring Server-side app to use @ss modules
 *Documentation coming soon*
+
+#### Configuring Server-side app for Debugging
+modify the `webpack.config.js` file in the `apps/your-ss-app-name` directory to include the following:
+
+```javascript
+const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
+const { join, relative } = require('path');
+const WORKSPACE_ROOT =
+  process.env.NX_WORKSPACE_ROOT ?? join(__dirname, '..', '..');
+
+module.exports = {
+  output: {
+    path: join(__dirname, '../../dist/apps/your-ss-app-name'),
+    devtoolModuleFilenameTemplate: function (info) {
+      let resourcePath = info.resourcePath;
+      if (resourcePath.startsWith('.')) {
+        const rel = relative(WORKSPACE_ROOT, info.absoluteResourcePath);
+        resourcePath = `./${rel}`;
+      }
+
+      const segments = [resourcePath, info.loaders].filter((x) => x);
+      return `webpack:///${segments.join('?')}`;
+    },
+  },
+  plugins: [
+    new NxAppWebpackPlugin({
+      target: 'node',
+      compiler: 'tsc',
+      main: './src/main.ts',
+      tsConfig: './tsconfig.app.json',
+      assets: ['./src/assets'],
+      optimization: false,
+      outputHashing: 'none',
+      sourceMap: true,
+      generatePackageJson: true,
+    }),
+  ],
+};
+```
 
 #### Server-side Testing configuration
 *Documentation coming soon*
