@@ -280,8 +280,19 @@ export class QueryParser {
         return purified;
     }
 
-    private getPathType(path: string, model: Model<any>) {
-        return model.schema.path(path)?.instance ?? "String";
+    private guessKeyType(value: any) {
+        if (value === "null") return null;
+        if (value === "undefined") return undefined;
+        if (value === "true") return true;
+        if (value === "false") return false;
+        if (this.objectIdPattern.test(value)) return "ObjectId";
+        if (value instanceof Date) return "Date";
+        if (!isNaN(value)) return "Number";
+        if (Array.isArray(value)) return "Array";
+    }
+
+    private getPathType(path: string, model: Model<any>, value: any) {
+        return model.schema.path(path)?.instance ?? this.guessKeyType(value) ?? "String";
     }
 
     autoParseValue(value: string, key: string, model?: Model<any>): any {
@@ -291,7 +302,7 @@ export class QueryParser {
         if (value === "true") return true;
         if (value === "false") return false;
 
-        const keyType = key && model ? (this.getPathType(key, model) ?? "String") : "String";
+        const keyType = key && model ? (this.getPathType(key, model, value) ?? "String") : "String";
         if (keyType === "String") return value;
         if (keyType === "Date") return new Date(value);
         if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
