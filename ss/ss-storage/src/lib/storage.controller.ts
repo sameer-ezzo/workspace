@@ -28,13 +28,13 @@ export class StorageController {
         @Inject(DataService) private readonly data: DataService,
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
-        private readonly imageService: ImageService,
+        private readonly imageService: ImageService
     ) {}
 
     @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
     ) {
         return this.post(msg$);
     }
@@ -42,7 +42,7 @@ export class StorageController {
     @EndPoint({ http: { method: "POST", path: "**" }, operation: "Upload New" })
     async post(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload New");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -102,7 +102,7 @@ export class StorageController {
     @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Upload Edit" })
     async put(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>,
+        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload Edit");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -216,7 +216,7 @@ export class StorageController {
     }
 
     @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
-    async download(@Message() msg: IncomingMessage, @Res() res: Response) {
+    async download(@Message() msg: IncomingMessage, @Res() res: Response): Promise<void> {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
@@ -248,7 +248,10 @@ export class StorageController {
         // e.g., 'inline' or 'attachment'
         if (view === "1") {
             const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
-            if (!img) return res.status(404).send("");
+            if (!img) {
+                res.status(404).send("");
+                return;
+            }
 
             // Set MIME type for the image
             res.type(`image/${msg.query!.format || "jpeg"}`); // Default to 'jpeg' if format is not specified

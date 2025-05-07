@@ -87,6 +87,18 @@ Add the following to your `tsconfig.base.json` under the `paths` section:
 }
 ```
 
+Then add the following to your `nx.json` under the `targetDefaults` section:
+
+```json
+"targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"]
+    },
+    ...
+}
+```
+
+
 ## Configuration Guide
 
 ### Server-side Integration
@@ -101,13 +113,13 @@ pnpm exec nx g @nx/nest:init --interactive=false
 3. Create a new NestJs application:
 
 ```bash
-pnpm exec nx g @nx/nest:application --directory=apps/your-ss-app-name --name=your-ss-app-name --useProjectJson=true
+nx g @nx/nest:application --directory=apps/your-ss-app-name --linter=eslint --name=your-ss-app-name
 ```
 4. Add the following dependencies:
 ```bash
 pnpm add @nestjs/config @nestjs/event-emitter @nestjs/schedule @nestjs/websockets @nestjs/microservices express-handlebars @nestjs/platform-socket.io socket.io google-auth-library @nestjs/passport @nestjs/mongoose mongoose mongodb mongoose-unique-validator jsonpatch-to-mongodb jose @socket.io/redis-adapter socket.io-redis socket.io-client ioredis busboy object-to-csv bcryptjs passport-facebook passport-google-oauth20 sharp
  
-pnpm add -D @types/express-handlebars
+pnpm add -D @types/express-handlebars @types/jest
 ```
 
 #### Configuring Server-side app to use @ss modules
