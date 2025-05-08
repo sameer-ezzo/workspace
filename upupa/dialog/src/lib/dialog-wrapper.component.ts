@@ -10,7 +10,7 @@ import { DialogRef } from "./dialog-ref";
 
 @Component({
     selector: "dialog-wrapper",
-    imports: [MatDialogModule, MatButtonModule, MatIcon, PortalComponent, MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent],
+    imports: [MatDialogModule, MatButtonModule, MatIcon, PortalComponent],
     templateUrl: "./dialog-wrapper.component.html",
     styleUrls: ["./dialog-wrapper.component.scss"],
     // encapsulation: ViewEncapsulation.None,

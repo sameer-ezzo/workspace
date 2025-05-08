@@ -1,11 +1,9 @@
-<div class="toolbar header" [class.titled]="title()">
+<div class="header" [class.titled]="title()">
     @for (template of header(); track i; let i = $index) {
         <portal [template]="template"></portal>
     } @empty {
         @if (title()) {
-            <span style="line-height: 1.25">
-                <h2 style="margin: 0">{{ title() }}</h2>
-            </span>
+            <h2 mat-dialog-title>{{ title() }}</h2>
         }
     }
 
@@ -17,14 +15,16 @@
     }
 </div>
 <!-- } -->
-<div class="body">
+<!-- <div class="body"> -->
+<mat-dialog-content class="mat-typography">
     <portal [template]="template()" (attached)="onAttached($event)"></portal>
-</div>
+</mat-dialog-content>
+<!-- </div> -->
 
 @if (footer()) {
-    <div class="toolbar footer">
+    <mat-dialog-actions align="end">
         @for (template of footer(); track i; let i = $index) {
             <portal [template]="template"></portal>
         }
-    </div>
+    </mat-dialog-actions>
 }
