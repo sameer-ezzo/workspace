@@ -180,7 +180,7 @@ const DEFAULT_ROUTER_CONFIG: EnhancedRouterConfig = {
         console.error(error);
         return null;
     },
-    withRouteOutputBinder: false,
+    withRouteOutputBinder: true,
 };
 export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterConfig = DEFAULT_ROUTER_CONFIG) {
     const _config = { ...DEFAULT_ROUTER_CONFIG, ...config };

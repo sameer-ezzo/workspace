@@ -10,6 +10,7 @@ export class NumberFieldOptions {}
 export class BooleanFieldOptions {}
 export class AdapterFieldOptions {
     multiple?: boolean = false;
+    showSearch?: boolean = false;
     adapter: DataAdapterDescriptor | DataAdapter = { type: "client", data: [] };
 }
 export type FieldGroup = { name: string; template?: string; class?: string; inputs?: Record<string, any>; hidden?: boolean };
