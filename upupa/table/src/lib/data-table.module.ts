@@ -50,7 +50,7 @@ type _DataAdapter<T = unknown> = DataAdapter<T> | DataAdapterDescriptor<T>;
 
 export type TableConfig<T = unknown> = {
     viewModel: new (...args: any[]) => T;
-    dataAdapter: _DataAdapter<T> | ResolveFn<_DataAdapter<T>>;
+    dataAdapter?: _DataAdapter<T> | ResolveFn<_DataAdapter<T>>;
     tableHeaderComponent?: Type<any> | DynamicComponent;
     expandable?: "single" | "multi" | "none";
     expandableComponent?: DynamicComponent;
