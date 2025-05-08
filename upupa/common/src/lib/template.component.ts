@@ -8,7 +8,7 @@ function getMethods(obj: Object) {
     return [...methods, ...fields];
 }
 
-@Component({ standalone: true, template: ``, standalone: true })
+@Component({ standalone: true, template: `` })
 export class TemplateBase<T = any> {
     @Input() model?: T;
 }

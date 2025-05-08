@@ -227,6 +227,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     if (fieldOptions["adapter"]) {
         const descriptor: DataAdapterDescriptor = fieldOptions["adapter"] ?? { type: "client", data: [] };
         field.inputs["_adapter"] = descriptor;
+        field.inputs["multiple"] = fieldOptions["multiple"] ?? false;
+        field.inputs["showSearch"] = fieldOptions["showSearch"] ?? false;
     }
 
     if (fieldOptions["required"]) {

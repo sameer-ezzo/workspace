@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewEncapsulation, forwardRef, input, model, viewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, SimpleChanges, TemplateRef, ViewEncapsulation, forwardRef, input, model, viewChild } from "@angular/core";
 import { FormControl, FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -85,9 +85,8 @@ export class MatSelectComponent<T = any> extends DataComponentBase<T> implements
 
     clearValue(e) {
         e.stopPropagation();
-        this.select(undefined);
-        this.markAsTouched();
-        this.propagateChange();
+        this.select(undefined, { clearSelection: true });
+
     }
 
     @Output() action = new EventEmitter<ActionDescriptor>();

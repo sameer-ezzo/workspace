@@ -92,6 +92,17 @@ export type WizardStepRef = {
             } as StepperOptions,
         },
     ],
+    styles: [
+        `
+            :host {
+                display: block;
+                portal{
+                    display: block;
+                    margin-block-start: 1.5rem;
+                }
+            }
+                `,
+    ],
 })
 export class WizardLayoutComponent implements OnChanges {
     _stepper = viewChild("stepper", { read: ElementRef });
@@ -200,6 +211,7 @@ export class WizardLayoutComponent implements OnChanges {
 type WizardLayoutConfig = {
     steps: WizardStep[] | (() => WizardStep[]);
     isLinear?: boolean;
+    orientation?: StepperOrientation;
     outputs?: ComponentOutputsHandlers<WizardLayoutComponent>;
 };
 
@@ -218,6 +230,7 @@ export function withWizardLayout(config: Route & WizardLayoutConfig): DynamicCom
         data: {
             steps: config.steps,
             isLinear: config.isLinear ?? true,
+            orientation: config.orientation ?? "horizontal",
             outputs: config.outputs,
             ...config.data,
         },

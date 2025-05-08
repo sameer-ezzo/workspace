@@ -18,7 +18,7 @@ import { Theme, ThemeService } from "./theme.service";
     `,
     template: `
         <button mat-icon-button style="display: flex;" [matMenuTriggerFor]="themeMenu">
-            @let colorScheme = themeService.selectedTheme.colorScheme;
+            @let colorScheme = themeService.selectedTheme?.colorScheme;
             @if (colorScheme) {
                 <mat-icon>{{ colorScheme === "dark" ? "dark_mode" : "light_mode" }}</mat-icon>
             } @else {
@@ -27,7 +27,7 @@ import { Theme, ThemeService } from "./theme.service";
         </button>
         <mat-menu #themeMenu="matMenu">
             @for (theme of themes; track theme) {
-                <button mat-menu-item (click)="changeTheme(theme)" [class.active]="theme.name === themeService.selectedTheme.name">
+                <button mat-menu-item (click)="changeTheme(theme)" [class.active]="theme.name === themeService.selectedTheme?.name">
                     @if (theme.colorScheme) {
                         <mat-icon>{{ theme.colorScheme === "dark" ? "dark_mode" : "light_mode" }}</mat-icon>
                     } @else {
@@ -39,7 +39,7 @@ import { Theme, ThemeService } from "./theme.service";
         </mat-menu>
     `,
 })
-export class ThemePicketComponent {
+export class ThemePickerComponent {
     readonly themeService = inject(ThemeService);
     readonly themes = this.themeService.themes;
 
