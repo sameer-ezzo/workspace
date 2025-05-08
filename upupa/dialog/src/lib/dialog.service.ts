@@ -1,5 +1,5 @@
-import { ComponentFactoryResolver, Injectable, Signal, ViewContainerRef, inject } from "@angular/core";
-import { MatDialog, MatDialogConfig, MatDialogRef } from "@angular/material/dialog";
+import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Provider, Signal, ViewContainerRef, inject, makeEnvironmentProviders } from "@angular/core";
+import { MatDialogConfig, MatDialog, MatDialogRef, MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
 import { DialogRef } from "./dialog-ref";
@@ -42,19 +42,20 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
 
 @Injectable({ providedIn: "root" })
 export class DialogService {
-    stack: DialogRef[] = [];
-    readonly dialog = inject(MatDialog);
+    // stack: DialogRef[] = [];
+    readonly dialog: MatDialog = inject(MatDialog);
     readonly router = inject(Router);
 
     constructor() {
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationEnd) {
-                const stack = this.stack.slice();
-                for (const dialogRef of stack) {
-                    dialogRef.close();
-                }
-            }
-        });
+        // What if the dialog is opened with the option closeOnNavigation = false?
+        // this.router.events.subscribe((event) => {
+        //     if (event instanceof NavigationEnd) {
+        //         const stack = this.dialog.openDialogs.slice();
+        //         for (const dialogRef of stack) {
+        //             dialogRef.close();
+        //         }
+        //     }
+        // });
     }
 
     open<TCom, TData = any, TResult = any>(template: DynamicTemplate<TCom>, options?: DialogConfig): DialogRef<TCom, TResult> {
@@ -66,9 +67,10 @@ export class DialogService {
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
-            componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
+            // componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
             //viewContainerRef:
         });
+
         matDialogRef.componentRef.setInput("template", _template);
         matDialogRef.componentRef.setInput(
             "header",
@@ -81,11 +83,17 @@ export class DialogService {
         matDialogRef.componentRef.setInput("title", options?.title);
         matDialogRef.componentRef.setInput("hideCloseButton", options?.hideCloseButton);
 
-        this.stack.push(matDialogRef as any);
-        matDialogRef.afterClosed().subscribe(() => {
-            this.stack = this.stack.filter((d) => d !== matDialogRef);
-        });
-
         return matDialogRef as DialogRef<TCom, TResult>;
     }
+}
+
+export function provideGlobalDialogConfig(provider: Omit<Provider, "provide">): EnvironmentProviders {
+    // i.e of a provider value {hasBackdrop: false}
+    // this might be used to pass a global config to the dialog service (like width, height, etc)
+    return makeEnvironmentProviders([
+        {
+            ...provider,
+            provide: MAT_DIALOG_DEFAULT_OPTIONS,
+        } as Provider,
+    ]);
 }

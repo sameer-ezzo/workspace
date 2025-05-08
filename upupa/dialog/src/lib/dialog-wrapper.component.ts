@@ -1,21 +1,21 @@
 import { ViewEncapsulation, inject, input, computed, forwardRef } from "@angular/core";
-import { MatDialogRef, MatDialogModule } from "@angular/material/dialog";
+import { MatDialogRef, MatDialogModule, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from "@angular/material/dialog";
 
 import { Component } from "@angular/core";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
-import { MatIconModule } from "@angular/material/icon";
+import { MatIcon, MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { DialogPortal } from "./dialog.service";
 import { DialogRef } from "./dialog-ref";
 
 @Component({
     selector: "dialog-wrapper",
-    imports: [MatDialogModule, MatButtonModule, MatIconModule, PortalComponent],
+    imports: [MatDialogModule, MatButtonModule, MatIcon, PortalComponent, MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent],
     templateUrl: "./dialog-wrapper.component.html",
     styleUrls: ["./dialog-wrapper.component.scss"],
-    encapsulation: ViewEncapsulation.None,
+    // encapsulation: ViewEncapsulation.None,
     host: {
-        "[class]": "hostClass()",
+        "[class]": "panelClass()",
     },
     providers: [
         {
@@ -26,7 +26,6 @@ import { DialogRef } from "./dialog-ref";
     ],
 })
 export class DialogWrapperComponent<C = any> implements DialogPortal<C> {
-    hostClass = computed(() => [this.panelClass(), this.footer().length > 0 ? "y-scroll" : ""].join(" "));
     panelClass = input<string, string>("dialog-wrapper-container", {
         transform: (v: string) => `dialog-wrapper-container ${(v ?? "").replace("dialog-wrapper-container", "")}`,
     });

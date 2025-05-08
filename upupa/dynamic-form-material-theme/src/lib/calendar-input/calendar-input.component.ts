@@ -18,7 +18,7 @@ import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, MatDatepickerModule, MatNativeDateModule, ReactiveFormsModule, MatFormFieldModule, ErrorsDirective, CommonModule],
+    imports: [ MatDatepickerModule, MatNativeDateModule, ReactiveFormsModule, MatFormFieldModule, ErrorsDirective, CommonModule],
     styles: [
         `
             :host {
