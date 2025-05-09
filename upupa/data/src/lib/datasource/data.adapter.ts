@@ -1,12 +1,12 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
-import { computed, WritableSignal } from "@angular/core";
+import { computed, InputSignal, Resource, Signal, WritableSignal } from "@angular/core";
 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
 import { ReplaySubject } from "rxjs";
 
-export type DataAdapterType = "server" | "api" | "client" | "http" | "signal";
+export type DataAdapterType = "server" | "api" | "client" | "http" | "signal" | "resource";
 
 /**
  * Describes the configuration for a data adapter.
@@ -34,6 +34,7 @@ export type DataAdapterDescriptor<TData = any> = {
     displayProperty?: Key<TData>;
     valueProperty?: Key<TData>;
     imageProperty?: Key<TData>;
+    groupProperty?: Key<TData>;
     options?: DataLoaderOptions<TData>;
 
     terms?: Term<any>[];
@@ -43,7 +44,12 @@ export type DataAdapterDescriptor<TData = any> = {
     autoRefresh?: boolean;
 
     mapper?: (items: TData[]) => TData[];
-} & (({ type: "server"; path: string } | { type: "api"; path: string }) | { type: "client"; data: TData[] } | { type: "signal"; data: WritableSignal<TData[]> });
+} & (
+    | ({ type: "server"; path: string } | { type: "api"; path: string })
+    | { type: "client"; data: TData[] }
+    | { type: "signal"; data: InputSignal<TData[]> | Signal<TData[]> | WritableSignal<TData[]> }
+    | { type: "resource"; resource: Resource<TData[]> } //this could be used as a general interactive data source based on the resource api syntax
+);
 
 /**
  * DataAdapterStore is a function that creates a signal store framework

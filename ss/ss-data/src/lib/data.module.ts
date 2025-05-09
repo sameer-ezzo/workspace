@@ -6,11 +6,8 @@ import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collec
 import { logger } from "./logger";
 
 import { MongooseModule, getConnectionToken, ModelDefinition } from "@nestjs/mongoose";
-import mongoose, { Connection, Schema } from "mongoose";
+import mongoose, { Connection } from "mongoose";
 import { DbModelDefinitionInfo, ModelDefinitionInfo } from "./db-collection-info";
-import migrationSchema from "./migration-schema";
-import changeSchema from "./change-schema";
-import { TagSchema } from "./tag.schema";
 
 const defaultDbConnectionOptions: DbConnectionOptions = DbConnectionOptionsFactory.createMongooseOptions("DB_DEFAULT", {
     retryAttempts: 5,
@@ -35,8 +32,8 @@ export class DataModule implements OnModuleInit {
 
     static register(databasesCollections: DatabasesOptions): DynamicModule {
         const options = toDataOptions(databasesCollections);
-        const mongooseRoots = extractMongooseRoot(options);
-        const mongooseFeatures = extractMongooseFeatures(options);
+        const mongooseRoots = registerMongooseRootConnection(options);
+        const mongooseFeatures = registerConnectionModels(options);
         const dataServicePerDbProviders: Provider[] = extractDataServiceProviders(options);
         return {
             global: true,
@@ -69,17 +66,17 @@ function toDataOptions(options: DatabasesOptions): DataOptions[] {
     });
 }
 
-function extractMongooseFeatures(options: DataOptions[]) {
-    return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
+function registerConnectionModels(options: DataOptions[]) {
+    return options.map(({ dbName, models, connectionOptions }) => {
         const prefix = connectionOptions.prefix ?? "";
         return MongooseModule.forFeature(
             Object.getOwnPropertyNames(models).map((modelName) => {
                 const model = models[modelName] as unknown as ModelDefinitionInfo;
-                const schemaObj = model.schema?.obj ?? {};
-                const schemaOptions = { strict: false, timestamps: true, ...(model.options ?? {}), ...model.schema?.["options"] };
-                const schema = new mongoose.Schema(schemaObj, schemaOptions);
+                // const schemaObj = model.schema?.obj ?? {};
+                // const schemaOptions = { strict: false, timestamps: true, ...(model.options ?? {}), ...model.schema?.["options"] };
+                // const schema = new mongoose.Schema(schemaObj, schemaOptions);
                 if ((model.exclude ?? []).length) {
-                    schema.set("toJSON", {
+                    model.schema.set("toJSON", {
                         transform: function (doc: any, ret: any) {
                             for (const ex of model.exclude) {
                                 delete ret[ex];
@@ -91,7 +88,7 @@ function extractMongooseFeatures(options: DataOptions[]) {
                     name: modelName,
                     collection: prefix + modelName,
                     discriminators: models[modelName].discriminators,
-                    schema,
+                    schema: model.schema,
                 } as unknown as ModelDefinition;
 
                 return modelDef;
@@ -101,7 +98,7 @@ function extractMongooseFeatures(options: DataOptions[]) {
     });
 }
 // import { MongoMemoryServer } from "mongodb-memory-server";
-function extractMongooseRoot(options: DataOptions[]) {
+function registerMongooseRootConnection(options: DataOptions[]) {
     return options.map(({ dbName, databaseInfo, models, migrations, connectionOptions }) => {
         const opts = { ...connectionOptions };
         delete opts.prefix;

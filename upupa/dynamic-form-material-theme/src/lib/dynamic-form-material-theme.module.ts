@@ -24,6 +24,8 @@ import { MatTreeComponent } from "./tree/tree.component";
 import { MatCalendarInputComponent } from "./calendar-input/calendar-input.component";
 import { FileSelectComponent } from "./upload/file-select/file-select.component";
 import { LocalFileInputComponent } from "./upload/local-file-input/local-file-input.component";
+import { RadioGroupInputComponent } from "./choices/radio-group.component";
+import { CheckBoxGroupInputComponent } from "./choices/checkbox-group-input";
 
 export const DF_MATERIAL_THEME_INPUTS = {
     text: { component: MatInputComponent },
@@ -56,10 +58,11 @@ export const DF_MATERIAL_THEME_INPUTS = {
     file: { component: FileSelectComponent },
     "local-file": { component: LocalFileInputComponent },
     tree: { component: MatTreeComponent },
-    radios: { component: MatChoicesComponent },
     array: { component: MatArrayInputComponent },
     table: { component: MatArrayInputComponent },
-    checks: { component: MatChoicesComponent },
+    checks: { component: CheckBoxGroupInputComponent },
+    radios: { component: RadioGroupInputComponent },
+    choices: { component: MatChoicesComponent },
     switch: { component: MatSwitchComponent },
     color: { component: MatColorInputComponent },
     chips: { component: MatChipsComponent },

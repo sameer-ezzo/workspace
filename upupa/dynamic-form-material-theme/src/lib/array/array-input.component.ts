@@ -65,7 +65,7 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     }
     ngOnChanges(changes: SimpleChanges) {
         if (changes["value"]) {
-            this.dataSource.all.set(this.value());
+            this.dataSource.all = this.value();
         }
     }
     override writeValue(value: T[]): void {
@@ -74,7 +74,7 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
         if (value && !Array.isArray(value)) {
             throw new Error("ArrayInputComponent can only be used with array values");
         }
-        this.dataSource.all.set(value);
+        this.dataSource.all = value;
         this.adapter.refresh();
     }
 

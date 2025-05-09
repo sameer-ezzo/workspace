@@ -1,5 +1,5 @@
-import { effect, inject, Injector, runInInjectionContext } from "@angular/core";
-import { DataAdapter, DataAdapterDescriptor, DataAdapterType } from "./datasource/data.adapter";
+import { inject, Injector, runInInjectionContext } from "@angular/core";
+import { DataAdapter, DataAdapterDescriptor } from "./datasource/data.adapter";
 import { unreachable } from "@noah-ark/common";
 import { DataService } from "./data.service";
 import { ClientDataSource, SignalDataSource } from "./datasource/client.data.source";
@@ -35,11 +35,19 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
             }
             dataSource = new SignalDataSource(descriptor.data, descriptor.keyProperty);
             break;
+        case "resource":
+            if (!descriptor.keyProperty) {
+                const firstItem = descriptor.resource.value()[0];
+                if (firstItem && firstItem["_id"]) {
+                    descriptor.keyProperty = "_id" as keyof T;
+                }
+            }
+            dataSource = new SignalDataSource(descriptor.resource.value, descriptor.keyProperty);
+            break;
         default:
             throw unreachable("data adapter type:", descriptor);
     }
 
-    let adapter: DataAdapter<T>;
     const options = {
         terms: descriptor.terms ?? descriptor.options?.terms,
         page: descriptor.page ?? descriptor.options?.page,
@@ -47,9 +55,8 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
         filter: descriptor.filter ?? descriptor.options?.filter,
         autoRefresh: descriptor.autoRefresh ?? descriptor.options?.autoRefresh,
     };
-    runInInjectionContext(injector, () => {
-        adapter = new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, options);
-    });
-
-    return adapter!;
+    return runInInjectionContext(
+        injector,
+        () => new DataAdapter(dataSource, descriptor.keyProperty, descriptor.displayProperty, descriptor.valueProperty, descriptor.imageProperty, options),
+    );
 }

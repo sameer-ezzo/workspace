@@ -1,4 +1,4 @@
-import { Component, computed, inject, model, viewChild, ViewEncapsulation, input, SimpleChanges, OnChanges, output } from "@angular/core";
+import { Component, computed, inject, model, viewChild, input, SimpleChanges, OnChanges, output, Injector } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { _defaultControl, DynamicComponent, PortalComponent, provideComponent } from "@upupa/common";
@@ -6,7 +6,7 @@ import { DialogConfig, DialogService } from "@upupa/dialog";
 import { firstValueFrom } from "rxjs";
 
 import { WidgetSettingsComponent } from "./widget-settings.component";
-import { WidgetBlueprintSelectorComponent } from "./widget-selector.component";
+import { IconChoicesTemplateComponent } from "./widget-selector.component";
 import { ComponentSelector, deMaterializeWidget, MaterializedWidget, materializeWidget, Widget, WidgetBlueprint } from "./model";
 
 import { GridStackOptions } from "gridstack";
@@ -15,6 +15,8 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 import { formInput } from "@upupa/dynamic-form";
 import { randomString } from "@noah-ark/common";
 import { FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
+import { createDataAdapter } from "@upupa/data";
+import { MatChoicesComponent } from "@upupa/dynamic-form-material-theme";
 
 @Component({
     selector: "widget-header",
@@ -59,12 +61,12 @@ export class InputsViewModel {
                 // --tw-gradient-to: rgb(229 231 235 / 0) var(--tw-gradient-to-position);
                 // --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
                 // background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-                border-radius: var(--mat-sys-corner-large);
+                border-radius: var(--mat-sys-corner-small);
                 border: 1px solid var(--mat-sys-outline-variant);
                 position: relative;
             }
             .grid-stack-item-content {
-                border-radius: var(--mat-sys-corner-large);
+                border-radius: var(--mat-sys-corner-small);
                 cursor: grab;
                 border: 1px solid var(--mat-sys-outline-variant);
                 background: var(--mat-sys-surface-container-low);
@@ -95,7 +97,7 @@ export class InputsViewModel {
     `,
     template: `
         @if (materializedWidgets().length) {
-            <gridstack class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
+            <gridstack #grid class="grid-stack" [options]="gridOptions()" (changeCB)="onNodesChange($event)">
                 @for (widget of materializedWidgets(); track widget.id) {
                     <gridstack-item [options]="widget" (click)="focused.set(widget)">
                         @if (headerTemplate()) {
@@ -153,10 +155,27 @@ export class WidgetBuilderComponent implements OnChanges {
         }
     }
 
-    async add() {
+    async openSelectWidgetDialog() {
         // const btnDescriptor = btn();
+        const adapter = createDataAdapter(
+            {
+                type: "signal",
+                data: this.blueprints,
+                keyProperty: "id",
+                displayProperty: "title",
+                terms: [{ field: "title", type: "like" }],
+            },
+            this._injector,
+        );
         const dialogRef = this.dialog.open(
-            { component: WidgetBlueprintSelectorComponent, inputs: { blueprints: this.blueprints() } },
+            {
+                component: MatChoicesComponent,
+                inputs: {
+                    choiceTemplate: { component: IconChoicesTemplateComponent },
+                    adapter,
+                    value: this.blueprints()?.[0],
+                },
+            },
             {
                 ...this.dialogOptions(),
                 footer: [
@@ -165,8 +184,10 @@ export class WidgetBuilderComponent implements OnChanges {
                         inputs: { buttonDescriptor: { text: "Select", name: "select" } },
                         outputs: {
                             action: async () => {
-                                const widgetSelector = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                dialogRef.close(widgetSelector.selectedBlueprint());
+                                console.log("selected widget", adapter.selection()?.[0]);
+
+                                // const widgetSelector = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
+                                dialogRef.close(adapter.selection()?.[0]);
                             },
                         },
                     }),
@@ -177,8 +198,12 @@ export class WidgetBuilderComponent implements OnChanges {
         // const selectedWidget = widgetSelector.selectedWidget();
 
         const blueprint = await firstValueFrom<WidgetBlueprint>(dialogRef.afterClosed());
-        if (!blueprint) return;
-
+        if (!blueprint) return null;
+        return blueprint;
+    }
+    private _injector = inject(Injector);
+    async add(blueprint: WidgetBlueprint | null = null) {
+        if (!blueprint) blueprint = await this.openSelectWidgetDialog();
         const id = randomString(8);
         const x = blueprint.x ?? 0;
         const y = this.value()?.length ? (blueprint.y ?? this.grid().getRow()) : 0;

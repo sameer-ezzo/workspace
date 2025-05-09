@@ -1,32 +1,34 @@
+declare type VerticalAlignment = "top" | "bottom" | "center" | "auto" | "stretched";
+declare type HorizontalAlignment = "left" | "right" | "center" | "auto" | "stretched";
+export type CollectStyle = "linear" | "1by1" | "pages" | "wizard" | "tab" | "accordion";
 
-export type CollectStyle = 'linear' | '1by1' | 'pages' | 'wizard' | 'tab' | 'accordion';
-
-
-declare type Font = {
+export class Font {
     font: {
-        family: string
-        file: string
-    }
+        family: string;
+        file: string;
+    };
     size: string;
 }
 
-declare type VerticalAlignment = 'top' | 'bottom' | 'center' | 'auto' | 'stretched';
-declare type HorizontalAlignment = 'lef' | 'right' | 'center' | 'auto' | 'stretched';
+export class FormDesign {
+    constructor(self?: Partial<FormDesign>) {
+        if (self) {
+            Object.assign(this, self);
+        }
+    }
 
-export declare type FormDesign = {
+    verticalAlignment: VerticalAlignment = "auto";
+    horizontalAlignment: HorizontalAlignment = "auto";
 
-    verticalAlignment?: VerticalAlignment;
-    horizontalAlignment?: HorizontalAlignment;
-
-    hideNumbering?: boolean;
-    hideProgress?: boolean;
+    hideNumbering = true;
+    hideProgress = false;
     headerFont?: Font;
     paragraphFont?: Font;
 
     textColor?: string;
     valueColor?: string;
-    buttonsColor?: string;
-    bgColor?: string;
+    buttonsColor = "primary";
+    bgColor = "transparent";
     bgImage?: {
         url: string;
         files?: any[];
@@ -34,4 +36,4 @@ export declare type FormDesign = {
         repeat: string;
         size: string;
     };
-};
+}

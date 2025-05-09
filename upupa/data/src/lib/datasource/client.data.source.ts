@@ -2,7 +2,7 @@ import { PageDescriptor, SortDescriptor, TableDataSource, FilterDescriptor, Term
 import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
-import { computed, Signal, signal, WritableSignal } from "@angular/core";
+import { computed, InputSignal, Signal, signal, WritableSignal } from "@angular/core";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -22,24 +22,34 @@ export function compare(a, b): number {
 }
 
 export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Partial<T>> {
+    private readonly _all: WritableSignal<T[]> = signal<T[]>([]);
+    get all(): Signal<T[]> {
+        return computed(() => this._all());
+    }
+    set all(items: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]> | T[]) {
+        this._all.set(items instanceof Array ? items : items());
+    }
+
     entries = computed(() => {
         const map = new Map<R, T>();
-        for (const item of this.all()) {
+        for (const item of this._all()) {
             const key = this._key(item);
             map.set(key, item);
         }
         return map;
     });
     constructor(
-        readonly all: WritableSignal<T[]>,
+        all: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]>,
         readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R,
-    ) {}
+    ) {
+        this._all.set(all());
+    }
 
     async load(
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
-        const all = this.all();
+        const all = this._all();
         if (options?.keys) {
             const data = options.keys.map((k) => all.find((item) => this._key(item) === k));
             return { data: mapper ? mapper(data) : data, total: data.length, query: [] };
@@ -54,7 +64,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
     }
 
     create(value: Partial<T>) {
-        this.all.update((all) => [...(all ?? []), value as T]);
+        this._all.update((all) => [...(all ?? []), value as T]);
         return Promise.resolve(value);
     }
 
@@ -62,10 +72,10 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         const key = this._key(item);
         // const entries = this.entries();
         // const ref = entries.get(key);
-        const all = this.all()?? []
+        const all = this._all() ?? [];
         const ref = all.find((x) => this._key(x) === key);
         if (ref) {
-            this.all.update((v) => (v ?? []).map((x) => (this._key(x) === key ? (value as T) : x)));
+            this._all.update((v) => (v ?? []).map((x) => (this._key(x) === key ? (value as T) : x)));
             return Promise.resolve(value);
         } else {
             return this.create(value);
@@ -78,7 +88,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         let ref = entries.get(key);
         if (typeof ref !== "object") ref = {} as T;
         JsonPatch.patch(ref, patches);
-        this.all.update((v) => (v ?? []).map((x) => (x === ref ? (ref as T) : x)));
+        this._all.update((v) => (v ?? []).map((x) => (x === ref ? (ref as T) : x)));
         return Promise.resolve(ref);
     }
 
@@ -86,7 +96,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         const key = this._key(item);
         const entries = this.entries();
         const ref = entries.get(key);
-        this.all.update((v) => (v ?? []).filter((x) => x !== ref));
+        this._all.update((v) => (v ?? []).filter((x) => x !== ref));
         return Promise.resolve(item);
     }
 }

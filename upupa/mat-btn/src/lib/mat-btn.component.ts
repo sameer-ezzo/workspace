@@ -23,12 +23,7 @@ export class MatBtnComponent {
     disabled = model(false);
     isDisabled = computed(() => this.loading() || this.disabled() || this.buttonDescriptor().disabled);
     variant = computed(() => this.buttonDescriptor().variant ?? "button");
-    color = computed(() => {
-        const validColors = ["primary", "accent", "warn"];
-        const descriptorColor = this.buttonDescriptor().color ?? "";
-        if (!validColors.includes(descriptorColor)) console.warn(`Invalid color: ${descriptorColor}`);
-        return descriptorColor;
-    });
+    color = computed(() => this.buttonDescriptor().color);
 
     icon = computed(() => {
         const descriptor = this.buttonDescriptor();

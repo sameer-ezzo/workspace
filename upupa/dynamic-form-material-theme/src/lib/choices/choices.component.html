@@ -1,10 +1,29 @@
 @if (label()) {
     <mat-label>{{ label() }}</mat-label>
 }
-{{ value() | json }}
-
-<portal [template]="viewTemplate()"></portal>
+@if (showSearch()) {
+    <div class="search-box-wrapper">
+        <input
+            (input)="$event.preventDefault(); $event.stopPropagation()"
+            #filterInput
+            [focus]="true"
+            [placeholder]="placeholder() ?? ''"
+            focusType="select"
+            style="flex: 1; border: none; outline: none"
+            [formControl]="filterControl"
+        />
+        <button mat-icon-button (click)="_doFilter(filterInput.value)">
+            <mat-icon>search</mat-icon>
+        </button>
+    </div>
+}
+<div class="choices-wrapper">
+    @for (v of itemsTemplates(); track $index) {
+        <portal [template]="v" [attr.tabindex]="$index + 1" [attr.role]="'button'"></portal>
+    }
+</div>
 
 @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
 }
+<mat-error *errors="control().errors; control: control(); let message">{{ message }}</mat-error>

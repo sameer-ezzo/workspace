@@ -13,7 +13,7 @@ export class UrlDataSource<T = any> extends ClientDataSource<T> {
 
     override async load(options: DataLoaderOptions<T>): Promise<ReadResult<T>> {
         const data = await firstValueFrom(this.http.get<T[]>(this.url));
-        this.all.set(data);
+        this.all = data;
         return { data, total: data.length, query: [] };
     }
 }
