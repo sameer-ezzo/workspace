@@ -15,7 +15,7 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
         case "api":
             descriptor.displayProperty ??= "name" as keyof T;
             descriptor.keyProperty ??= "_id" as keyof T;
-            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path);
+            dataSource = new ApiDataSource(injector.get(DataService), descriptor.path, descriptor.keyProperty);
             break;
         case "client":
             if (!descriptor.keyProperty) {

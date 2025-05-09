@@ -6,6 +6,7 @@ import { ActivatedRoute } from "@angular/router";
 import { SnackBarService } from "@upupa/dialog";
 import { Router } from "@angular/router";
 import { PasswordStrength } from "@noah-ark/common";
+import { LocationStrategy } from "@angular/common";
 
 export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {
@@ -73,8 +74,9 @@ export class MembershipSignupOptions extends BaseMembershipFormOptions {
 export function loginSuccessHandler(instance, response) {
     const router = inject(Router);
     const route = inject(ActivatedRoute);
+    const base_url = inject(LocationStrategy).getBaseHref();
     const { redirect, redirectTo } = route.snapshot.queryParams ?? {};
-    const redirectUrl = redirect ?? redirectTo ?? "/";
+    const redirectUrl = redirect ?? redirectTo ?? base_url;
     router.navigateByUrl(decodeURIComponent(redirectUrl));
 }
 

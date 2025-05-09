@@ -25,6 +25,28 @@
     <mat-dialog-actions align="end">
         @for (template of footer(); track i; let i = $index) {
             <portal [template]="template"></portal>
+        } @empty {
+            @if (title()) {
+                <h2 role="heading" style="margin: 0">{{ title() }}</h2>
+            }
+        }
+
+        <span style="flex: 1 1 auto"></span>
+        @if (!hideCloseButton()) {
+            <button mat-dialog-close mat-icon-button (click)="close()">
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </mat-dialog-actions>
+}
+<mat-dialog-content class="mat-typography">
+    <portal [template]="template()" (attached)="onAttached($event)"></portal>
+</mat-dialog-content>
+
+@if (footer()) {
+    <mat-dialog-actions align="end">
+        @for (template of footer(); track i; let i = $index) {
+            <portal [template]="template"></portal>
         }
     </mat-dialog-actions>
 }
