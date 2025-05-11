@@ -281,7 +281,7 @@ export class RulePermissionsTableComponent {
     ngOnChanges(changes: SimpleChanges) {
         if (changes["rule"] || changes["action"]) {
             const permissions = this.rule().actions?.[this.action()] ?? ([] as SimplePermission[]);
-            this.dataSource.all.set(permissions);
+            this.dataSource.all = permissions
             this.adapter.refresh();
         }
     }
