@@ -29,7 +29,7 @@ export class InlineButtonComponent {
     }
 }
 
-export function inlineButton<T = unknown>(options: { descriptor?: Partial<ActionDescriptor>; inputItem?: T; clickHandler: (btnInstance) => void }): DynamicComponent {
+export function inlineButton<T = unknown>(options: { descriptor?: Partial<ActionDescriptor>; inputItem?: T; clickHandler: (btnInstance:InlineButtonComponent) => void }): DynamicComponent {
     const template = {
         component: InlineButtonComponent,
         inputs: {
@@ -38,7 +38,7 @@ export function inlineButton<T = unknown>(options: { descriptor?: Partial<Action
         },
         outputs: {
             clicked: (source, e) => {
-                runInInjectionContext(source.injector, () => options.clickHandler(source.instance.btn()));
+                runInInjectionContext(source.injector, () => options.clickHandler(source.instance));
             },
         },
     } as DynamicComponent;
