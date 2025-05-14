@@ -52,7 +52,7 @@ declare let Delimiter: any;
     host: {
         "[attr.id]": "id",
         "[class]": "classList()",
-    }
+    },
 })
 export class EditorJsInputComponent extends InputBaseComponent<OutputData> implements OnChanges, AfterViewInit, OnDestroy {
     readOnly = input(false);
@@ -71,7 +71,7 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     editorElement = viewChild<ElementRef<HTMLTextAreaElement>>("editor");
 
     tools = input(["Header", "List", "Warning", "Paragraph", "Quote", "Delimiter", "Image", "Audio", "AIText"], { transform: (x: any) => x ?? [] });
-    language = input((inject(LOCALE_ID, { optional: true }) ?? (typeof navigator !== "undefined" ? navigator.language : undefined) ?? "en-US").split("-")[0]);
+    language = input(inject(LOCALE_ID, { optional: true }) ?? (typeof navigator !== "undefined" ? navigator.language : undefined) ?? "en-US");
     dir = computed(() => languageDir(this.language()));
 
     private editor: any; // EditorJS;
