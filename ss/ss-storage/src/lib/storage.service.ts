@@ -20,16 +20,20 @@ import { join } from "path";
 import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from "fs";
 
 const separator = "/";
+
+export function getStorageDir(){
+    return process.env.STORAGE_DIR || __dirname;
+}
 export function makeDir(dir: string) {
     dir = dir.replace(/\\/g, "/");
-    if (existsSync(join(__dirname, dir))) return;
+    if (existsSync(join(getStorageDir(), dir))) return;
 
     const segments = dir.split(separator);
     for (let i = 1; i < segments.length; i++) {
         segments[i] = segments[i - 1] + separator + segments[i];
     }
     for (let i = 0; i < segments.length; i++) {
-        const dir = join(__dirname, segments[i]);
+        const dir = join(getStorageDir(), segments[i]);
         if (!dir || dir === "." || dir === "..") continue;
         if (!existsSync(dir)) mkdirSync(dir);
     }
@@ -41,14 +45,14 @@ export function mv(oldpath: string, newpath: string) {
 
 export function isDir(path: string): boolean {
     try {
-        opendirSync(join(__dirname, path));
+        opendirSync(join(getStorageDir(), path));
         return true;
     } catch (error) {
         return false;
     }
 }
 export function isFile(path: string) {
-    return existsSync(join(__dirname, path)) && !isDir(path);
+    return existsSync(join(getStorageDir(), path)) && !isDir(path);
 }
 
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
@@ -146,13 +150,13 @@ export class StorageService {
         if (!doc) throw new HttpException("No file found", HttpStatus.NOT_FOUND);
 
         await this.data.delete(`storage/${_id}`, principle);
-        const fPath = join(__dirname, doc.path);
+        const fPath = join(getStorageDir(), doc.path);
         if (!existsSync(fPath)) return;
-        const trashedDir = join(__dirname, "storage/_trashed");
+        const trashedDir = join(getStorageDir(), "storage/_trashed");
         if (!existsSync(trashedDir)) mkdirSync(trashedDir, { recursive: true });
 
         try {
-            renameSync(fPath, join(__dirname, "storage/_trashed", filename)); //TODO clean-up job
+            renameSync(fPath, join(getStorageDir(), "storage/_trashed", filename)); //TODO clean-up job
         } catch (err) {
             console.error(err);
         }

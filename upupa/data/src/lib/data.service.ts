@@ -1,4 +1,4 @@
-import { map, multicast, refCount, shareReplay, startWith } from "rxjs/operators";
+import { map, multicast, refCount, startWith } from "rxjs/operators";
 import { afterNextRender, Injectable } from "@angular/core";
 import { Observable, ReplaySubject, interval, NEVER, combineLatest, firstValueFrom } from "rxjs";
 import { LocalService } from "./local.service";
@@ -50,7 +50,7 @@ export class DataService {
             else path = path + "?" + qs;
         }
 
-        let x = this.cache.get(path);
+        const x = this.cache.get(path);
         this.cache.refresh(path);
         // init stream
         if (!x) {
@@ -96,34 +96,34 @@ export class DataService {
         } else return x.stream;
     }
 
-    get<T>(path: string, query?: QueryDescriptor): Observable<ApiGetResult<T>> {
-        return this.fetch<ApiGetResult<T>>(path, query).pipe(map((x) => x.data));
+    get<T>(path: string, query?: QueryDescriptor, options?: any): Observable<ApiGetResult<T>> {
+        return this.fetch<ApiGetResult<T>>(path, query, options).pipe(map((x) => x.data));
     }
 
     async put(path: string, value: any): Promise<any> {
         path = prefixPath(path);
-        let res = await this.api.put(path, value);
+        const res = await this.api.put(path, value);
         await this.refresh(path);
         return res;
     }
 
     async patch(path: string, patches: Patch[]) {
         path = prefixPath(path);
-        let res = await this.api.patch(path, patches);
+        const res = await this.api.patch(path, patches);
         await this.refresh(path);
         return res;
     }
 
     async post<T>(path: string, value: T) {
         path = prefixPath(path);
-        let res = await this.api.post(path, value);
+        const res = await this.api.post(path, value);
         await this.refresh(path);
         return res;
     }
 
     async delete(path: string) {
         path = prefixPath(path);
-        let res = await this.api.delete(path);
+        const res = await this.api.delete(path);
         await this.refresh(path);
         return res;
     }

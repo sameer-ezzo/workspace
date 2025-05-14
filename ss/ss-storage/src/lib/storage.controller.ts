@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir } from "./storage.service";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir } from "./storage.service";
 import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
 import { ImageService } from "./image.svr";
 
@@ -8,7 +8,7 @@ import * as Path from "path";
 import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { Principle } from "@noah-ark/common";
 
-import mongoose from "mongoose";
+import mongoose, { get } from "mongoose";
 import { WriteFileOptions } from "fs";
 
 import { DataService } from "@ss/data";
@@ -28,13 +28,13 @@ export class StorageController {
         @Inject(DataService) private readonly data: DataService,
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
-        private readonly imageService: ImageService
+        private readonly imageService: ImageService,
     ) {}
 
     @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
     ) {
         return this.post(msg$);
     }
@@ -42,7 +42,7 @@ export class StorageController {
     @EndPoint({ http: { method: "POST", path: "**" }, operation: "Upload New" })
     async post(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload New");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -78,7 +78,7 @@ export class StorageController {
 
                 //mv file from tmp to path
                 try {
-                    mv(tmp, Path.join(__dirname, path));
+                    mv(tmp, Path.join(getStorageDir(), path));
                     file.path = path;
                 } catch (err) {
                     console.error("FILE NOT MOVED", err);
@@ -102,7 +102,7 @@ export class StorageController {
     @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Upload Edit" })
     async put(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>,
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload Edit");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -139,7 +139,7 @@ export class StorageController {
 
             //mv file from tmp to path
             try {
-                fs.renameSync(tmp, Path.join(__dirname, path));
+                fs.renameSync(tmp, Path.join(getStorageDir(), path));
             } catch (err) {
                 logger.error(err);
             } //TODO how error should be handled
@@ -169,7 +169,7 @@ export class StorageController {
 
             const destination: string = segments.join(separator);
             f.destination = destination;
-            const targetPath = Path.join(__dirname, destination);
+            const targetPath = Path.join(getStorageDir(), destination);
             if (!fs.existsSync(targetPath)) makeDir(destination);
 
             f.path = Path.join(destination, f.filename);
@@ -233,7 +233,7 @@ export class StorageController {
             path: decodedPath,
         });
         const file = files.find((f) => f._id === _id);
-        const fullPath = join(__dirname, file ? file!.path : msg.path);
+        const fullPath = join(getStorageDir(), file ? file!.path : msg.path);
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
         const { view, attachment, format } = msg.query!;
@@ -247,7 +247,7 @@ export class StorageController {
         // Handle Content-Disposition based on attachment query parameter
         // e.g., 'inline' or 'attachment'
         if (view === "1") {
-            const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
+            const img = await this.imageService.get(getStorageDir(), msg.path, msg.query!); // Retrieve the image stream
             if (!img) {
                 res.status(404).send("");
                 return;

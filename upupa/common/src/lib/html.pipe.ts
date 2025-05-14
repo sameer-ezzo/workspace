@@ -17,7 +17,7 @@ export class HtmlPipe implements PipeTransform {
         try {
             const t = html
                 .replace(/&nbsp/g, ' ')
-                .replace(/\n/g, '<br/>')
+                // .replace(/\n/g, '<br/>')
                 .replace(/<a\s/g, `<a target="_blank" rel="noopener" rel="noreferrer"`)
                 .replace(/> ;<\/p>/g, '></p>');
             return this._sanitizer.bypassSecurityTrustHtml(t);
@@ -38,7 +38,7 @@ export class HtmlPipeStandalone implements PipeTransform {
             const urlPattern = /((https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z0-9-]+)(\.[a-zA-Z0-9-]+)?(\/[^\s]*)?)/g;
             const t = html
                 .replace(/&nbsp/g, ' ')
-                .replace(/\n/g, '<br/>')
+                // .replace(/\n/g, '<br/>')
                 .replace(urlPattern, (match) => {
                     const urlWithProtocol = addProtocolToURL(match);
                     return `<a target="_blank" rel="noopener" rel="noreferrer" href="${urlWithProtocol}">${match}</a>`;
