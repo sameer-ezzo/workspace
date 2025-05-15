@@ -22,7 +22,6 @@ export * from "./lib/markdown.pipe";
 
 export * from "./lib/to-title-case.func";
 
-export * from "./lib/theme.service";
 export * from "./lib/action-descriptor";
 
 export * from "./lib/logger";
@@ -57,4 +56,7 @@ export * from "./lib/portal.component";
 export * from "./lib/portal.component";
 export * from "./lib/dynamic-component";
 export * from "./lib/utils";
-export * from "./lib/theme-picker-component";
+
+export * from "./lib/theme/theme-picker-component";
+export * from "./lib/theme/theme.service";
+export * from "./lib/theme/material-symbols";

@@ -37,14 +37,15 @@ import {
 } from "@angular/router";
 import { ComponentInputs, DynamicComponent } from "../dynamic-component";
 import { ActionDescriptor } from "../action-descriptor";
-import { makeEnvironmentProviders, provideAppInitializer, inject, EnvironmentProviders, Injector, runInInjectionContext } from "@angular/core";
+import { makeEnvironmentProviders, provideAppInitializer, inject, EnvironmentProviders, Injector, runInInjectionContext, Type, output } from "@angular/core";
 import { provideRouteOutputBinder } from "./route-output-binder";
 
-export type NamedRoute = Route & { name: string };
+export type NamedRoute = Route & { name?: string };
 export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component" | "resolve"> & {
-    component: DynamicComponent<T>;
-    resolve: { [key in keyof ComponentInputs<T>]?: ResolveFn<unknown> } & Record<string, ResolveFn<unknown>>;
-    data: { [key in keyof ComponentInputs<T>]?: any } & Record<string, any>;
+    component: Type<T>;
+    resolve?: { [key in keyof ComponentInputs<T>]?: ResolveFn<unknown> } & Record<string, ResolveFn<unknown>>;
+    data?: { [key in keyof ComponentInputs<T>]?: any } & Record<string, any>;
+    outputs?: Pick<DynamicComponent<T>, "outputs">;
     on?: (event: RouterEvent, snapshot: ActivatedRouteSnapshot) => void;
 };
 
@@ -99,20 +100,12 @@ export function provideRoute<T = any>(
 
     let route = _route as Route;
     route.runGuardsAndResolvers ??= "always";
-    if (isDynamicComponentRoute(_route)) {
-        const dynamicComponent = _route.component;
-        route.component = dynamicComponent.component;
-        route.data = { ...route.data, ...dynamicComponent.inputs, outputs: dynamicComponent.outputs };
-    }
+    if ("outputs" in route && route.outputs) route.data = { ...route.data, outputs: route.outputs };
 
     for (const modifier of features) {
-        route = applyRouteFeature(route as any, modifier);
+        route = applyRouteFeature(route, modifier);
     }
     return route as any;
-}
-
-function isDynamicComponentRoute(route: Partial<NamedRoute | DynamicComponentRoute>): route is DynamicComponentRoute {
-    return !!(route as any).component?.component;
 }
 
 export function withAction(
