@@ -7,7 +7,7 @@ import { ActionDescriptor, DynamicComponent, camelCaseToTitle } from "@upupa/com
 import { DynamicFormInputs } from "../dynamic-form-inputs";
 import { FieldGroup, FieldOptions } from "./decorators.types";
 import { DataAdapterDescriptor } from "@upupa/data";
-import { Class, PasswordStrength } from "@noah-ark/common";
+import { Class } from "@noah-ark/common";
 import { ArrayFormTableHeaderComponent } from "./form-array-table-header.component";
 
 const FORM_METADATA_KEY = Symbol("custom:form_scheme_options");
@@ -227,31 +227,30 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
     if (fieldOptions["adapter"]) {
         const descriptor: DataAdapterDescriptor = fieldOptions["adapter"] ?? { type: "client", data: [] };
         field.inputs["_adapter"] = descriptor;
-        field.inputs["multiple"] = fieldOptions["multiple"] ?? false;
-        field.inputs["showSearch"] = fieldOptions["showSearch"] ?? false;
+        field.inputs["multiple"] ??= fieldOptions["multiple"];
+        field.inputs["showSearch"] ??= fieldOptions["showSearch"];
     }
 
-    if (fieldOptions["required"]) {
-        field.inputs["required"] = fieldOptions["required"];
-    }
+    field.inputs["required"] ??= fieldOptions["required"];
 
     if (fieldOptions.validations?.length) {
         field.validations = fieldOptions.validations;
     }
 
-    field.inputs["label"] = fieldOptions["label"] ?? field.inputs["label"] ?? camelCaseToTitle(fieldName);
-    field.inputs["hint"] = fieldOptions["hint"] ?? field.inputs["hint"];
-    field.inputs["placeholder"] = fieldOptions["placeholder"] ?? field.inputs["placeholder"];
+    field.inputs["label"] ??= fieldOptions["label"] ?? camelCaseToTitle(fieldName);
+    field.inputs["hint"] ??= fieldOptions["hint"];
+    field.inputs["placeholder"] ??= fieldOptions["placeholder"];
 
     switch (input) {
         case "select":
+            field.inputs["multiple"] ??= fieldOptions["multiple"] ?? false;
             break;
         case "array":
             break;
         case "list":
-            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
-            field.inputs["_adapter"] = fieldOptions.inputs?.["adapter"] ?? fieldOptions.adapter;
-            field.inputs["tableHeaderComponent"] = fieldOptions["tableHeaderComponent"];
+            field.inputs["viewModel"] ??= fieldOptions.viewModel;
+            field.inputs["_adapter"] ??= fieldOptions.adapter;
+            field.inputs["tableHeaderComponent"] ??= fieldOptions["tableHeaderComponent"];
             break;
         case "checks":
         case "radios":
@@ -273,8 +272,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             field.inputs["showConfirmPasswordInput"] = pwdOptions.showConfirmPasswordInput ?? false;
             field.inputs["showPassword"] = pwdOptions.showPassword ?? false;
             field.inputs["canGenerateRandomPassword"] = pwdOptions.canGenerateRandomPassword ?? false;
-            field.inputs["passwordStrength"] = pwdOptions.passwordStrength ?? new PasswordStrength();
-            field.inputs["autocomplete"] = pwdOptions.autocomplete ?? "new-password";
+            //field.inputs["passwordStrength"] = pwdOptions.passwordStrength ?? new PasswordStrength();
+            // field.inputs["autocomplete"] = pwdOptions.autocomplete ?? "new-password";
             break;
         case "file":
             const fileOptions = fieldOptions as any;

@@ -7,12 +7,11 @@ import { MatSelectComponent } from "../select/select.component";
 
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatLabel } from "@angular/material/form-field";
-import { MatIcon } from "@angular/material/icon";
 import { MatError, MatHint } from "@angular/material/form-field";
 
 @Component({
     selector: "radio-group-input",
-    imports: [MatRadioModule, CommonModule, MatLabel, ParagraphComponent, MatIcon, MatError, MatHint, ReactiveFormsModule],
+    imports: [MatRadioModule, CommonModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
     host: {
         "[attr.name]": "name()",
     },

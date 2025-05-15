@@ -20,7 +20,7 @@
 ></dynamic-form>
 <!-- [formGroup]="control()" -->
 @if (actions()?.length) {
-    <div class="toolbar footer">
+    <div class="toolbar">
         @for (descriptor of actions(); track descriptor.name) {
             @if (descriptor.type == "submit") {
                 <mat-btn

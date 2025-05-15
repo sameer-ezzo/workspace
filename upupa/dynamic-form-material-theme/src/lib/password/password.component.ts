@@ -31,7 +31,7 @@ export class MatPasswordInputComponent extends MatInputComponent implements Vali
     showConfirmPasswordInput = input(true);
     showPassword = model(false);
     canGenerateRandomPassword = input(false);
-    passwordStrength = input<PasswordStrength, PasswordStrength>(new PasswordStrength(), { transform: (v) => v ?? new PasswordStrength() });
+    passwordStrength = input<PasswordStrength>();
     override autocomplete = input<"current-password" | "new-password">("new-password");
     checkValidity() {
         if (!this.control().touched) return;

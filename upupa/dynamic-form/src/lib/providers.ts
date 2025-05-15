@@ -2,7 +2,7 @@ import { Class } from "@noah-ark/common";
 import { FormViewModelMirror } from "./decorators/form-input.decorator";
 import { FormControl, FormGroup } from "@angular/forms";
 import { DataFormComponent } from "./data-form/data-form.component";
-import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
+import { DynamicComponent, DynamicComponentRoute, provideRoute, RouteFeature } from "@upupa/common";
 import { Route } from "@angular/router";
 import { Injector } from "@angular/core";
 
@@ -15,17 +15,16 @@ export function withFormComponent<T>(config: DynamicFormConfig): RouteFeature {
             component: DataFormComponent,
             data: {
                 viewModel: config.viewModel,
-                value: typeof config.value !== "function" ? config.value : undefined,
                 form: config.form,
             },
             resolve: {
-                value: typeof config.value === "function" ? config.value : undefined,
+                value: typeof config.value === "function" ? config.value : () => config.value,
             },
         }),
     };
 }
 
-export function provideFormRoute<T>(config: Route & DynamicFormConfig, ...features: RouteFeature[]): Route {
+export function provideFormRoute<T>(config: Omit<DynamicComponentRoute<DataFormComponent>, "component"> & DynamicFormConfig, ...features: RouteFeature[]): Route {
     return provideRoute(config, withFormComponent(config), ...features);
 }
 

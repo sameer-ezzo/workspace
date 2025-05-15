@@ -6,7 +6,7 @@ import { FloatLabelType, MatError, MatFormField, MatFormFieldAppearance, MatLabe
 import { MatInput } from "@angular/material/input";
 import { ErrorsDirective } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
-import { MatChipGrid, MatChipInput, MatChipRow } from "@angular/material/chips";
+import { MatChipGrid, MatChipInput, MatChipRemove, MatChipRow } from "@angular/material/chips";
 import { MatIcon } from "@angular/material/icon";
 import { MatAutocomplete, MatAutocompleteTrigger, MatOption } from "@angular/material/autocomplete";
 import { DataAdapter } from "@upupa/data";
@@ -44,6 +44,7 @@ import { MatProgressSpinner } from "@angular/material/progress-spinner";
         MatChipInput,
         MatAutocomplete,
         MatChipRow,
+        MatChipRemove,
         MatIcon,
         MatAutocompleteTrigger,
         MatProgressSpinner,

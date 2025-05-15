@@ -7,7 +7,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatSelect, MatSelectModule } from "@angular/material/select";
+import { MatOption, MatSelect, MatSelectModule } from "@angular/material/select";
 import { ActionDescriptor, ErrorsDirective, FocusDirective } from "@upupa/common";
 import { DataComponentBase } from "@upupa/table";
 import { debounceTime } from "rxjs";
@@ -81,12 +81,9 @@ export class MatSelectComponent<T = any> extends DataComponentBase<T> implements
     filterInputRef = viewChild.required<ElementRef>("filterInput");
     filterModel = model<string>();
 
-    override multiple = input(false);
-
     clearValue(e) {
         e.stopPropagation();
         this.select(undefined, { clearSelection: true });
-
     }
 
     @Output() action = new EventEmitter<ActionDescriptor>();
