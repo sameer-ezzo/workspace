@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, Signal, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, REQUEST, Signal, inject } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
@@ -9,26 +9,110 @@ import { httpFetch } from "./http-fetch.function";
 import { analyzePassword, Principle } from "@noah-ark/common";
 
 import { DeviceService } from "./device.service";
-import { LocalStorageService } from "./local-storage.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { AUTH_IDPs, IdPName, IdProviderOptions } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
 
-export const TOKEN = "token";
+export const ACCESS_TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
-// function getCookie(name: string) {
-//     const decodedCookie = decodeURIComponent(document.cookie);
-//     const cookieParts = decodedCookie.split(';');
 
-//     for (let i = 0; i < cookieParts.length; i++) {
-//         const currentCookie = cookieParts[i].trim();
-//         if (currentCookie.startsWith(name + '=')) {
-//             return currentCookie.substring(name.length + 1);
-//         }
-//     }
+export interface TokenStore {
+    getToken(key: string): string;
+    setToken(key: string, value: string): void;
+    removeToken(key: string): void;
 
-//     return '';
-// }
+    getAccessToken(): string;
+    getRefreshToken(): string;
+
+    setAccessToken(access_token: string);
+    setRefreshToken(refresh_token: string);
+
+    removeRefreshToken();
+    removeAccessToken();
+}
+
+export class LocalStorageTokenStore implements TokenStore {
+    getToken(key: string): string {
+        return localStorage.getItem(key) ?? "";
+    }
+    setToken(key: string, value: string): void {
+        localStorage.setItem(key, value);
+    }
+    removeToken(key: string): void {
+        localStorage.removeItem(key);
+    }
+
+    getAccessToken(): string {
+        return this.getToken(ACCESS_TOKEN);
+    }
+    getRefreshToken(): string {
+        return this.getToken(REFRESH_TOKEN);
+    }
+    setAccessToken(access_token: string) {
+        this.setToken(ACCESS_TOKEN, access_token);
+    }
+    setRefreshToken(refresh_token: string) {
+        this.setToken(REFRESH_TOKEN, refresh_token);
+    }
+    removeAccessToken() {
+        this.removeToken(ACCESS_TOKEN);
+    }
+    removeRefreshToken() {
+        this.removeToken(REFRESH_TOKEN);
+    }
+}
+
+export class RequestTokenStore implements TokenStore {
+    req = inject(REQUEST);
+
+    getHeader(key: string): string {
+        return this.req.headers.get(key) ?? "";
+    }
+    getCookie(key: string): string {
+        const cookie = this.req.headers.get("cookie");
+        if (cookie) {
+            const cookies = cookie.split("; ");
+            for (const c of cookies) {
+                const [name, value] = c.split("=");
+                if (name === key) {
+                    return decodeURIComponent(value);
+                }
+            }
+        }
+        return "";
+    }
+
+    getAccessToken(): string {
+        return this.getHeader("Authorization") ?? this.getCookie(ACCESS_TOKEN);
+    }
+    getRefreshToken(): string {
+        return ""; // no refresh token in request
+    }
+
+    getToken(key: string): string {
+        return this.getHeader(key) || this.getCookie(key);
+    }
+
+    setToken(key: string, value: string): void {
+        throw new Error("Method not implemented.");
+    }
+    removeToken(key: string): void {
+        throw new Error("Method not implemented.");
+    }
+
+    removeRefreshToken() {
+        this.removeToken(REFRESH_TOKEN);
+    }
+    removeAccessToken() {
+        this.removeToken(ACCESS_TOKEN);
+    }
+    setAccessToken(access_token: string) {
+        this.setToken(ACCESS_TOKEN, access_token);
+    }
+    setRefreshToken(refresh_token: string) {
+        this.setToken(REFRESH_TOKEN, refresh_token);
+    }
+}
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -59,7 +143,8 @@ export class AuthService {
     //     switchMap((x) => this.user$),
     // );
 
-    private readonly localStorage = inject(LocalStorageService);
+    private readonly localStorage: TokenStore = this.isBrowser ? new LocalStorageTokenStore() : new RequestTokenStore();
+
     public readonly options = inject(AUTH_OPTIONS);
     public readonly baseUrl = this.options.base_url;
     readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
@@ -114,17 +199,11 @@ export class AuthService {
         //todo connected to /api/user as ws to fetch/subscribe to user changes
     }
 
-    private _getStorageValue(key: string) {
-        const value = this.localStorage.getItem(key) ?? "";
-        if (value.length === 0 || value.toLocaleLowerCase() === "undefined") return undefined;
-
-        return value;
-    }
     get_token() {
-        return this._getStorageValue(TOKEN);
+        return this.localStorage.getAccessToken();
     }
     get_refresh_token() {
-        return this._getStorageValue(REFRESH_TOKEN);
+        return this.localStorage.getRefreshToken();
     }
 
     jwt(tokenString: string): any {
@@ -145,8 +224,8 @@ export class AuthService {
         }
     }
     signout() {
-        this.localStorage.removeItem(TOKEN);
-        this.localStorage.removeItem(REFRESH_TOKEN);
+        this.localStorage.removeAccessToken();
+        this.localStorage.removeRefreshToken();
         this.triggerNext(null);
     }
 
@@ -197,11 +276,11 @@ export class AuthService {
 
     private setTokens(tokens: { access_token: string; refresh_token: string }) {
         if (tokens) {
-            this.localStorage.setItem(TOKEN, tokens?.access_token);
-            this.localStorage.setItem(REFRESH_TOKEN, tokens?.refresh_token);
+            this.localStorage.setAccessToken(tokens?.access_token);
+            this.localStorage.setRefreshToken(tokens?.refresh_token);
         } else {
-            this.localStorage.removeItem(TOKEN);
-            this.localStorage.removeItem(REFRESH_TOKEN);
+            this.localStorage.removeAccessToken();
+            this.localStorage.removeRefreshToken();
         }
         this._token$.next(tokens?.access_token);
     }
@@ -341,7 +420,7 @@ export class AuthService {
 
         //save tokens away
         const original_refresh_token = this.get_refresh_token();
-        this.localStorage.setItem(`ORG_${REFRESH_TOKEN}`, original_refresh_token);
+        this.localStorage.setToken(`ORG_${REFRESH_TOKEN}`, original_refresh_token);
 
         //override current user tokens
         this.setTokens(impersonation_tokens);
@@ -353,9 +432,9 @@ export class AuthService {
     }
 
     unimpersonate() {
-        const original_refresh_token = this.localStorage.getItem(`ORG_${REFRESH_TOKEN}`);
+        const original_refresh_token = this.localStorage.getToken(`ORG_${REFRESH_TOKEN}`);
         if (original_refresh_token) {
-            this.localStorage.removeItem(`ORG_${REFRESH_TOKEN}`);
+            this.localStorage.removeToken(`ORG_${REFRESH_TOKEN}`);
             return this.refresh(original_refresh_token);
         }
         return null;
