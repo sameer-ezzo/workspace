@@ -5,12 +5,11 @@ import { MatCheckbox } from "@angular/material/checkbox";
 import { MatSelectComponent } from "../select/select.component";
 import { ErrorsDirective } from "@upupa/common";
 import { MatError, MatHint, MatLabel } from "@angular/material/form-field";
-import { MatIcon } from "@angular/material/icon";
 import { ReactiveFormsModule } from "@angular/forms";
 
 @Component({
     selector: "check-boxes-template",
-    imports: [CommonModule, ParagraphComponent, MatCheckbox, ErrorsDirective, CommonModule, MatLabel, ParagraphComponent, MatIcon, MatError, MatHint, ReactiveFormsModule],
+    imports: [CommonModule, ParagraphComponent, MatCheckbox, ErrorsDirective, CommonModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
     host: {
         "[attr.name]": "name()",
     },
@@ -28,8 +27,8 @@ import { ReactiveFormsModule } from "@angular/forms";
             <mat-hint>{{ hint() }}</mat-hint>
         }
         <mat-error>
-        <span *errors="control().errors; control: control(); let message">{{ message }}</span>
-    </mat-error>
+            <span *errors="control().errors; control: control(); let message">{{ message }}</span>
+        </mat-error>
     `,
 })
 export class CheckBoxGroupInputComponent extends MatSelectComponent {

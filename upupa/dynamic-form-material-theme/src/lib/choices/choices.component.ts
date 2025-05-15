@@ -4,7 +4,7 @@ import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/fo
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { MatIcon, MatIconModule } from "@angular/material/icon";
+import { MatIcon } from "@angular/material/icon";
 import { MatRadioModule } from "@angular/material/radio";
 
 import { DynamicComponent, ErrorsDirective, FocusDirective, PortalComponent } from "@upupa/common";
@@ -16,7 +16,7 @@ import { NormalizedItem } from "@upupa/data";
 
 @Component({
     selector: "choice-view",
-    imports: [CommonModule, ParagraphComponent, MatIcon, ErrorsDirective],
+    imports: [CommonModule, ParagraphComponent, MatIcon],
     template: ` @if (item().image) {
             <img [src]="item().image" alt="Item Image" />
         } @else {
@@ -75,8 +75,7 @@ export class ChoiceViewTemplateComponent<T extends NormalizedItem = NormalizedIt
         CommonModule,
         MatCheckboxModule,
         MatRadioModule,
-        MatIconModule,
-        ParagraphComponent,
+        MatIcon,
         ErrorsDirective,
     ],
 })

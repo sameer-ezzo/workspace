@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir } from "./storage.service";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir } from "./storage.service";
 import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
 import { ImageService } from "./image.svr";
 
@@ -8,7 +8,7 @@ import * as Path from "path";
 import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { Principle } from "@noah-ark/common";
 
-import mongoose from "mongoose";
+import mongoose, { get } from "mongoose";
 import { WriteFileOptions } from "fs";
 
 import { DataService } from "@ss/data";
@@ -83,7 +83,7 @@ export class StorageController {
 
                 //mv file from tmp to path
                 try {
-                    mv(tmp, Path.join(__dirname, path));
+                    mv(tmp, Path.join(getStorageDir(), path));
                     file.path = path;
                 } catch (err) {
                     console.error("FILE NOT MOVED", err);
@@ -144,7 +144,7 @@ export class StorageController {
 
             //mv file from tmp to path
             try {
-                fs.renameSync(tmp, Path.join(__dirname, path));
+                fs.renameSync(tmp, Path.join(getStorageDir(), path));
             } catch (err) {
                 logger.error(err);
             } //TODO how error should be handled
@@ -174,7 +174,7 @@ export class StorageController {
 
             const destination: string = segments.join(separator);
             f.destination = destination;
-            const targetPath = Path.join(__dirname, destination);
+            const targetPath = Path.join(getStorageDir(), destination);
             if (!fs.existsSync(targetPath)) makeDir(destination);
 
             f.path = Path.join(destination, f.filename);
@@ -236,7 +236,7 @@ export class StorageController {
 
         const files = await this.data.get<File[]>("storage", { path: decodedPath });
         const file = files.find((f) => f._id === _id);
-        const fullPath = join(__dirname, file ? file!.path : msg.path);
+        const fullPath = join(getStorageDir(), file ? file!.path : msg.path);
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
         const extension = Path.extname(fullPath).substring(1);
@@ -264,7 +264,7 @@ export class StorageController {
             });
         } else {
             if (isImgFile(fullPath)) {
-                const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
+                const img = await this.imageService.get(getStorageDir(), msg.path, msg.query!); // Retrieve the image stream
                 if (!img) return res.status(404).send("");
 
                 res.setHeader("Content-Type", `image/${format ?? extension}`);

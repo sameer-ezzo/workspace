@@ -5,6 +5,7 @@
         width: 100%;
     }
 
+
     .horizontal.choices {
         margin: 0.5rem;
     }
@@ -28,4 +29,10 @@
     display: flex;
     gap: 0.5rem;
     flex-direction: row-reverse;
+}
+
+.logo-holder{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
 }
