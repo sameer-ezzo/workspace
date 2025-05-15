@@ -22,19 +22,24 @@ async function _uploadToTmp(postedFile: PostedFile, ctx: ExecutionContext): Prom
     return saveStreamToTmp(path, postedFile);
 }
 
+function isImgFile(path: string) {
+    const ext = Path.extname(path);
+    return [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+}
+
 @Controller("storage")
 export class StorageController {
     constructor(
         @Inject(DataService) private readonly data: DataService,
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
-        private readonly imageService: ImageService
+        private readonly imageService: ImageService,
     ) {}
 
     @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
     ) {
         return this.post(msg$);
     }
@@ -42,7 +47,7 @@ export class StorageController {
     @EndPoint({ http: { method: "POST", path: "**" }, operation: "Upload New" })
     async post(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>,
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload New");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -102,7 +107,7 @@ export class StorageController {
     @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Upload Edit" })
     async put(
         @MessageStream(_uploadToTmp)
-        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
+        msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>,
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload Edit");
         if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
@@ -216,7 +221,7 @@ export class StorageController {
     }
 
     @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
-    async download(@Message() msg: IncomingMessage, @Res() res: Response): Promise<void> {
+    async download(@Message() msg: IncomingMessage, @Res() res: Response) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
@@ -229,57 +234,45 @@ export class StorageController {
 
         const _id = fname.substring(0, fname.length - ext.length);
 
-        const files = await this.data.get<File[]>("storage", {
-            path: decodedPath,
-        });
+        const files = await this.data.get<File[]>("storage", { path: decodedPath });
         const file = files.find((f) => f._id === _id);
         const fullPath = join(__dirname, file ? file!.path : msg.path);
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
-        const { view, attachment, format } = msg.query!;
+        const extension = Path.extname(fullPath).substring(1);
+
+        const { attachment, format } = msg.query!;
         const originalFilename = file ? file!.originalname : _id;
-        // Percent-encode the filename for the header
         const encodedFilename = encodeURIComponent(originalFilename);
-        // Construct the correct Content-Disposition value using filename*
-        const dispositionType = attachment === "inline" ? "inline" : "attachment"; // Default to attachment if not 'inline'
-        const contentDispositionValue = `${dispositionType}; filename*=UTF-8''${encodedFilename}`;
+        const fallbackFilename = _id + "." + extension;
 
-        // Handle Content-Disposition based on attachment query parameter
-        // e.g., 'inline' or 'attachment'
-        if (view === "1") {
-            const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
-            if (!img) {
-                res.status(404).send("");
-                return;
-            }
+        const dispositionType = attachment ?? "inline";
+        const contentDisposition = `${dispositionType}; filename="${fallbackFilename}"; filename*=UTF-8''${encodedFilename}`;
+        res.setHeader("Content-Disposition", contentDisposition);
 
-            // Set MIME type for the image
-            res.type(`image/${msg.query!.format || "jpeg"}`); // Default to 'jpeg' if format is not specified
-            res.setHeader("Content-Disposition", contentDispositionValue);
-            img.pipe(res);
-        } else {
-            res.setHeader("Content-Disposition", contentDispositionValue);
-            if (attachment === "inline") {
-                // Serve file inline without Content-Disposition: attachment
-                const stream = fs.createReadStream(fullPath);
+        if (attachment === "attachment") {
+            res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
 
-                // Set inline headers
-                res.setHeader("Content-Type", "application/octet-stream"); // Adjust MIME type as needed
-
-                // Pipe the file stream to the response
-                stream.pipe(res);
-            } else {
-                res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-
-                res.download(fullPath, encodedFilename, (err) => {
-                    if (err) {
-                        // Handle error, e.g., file not found or permission issues
-                        logger.error(`Error downloading file: ${fullPath}`, err);
-                        if (!res.headersSent) {
-                            res.status(err["status"] || 500).send(`Error downloading file ${encodedFilename} ${err.message}`);
-                        }
+            res.download(fullPath, encodedFilename, (err) => {
+                if (err) {
+                    // Handle error, e.g., file not found or permission issues
+                    logger.error(`Error downloading file: ${fullPath}`, err);
+                    if (!res.headersSent) {
+                        res.status(err["status"] || 500).send(`Error downloading file ${encodedFilename} ${err.message}`);
                     }
-                });
+                }
+            });
+        } else {
+            if (isImgFile(fullPath)) {
+                const img = await this.imageService.get(__dirname, msg.path, msg.query!); // Retrieve the image stream
+                if (!img) return res.status(404).send("");
+
+                res.setHeader("Content-Type", `image/${format ?? extension}`);
+                img.pipe(res);
+            } else {
+                const stream = fs.createReadStream(fullPath);
+                res.setHeader("Content-Type", "application/octet-stream");
+                stream.pipe(res);
             }
         }
     }
