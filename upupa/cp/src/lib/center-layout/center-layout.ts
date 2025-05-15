@@ -7,7 +7,7 @@ import { RouterOutlet } from "@angular/router";
     encapsulation: ViewEncapsulation.None,
     styles: `
         center-layout {
-            height: 100%;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;

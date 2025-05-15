@@ -5,7 +5,7 @@
         width: 100%;
     }
 
-    
+
     .horizontal.choices {
         margin: 0.5rem;
     }
@@ -23,4 +23,9 @@
     .mat-form-field-subscript-wrapper {
         position: relative !important;
     }
+}
+.logo-holder{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
 }
