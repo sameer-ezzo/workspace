@@ -3,7 +3,7 @@
         <mat-label>{{ label() }}</mat-label>
     }
 
-    @if (multiple() === true) {
+    @if (multiple()) {
         <mat-select
             #selectInput
             multiple
@@ -71,8 +71,6 @@
             @if (adapter().loading()) {
                 <mat-option disabled> Loading ... </mat-option>
             }
-
-            <mat-option></mat-option>
 
             @for (item of items(); track $index) {
                 <mat-option [value]="item.value" [disabled]="item.state === 'disabled'">

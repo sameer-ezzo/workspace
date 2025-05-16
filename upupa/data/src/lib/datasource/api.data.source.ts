@@ -50,10 +50,10 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         const page = options?.page ?? { pageIndex: 0, pageSize: 25 };
         const terms = (options?.terms ?? []).slice();
 
-        const query: Record<string | "page" | "per_page", string | number> = options?.keys
+        const query: Record<string | "page" | "per_page", string | number> = options?.keys?.length
             ? { [this.key]: `{in}${options.keys.join(",")}`, per_page: options.keys.length }
             : { ...this.queryParams };
-        if (!options?.keys) {
+        if (!options?.keys?.length) {
             // when passing keys we want to make sure items are returned
             if (search && terms.length) {
                 const r = terms.map((f) => [String(f.field), this._evalTerm(f, search)]);

@@ -2,7 +2,7 @@
 // Specific interfaces will often override or require 'href' and refine 'type' etc.
 interface BaseLinkProps {
     crossorigin?: "anonymous" | "use-credentials";
-    fetchpriority?: "high" | "low" | "auto";
+    priority?: "high" | "low" | "auto";
     hreflang?: string;
     media?: string; // e.g., 'print', 'screen', '(max-width: 600px)'
     referrerpolicy?:
@@ -190,6 +190,7 @@ export class TitleMetaTag {
 export class LinkTag {
     rel: string;
     href: string;
+    priority?: "low" | "high";
     attributes: Record<string, string>;
     constructor(props: LinkProps) {
         this.rel = props.rel;
@@ -337,21 +338,15 @@ function createLinkTag(dom: Document, tag: LinkTag): HTMLLinkElement {
         console.debug("Link tag is missing rel or href", tag);
         return undefined as unknown as HTMLLinkElement;
     }
-    const el: HTMLLinkElement = dom.createElement("link");
+    const el = dom.createElement("link") as HTMLLinkElement;
+    el.setAttribute("rel", tag.rel);
+    el.setAttribute("href", tag.href);
 
-    if (tag.rel) {
-        el.setAttribute("rel", tag.rel);
-    }
-    if (tag.href) {
-        el.setAttribute("href", tag.href);
-    }
-    if (tag.rel && tag.href) {
-        dom.querySelector(`link[rel="${tag.rel}"][href="${tag.href}"]`)?.remove();
-    }
-    if (tag.attributes) {
-        for (const [key, value] of Object.entries(tag.attributes)) {
-            el.setAttribute(key, value);
-        }
+    if (tag.priority) el.setAttribute("priority", tag.priority);
+
+    dom.querySelector(`link[rel="${tag.rel}"][href="${tag.href}"]`)?.remove();
+    for (const [key, value] of Object.entries(tag.attributes ?? {})) {
+        el.setAttribute(key, value);
     }
 
     return el;

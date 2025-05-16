@@ -5,7 +5,7 @@
         width: 100%;
     }
 
-    
+
     .horizontal.choices {
         margin: 0.5rem;
     }
@@ -24,3 +24,10 @@
         position: relative !important;
     }
 }
+
+.toolbar {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: row-reverse;
+}
+

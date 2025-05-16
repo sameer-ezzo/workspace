@@ -55,7 +55,9 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
             case "blogPosting":
                 return this.fillBlogPosting(schema);
             default:
-                return undefined;
+                return {
+                    ...schema
+                }
         }
     }
     fillBlogPosting(schema: ImageObjectSchema): any {

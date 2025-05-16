@@ -31,7 +31,7 @@
         }
     </div>
 
-    <mat-autocomplete #auto (optionSelected)="select([$event.option.value])" [hideSingleSelectionIndicator]="true">
+    <mat-autocomplete #auto (optionSelected)="select([$event.option.value]); text.set('')" [hideSingleSelectionIndicator]="true">
         @if (autoComplete()) {
             @if (adapter().loading()) {
                 <!-- span will hide the checkbox for this option -->
