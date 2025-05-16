@@ -77,7 +77,6 @@ export class DataFormComponent<T = any> {
     });
 
     value = model<T>();
-logo = input<string | undefined>()
     // form actions
     canSubmit = signal(false);
     actions = computed(() => {
