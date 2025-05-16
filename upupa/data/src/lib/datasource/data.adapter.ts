@@ -299,7 +299,8 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     selectionMap = computed(() => Object.fromEntries(this.selection().map((x) => [x.key, x])));
 
     refresh() {
-        return this.load();
+        if (!this.loading()) return this.load();
+        else return Promise.resolve(this.entities());
     }
 
     updateState(item: T, state: "loading" | "loaded" | "error", error?: string) {

@@ -128,8 +128,8 @@ export class MatChoicesComponent extends MatSelectComponent {
         const isRtl = this._isRtl();
         const gridCols = this._getGridCols();
         const gridRows = this._getGridRows();
-        console.log("gridCols", gridCols);
-        console.log("gridRows", gridRows);
+        // console.log("gridCols", gridCols);
+        // console.log("gridRows", gridRows);
 
         const currentRow = Math.floor(index / gridCols);
         const currentCol = index % gridCols;

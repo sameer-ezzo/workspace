@@ -1,17 +1,12 @@
-import { Component, input, inject, Type, Injector, ComponentRef, runInInjectionContext, output, DestroyRef, OutputEmitterRef, viewChild } from "@angular/core";
-import { ActionDescriptor, ActionEvent, ComponentOutputs, DynamicComponent, provideComponent, waitForOutput } from "@upupa/common";
-import { ConfirmOptions, ConfirmService, DialogService, DialogConfig, SnackBarService } from "@upupa/dialog";
+import { Component, input, inject, Type, Injector, runInInjectionContext, output, viewChild } from "@angular/core";
+import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
+import { ConfirmOptions, ConfirmService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { firstValueFrom, Observable, ReplaySubject } from "rxjs";
+import { firstValueFrom } from "rxjs";
 import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
-import { NgControl } from "@angular/forms";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { TranslationModule } from "@upupa/language";
-import { EmbedTranslationButton, LinkTranslationButton, translateButton } from "./translate-btn.component";
-import { DataFormComponent, FormViewModelMirror, reflectFormViewModelType } from "@upupa/dynamic-form";
+import { EmbedTranslationButton, LinkTranslationButton, translateButton, TranslationButtonComp } from "./translate-btn.component";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
-import { SubmitResult } from "../adapter-submit.fun";
 
 @Component({
     selector: "inline-button",
@@ -29,7 +24,11 @@ export class InlineButtonComponent {
     }
 }
 
-export function inlineButton<T = unknown>(options: { descriptor?: Partial<ActionDescriptor>; inputItem?: T; clickHandler: (btnInstance:InlineButtonComponent) => void }): DynamicComponent {
+export function inlineButton<T = unknown>(options: {
+    descriptor?: Partial<ActionDescriptor>;
+    inputItem?: T;
+    clickHandler: (btnInstance: InlineButtonComponent) => void;
+}): DynamicComponent {
     const template = {
         component: InlineButtonComponent,
         inputs: {
@@ -54,17 +53,25 @@ export type ExtractViewModel<T> = T extends Class<infer R> ? R : any;
 
 export function translationButtons<TItem = unknown>(
     formViewModel: Class,
-    value: TItem | ((btn: EmbedTranslationButton<TItem> | LinkTranslationButton<TItem>) => TItem) = () => new formViewModel(),
+    strategy: "link" | "embed",
+    baseLocale: { nativeName: string; code: string },
+    locales: { nativeName: string; code: string }[],
+
+    value: TItem | ((btn: EmbedTranslationButton<TItem> | LinkTranslationButton<TItem>) => TItem),
+    translation: TItem | ((btn: EmbedTranslationButton<TItem> | LinkTranslationButton<TItem>, lang: string) => TItem),
     options?: {
-        translationStrategy: "link" | "embed";
-        locales: { nativeName: string; code: string }[];
         dialogOptions?: Partial<DialogConfig>;
     },
-): DynamicComponent[] {
+): DynamicComponent<TranslationButtonComp<TItem>>[] {
     if (!formViewModel) throw new Error("formViewModel is required");
-
-    return (options?.locales ?? []).map((locale) =>
-        translateButton(formViewModel, value, { locale, translationStrategy: options.translationStrategy, dialogOptions: options?.dialogOptions }),
+    const ls = [baseLocale, ...(locales ?? [])];
+    return ls.map((locale) =>
+        translateButton(formViewModel, value, translation, {
+            locale,
+            baseLocale: baseLocale,
+            strategy,
+            dialogOptions: options?.dialogOptions,
+        }),
     );
 }
 
