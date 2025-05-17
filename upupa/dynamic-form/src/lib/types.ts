@@ -51,6 +51,7 @@ const INPUTS = [
     "tree",
     "switch",
     "address",
+    "autocomplete",
 ] as const;
 export type FieldInputType = (typeof INPUTS)[number];
 

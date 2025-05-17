@@ -33,7 +33,7 @@
                 >-->
             </div>
 
-            @for (item of items(); track $index) {
+            @for (item of items(); track item.key) {
                 <mat-option [value]="item.value">
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
@@ -43,12 +43,12 @@
                 }
             }
 
-            @for (item of actions; track $index) {
-                <mat-option (click)="onAction($event, item)">
-                    @if (item["icon"]?.length) {
-                        <mat-icon>{{ item["icon"] }}</mat-icon>
+            @for (action of actions; track $index) {
+                <mat-option (click)="onAction($event, action)">
+                    @if (action["icon"]?.length) {
+                        <mat-icon>{{ action["icon"] }}</mat-icon>
                     }
-                    <span>{{ item.text }}</span>
+                    <span>{{ action.text }}</span>
                 </mat-option>
             }
         </mat-select>
@@ -72,7 +72,7 @@
                 <mat-option disabled> Loading ... </mat-option>
             }
 
-            @for (item of items(); track $index) {
+            @for (item of items(); track item.key) {
                 <mat-option [value]="item.value" [disabled]="item.state === 'disabled'">
                     <ng-container [ngTemplateOutlet]="itemTemplate() ?? defaultItemTemplate" [ngTemplateOutletContext]="{ item: item }"> </ng-container>
                 </mat-option>
@@ -82,12 +82,12 @@
                 }
             }
 
-            @for (item of actions; track i; let i = $index) {
-                <mat-option (click)="onAction($event, item)">
-                    @if (item["icon"]?.length) {
-                        <mat-icon>{{ item["icon"] }}</mat-icon>
+            @for (action of actions; track i; let i = $index) {
+                <mat-option (click)="onAction($event, action)">
+                    @if (action["icon"]?.length) {
+                        <mat-icon>{{ action["icon"] }}</mat-icon>
                     }
-                    <span>{{ item.text }}</span>
+                    <span>{{ action.text }}</span>
                 </mat-option>
             }
         </mat-select>

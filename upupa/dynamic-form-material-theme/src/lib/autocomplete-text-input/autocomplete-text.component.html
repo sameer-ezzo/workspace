@@ -11,12 +11,12 @@
             [required]="required()"
             [attr.name]="name()"
             [value]="value()"
-            (input)="value.set(input.value)"
+            (input)="value.set(input.value); _search(input.value)"
             [formControl]="control()"
             [placeholder]="placeholder()"
         />
-        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="select($event.option.value)">
-            @for (item of adapter().normalized(); track item) {
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="input.value = $event.option.value">
+            @for (item of adapter().normalized(); track item.key) {
                 <mat-option [value]="item.display">
                     @if (item.image) {
                         <img [src]="item.image" />

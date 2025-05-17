@@ -51,4 +51,3 @@ export class TagModel {
     translations: TranslationDocument[];
 }
 export const TagSchema = SchemaFactory.createForClass(TagModel);
-TagSchema.index({ 'translations.lang': 1 }, { unique: true });

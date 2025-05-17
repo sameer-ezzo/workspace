@@ -37,7 +37,7 @@
                 <!-- span will hide the checkbox for this option -->
                 <span disabled> Loading ...</span>
             } @else {
-                @for (item of notSelected(); track $index) {
+                @for (item of notSelected(); track item.key) {
                     <mat-option [value]="item.value">
                         @if (item.image) {
                             <img [src]="item.image" [attr.alt]="item.display" />

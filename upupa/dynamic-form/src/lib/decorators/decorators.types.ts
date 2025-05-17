@@ -93,6 +93,7 @@ export type FieldOptions =
               | ({ input: "checks" } & ChoicesFieldOptions)
               | ({ input: "radios" } & ChoicesFieldOptions)
               | ({ input: "select" } & AdapterFieldOptions)
+              | ({ input: "autocomplete" } & AdapterFieldOptions)
               | ({ input: "list" } & AdapterFieldOptions & { viewModel: Class; tableHeaderComponent?: DynamicComponent }) // this is used to render table with selection capability (like select input but with table view)
               | { input: "date" }
               | { input: "time" }
