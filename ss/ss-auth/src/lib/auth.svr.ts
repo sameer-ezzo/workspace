@@ -450,7 +450,12 @@ export class AuthService {
     private _registerFailedAttempt(user: UserDocument) {
         user.attempts = user.attempts + 1;
         user.lastAttempt = new Date();
-        return user.updateOne();
+        return user.updateOne({
+            $set: {
+                attempts: user.attempts,
+                lastAttempt: user.lastAttempt,
+            },
+        });
     }
     private async _registerSuccessLoginAttempt(user: UserDocument, device?: string | UserDevice) {
         const devices = user.devices ?? {};
