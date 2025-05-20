@@ -31,9 +31,9 @@ import { MatBtnComponent } from "@upupa/mat-btn";
 })
 export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
-    form = computed(() => this.dynamicForm().control());
-    valid = computed(() => this.dynamicForm().control().valid);
-    touched = computed(() => this.dynamicForm().control().touched);
+    form = computed(() => this.dynamicForm().form());
+    valid = computed(() => this.dynamicForm().form().valid);
+    touched = computed(() => this.dynamicForm().form().touched);
     submit = output<T>();
     action = output<ActionDescriptor>();
     activePageChange = output<number>();
@@ -155,7 +155,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     }
 
     next() {
-        this.dynamicForm().control().markAsTouched();
+        this.dynamicForm().form().markAsTouched();
         if (this.canGoNext()) this.activePage.update((a) => a + 1);
     }
 

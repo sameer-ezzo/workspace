@@ -1,5 +1,5 @@
 import { Directive, TemplateRef, ViewContainerRef, input } from "@angular/core";
-import { ValidationErrors, FormControl } from "@angular/forms";
+import { ValidationErrors, FormControl, AbstractControl } from "@angular/forms";
 
 @Directive({
     standalone: true,
@@ -12,7 +12,7 @@ export class ErrorsDirective {
     ) {}
 
     errors = input.required<ValidationErrors>();
-    control = input<FormControl>(undefined, { alias: "errorsControl" }); // alias is required to prefix the directive
+    control = input<AbstractControl>(undefined, { alias: "errorsControl" }); // alias is required to prefix the directive
 
     getErrors(errors: ValidationErrors) {
         if (!errors) return [];

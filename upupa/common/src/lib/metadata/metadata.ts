@@ -22,14 +22,14 @@ type MetadataFeatureProvider = Omit<Provider, "provide" | "multi">;
  * @param features
  * @returns
  */
-export function providePageMetadata(config: ContentMetadataConfig | Omit<FactoryProvider, "provide" | "multi">, ...features: (Provider | EnvironmentProviders)[]) {
-    const configProvider = config && "useFactory" in config ? config : { useValue: config };
+export function providePageMetadata(config: ContentMetadataConfig | (() => ContentMetadataConfig), ...features: (Provider | EnvironmentProviders)[]) {
+    const configFn = typeof config === "function" ? config : () => config;
 
     return makeEnvironmentProviders([
         {
             provide: PAGE_METADATA_CONFIG,
-            ...configProvider,
-        } as Provider,
+            useFactory: () => configFn(),
+        },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: PageMetadataStrategy },
         { provide: CONTENT, useFactory: (route: ActivatedRoute) => route.snapshot.data["content"], deps: [ActivatedRoute] },
 
@@ -57,9 +57,10 @@ export function withMetadataStrategy(feature: MetadataFeatureProvider): Provider
  * @param config
  * @returns
  */
-export function withTwitterCard(config: Partial<TwitterCardConfig>) {
+export function withTwitterCard(config: Partial<TwitterCardConfig> | (() => Partial<TwitterCardConfig>)) {
+    const configFn = typeof config === "function" ? config : () => config;
     return makeEnvironmentProviders([
-        { provide: TWITTER_CARD_CONFIG, useValue: config },
+        { provide: TWITTER_CARD_CONFIG, useFactory: configFn },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: TwitterCardMetadataStrategy },
     ]);
 }
@@ -69,21 +70,23 @@ export function withTwitterCard(config: Partial<TwitterCardConfig>) {
  * @param config
  * @returns
  */
-export function withOpenGraph(config: OpenGraphConfig) {
+export function withOpenGraph(config: OpenGraphConfig | (() => OpenGraphConfig)) {
+    const configFn = typeof config === "function" ? config : () => config;
     return makeEnvironmentProviders([
         {
             provide: OPEN_GRAPH_CONFIG,
-            useValue: config,
+            useFactory: configFn,
         },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: OpenGraphMetadataStrategy },
     ]);
 }
 
-export function withSchemaOrg(config: SchemaOrgConfig) {
+export function withSchemaOrg(config: SchemaOrgConfig | (() => SchemaOrgConfig)) {
+    const configFn = typeof config === "function" ? config : () => config;
     return makeEnvironmentProviders([
         {
             provide: SCHEMA_ORG_METADATA_CONFIG,
-            useValue: config,
+            useFactory: configFn,
         },
         { provide: PAGE_METADATA_STRATEGIES, multi: true, useClass: SchemaOrgMetadataStrategy },
     ]);

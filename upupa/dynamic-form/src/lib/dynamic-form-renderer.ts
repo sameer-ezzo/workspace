@@ -21,7 +21,7 @@ export class DynamicFormBuilder {
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
 
-            if (field.input === "object") {
+            if (field.input === "object" || field.input === "fieldset" || field.input === "form") {
                 const group = this.getFieldset(fieldName, field, _path, rootForm);
 
                 form.addControl(fieldName, group, { emitEvent: false });

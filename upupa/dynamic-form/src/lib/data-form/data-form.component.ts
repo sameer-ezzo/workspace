@@ -2,9 +2,9 @@ import { Component, inject, signal, computed, input, Injector, runInInjectionCon
 
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
-import { _defaultControl, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
+import { _defaultControl, _defaultForm, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
 import { Class } from "@noah-ark/common";
-import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
+import { FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormViewModelMirror, reflectFormViewModelType } from "../decorators/form-input.decorator";
 import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GRAPH } from "../dynamic-form.component";
@@ -60,9 +60,9 @@ export class DataFormComponent<T = any> {
     formName = computed(() => this.name() ?? this.viewModel()?.name ?? new Date().getTime().toString());
 
     _ngControl = inject(NgControl, { optional: true });
-    _control = this._ngControl?.control as FormControl;
-    _defaultControl = _defaultControl(this);
-    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+    _control = this._ngControl?.control as FormGroup;
+    _defaultControl = _defaultForm(this);
+    control = input<FormGroup, FormGroup>(this._control ?? this._defaultControl, {
         transform: (v) => {
             return v ?? this._control ?? this._defaultControl;
         },
@@ -114,7 +114,7 @@ export class DataFormComponent<T = any> {
         const vm = this.value();
         runInInjectionContext(this._injector(), async () => {
             await vm["onValueChange"]?.(e);
-            this.control().patchValue(vm, { emitModelToViewChange: true });
+            this.control().patchValue(vm, { emitEvent: false });
         });
     }
 

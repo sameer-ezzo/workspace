@@ -67,7 +67,7 @@ export function metaImageLinkNormalize(
 }
 
 export type ContentMetadataConfig<M = PageMetadata> = {
-    titleTemplate?: (title: string) => string;
+    titleTemplate?: (title: string, meta: M, fallback: Partial<M>) => string;
     imageLoading: (path: string) => string;
     canonicalBaseUrl?: string;
     fallback?: Partial<M>;
@@ -79,23 +79,19 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
     readonly dom = inject(DOCUMENT);
     readonly injector = inject(Injector);
 
-    async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
+    async update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>) {
         const dom = this.dom;
         const fallback = metaFallback.fallback;
 
-        meta = { ...fallback, ...meta }; //as PageMetadata;
+        meta = { ...fallback, ...meta } as PageMetadata;
 
-        delete meta.twitter;
-        delete meta.og;
-        delete meta.schema;
-
-        const title = runInInjectionContext(this.injector, () => meta.titleTemplate?.(meta.title) ?? this.config.titleTemplate?.(meta.title) ?? meta.title);
+        const title = runInInjectionContext(this.injector, () => this.config.titleTemplate?.(meta.title, meta, fallback) ?? meta.title);
         createTag(dom, new TitleMetaTag(title));
         createTag(dom, new LinkTag({ rel: "canonical", href: meta["url"] }));
 
         const image_path = meta.image ?? fallback?.image ?? "";
         const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
-        createTag(dom, new MetaTag("image", image));
+        meta.image = image;
 
         if (meta.externalLinks) {
             for (const link of meta.externalLinks) {
@@ -103,17 +99,23 @@ export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetad
             }
         }
 
-        delete meta["image"];
-        delete meta["title"];
-        delete meta["canonical"];
-        delete meta["externalLinks"];
+        delete meta.title;
+        delete meta["url"];
+        delete meta.canonicalUrl;
+        delete meta.externalLinks;
+        renderMetaTags(dom, meta);
+    }
+}
 
-        for (const key in meta) {
-            const k = key; //as keyof PageMetadata;
-            if (typeof meta[k] === "object" || typeof meta[k] === "function" || typeof meta[k] === "undefined") continue;
-            const content = (meta[k] ?? "").trim();
-            if (!content.length) continue;
-            createTag(dom, new MetaTag(key, content));
-        }
+export function renderMetaTags(dom: Document, meta: Record<string, any>, keyProperty: string | undefined = "name") {
+    for (const key in meta) {
+        const value = meta[key];
+        if (typeof value === "string") {
+            const content = value.trim();
+            if (content) createTag(dom, new MetaTag(key, content, keyProperty));
+        } else if (value instanceof Date) {
+            createTag(dom, new MetaTag(key, value.toISOString(), keyProperty));
+        } else if (typeof value === "number") createTag(dom, new MetaTag(key, value.toString(), keyProperty));
+        else if (typeof value === "boolean") createTag(dom, new MetaTag(key, value ? "true" : "false", keyProperty));
     }
 }
