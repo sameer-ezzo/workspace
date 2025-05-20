@@ -1,4 +1,4 @@
-<form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form" [name]="name()" [ngClass]="class()" [attr.id]="name()">
+<form #formRef="ngForm" (ngSubmit)="onSubmit($event)" [formGroup]="form()" [name]="name()" [ngClass]="class()" [attr.id]="name()">
     @for (record of fields() | orderedKeyValue; track $index) {
         @let fieldName = record.key;
 
@@ -7,7 +7,7 @@
                 fieldTemplate;
                 context: {
                     fieldName,
-                    formGroup: form,
+                    formGroup: form(),
                 }
             "
         ></ng-container>
@@ -28,6 +28,8 @@
             }
             <ng-container *ngTemplateOutlet="fieldsetTemplate; context: { formGroup, fieldRef }"></ng-container>
         </fieldset>
+    } @else if (input === "form") {
+        <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formGroup]="control" [class.hidden]="fieldRef.hidden() === true"></field>
     } @else if (input === "group") {
         @switch (field.template) {
             @case ("expansion-panel") {
@@ -72,7 +74,7 @@
             (load)="fieldRef.attachedComponentRef.set({ instance: panel })"
         ></paragraph>
     } @else {
-        <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formControl]="control"></field>
+        <field [attr.name]="fieldName" [fieldRef]="fieldRef" [formControl]="control" [class.hidden]="fieldRef.hidden() === true"></field>
     }
 </ng-template>
 

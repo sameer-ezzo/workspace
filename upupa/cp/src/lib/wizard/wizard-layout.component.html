@@ -4,7 +4,7 @@
             <ng-template matStepContent>
                 @let template = step["_template"];
                 <portal [template]="template" (attached)="onAttach(step, $event, i)" (detached)="onDetach(i)"></portal>
-                <div style="display: flex; justify-content: end; gap: 1rem; margin-block-start: 1.5rem;">
+                <div style="display: flex; justify-content: end; gap: 1rem; margin-block-start: 1.5rem; align-items: center;">
                     @for (action of step.actions ?? []; track action) {
                         <portal [template]="action"></portal>
                     }

@@ -19,7 +19,6 @@
     (submitted)="onSubmit($event)"
     [control]="control()"
 ></dynamic-form>
-<!-- [formGroup]="control()" -->
 @if (actions()?.length) {
     <div class="toolbar">
         @for (descriptor of actions(); track descriptor.name) {

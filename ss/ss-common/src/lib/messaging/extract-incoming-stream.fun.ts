@@ -6,7 +6,7 @@ import { ExtractIncomingMessage } from "./extract-incoming-message.fun";
 import { IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { PostedFileHandler, _onFile, _onField } from "./model";
 import * as Path from "path";
-const _allowedExts = ".jpg,.jpeg,.png,.gif,.bmp,.pdf,.docx,.xlsx,.txt,.zip,.7zip,.7z,.rtf,.csv,.mkv,.mp4,.iso,.tar,.targz";
+const _allowedExts = ".jpg,.jpeg,.png,.gif,.bmp,.pdf,.docx,.xlsx,.txt,.zip,.7zip,.7z,.rtf,.csv,.mkv,.mp4,.iso,.tar,.targz,.webp,.svg,.mp3,.wav,.ogg,.flac,.aac,.m4a,.wma,.avi,.mov,.wmv,.webm";
 const STORAGE_ALLOWED_EXTENSIONS = (process.env["STORAGE_ALLOWED_EXTENSIONS"] || "").trim();
 const allowedExtensions = (STORAGE_ALLOWED_EXTENSIONS.length ? STORAGE_ALLOWED_EXTENSIONS : _allowedExts).split(",");
 
@@ -46,8 +46,7 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
                             res.status(403).send({ message: "Invalid path or file extension", path, extension });
                             res.end();
                             req.socket.destroy();
-
-                            throw new HttpException("Invalid path or file extension", HttpStatus.FORBIDDEN);
+                            // throw new HttpException("Invalid path or file extension", HttpStatus.FORBIDDEN);
                         }
 
                         const postedFile = { fieldname: field, stream: file, originalname: originalname, encoding, mimetype: mimeType } as PostedFile;

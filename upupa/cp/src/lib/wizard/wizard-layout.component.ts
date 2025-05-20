@@ -92,17 +92,6 @@ export type WizardStepRef = {
             } as StepperOptions,
         },
     ],
-    styles: [
-        `
-            :host {
-                display: block;
-                portal {
-                    display: block;
-                    margin-block-start: 1.5rem;
-                }
-            }
-        `,
-    ],
 })
 export class WizardLayoutComponent implements OnChanges {
     _stepper = viewChild("stepper", { read: ElementRef });

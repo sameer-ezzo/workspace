@@ -32,7 +32,7 @@ export function composeForm<T>(config: {
     viewModel: Class | FormViewModelMirror;
     value?: T;
     form?: FormGroup;
-    control?: FormControl;
+    control?: FormGroup;
     injector?: Injector;
 }): DynamicComponent<DataFormComponent> {
     return {

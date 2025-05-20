@@ -72,7 +72,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
 
     const elementRef = componentRef.injector.get<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
     fromEvent(elementRef.nativeElement, "keydown").subscribe((event: KeyboardEvent) => {
-        if (event.key === "Escape" && componentRef.instance.dynamicFormEl().form.pristine) {
+        if (event.key === "Escape" && componentRef.instance.dynamicFormEl().form().pristine) {
             dialogRef.close();
         }
     });
