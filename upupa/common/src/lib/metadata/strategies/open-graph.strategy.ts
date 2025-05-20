@@ -1,7 +1,7 @@
 import { DOCUMENT } from "@angular/common";
 import { Injectable, InjectionToken, inject } from "@angular/core";
 import { MetadataUpdateStrategy } from "../metadata.service";
-import { ContentMetadataConfig } from "./page-metadata.strategy";
+import { ContentMetadataConfig, renderMetaTags } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";
 import { createTag, MetaTag } from "../link";
 
@@ -31,14 +31,8 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
 
         const image_path = og["og:image"] ?? metaFallback.fallback?.image ?? "";
         const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
-        this.metaUpdateFn("og:image", image);
-        delete og["og:image"];
+        og["og:image"] = image;
 
-        for (const key in og) {
-            const k = key; //as keyof OpenGraphData;
-            const content = (og[k] ?? "").trim();
-            if (!content.length) continue;
-            this.metaUpdateFn(key, content);
-        }
+        renderMetaTags(this.dom, og, "property");
     }
 }

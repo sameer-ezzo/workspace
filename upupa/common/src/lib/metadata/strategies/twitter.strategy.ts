@@ -1,6 +1,6 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
 
-import { ContentMetadataConfig } from "./page-metadata.strategy";
+import { ContentMetadataConfig, renderMetaTags } from "./page-metadata.strategy";
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { DOCUMENT } from "@angular/common";
 import { TwitterCardMetadata } from "../models";
@@ -16,11 +16,6 @@ export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> 
 
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => {
-        // appendTagToHead(this.dom, name, content, "meta", "name");
-        createTag(this.dom, new MetaTag(name, content));
-    };
-
     async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const pageMetadata = metaFallback.fallback ?? {};
         const fallback = {
@@ -35,14 +30,8 @@ export class TwitterCardMetadataStrategy implements MetadataUpdateStrategy<any> 
 
         const image_path = twitter["twitter:image"] ?? metaFallback.fallback?.image ?? "";
         const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
-        this.metaUpdateFn("twitter:image", image);
-        delete twitter["twitter:image"];
+        twitter["twitter:image"] = image;
 
-        for (const key in twitter) {
-            const k = key; //as keyof TwitterCardFormViewModel;
-            const content = (twitter[k] ?? "").trim();
-            if (!content.length) continue;
-            this.metaUpdateFn(key, content);
-        }
+        renderMetaTags(this.dom, twitter);
     }
 }
