@@ -2,11 +2,12 @@ import { ComponentRef, inject, Injectable, Injector, Provider, reflectComponentT
 import { ActivatedRoute, Router, RouterOutlet } from "@angular/router";
 import { Subscription } from "rxjs";
 
+const originalActivateWith = RouterOutlet.prototype.activateWith;
+const originalDeactivate = RouterOutlet.prototype.deactivate;
+
 export function provideRouteOutputBinder(): EnvironmentProviders {
     return provideAppInitializer(() => {
         const outputBinder = inject(RouteOutputBinder);
-        const originalActivateWith = RouterOutlet.prototype.activateWith;
-        const originalDeactivate = RouterOutlet.prototype.deactivate;
 
         RouterOutlet.prototype.activateWith = function (activatedRoute, ...args) {
             const res = originalActivateWith.call(this, activatedRoute, ...args);

@@ -13,7 +13,7 @@ export type AggResult<T> = {
 
 @Injectable({ providedIn: "root" })
 export class ApiService {
-    _timeout = 5000;
+    _timeout = 30000;
 
     private combinePath(path: string) {
         let base = (this.api_base ?? "").trim();

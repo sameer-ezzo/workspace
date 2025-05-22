@@ -167,7 +167,7 @@ export type EnhancedRouterConfig = RouterConfigOptions & {
 const DEFAULT_ROUTER_CONFIG: EnhancedRouterConfig = {
     withComponentInputBinding: true,
     withInMemoryScrolling: { anchorScrolling: "enabled" },
-    withViewTransitions: true,
+    withViewTransitions: typeof document !== "undefined" && document.visibilityState === "visible", //enable view transitions on browser (not headless)
     withDebugTracing: false,
     withNavigationErrorHandler: (error) => {
         console.error(error);
