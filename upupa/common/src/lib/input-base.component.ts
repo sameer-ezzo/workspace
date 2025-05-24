@@ -4,6 +4,7 @@ import { ControlValueAccessor, FormControl, FormGroup, NgControl, UntypedFormCon
 export function _defaultControl(parentComponent: any) {
     const control = new FormControl();
     control["_parentComponent"] = parentComponent;
+
     return control;
 }
 

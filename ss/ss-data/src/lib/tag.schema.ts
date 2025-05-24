@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 @Schema({ _id: false, strict: true, timestamps: true })
 class TranslationDocument {
-    @Prop({ type: String, index: true, unique: true })
+    @Prop({ type: String, index: true })
     lang: string;
     @Prop({ type: mongoose.Schema.Types.Mixed })
     translation: any;

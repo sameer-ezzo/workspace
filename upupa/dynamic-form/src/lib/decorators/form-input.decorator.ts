@@ -171,12 +171,14 @@ export function reflectFormViewModelType(viewModel: Class): FormViewModelMirror 
             group.items[fieldName] = field;
             fields[groupName] = group;
         } else if (field.input === "object" || field.input === "fieldset") {
-            let items = field["items"];
-            const target = formMetadata.targets[fieldName];
-            if (target) {
-                const type = Reflect.getMetadata("design:type", target, fieldName);
-                const childMirror = reflectFormViewModelType(type);
-                items = childMirror.fields;
+            let items = field.inputs["items"];
+            if (!items) {
+                const target = formMetadata.targets[fieldName];
+                if (target) {
+                    const type = Reflect.getMetadata("design:type", target, fieldName);
+                    const childMirror = reflectFormViewModelType(type);
+                    items = childMirror.fields;
+                }
             }
             fields[fieldName] = { ...field, input: "object", items };
         } else {
@@ -261,6 +263,10 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             break;
         case "object":
         case "fieldset":
+            field.inputs["items"] = fieldOptions.items;
+            break;
+        case "form":
+            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
             break;
         case "switch":
             const switchOptions = fieldOptions as any;
@@ -308,9 +314,6 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             if (field["rows"]) field.inputs["rows"] = field["rows"];
             if (field["maxRows"]) field.inputs["maxRows"] = field["maxRows"];
             if (field["minSize"]) field.inputs["minSize"] = field["minSize"];
-            break;
-        case "form":
-            field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
             break;
 
         default:

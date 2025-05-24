@@ -1,4 +1,5 @@
-import { FormGraph } from "../dynamic-form.component";
+import { FormGroup } from "@angular/forms";
+
 import { Field } from "../types";
 import { CollectStyle } from "./types";
 
@@ -22,25 +23,30 @@ export function loadFontFromUri(doc: Document, family: string, fontUri?: string)
     }
 }
 
-export type FormPage = { from: number; to: number; fields: FormGraph };
+export type FormPage = { from: number; to: number; fields: FormGroup["controls"] };
 
 function _isNaturallyHidden(f: Field): boolean {
     return f.input === "page-breaker" || f.input === "hidden";
 }
 
-export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGraph): FormPage[] {
+export function fieldsArrayToPages(collectStyle: CollectStyle, fields: FormGroup["controls"]): FormPage[] {
     let pages: FormPage[] = [];
     if (!fields) return pages;
-    const fs = Array.from(fields.entries());
+    const fs = Object.values(fields);
     if (collectStyle === "1by1")
         pages = fs
-            .filter(([name, f]) => !_isNaturallyHidden(f.field))
+            .filter((f) => !_isNaturallyHidden(f["fieldRef"].field))
             .map((f, i) => {
-                return { from: i, to: i, fields: new Map([[f[0], f[1]]]) };
+                return { from: i, to: i, fields: { [f["name"]]: f } };
             });
     else if (collectStyle === "linear") {
-        const _fs = fs.filter(([name, f]) => f.field.input !== "page-breaker");
-        pages = [{ from: 0, to: fs.length, fields: new Map(_fs) }];
+        const _fs = fs
+            .filter((f) => f["fieldRef"].input !== "page-breaker")
+            .reduce((acc, f) => {
+                acc[f["name"]] = f;
+                return acc;
+            }, {});
+        pages = [{ from: 0, to: fs.length, fields: _fs }];
     } else {
         // const pageBreakerIndexes = fs.filter(([name, f]) => f.type === 'page-breaker').map(([name, f]) => fs.indexOf(f));
         // if (pageBreakerIndexes.length > 0) {

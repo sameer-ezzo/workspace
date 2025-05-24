@@ -5,7 +5,7 @@ import { filter } from "rxjs";
 import { ClipboardService, FileInfo, openFileDialog, UploadClient } from "@upupa/upload";
 import { ThemePalette } from "@angular/material/core";
 import { FileEvent, RemoveFileEvent, UploadFileSuccessEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
-import { DialogService } from "@upupa/dialog";
+
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
 
@@ -13,6 +13,7 @@ import { MatError, MatFormFieldModule } from "@angular/material/form-field";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { FilesViewerComponent } from "../file-viewer/file-viewer.component";
+import { DialogService } from "@upupa/dialog";
 
 type ViewType = "list" | "grid";
 @Component({
@@ -133,33 +134,34 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     }
 
     private async showFileExplorer() {
-        // FileBrowserComponent depends on this component so we need to find a better solution to use it
-
-        if (this.value?.length >= this.maxAllowedFiles()) return;
-
-        // const dref = this.dialog.openDialog(FileBrowserComponent, {
-        //     title: 'upload',
-        //     inputs: {
-        //         includeAccess: this.includeAccess,
-        //         path: this.path,
-        //         minAllowedFiles: this.minAllowedFiles,
-        //         maxAllowedFiles: this.maxAllowedFiles,
-        //         minSize: this.minSize,
-        //         maxSize: this.maxSize,
-        //         accept: this.accept,
-        //         view: this.view,
-        //         value: this.value
+        //!important FileBrowserComponent depends on this component so we need to find a better solution to use it
+        // if (this.value?.length >= this.maxAllowedFiles()) return;
+        // const dref = this.dialog.open(
+        //     {
+        //         component: FileBrowserComponent,
+        //         inputs: {
+        //             path: this.path(),
+        //             view: this.view(),
+        //             value: this.value(),
+        //             // includeAccess: this.includeAccess(),
+        //             // minAllowedFiles: this.minAllowedFiles(),
+        //             // maxAllowedFiles: this.maxAllowedFiles(),
+        //             // minSize: this.minSize(),
+        //             // maxSize: this.maxSize(),
+        //             // accept: this.accept(),
+        //         },
         //     },
-        //     actions: [
-        //         { name: 'close', text: 'Close', meta: { closeDialog: true }, variant: 'button' } as ActionDescriptor,
-        //         { name: 'select', type: 'submit', text: 'Select', meta: { closeDialog: true }, variant: 'raised', color: 'primary' } as ActionDescriptor
-        //     ]
-        // })
-
-        // const result = await firstValueFrom(dref.afterClosed())
+        //     {
+        //         title: "Select",
+        //         // actions: [
+        //         //     { name: "close", text: "Close", meta: { closeDialog: true }, variant: "button" } as ActionDescriptor,
+        //         //     { name: "select", type: "submit", text: "Select", meta: { closeDialog: true }, variant: "raised", color: "primary" } as ActionDescriptor,
+        //         // ],
+        //     },
+        // );
+        // const result = await firstValueFrom(dref.afterClosed());
         // if (result) {
-        //     this.value = result
-        //     this.control.markAsDirty()
+        //     this.handleUserInput(result);
         // }
     }
     private _validateFileList(f: FileList) {

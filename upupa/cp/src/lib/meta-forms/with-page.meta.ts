@@ -29,7 +29,7 @@ export class SeoMetaFormViewModel {
     image!: string;
 
     @formInput({ input: "form", inputs: { viewModel: TwitterCardFormViewModel }, label: "Twitter Card" })
-    twitter: TwitterCardFormViewModel = new TwitterCardFormViewModel();
+    twitter: TwitterCardFormViewModel = new TwitterCardFormViewModel({ "twitter:title": "Coconut" });
 
     @formInput({ input: "form", inputs: { viewModel: OpenGraphFormViewModel }, label: "Open Graph Meta" })
     og: OpenGraphFormViewModel = new OpenGraphFormViewModel();

@@ -1,7 +1,5 @@
 import { formInput, ExtendedValueChangeEvent, FieldRef, fieldRef, Fieldset } from "@upupa/dynamic-form";
 
-
-
 export class OpenGraphFormViewModel {
     @formInput({
         input: "text",
@@ -84,87 +82,81 @@ export class OpenGraphFormViewModel {
 
             for (const [group, ref] of groups) {
                 if (value === group) {
-                    ref.hidden.set(false);
+                    ref.setVisibility(true);
                 } else {
-                    ref.hidden.set(true);
-                    const items = Object.entries((ref.field as Fieldset).items);
-                    for (const [name, item] of items) {
-                        const itemRef = fieldRef(`/${name}`);
-                        itemRef.control?.setValue(null, { emitEvent: false });
-                    }
-                    ref.control?.setValue(null, { emitEvent: false });
+                    ref.setVisibility(false);
                 }
             }
         }
     }
 
     // if article =>  article:published_time, article:author, and article:tag
-    @formInput({ input: "date", group: "Article", label: "Article Published Time", hidden: true })
+    @formInput({ input: "date", group: { name: "Article", hidden: true }, label: "Article Published Time" })
     "article:published_time": Date | undefined;
-    @formInput({ input: "text", group: "Article", label: "Article Author", hidden: true })
+    @formInput({ input: "text", group: "Article", label: "Article Author" })
     "article:author" = "";
-    @formInput({ input: "text", group: "Article", label: "Article Tag", hidden: true })
+    @formInput({ input: "text", group: "Article", label: "Article Tag" })
     "article:tag" = "";
 
     // if book => book:author, book:isbn, book:release_date
-    @formInput({ input: "text", group: "Book", label: "Book Author", hidden: true })
+    @formInput({ input: "text", group: { name: "Book", hidden: true }, label: "Book Author" })
     "book:author" = "";
-    @formInput({ input: "text", group: "Book", label: "Book ISBN", hidden: true })
+    @formInput({ input: "text", group: "Book", label: "Book ISBN" })
     "book:isbn" = "";
-    @formInput({ input: "date", group: "Book", label: "Book Release Date", hidden: true })
+    @formInput({ input: "date", group: "Book", label: "Book Release Date" })
     "book:release_date": Date | undefined = undefined;
 
     // if profile => profile:first_name, profile:last_name, profile:username
-    @formInput({ input: "text", group: "Profile", label: "Profile First Name", hidden: true })
+    @formInput({ input: "text", group: { name: "Profile", hidden: true }, label: "Profile First Name" })
     "profile:first_name" = "";
-    @formInput({ input: "text", group: "Profile", label: "Profile Last Name", hidden: true })
+    @formInput({ input: "text", group: "Profile", label: "Profile Last Name" })
     "profile:last_name" = "";
-    @formInput({ input: "text", group: "Profile", label: "Profile Username", hidden: true })
+    @formInput({ input: "text", group: "Profile", label: "Profile Username" })
     "profile:username" = "";
 
     // if music.song => music:duration and music:album
-    @formInput({ input: "text", group: "Music", label: "Music Duration", hidden: true })
+    @formInput({ input: "text", group: { name: "Music", hidden: true }, label: "Music Duration" })
     "music:duration" = "";
-    @formInput({ input: "text", group: "Music", label: "Music Album", hidden: true })
+    @formInput({ input: "text", group: "Music", label: "Music Album" })
     "music:album" = "";
 
     // if music.album => music:song
     // if music.playlist => music:song
-    @formInput({ input: "text", group: "Music", label: "Music Song", hidden: true })
+    @formInput({ input: "text", group: "Music", label: "Music Song" })
     "music:song" = "";
 
     // if movie => video:actor, video:writer, video:duration, video:release_date
-    @formInput({ input: "text", group: "Video", label: "Video Actor", hidden: true })
+    @formInput({ input: "text", group: { name: "Video", hidden: true }, label: "Video Actor" })
     "video:actor" = "";
-    @formInput({ input: "text", group: "Video", label: "Video Writer", hidden: true })
+    @formInput({ input: "text", group: "Video", label: "Video Writer" })
     "video:writer" = "";
-    @formInput({ input: "text", group: "Video", label: "Video Duration", hidden: true })
+    @formInput({ input: "text", group: "Video", label: "Video Duration" })
     "video:duration" = "";
-    @formInput({ input: "date", group: "Video", label: "Video Release Date", hidden: true })
+    @formInput({ input: "date", group: "Video", label: "Video Release Date" })
     "video:release_date": Date | undefined;
     // if video.episode => video:series, video:actor, and video:director
-    @formInput({ input: "text", group: "Video", label: "Video Series", hidden: true })
+    @formInput({ input: "text", group: "Video", label: "Video Series" })
     "video:series" = "";
-    @formInput({ input: "text", group: "Video", label: "Video Director", hidden: true })
+    @formInput({ input: "text", group: "Video", label: "Video Director" })
     "video:director" = "";
 
     // if product => product:price:amount, product:price:currency
-    @formInput({ input: "text", group: "Product", label: "Product Price Amount", hidden: true })
+    @formInput({ input: "text", group: { name: "Product", hidden: true }, label: "Product Price Amount" })
     "product:price:amount" = "";
-    @formInput({ input: "text", group: "Product", label: "Product Price Currency", hidden: true })
+    @formInput({ input: "text", group: "Product", label: "Product Price Currency" })
     "product:price:currency" = "";
 
     // if place => place:location:latitude, place:location:longitude
-    @formInput({ input: "text", group: "Place", label: "Place Location Latitude", hidden: true })
+    @formInput({ input: "text", group: { name: "Place", hidden: true }, label: "Place Location Latitude" })
     "place:location:latitude" = "";
-    @formInput({ input: "text", group: "Place", label: "Place Location Longitude", hidden: true })
+    @formInput({ input: "text", group: "Place", label: "Place Location Longitude" })
     "place:location:longitude" = "";
 
     // if event => event:start_time, event:end_time, event:location
-    @formInput({ input: "date", group: "Event", label: "Event Start Time", hidden: true })
+    @formInput({ input: "date", group: { name: "Event", hidden: true }, label: "Event Start Time" })
     "event:start_time": Date | undefined;
-    @formInput({ input: "date", group: "Event", label: "Event End Time", hidden: true })
+    @formInput({ input: "date", group: "Event", label: "Event End Time" })
     "event:end_time": Date | undefined;
-    @formInput({ input: "text", group: "Event", label: "Event Location", hidden: true })
+    @formInput({ input: "text", group: "Event", label: "Event Location" })
     "event:location" = "";
 }

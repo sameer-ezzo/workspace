@@ -1,5 +1,5 @@
 import { Component, input, inject, Type, Injector, runInInjectionContext, output, viewChild } from "@angular/core";
-import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, deepAssign, DynamicComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { firstValueFrom } from "rxjs";
@@ -44,7 +44,7 @@ export function inlineButton<T = unknown>(options: {
     return template;
 }
 
-export function readValueFromApi<T = any>(path: string) {
+export function readValueFromApi<T = any>(path: string): Promise<T> {
     const ds = inject(DataService);
     return firstValueFrom(ds.get<T>(path)).then((r) => r.data?.[0] as T);
 }

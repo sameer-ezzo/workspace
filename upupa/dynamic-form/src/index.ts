@@ -15,7 +15,6 @@ export * from "./lib/di.token";
 
 export * from "./lib/dynamic-form-themes.type";
 export * from "./lib/events/events";
-export * from "./lib/events/handlers";
 
 export * from "./lib/decorators/form-input.decorator";
 

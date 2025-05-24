@@ -39,7 +39,9 @@ export class TranslationButtonComponent<TItem = unknown> {
 
 @Component({
     selector: "embed-translation-btn",
-    template: ` <mat-btn (action)="translate()" [disabled]="disabled()" [buttonDescriptor]="btn()"></mat-btn> `,
+    template: ` @if (!disabled()) {
+        <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
+    }`,
     styles: `
         :host {
             margin-inline: 0.25rem;
@@ -130,7 +132,9 @@ export class EmbedTranslationButton<TItem = unknown> extends TranslationButtonCo
 
 @Component({
     selector: "link-translation-btn",
-    template: ` <mat-btn (action)="translate()" [disabled]="disabled()" [buttonDescriptor]="btn()"></mat-btn> `,
+    template: ` @if (!disabled()) {
+        <mat-btn (action)="translate()" [buttonDescriptor]="btn()"></mat-btn>
+    }`,
     styles: `
         :host {
             margin-inline: 0.25rem;
@@ -220,7 +224,7 @@ export class LinkTranslationButton<TItem = unknown> extends TranslationButtonCom
                 const ts = this.item()["translations"] ?? [];
                 await this.adapter.patch(this.item(), [
                     { op: "replace", path: "translation_id", value: translation_id },
-                    { op: "replace", path: "translations", value: [...ts, { lang: code, translation: newT._id }] },
+                    { op: "replace", path: "translations", value: [...ts.filter((t) => t.lang !== code), { lang: code, translation: newT._id }] },
                 ]);
             }
         });

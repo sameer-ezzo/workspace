@@ -17,7 +17,7 @@
 
 <ng-template #fieldTemplate let-fieldName="fieldName" let-formGroup="formGroup">
     @let control = formGroup.get(fieldName);
-    @let fieldRef = control?.fieldRef ?? graph.get("group:" + fieldName);
+    @let fieldRef = control?.fieldRef ?? formGroup["group:" + fieldName];
     @let field = fieldRef.field;
     @let input = field.input;
 

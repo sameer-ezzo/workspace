@@ -6,7 +6,7 @@ import { ActionsDescriptor } from "@upupa/common";
 import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
-import { DynamicFormComponent, ExtendedValueChangeEvent, FORM_GRAPH } from "../dynamic-form.component";
+import { DynamicFormComponent, ExtendedValueChangeEvent, FORM_GROUP } from "../dynamic-form.component";
 import { CommonModule, DOCUMENT } from "@angular/common";
 import { MatBtnComponent } from "@upupa/mat-btn";
 
@@ -23,11 +23,11 @@ import { MatBtnComponent } from "@upupa/mat-btn";
             multi: true,
         },
         {
-            provide: FORM_GRAPH,
-            useFactory: (self: CollectorComponent) => self.dynamicForm().graph,
+            provide: FORM_GROUP,
+            useFactory: (self: CollectorComponent) => self.dynamicForm().form(),
             deps: [CollectorComponent],
         },
-    ]
+    ],
 })
 export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
@@ -74,7 +74,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     design = input<FormDesign>();
 
     get controls() {
-        return this.dynamicForm().graph;
+        return this.dynamicForm().form().controls;
     }
 
     get formElement() {
@@ -118,7 +118,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
         if (pageIndex < 0 || pageIndex > this.pages.length - 1) return this._pageInvalid.set(false);
 
         const page = this.pages[pageIndex];
-        if (page?.fields) this._pageInvalid.set(Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true));
+        if (page?.fields) this._pageInvalid.set(Object.values(page.fields).some((f) => f.invalid === true));
     }
 
     showFieldsOfPage() {

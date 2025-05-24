@@ -6,7 +6,7 @@ import { AuthService } from "@upupa/auth";
 import { DataAdapter, DataService, ApiDataSource } from "@upupa/data";
 import { FileInfo } from "@upupa/upload";
 import { FileSelectComponent } from "../file-select/file-select.component";
-import { SnackBarService } from "@upupa/dialog";
+
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -15,6 +15,8 @@ import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatButtonModule } from "@angular/material/button";
 import { FileEvent, RemoveFileEvent } from "../viewer-file.vm";
 import { FileUploadService } from "../file-upload.service";
+import { SnackBarService } from "@upupa/dialog";
+
 
 const valueProperty = [
     "_id",

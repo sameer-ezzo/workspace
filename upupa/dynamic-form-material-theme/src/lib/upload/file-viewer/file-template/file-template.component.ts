@@ -22,6 +22,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatBtnComponent } from "@upupa/mat-btn";
+
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
 
 const actions = [
@@ -86,7 +87,7 @@ export class FileTemplateComponent {
             const file = this.file();
             this.vm.set(this.convertToVm(file));
             const f = file.file;
-            let src: string = "";
+            let src = "";
             if (f instanceof File) {
                 const reader = new FileReader();
                 reader.onload = (e) => {

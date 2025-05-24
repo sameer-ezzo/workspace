@@ -4,7 +4,7 @@ import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import {  createButton, deleteButton, editButton } from "@upupa/cp";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DialogRef } from "@upupa/dialog";
-import { DynamicFormInitializedEvent, formInput, OnSubmit } from "@upupa/dynamic-form";
+import { DynamicFormInitializedEvent, fieldRef, formInput, OnSubmit } from "@upupa/dynamic-form";
 import { column, DataListComponent, withTableHeader } from "@upupa/table";
 
 export class RoleListViewModel implements OnSubmit {
@@ -21,7 +21,7 @@ export class RoleListViewModel implements OnSubmit {
 
     onInit(e: DynamicFormInitializedEvent) {
         if (this._id) {
-            const idRef = e.graph.get("/_id");
+            const idRef = fieldRef("/_id");
             idRef.inputs.set({ ...idRef.inputs(), readonly: true }); // prevent editing of id when editing a record
         }
     }

@@ -1,4 +1,4 @@
-import { Field } from "../types";
+import { Field, FormScheme } from "../types";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { Class, PasswordStrength } from "@noah-ark/common";
 import { FormViewModelMirror } from "./form-input.decorator";
@@ -67,8 +67,7 @@ export type FieldOptions =
     | ({ input: "hidden" } & BaseFormFieldOptions)
     | (VisibleFormFieldOptions &
           (
-              | ({ input: "fieldset" } & BaseFormFieldOptions)
-              | ({ input: "object" } & BaseFormFieldOptions)
+              | ({ input: "fieldset" | "object" } & BaseFormFieldOptions & { items: FormScheme })
               | ({ input: "paragraph" } & { text: string; renderer: "markdown" | "html" | "none" })
               | ({ input: "text" } & TextFieldOptions)
               | ({ input: "color" } & TextFieldOptions)
@@ -111,7 +110,7 @@ export type FieldOptions =
                         selectable?: boolean;
                         removable?: boolean;
                         separatorKeysCodes?: string[];
-                    } & { outputs?: ComponentOutputsHandlers<MatChipsComponent>; inputs?: Partial< ComponentInputs<MatChipsComponent>> })
+                    } & { outputs?: ComponentOutputsHandlers<MatChipsComponent>; inputs?: Partial<ComponentInputs<MatChipsComponent>> })
               | ({ input: "group" } & BaseFormFieldOptions)
               | ({ input: "form" } & BaseFormFieldOptions & { viewModel: Class | FormViewModelMirror })
           ));
