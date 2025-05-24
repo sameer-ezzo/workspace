@@ -1,4 +1,4 @@
-export async function httpFetch(url, body?: any, timeout?: number) {
+export async function httpFetch(url, body?: any, timeout = 30000) {
     let response: Response | Record<string, any>;
     let fetcher: Promise<Response>;
     const options: any = {};

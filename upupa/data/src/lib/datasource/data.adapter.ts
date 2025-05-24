@@ -175,7 +175,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         await firstValueFrom(
             this._producer.pipe(
                 filter((x) => x === consumer),
-                timeout(2000),
+                timeout(30000),
             ),
         );
         return this._load(options);

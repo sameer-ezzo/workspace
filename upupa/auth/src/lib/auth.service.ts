@@ -6,7 +6,7 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router, ActivationEnd } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
-import { analyzePassword, Principle } from "@noah-ark/common";
+import { analyzePassword, MutexAsync, Principle } from "@noah-ark/common";
 
 import { DeviceService } from "./device.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
@@ -66,10 +66,10 @@ export class RequestTokenStore implements TokenStore {
     req = inject(REQUEST);
 
     getHeader(key: string): string {
-        return this.req.headers.get(key) ?? "";
+        return this.req?.headers.get(key) ?? "";
     }
     getCookie(key: string): string {
-        const cookie = this.req.headers.get("cookie");
+        const cookie = this.req?.headers.get("cookie");
         if (cookie) {
             const cookies = cookie.split("; ");
             for (const c of cookies) {
@@ -230,15 +230,27 @@ export class AuthService {
     }
 
     async checkUser(usernameOrEmailOrPhone: string): Promise<{ canLogin: boolean } & Record<string, unknown>> {
-        return this._doHttpFetch(`${this.baseUrl}/check-user`, { usernameOrEmailOrPhone });
+        return httpFetch(`${this.baseUrl}/check-user`, { usernameOrEmailOrPhone });
     }
 
+    // async refresh(refresh_token?: string): Promise<Principle | null> {
+    //     if (this._refreshPromise) return this._refreshPromise;
+    //     this._refreshPromise = this._refresh(refresh_token);
+    //     try {
+    //         return await this._refreshPromise;
+    //     } finally {
+    //         this._refreshPromise = null;
+    //     }
+    // }
+    // _refreshPromise: Promise<Principle | null> = null;
+
+    @MutexAsync()
     async refresh(refresh_token?: string): Promise<Principle | null> {
         refresh_token = refresh_token ? refresh_token : this.get_refresh_token();
         let principle: Principle = null;
         if (refresh_token) {
             try {
-                const tokens = await this._doHttpFetch(this.baseUrl, { grant_type: "refresh", refresh_token });
+                const tokens = await httpFetch(this.baseUrl, { grant_type: "refresh", refresh_token });
                 if (tokens) {
                     this.setTokens(tokens);
                     principle = this.jwt(tokens.access_token) as Principle;
@@ -246,32 +258,18 @@ export class AuthService {
                     return principle;
                 }
             } catch (error) {
-                if (error instanceof HttpErrorResponse) {
-                    const status = `${error.status}`;
-                    if (status.startsWith("4")) {
-                        console.error("Signing out because: ", error);
-                        this.signout();
-                    } else {
-                        console.error("Error refreshing token: ", error);
-                    }
+                const status = `${error.status ?? 0}`;
+                if (status.startsWith("4")) {
+                    console.warn("SIGNING OUT: ", error);
+                    this.signout();
+                } else {
+                    console.error("Error refreshing token: ", error);
                 }
                 return principle;
             }
         }
         this.triggerNext(principle);
         return principle;
-    }
-
-    private async _doHttpFetch(url: string = this.baseUrl, body?: any) {
-        try {
-            return await httpFetch(url, body, 5000);
-        } catch (error) {
-            const status = error.status == null ? "0" : `${error.status}`;
-
-            if (status.startsWith("0")) throw "CONNECTION_ERROR";
-            if (status.startsWith("4")) throw error.body ? error.body : error;
-            else throw error;
-        }
     }
 
     private setTokens(tokens: { access_token: string; refresh_token: string }) {
@@ -285,7 +283,7 @@ export class AuthService {
         this._token$.next(tokens?.access_token);
     }
     async signin_Google(user: { token: string }) {
-        const res = await this._doHttpFetch(`${this.baseUrl}/google-auth`, user);
+        const res = await httpFetch(`${this.baseUrl}/google-auth`, user);
         this.setTokens(res);
         const principle = this.jwt(res.access_token);
         this.triggerNext(principle);
@@ -293,7 +291,7 @@ export class AuthService {
     }
 
     async signin_Facebook(user) {
-        const res = await this._doHttpFetch(`${this.baseUrl}/facebook-auth`, user);
+        const res = await httpFetch(`${this.baseUrl}/facebook-auth`, user);
         this.setTokens(res);
         const principle = this.jwt(res.access_token);
         this.triggerNext(principle);
@@ -305,7 +303,7 @@ export class AuthService {
 
         try {
             const e = await idp.signin();
-            const auth_token = await this._doHttpFetch(`${this.baseUrl}/${provider}-auth`, { token: e.credential });
+            const auth_token = await httpFetch(`${this.baseUrl}/${provider}-auth`, { token: e.credential });
 
             if (!auth_token) throw "UNDEFINED_TOKEN";
             if ("reset_token" in auth_token) {
@@ -338,7 +336,7 @@ export class AuthService {
         authRequestBody["device"] = await this.deviceService.getDevice();
 
         try {
-            const auth_token = await this._doHttpFetch(this.baseUrl, authRequestBody);
+            const auth_token = await httpFetch(this.baseUrl, authRequestBody);
 
             if (!auth_token) throw "UNDEFINED_TOKEN";
             if ("reset_token" in auth_token) {
@@ -369,20 +367,20 @@ export class AuthService {
 
     signup(user: any, password: string): Promise<any> {
         const payload = Object.assign(user, { password });
-        return this._doHttpFetch(this.baseUrl + "/signup", payload);
+        return httpFetch(this.baseUrl + "/signup", payload);
     }
 
     forgotPassword(email: string, payload?: any): Promise<any> {
         if (email) {
             payload = payload || {};
-            return this._doHttpFetch(this.baseUrl + "/forgot-password", { ...payload, email: email.trim().toLocaleLowerCase() });
+            return httpFetch(this.baseUrl + "/forgot-password", { ...payload, email: email.trim().toLocaleLowerCase() });
         } else throw "EMAIL_REQUIRED";
     }
 
     async reset_password(new_password: string, reset_token: string): Promise<boolean> {
         if (new_password && reset_token) {
             try {
-                const response = await this._doHttpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
+                const response = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
                 if (response.status === "true") return true;
                 else throw response;
             } catch (err) {
