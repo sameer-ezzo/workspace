@@ -143,5 +143,5 @@ export function evaluatePermission(p: Permission<boolean | AuthorizeFun>, ctx?: 
 
 export function _isSuperAdmin(ctx: AuthorizeMessage) {
     const principle = ctx.principle!;
-    return principle && principle.roles?.some((r: string) => r === "super-admin" || r === "developer");
+    return principle && principle.roles?.some((r: string) => r === "super-admin");
 }
