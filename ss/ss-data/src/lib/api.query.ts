@@ -121,13 +121,14 @@ export class QueryParser {
         const val = operatorMatches[2];
 
         if (operator === "eq" || operator === "ne" || operator === "not") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === "exists") return { [key]: { $exists: !val ? true : val === "true" } };
         else if (operator === "gt" || operator === "gte" || operator === "lt" || operator === "lte") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
         else if (operator === "btw") {
             const range = (val || "").split(",");
             const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
             return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
         } else if (operator === "all" || operator === "in" || operator === "nin" || /in\d/.test(operator)) {
-            const array = typeof val === "string" ? (val || "").split(",") : [val];
+            const array = typeof val === "string" ? val.split(",") : [val];
             if (/in\d/.test(operator)) {
                 //nesting
                 const [, nesting] = /in(\d)/.exec(operator) || [];
@@ -145,13 +146,12 @@ export class QueryParser {
                     return { [key]: elemMatch };
                 }
             }
-            return { [key]: { ["$" + operator]: array.map((val) => this.autoParseValue(val, key, model)) } };
+            return { [key]: { ["$" + operator]: this.autoParseValue(array, key, model) } };
         } else if (operator === "center") {
             const [long, lat, radius] = (val || "").split(",").map((p: string) => +p);
             const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
             return { [key]: within };
-        } else if (operator === "exists") return { [key]: { $exists: true } };
-        else if (this.dateOperators.indexOf(operator) > -1) {
+        } else if (this.dateOperators.indexOf(operator) > -1) {
             const date = this.autoParseValue(val, key, model);
             if (!(date instanceof Date)) {
                 logger.warn("DATE_EXPECTED", { key, val });
@@ -295,7 +295,7 @@ export class QueryParser {
         return model.schema.path(path)?.instance ?? this.guessKeyType(value) ?? "String";
     }
 
-    autoParseValue(value: string, key: string, model?: Model<any>): any {
+    autoParseValue(value: any, key: string, model?: Model<any>): any {
         if (value === "") return "";
         if (value === "null") return null;
         if (value === "undefined") return undefined;
@@ -308,7 +308,8 @@ export class QueryParser {
         if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
         if (keyType === "Number") return +value;
         if (keyType === "Array") {
-            if (value.indexOf && value.indexOf(":") > -1)
+            if (Array.isArray(value)) return value.map((x) => this.autoParseValue(x, key + "[0]", model));
+            if (typeof value === "string" && value.indexOf(":") > -1)
                 return value
                     .split(":")
                     .filter((x) => x)
