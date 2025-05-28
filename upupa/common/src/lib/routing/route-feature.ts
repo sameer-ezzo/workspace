@@ -113,7 +113,7 @@ export function withAction(
         action: string;
         name?: string;
         path?: string;
-        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string };
+        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string, action?: string };
     },
 ): RouteFeature {
     return {
