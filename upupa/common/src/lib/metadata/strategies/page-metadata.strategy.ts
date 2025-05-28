@@ -5,7 +5,6 @@ import { PageMetadata } from "../models";
 import { createTag, LinkTag, MetaTag, TitleMetaTag } from "../link";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
-export const PAGE_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("PAGE_METADATA_CONFIG");
 const stripLeadingSlashes = (path: string) => path.replace(/^\/+/, "");
 const stripTrailingSlashes = (path: string) => path.replace(/\/+$/, "");
 
@@ -73,13 +72,16 @@ export type ContentMetadataConfig<M = PageMetadata> = {
     fallback?: Partial<M>;
 };
 
-@Injectable()
-export class PageMetadataStrategy implements MetadataUpdateStrategy<ContentMetadataConfig> {
-    readonly config = inject(PAGE_METADATA_CONFIG);
+// @Injectable()
+export class PageMetadataStrategy extends MetadataUpdateStrategy<ContentMetadataConfig> {
     readonly dom = inject(DOCUMENT);
     readonly injector = inject(Injector);
 
-    async update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>) {
+    constructor(config: ContentMetadataConfig<PageMetadata>) {
+        super(config);
+    }
+
+    override async update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>) {
         const dom = this.dom;
         const fallback = metaFallback.fallback;
 

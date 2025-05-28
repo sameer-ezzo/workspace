@@ -1,17 +1,20 @@
 import { DOCUMENT } from "@angular/common";
-import { inject, Injectable, InjectionToken } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { ContentMetadataConfig } from "./page-metadata.strategy";
 import { ImageObjectSchema, SchemaOrgMetadata } from "../models";
 
 export type SchemaOrgConfig = Pick<ContentMetadataConfig<SchemaOrgMetadata>, "imageLoading">;
-export const SCHEMA_ORG_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
 
-@Injectable()
-export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
+// @Injectable()
+export class SchemaOrgMetadataStrategy extends MetadataUpdateStrategy<SchemaOrgConfig> {
     private readonly dom = inject(DOCUMENT);
 
-    async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
+    constructor(config: SchemaOrgConfig) {
+        super(config);
+    }
+
+    override async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         this.clearSchemaOrgTags();
         const fallback = metaFallback.fallback as any;
         const schema = { ...(fallback.schema ?? {}), ...(meta.schema ?? {}) };
@@ -56,8 +59,8 @@ export class SchemaOrgMetadataStrategy implements MetadataUpdateStrategy<any> {
                 return this.fillBlogPosting(schema);
             default:
                 return {
-                    ...schema
-                }
+                    ...schema,
+                };
         }
     }
     fillBlogPosting(schema: ImageObjectSchema): any {
