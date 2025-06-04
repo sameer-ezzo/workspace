@@ -9,6 +9,8 @@
     }
     <table
         #table
+        [attr.name]="name()"
+        [attr.id]="name()"
         mat-table
         multiTemplateDataRows
         [dataSource]="adapter().normalized()"
@@ -53,7 +55,7 @@
                     [arrowPosition]="column.value?.sortArrowPosition || 'after'"
                     [disabled]="column.value?.sortDisabled === true"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width }"
+                    [ngStyle]="column.value['style']"
                     [ngClass]="column.value.class"
                 >
                     {{ column.value.header || column.key }}
@@ -62,7 +64,7 @@
                     mat-cell
                     *matCellDef="let element; let dataIndex = dataIndex"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width }"
+                    [ngStyle]="column.value['style']"
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">
@@ -156,7 +158,7 @@
                     *matCellDef="let element; let dataIndex = dataIndex"
                     [attr.colspan]="_columns.length"
                     [class.none]="column.value?.visible === false"
-                    [ngStyle]="{ width: column.value?.width }"
+                    [ngStyle]="column.value['style']"
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">

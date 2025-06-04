@@ -4,7 +4,6 @@ import {
     SimpleChanges,
     Type,
     ElementRef,
-    ViewChild,
     ChangeDetectionStrategy,
     WritableSignal,
     signal,
@@ -46,6 +45,7 @@ import {
     I18nSelectPipe,
     TitleCasePipe,
     UpperCasePipe,
+    DOCUMENT,
 } from "@angular/common";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
@@ -89,9 +89,8 @@ export function injectDataAdapter(options?: InjectOptions) {
         JsonPointerPipe,
     ],
     host: {
-        "attr.role": "table",
-        "[attr.tabindex]": "tabindex",
-        "[attr.id]": "name()",
+        "[attr.tabindex]": "tabindex()",
+        "[attr.id]": "name()+'-wrapper'",
     },
     providers: [
         {
@@ -134,7 +133,6 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     contentChanged = output<void>();
     name = input<string, string>(`table_${Date.now()}`, {
-        alias: "tableName",
         transform: (v) => (v ? v : `table_${Date.now()}`),
     });
     pageSizeOptions = input<number[]>([10, 25, 50, 100, 200]);
@@ -280,30 +278,13 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
                 }
             }
         }
-
         for (const _prop in this._properties) {
-            const wdth = this._properties[_prop].width;
-            if (wdth) {
-                if (typeof wdth === "number") {
-                    this._properties[_prop].width = `${wdth}px`;
-                    continue;
-                }
-                if (typeof wdth === "string") {
-                    const match = wdth.match(/(\d+)(\D+)/);
-                    if (!match) continue;
-
-                    const value = match[1];
-                    const unit = match[2];
-
-                    const validUnits = ["px", "%", "em", "rem", "vh", "vw"];
-                    if (validUnits.includes(unit)) {
-                        this._properties[_prop].width = `${parseInt(value)}${unit}`;
-                    } else {
-                        this._properties[_prop].width = `${parseInt(value)}px`;
-                    }
-                }
-            }
+            if (this._properties[_prop].width == null) continue;
+            this._properties[_prop]["style"] = {
+                width: this._properties[_prop].width + "%",
+            };
         }
+
         this._columns = [];
 
         const selectCol = this._properties["select"];
@@ -364,7 +345,4 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     trackByFn(index, item) {
         return item.key;
     }
-}
-function DynamicComponent(arg0: null) {
-    throw new Error("Function not implemented.");
 }

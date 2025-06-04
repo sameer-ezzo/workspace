@@ -22,7 +22,7 @@ import { MatBtnComponent } from "@upupa/mat-btn";
         @if (item().builtIn === true) {
             <mat-icon style="transform: scale(0.8)" matTooltip="Built in permission">info</mat-icon>
         }
-    `
+    `,
 })
 export class InfoCellTemplateComponent extends DefaultTableCellTemplate {}
 @Component({
@@ -38,7 +38,7 @@ export class InfoCellTemplateComponent extends DefaultTableCellTemplate {}
                 <option value="grant">Grant</option>
             </select>
         }
-    `
+    `,
 })
 export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -69,7 +69,7 @@ export class AccessCellTemplateComponent extends DefaultTableCellTemplate {
                     </option>
                 }
             </select>
-        }`
+        }`,
 })
 export class ByCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -150,7 +150,7 @@ export class ByCellTemplateComponent extends DefaultTableCellTemplate {
                 }
             }
         }
-    `
+    `,
 })
 export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
     private readonly rolesService = inject(PermissionsService);
@@ -182,7 +182,7 @@ export class ValueCellTemplateComponent extends DefaultTableCellTemplate {
                 </button>
             }
         </div>
-    `
+    `,
 })
 export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -225,7 +225,7 @@ export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
 @Component({
     selector: "delete-permission-button",
     imports: [MatBtnComponent],
-    template: ` <mat-btn [buttonDescriptor]="btn" (action)="deletePermission()" [disabled]="item().builtIn"></mat-btn> `
+    template: ` <mat-btn [buttonDescriptor]="btn" (action)="deletePermission()" [disabled]="item().builtIn"></mat-btn> `,
 })
 export class DeletePermissionButtonComponent extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -269,7 +269,7 @@ export class PermissionRowViewModel {
     templateUrl: "./rule-permissions-table.component.html",
     styleUrls: ["./rule-permissions-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule, CommonModule]
+    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule, CommonModule],
 })
 export class RulePermissionsTableComponent {
     focused = model<SimplePermission>();
@@ -281,7 +281,7 @@ export class RulePermissionsTableComponent {
     ngOnChanges(changes: SimpleChanges) {
         if (changes["rule"] || changes["action"]) {
             const permissions = this.rule().actions?.[this.action()] ?? ([] as SimplePermission[]);
-            this.dataSource.all.set(permissions);
+            this.dataSource.all = permissions;
             this.adapter.refresh();
         }
     }

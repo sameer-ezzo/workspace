@@ -6,7 +6,7 @@
     <data-table
         #dataTable
         [lazyLoadData]="false"
-        [tableName]="name()"
+        [name]="name()"
         [columns]="columns()"
         [adapter]="adapter"
         (itemAdded)="updateValueFromDataSource()"
