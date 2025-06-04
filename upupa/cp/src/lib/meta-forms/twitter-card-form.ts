@@ -7,6 +7,9 @@ import { formInput, ExtendedValueChangeEvent, FieldRef, fieldRef, Fieldset } fro
  */
 
 export class TwitterCardFormViewModel {
+    constructor(self?: Partial<TwitterCardFormViewModel>) {
+        Object.assign(this, self);
+    }
     @formInput({
         input: "text",
         label: "Title",
@@ -71,21 +74,15 @@ export class TwitterCardFormViewModel {
 
             for (const [group, ref] of groups) {
                 if (value === group) {
-                    ref.hidden.set(false);
+                    ref.setVisibility(true);
                 } else {
-                    ref.hidden.set(true);
-                    const items = Object.entries((ref.field as Fieldset).items);
-                    for (const [name, item] of items) {
-                        const itemRef = fieldRef(`/${name}`);
-                        itemRef.control?.setValue(null, { emitEvent: false });
-                    }
-                    ref.control?.setValue(null, { emitEvent: false });
+                    ref.setVisibility(false);
                 }
             }
         }
     }
 
-    @formInput({ input: "text", label: "App Name iPhone", group: "App", placeholder: "Awesome Task Manager" })
+    @formInput({ input: "text", label: "App Name iPhone", group: { name: "App", hidden: true }, placeholder: "Awesome Task Manager" })
     "twitter:app:name:iphone" = "";
     @formInput({ input: "text", label: "App ID iPhone", group: "App", placeholder: "123456789" })
     "twitter:app:id:iphone" = "";
@@ -105,7 +102,12 @@ export class TwitterCardFormViewModel {
     @formInput({ input: "text", label: "App URL Google Play", group: "App", placeholder: "android-app://com.example.awesome.taskmanager" })
     "twitter:app:url:googleplay" = "";
 
-    @formInput({ input: "text", label: "Player", group: "Player", placeholder: "https://example.com/player.html?videoid=12345" })
+    @formInput({
+        input: "text",
+        label: "Player",
+        group: { name: "Player", hidden: true },
+        placeholder: "https://example.com/player.html?videoid=12345",
+    })
     "twitter:player" = "";
     @formInput({ input: "text", label: "Player Width", group: "Player", placeholder: "1280" })
     "twitter:player:width" = "";

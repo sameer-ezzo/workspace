@@ -121,13 +121,14 @@ export class QueryParser {
         const val = operatorMatches[2];
 
         if (operator === "eq" || operator === "ne" || operator === "not") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
+        else if (operator === "exists") return { [key]: { $exists: !val ? true : val === "true" } };
         else if (operator === "gt" || operator === "gte" || operator === "lt" || operator === "lte") return { [key]: { ["$" + operator]: this.autoParseValue(val, key, model) } };
         else if (operator === "btw") {
             const range = (val || "").split(",");
             const [min, max] = [this.autoParseValue(range[0], key, model), this.autoParseValue(range[1], key, model)];
             return [{ [key]: { $gte: min } }, { [key]: { $lte: max } }];
         } else if (operator === "all" || operator === "in" || operator === "nin" || /in\d/.test(operator)) {
-            const array = typeof val === "string" ? (val || "").split(",") : [val];
+            const array = typeof val === "string" ? val.split(",") : [val];
             if (/in\d/.test(operator)) {
                 //nesting
                 const [, nesting] = /in(\d)/.exec(operator) || [];
@@ -145,13 +146,12 @@ export class QueryParser {
                     return { [key]: elemMatch };
                 }
             }
-            return { [key]: { ["$" + operator]: array.map((val) => this.autoParseValue(val, key, model)) } };
+            return { [key]: { ["$" + operator]: this.autoParseValue(array, key, model) } };
         } else if (operator === "center") {
             const [long, lat, radius] = (val || "").split(",").map((p: string) => +p);
             const within: any = { $geoWithin: { $center: [[long, lat], radius] } };
             return { [key]: within };
-        } else if (operator === "exists") return { [key]: { $exists: true } };
-        else if (this.dateOperators.indexOf(operator) > -1) {
+        } else if (this.dateOperators.indexOf(operator) > -1) {
             const date = this.autoParseValue(val, key, model);
             if (!(date instanceof Date)) {
                 logger.warn("DATE_EXPECTED", { key, val });
@@ -295,7 +295,7 @@ export class QueryParser {
         return model.schema.path(path)?.instance ?? this.guessKeyType(value) ?? "String";
     }
 
-    autoParseValue(value: string, key: string, model?: Model<any>): any {
+    autoParseValue(value: any, key: string, model?: Model<any>): any {
         if (value === "") return "";
         if (value === "null") return null;
         if (value === "undefined") return undefined;
@@ -308,7 +308,8 @@ export class QueryParser {
         if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
         if (keyType === "Number") return +value;
         if (keyType === "Array") {
-            if (value.indexOf && value.indexOf(":") > -1)
+            if (Array.isArray(value)) return value.map((x) => this.autoParseValue(x, key + "[0]", model));
+            if (typeof value === "string" && value.indexOf(":") > -1)
                 return value
                     .split(":")
                     .filter((x) => x)
@@ -368,6 +369,14 @@ export class QueryParser {
         return lookups.filter((x) => x);
     }
 
+    validateLocale(locale: string) {
+        if (!locale) return undefined;
+        const ll = locale.trim().toLowerCase();
+        if (ll === "undefined") return undefined;
+        if (ll === "null") return undefined;
+        if (ll === "") return undefined;
+        return ll;
+    }
     parse(query: { [key: string]: string }[], model?: Model<any>) {
         const queryArray = query.map((x) =>
             Object.keys(x).map((k) => {
@@ -389,6 +398,14 @@ export class QueryParser {
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
         let $text: string;
+
+        const localeIndex = q.findIndex((x) => x.key === "locale");
+        let locale = null;
+
+        if (localeIndex > -1) {
+            locale = this.validateLocale(q[localeIndex].value);
+            q.splice(localeIndex, 1); // Remove the locale query parameter from the array
+        }
 
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
@@ -459,6 +476,10 @@ export class QueryParser {
             }
         }
 
+        // if (locale) {
+        //     filter.$and.push(...this._replaceRootWithLocale(locale));
+        // }
+
         if (filter.$and?.length === 0) delete filter.$and; //and won't accept zero expressions
 
         if (group && group_fields) {
@@ -474,6 +495,70 @@ export class QueryParser {
         }
 
         return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch, $text };
+    }
+    private _replaceRootWithLocale(locale: string): any[] {
+        return [
+            // Stage 1: (Keep from original) Add a field that contains the translation object for the target locale.
+            // This is calculated regardless, but only used if root lang doesn't match.
+            {
+                $addFields: {
+                    selectedTranslation: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: "$translations", // Look into the 'translations' array
+                                    as: "trans", // Alias each element in the array as 'trans'
+                                    // Assuming each translation object has a 'lang' field matching root lang
+                                    cond: { $eq: ["$$trans.lang", locale] },
+                                },
+                            },
+                            0, // Get the first element of the filtered array (assuming at most one match)
+                        ],
+                    },
+                },
+            },
+            // Stage 2: Determine the content to be used for replacing the root based on the condition
+            {
+                $addFields: {
+                    contentToUseAsRoot: {
+                        $cond: {
+                            // Condition: Check if the root document's 'lang' field matches the target locale
+                            if: { $eq: ["$$ROOT.lang", locale] },
+                            // If true (root language matches), use the original root document.
+                            // We will exclude 'translations' later in the $project stage.
+                            then: "$$ROOT",
+                            // If false (root language does not match), check if a translation was found.
+                            else: {
+                                $cond: {
+                                    // Sub-condition: Check if a translation for the locale was found
+                                    if: { $ne: ["$selectedTranslation", null] },
+                                    // If translation found, merge original root with the translation.
+                                    // Translated fields overwrite original fields.
+                                    then: { $mergeObjects: ["$$ROOT", "$selectedTranslation"] },
+                                    // If no translation found, use the original root document.
+                                    else: "$$ROOT",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            // Stage 3: Replace the root with the determined content
+            {
+                $replaceRoot: {
+                    newRoot: "$contentToUseAsRoot",
+                },
+            },
+            // Stage 4: Clean up intermediate fields and the original translations array
+            {
+                $project: {
+                    translations: 0, // Exclude the original translations array
+                    selectedTranslation: 0, // Exclude the temporary field
+                    contentToUseAsRoot: 0, // Exclude the temporary field used for the new root source
+                    // All other fields from the chosen newRoot will be included by default
+                },
+            },
+        ];
     }
 }
 

@@ -2,12 +2,12 @@ import { Component, inject, signal, computed, input, Injector, runInInjectionCon
 
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { CommonModule } from "@angular/common";
-import { _defaultControl, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
+import { _defaultControl, _defaultForm, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
 import { Class } from "@noah-ark/common";
-import { FormControl, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
+import { FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormViewModelMirror, reflectFormViewModelType } from "../decorators/form-input.decorator";
-import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GRAPH } from "../dynamic-form.component";
+import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GROUP } from "../dynamic-form.component";
 
 export const FORM_VIEW_MODEL = new InjectionToken<any>("FORM_VIEW_MODEL");
 
@@ -34,8 +34,8 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
             deps: [DataFormComponent],
         },
         {
-            provide: FORM_GRAPH,
-            useFactory: (form: DynamicFormComponent) => form.graph,
+            provide: FORM_GROUP,
+            useFactory: (df: DynamicFormComponent) => df.form(),
             deps: [DynamicFormComponent],
         },
         {
@@ -60,9 +60,9 @@ export class DataFormComponent<T = any> {
     formName = computed(() => this.name() ?? this.viewModel()?.name ?? new Date().getTime().toString());
 
     _ngControl = inject(NgControl, { optional: true });
-    _control = this._ngControl?.control as FormControl;
-    _defaultControl = _defaultControl(this);
-    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+    _control = this._ngControl?.control as FormGroup;
+    _defaultControl = _defaultForm(this);
+    control = input<FormGroup, FormGroup>(this._control ?? this._defaultControl, {
         transform: (v) => {
             return v ?? this._control ?? this._defaultControl;
         },
@@ -77,7 +77,6 @@ export class DataFormComponent<T = any> {
     });
 
     value = model<T>();
-
     // form actions
     canSubmit = signal(false);
     actions = computed(() => {
@@ -107,15 +106,13 @@ export class DataFormComponent<T = any> {
     onInitialized(e: DynamicFormInitializedEvent) {
         const vm = this.value() as any;
         if (!(vm && "onInit" in vm && typeof vm["onInit"] === "function")) return;
-        runInInjectionContext(this._injector(), async () => {
-            await vm["onInit"](e);
-        });
+        runInInjectionContext(this._injector(), () => vm["onInit"](e));
     }
     onValueChange(e: any) {
         const vm = this.value();
         runInInjectionContext(this._injector(), async () => {
             await vm["onValueChange"]?.(e);
-            this.control().patchValue(vm, { emitModelToViewChange: true });
+            this.control().patchValue(vm, { emitEvent: false });
         });
     }
 

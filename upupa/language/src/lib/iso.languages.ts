@@ -49,6 +49,12 @@ export const getLanguageInfo = (lang: string): { code: string; name: string; nat
     const info = languagesList[lang];
     return info ? { code: lang, name: info.name, nativeName: info.nativeName } : undefined;
 };
+export function getLanguagesList(): { code: string; name: string; nativeName: string }[] {
+    return Object.keys(languagesList).map((key) => {
+        const info = languagesList[key];
+        return { code: key, name: info.name, nativeName: info.nativeName };
+    });
+}
 export const languagesList = {
     ab: {
         name: "Abkhaz",

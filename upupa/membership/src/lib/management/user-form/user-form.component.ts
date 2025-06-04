@@ -23,7 +23,7 @@ type UserFormOptions = {
     selector: "user-form",
     templateUrl: "./user-form.component.html",
     styleUrls: ["./user-form.component.scss"],
-    imports: [MatButtonModule, DynamicFormComponent]
+    imports: [MatButtonModule, DynamicFormComponent],
 })
 export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
     @ViewChild("userForm") form: any;
@@ -58,11 +58,6 @@ export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
             this._updateInputs();
         });
     }
-
-    errors = (form: DynamicFormComponent) =>
-        Array.from(form.graph)
-            .map((c) => c[1].control.errors)
-            .reduce((a, b) => ({ ...a, ...b }), {});
 
     _options: UserFormOptions = null;
     @Input()
@@ -125,7 +120,9 @@ export class UserFormComponent implements DialogPortal<DialogWrapperComponent> {
             try {
                 await this.save();
                 dialogRef.close(this.user);
-            } catch (error) {}
+            } catch (error) {
+                console.error(error);
+            }
         } else dialogRef.close();
     }
 }

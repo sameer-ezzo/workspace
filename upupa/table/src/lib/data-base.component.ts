@@ -7,6 +7,19 @@ import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NgC
 import { _defaultControl } from "@upupa/common";
 import { filter, firstValueFrom, Observable } from "rxjs";
 import { toObservable } from "@angular/core/rxjs-interop";
+import { BooleanInput } from "@angular/cdk/coercion";
+
+function compareObjectWithFn(keyProperty: any) {
+    return (optVal: any, selectVal: any) => {
+        if (optVal === selectVal) return true;
+        if (optVal == undefined || selectVal == undefined) return false;
+        return typeof optVal == "object" ? optVal[keyProperty] === selectVal[keyProperty] : false;
+    };
+}
+
+function compareWithFn(optVal: any, selectVal: any) {
+    return optVal === selectVal;
+}
 
 @Component({
     standalone: true,
@@ -39,7 +52,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     valueChange = output<Partial<T> | Partial<T>[]>();
     required = input<boolean>(false);
     disabled = model(false);
-    multiple = input<boolean>(true);
+    multiple = input<boolean, BooleanInput>(true, { transform: (v) => v === true || v === "" || v === "true" || v === undefined });
 
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
     _control = this._ngControl?.control as UntypedFormControl; // this won't cause circular dependency issue when component is dynamically created
@@ -94,7 +107,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
     itemClick = output<NormalizedItem<T>>();
 
     readonly items = computed<NormalizedItem<T>[]>(() => this.adapter().normalized());
-    readonly isSelected = computed<NormalizedItem<T>[]>(() => this.items().filter((x) => x.selected));
+    readonly isSelected = computed<NormalizedItem<T>[]>(() => this.adapter().selection());
     readonly notSelected = computed<NormalizedItem<T>[]>(() => this.items().filter((x) => !x.selected));
 
     _firstLoad = false;
@@ -104,7 +117,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
         this._firstLoad = true;
     }
 
-    compareWithFn = (optVal: any, selectVal: any) => optVal === selectVal;
+    compareWithFn = compareWithFn;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes["adapter"]) {
@@ -114,14 +127,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
             const keyProperty = adapter?.keyProperty;
 
-            this.compareWithFn =
-                keyProperty && Array.isArray(adapter?.valueProperty)
-                    ? (optVal: any, selectVal: any) => {
-                          if (optVal === selectVal) return true;
-                          if (optVal == undefined || selectVal == undefined) return false;
-                          return typeof optVal == "object" ? optVal[keyProperty] === selectVal[keyProperty] : false;
-                      }
-                    : (optVal: any, selectVal: any) => optVal === selectVal;
+            this.compareWithFn = keyProperty && Array.isArray(adapter?.valueProperty) ? compareObjectWithFn(keyProperty) : compareWithFn;
 
             if (!this.lazyLoadData()) this.loadData();
         }

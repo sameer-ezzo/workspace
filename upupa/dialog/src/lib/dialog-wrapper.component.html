@@ -7,9 +7,13 @@
         }
     }
 
+
     <span style="flex: 1 1 auto"></span>
     @if (!hideCloseButton()) {
-        <button class="close-btn" tabindex="-1" mat-icon-button (click)="close()">
+        @let hLength = header()?.length || 0;
+        @let tLength = title()?.length || 0;
+        @let tabindex = hLength + tLength > 0 ? "-1" : "0";
+        <button mat-dialog-close mat-icon-button [attr.tabindex]="tabindex" type="button" (click)="close()">
             <mat-icon>close</mat-icon>
         </button>
     }
@@ -20,31 +24,6 @@
     <portal [template]="template()" (attached)="onAttached($event)"></portal>
 </mat-dialog-content>
 <!-- </div> -->
-
-@if (footer()) {
-    <mat-dialog-actions align="end">
-        @for (template of footer(); track i; let i = $index) {
-            <portal [template]="template"></portal>
-        } @empty {
-            @if (title()) {
-                <h2 role="heading" tabindex="0" style="margin: 0">{{ title() }}</h2>
-            }
-        }
-
-        <span style="flex: 1 1 auto"></span>
-        @if (!hideCloseButton()) {
-            @let hLength = header()?.length || 0;
-            @let tLength = title()?.length || 0;
-            @let tabindex = hLength + tLength > 0 ? "-1" : "0";
-            <button mat-dialog-close mat-icon-button [attr.tabindex]="tabindex" type="button" (click)="close()">
-                <mat-icon>close</mat-icon>
-            </button>
-        }
-    </mat-dialog-actions>
-}
-<mat-dialog-content class="mat-typography">
-    <portal [template]="template()" (attached)="onAttached($event)"></portal>
-</mat-dialog-content>
 
 @if (footer()?.length) {
     <mat-dialog-actions align="end">

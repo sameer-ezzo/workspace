@@ -3,7 +3,6 @@ import {
     SimpleChanges,
     forwardRef,
     ElementRef,
-    OnDestroy,
     OnChanges,
     HostListener,
     inject,
@@ -16,6 +15,7 @@ import {
     Pipe,
     InjectionToken,
     SimpleChange,
+    computed,
 } from "@angular/core";
 import {
     NG_VALUE_ACCESSOR,
@@ -25,18 +25,14 @@ import {
     FormGroup,
     FormGroupDirective,
     NgControl,
-    FormControl,
-    PristineChangeEvent,
-    TouchedChangeEvent,
     FormsModule,
     ReactiveFormsModule,
-    StatusChangeEvent,
     FormResetEvent,
+    FormControl,
+    FormArray,
 } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
-import { Subscription } from "rxjs";
-import { _defaultControl, EventBus } from "@upupa/common";
-import { ChangeFormSchemeHandler, ChangeInputsHandler, ChangeStateHandler, ChangeValueHandler, InputVisibilityHandler } from "./events/handlers";
+import { _defaultControl, _defaultForm, deepAssign, EventBus } from "@upupa/common";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormBuilder } from "./dynamic-form-renderer";
 import { DynamicFormService } from "./dynamic-form.service";
@@ -63,15 +59,15 @@ export class OrderedKeyValuePipe extends KeyValuePipe {
     }
 }
 
-export type FormGraph = Map<string, FieldRef>;
-export const FORM_GRAPH = new InjectionToken<FormGraph>("FormControls");
+export const FORM_GROUP = new InjectionToken<FormGroup>("FormControls");
 export class ExtendedValueChangeEvent<T = any> {
     get path() {
         return this.source?.path ?? "/";
     }
     constructor(
+        public readonly event: ValueChangeEvent<T>,
         public readonly value: T,
-        public readonly graph: FormGraph,
+        public readonly form: FormGroup,
         public readonly source?: FieldRef,
         public readonly patch?: Record<`/${string}`, unknown>,
         public readonly changes?: SimpleChanges,
@@ -84,15 +80,23 @@ export class DynamicFormInitializedEvent<T = any> {
     }
     constructor(
         public readonly value: T,
-        public readonly graph: FormGraph,
+        public readonly form: FormGroup,
         public readonly source?: FieldRef,
     ) {}
 }
 export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
-    const graph = inject<FormGraph>(FORM_GRAPH, { host: true }); // make sure to only load graph of the current form (not a parent provided one)
-    const result = graph.get(path);
-    if (!result) throw new Error(`Could not inject field ref with path ${path}`);
-    return result;
+    const form = inject<FormGroup>(FORM_GROUP, { host: true }); // make sure to only load graph of the current form (not a parent provided one)
+    if (path.startsWith("group:")) {
+        const group = form[path];
+        return group as FieldRef<TCom>;
+    }
+    const segments = path.split("/").filter((s) => s.length > 0);
+    let current = form as unknown as FormGroup & { fieldRef: FieldRef<TCom> };
+    for (const segment of segments) {
+        current = current.get(segment) as unknown as FormGroup & { fieldRef: FieldRef<TCom> };
+        if (!current) return undefined;
+    }
+    return current["fieldRef"] as FieldRef<TCom>;
 }
 @Component({
     selector: "dynamic-form",
@@ -107,8 +111,8 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
             multi: true,
         },
         {
-            provide: FORM_GRAPH,
-            useFactory: (form: DynamicFormComponent) => form.graph,
+            provide: FORM_GROUP,
+            useFactory: (df: DynamicFormComponent) => df.form(),
             deps: [DynamicFormComponent],
         },
     ],
@@ -125,7 +129,7 @@ export function fieldRef<TCom = any>(path: string): FieldRef<TCom> {
         MatIconModule,
     ],
 })
-export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDestroy, OnChanges {
+export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnChanges {
     readonly conditionalService = inject(ConditionalLogicService);
     readonly injector = inject(Injector);
     readonly bus = inject(EventBus);
@@ -138,42 +142,43 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     readonly = input(false);
     class = input("");
     theme = input<string>("material");
-    enableLogs = input(false);
+    enableLogs = input(true);
 
-    form = new FormGroup({});
     _ngControl = inject(NgControl, { optional: true }); // this won't cause circular dependency issue when component is dynamically created
-    _control = this._ngControl?.control as FormControl; // this won't cause circular dependency issue when component is dynamically created
-    _defaultControl = this._syncControl(_defaultControl(this));
-    control = input<FormControl, FormControl>(this._control ?? this._defaultControl, {
+    _control = this._ngControl?.control as FormGroup; // this won't cause circular dependency issue when component is dynamically created
+    _defaultControl = _defaultForm(this);
+    control = input<FormGroup, FormGroup>(this._control ?? this._defaultControl, {
         transform: (v) => {
-            return this._syncControl(v) ?? this._control ?? this._defaultControl;
+            return v ?? this._control ?? this._defaultControl;
         },
     });
+    form = computed(() => this.control());
+    patchPath = input<string>("/");
 
-    _syncControl(c: FormControl) {
-        c.events.subscribe((e) => {
-            if (e instanceof ValueChangeEvent) {
-                this.form.patchValue(e.value, { emitEvent: false });
-            } else if (e instanceof PristineChangeEvent) {
-                this.form.markAsPristine({ emitEvent: false });
-            } else if (e instanceof TouchedChangeEvent) {
-                this.form.markAsTouched({ emitEvent: false });
-            } else if (e instanceof StatusChangeEvent) {
-                // When we have a nested form c.enabled will cause loop
-                // if (c.enabled) this.form.enable({ emitEvent: false });
-                // else this.form.disable({ emitEvent: false });
+    // _syncControl(c: FormControl) {
+    //     c.events.subscribe((e) => {
+    //         if (e instanceof ValueChangeEvent) {
+    //             this.form().patchValue(e.value, { emitEvent: false });
+    //         } else if (e instanceof PristineChangeEvent) {
+    //             this.form().markAsPristine({ emitEvent: false });
+    //         } else if (e instanceof TouchedChangeEvent) {
+    //             this.form().markAsTouched({ emitEvent: false });
+    //         } else if (e instanceof StatusChangeEvent) {
+    //             // When we have a nested form c.enabled will cause loop
+    //             // if (c.enabled) this.form().enable({ emitEvent: false });
+    //             // else this.form().disable({ emitEvent: false });
 
-                if (e.status === "VALID") this.form.setErrors(null, { emitEvent: false });
-                else if (e.status === "INVALID") this.form.setErrors(c.errors, { emitEvent: false });
-                else if (e.status === "PENDING") this.form.setErrors({ pending: true }, { emitEvent: false });
-            } else if (e instanceof FormResetEvent) {
-                this.form.reset({ emitEvent: false });
-                this._patches.clear();
-            }
-        });
+    //             if (e.status === "VALID") this.form().setErrors(null, { emitEvent: false });
+    //             else if (e.status === "INVALID") this.form().setErrors(c.errors, { emitEvent: false });
+    //             else if (e.status === "PENDING") this.form().setErrors({ pending: true }, { emitEvent: false });
+    //         } else if (e instanceof FormResetEvent) {
+    //             this.form().reset({ emitEvent: false });
+    //             this._patches.clear();
+    //         }
+    //     });
 
-        return c;
-    }
+    //     return c;
+    // }
 
     value = model(undefined);
 
@@ -187,33 +192,31 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     get dirty() {
-        return this.form?.dirty;
+        return this.form()?.dirty;
     }
     set dirty(v: boolean) {
-        if (v) this.form.markAsDirty();
-        else this.form.markAsPristine();
+        if (v) this.form().markAsDirty();
+        else this.form().markAsPristine();
     }
     get pristine() {
-        return this.form?.pristine;
+        return this.form()?.pristine;
     }
     set pristine(v: boolean) {
         this.dirty = !v;
     }
     get touched() {
-        return this.form?.touched;
+        return this.form()?.touched;
     }
     set touched(v: boolean) {
-        if (v) this.form.markAsTouched();
-        else this.form.markAsUntouched();
+        if (v) this.form().markAsTouched();
+        else this.form().markAsUntouched();
     }
     get untouched() {
-        return this.form?.untouched;
+        return this.form()?.untouched;
     }
     set untouched(v: boolean) {
         this.touched = !v;
     }
-
-    subs: Subscription[] = [];
 
     markAsDirty() {
         this.dirty = true;
@@ -232,64 +235,82 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
 
     handleUserInput(v: T) {
+        if (v === this.value()) return;
         this.value.set(v);
         if (this._ngControl) {
             // only notify changes if control was provided externally
             this.markAsTouched();
             this.propagateChange();
         } else {
-            const control = this.control();
-            if (control?.value !== v) control.setValue(v);
+            const control = this.form();
+            if (control?.value !== v) {
+                // we are not using setValue because it is strict when passing object values (all fields must be present)
+                control.patchValue(v, { emitEvent: false });
+            }
         }
     }
 
     get invalid() {
-        return this.form?.invalid;
+        return this.form()?.invalid;
     }
     get valid() {
-        return this.form?.valid;
+        return this.form()?.valid;
     }
-
-    graph: FormGraph = new Map();
 
     formService = inject(DynamicFormService);
     _builder = new DynamicFormBuilder(this.injector, this.formService);
 
-    constructor() {
-        this.form.events.subscribe((e) => {
+    _observedControl: FormGroup;
+    _subscribeToFormEvents() {
+        if (this._observedControl === this.control()) return; // already subscribed
+        this._observedControl = this.form();
+        this.form().events.subscribe((e) => {
             if (e instanceof ValueChangeEvent) {
                 const value = this.value() ?? {};
-                const source = e.source as AbstractControl & { fieldRef: FieldRef };
-                const path = source.fieldRef?.path ?? "/";
-                const changes = { [path]: new SimpleChange(JsonPointer.get(value, path, "/"), source.value, !this._patches.has(path)) };
-                JsonPointer.set(value, path, source.value);
-                let patch = undefined;
-                if (path) {
-                    patch = { [path]: source.value };
-                    this._patches.set(path, source.value);
+
+                let source = e.source;
+
+                let sourceField: FieldRef = source?.["fieldRef"] as FieldRef;
+                let parentForm: FormGroup | FormArray = sourceField?.form;
+                let path = sourceField?.path ?? "/";
+                let prevValue = undefined;
+                let changeValue = undefined;
+                if (source === this.form()) {
+                    prevValue = value;
+                    changeValue = this.form().value;
+                    deepAssign(value, changeValue);
+                } else {
+                    while (parentForm && parentForm !== this.form()) {
+                        source = parentForm;
+                        sourceField = source?.["fieldRef"] as FieldRef;
+                        path = (sourceField?.path ?? "") + path;
+                        parentForm = sourceField?.form;
+                    }
+
+                    prevValue = JsonPointer.get(value, path, "/");
+                    changeValue = JsonPointer.get(this.form().value, path, "/");
+                    JsonPointer.set(value, path, changeValue);
                 }
 
+                // if (prevValue === changeValue) return;
                 this.handleUserInput(value);
 
-                const ee = new ExtendedValueChangeEvent(value, this.graph, source.fieldRef, patch, changes);
+                const patch = { [path]: changeValue } as Record<`/${string}`, unknown>;
+                const changes = { [path]: new SimpleChange(prevValue, changeValue, !this._patches.has(path as `/${string}`)) } as SimpleChanges;
+                this._patches.set(path as `/${string}`, changeValue);
+
+                const ee = new ExtendedValueChangeEvent(e, value, this.form(), sourceField, patch, changes);
+
                 if (this.enableLogs()) console.log(`${this.name()}:${path} valueChanges`, ee);
                 this.fieldValueChange.emit(ee);
-            } else if (e instanceof PristineChangeEvent) {
-                if (!this.control().pristine) this.control().markAsPristine();
-            } else if (e instanceof TouchedChangeEvent) {
-                if (!this.control().touched) this.control().markAsTouched();
-            } else if (e instanceof StatusChangeEvent) {
-                // if (e.status === "VALID") this.control().setErrors(null);
-                // else if (e.status === "INVALID") this.control().setErrors(this.form.errors);
-                // else if (e.status === "PENDING") this.control().setErrors({ pending: true });
-
-                if (this.form.enabled && this.control().disabled) this.control().enable();
-                if (!this.form.enabled && this.control().enabled) this.control().disable();
             } else if (e instanceof FormResetEvent) {
-                this.control().reset();
                 this._patches.clear();
             }
         });
+    }
+
+    ngOnInit() {
+        this._subscribeToFormEvents();
     }
 
     async ngOnChanges(changes: SimpleChanges): Promise<void> {
@@ -297,30 +318,26 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
             throw `Name cannot be changed after initialized ${this.name()}`;
         }
 
-        if (changes["fields"]) {
-            const scheme = this.fields();
-            console.warn(`${this.name()}:fields Changed`, scheme);
-            if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
-
-            this._patches.clear();
-            this.graph = this._builder.build(this.form, scheme, this.value(), "/");
-            this.initialized.emit(new DynamicFormInitializedEvent(this.value(), this.graph));
-
-            // Clean up existing subscriptions before creating new handlers
-            this.subs?.forEach((s) => s.unsubscribe());
-            this.subs = [InputVisibilityHandler(this), ChangeFormSchemeHandler(this), ChangeInputsHandler(this), ChangeValueHandler(this), ChangeStateHandler(this)];
+        if (changes["control"]) {
+            this._subscribeToFormEvents();
+            this._buildForm();
+        } else if (changes["fields"]) {
+            this._buildForm();
         }
         if (changes["value"]) {
             this._patches.clear();
-            this.form.patchValue(this.value(), { emitEvent: false });
+            this.form().patchValue(this.value(), { emitEvent: false });
             this.propagateChange();
         }
+    }
+    private _buildForm() {
+        const scheme = this.fields();
+        console.info(`${this.name()}:Building Form`, scheme);
+        if (typeof scheme !== "object" || Array.isArray(scheme)) throw new Error("fields must be passed as dictionary format");
 
-        if (changes["conditions"]?.firstChange === true) {
-            const { currentValue, previousValue } = changes["conditions"];
-            if (previousValue?.length) previousValue.forEach((c) => this.conditionalService.removeCondition(c));
-            if (currentValue?.length) currentValue.forEach((c) => this.subs.push(this.conditionalService.addCondition(c)));
-        }
+        this._patches.clear();
+        this._builder.build(this.form(), scheme, this.value(), "/");
+        this.initialized.emit(new DynamicFormInitializedEvent(this.value(), this.form()));
     }
 
     // formRef = viewChild<ElementRef<HTMLFormElement>>("formRef");
@@ -333,30 +350,31 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     onSubmit(event: SubmitEvent) {
         event?.stopPropagation();
         event?.preventDefault();
-        if (this.form.invalid) {
+        if (this.form().invalid) {
             //expand all groups
-            const groups = [...this.graph.keys()].filter((k) => k.startsWith("group:"));
-            for (const group of groups) {
-                const g = this.graph.get(group);
+            const groups = Object.entries(this.form().controls).filter(([k, c]) => k.startsWith("group:"));
+            for (const [group, control] of groups) {
+                const g = control["fieldRef"];
                 if (g.field?.["template"] == "expansion-panel") {
                     const panel = g.attachedComponentRef().instance as MatExpansionPanel;
                     panel.open();
                 }
             }
             this.scrollToError();
-            this.submitted.emit({ event, form: this.form, error: "FORM_IS_INVALID" });
-        } else if (this.form.pristine) {
-            this.submitted.emit({ event, form: this.form, result: this.value(), error: "FORM_IS_PRISTINE" });
-        } else this.submitted.emit({ event, form: this.form, result: this.value() });
+            this.submitted.emit({ event, form: this.form(), error: "FORM_IS_INVALID" });
+        } else if (this.form().pristine) {
+            this.submitted.emit({ event, form: this.form(), result: this.value(), error: "FORM_IS_PRISTINE" });
+        } else this.submitted.emit({ event, form: this.form(), result: this.value() });
     }
 
     _onChange: (value: T) => void;
     _onTouched: () => void;
 
     writeValue(val: T): void {
+        if (val === this.value()) return;
         if (this.enableLogs()) console.log(`%c dynamic writing! (name:${this.name()})`, "background: #0065ff; color: #fff", val);
-        this.value.set(val);
-        this.form.patchValue(val, { emitEvent: false, onlySelf: true });
+        this.value.set(deepAssign(this.value(), val));
+        this.form().patchValue(this.value(), { emitEvent: false, onlySelf: true });
     }
 
     registerOnChange(fn: (model: any) => void): void {
@@ -366,13 +384,13 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
         this._onTouched = fn;
     }
     setDisabledState?(isDisabled: boolean): void {
-        if (isDisabled) this.form?.disable();
-        else this.form?.enable();
+        if (isDisabled) this.form()?.disable();
+        else this.form()?.enable();
     }
 
     _fieldsChanged() {
         if (this.enableLogs()) console.log(`%c scheme changed! (name:${this.name()})`, "background: #ff6b00; color: #fff", this.fields());
-        // this.formRenderer.fields = Object.values(this.fields());
+        // this.form()Renderer.fields = Object.values(this.fields());
         // this.writeValue(this.value());
         this.propagateChange();
     }
@@ -387,12 +405,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
     scrollToError() {
-        const c = Array.from(this.graph).find(([c, f]) => f.control?.invalid && f.hidden() !== true);
-        if (!c) return;
-        const fieldRef = c[1] as FieldRef;
-        const control = fieldRef.control;
+        const control = Object.values(this.form().controls).find((c) => c.invalid);
+        if (!control) return;
         control.markAsTouched();
-        const el = this.host.nativeElement.querySelector(`form [name=${fieldRef.name}]`) as HTMLElement;
+        const el = this.host.nativeElement.querySelector(`form [name=${control["fieldRef"].name}]`) as HTMLElement;
         if (el) this.scrollToElement(el);
     }
 
@@ -403,14 +419,10 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnDe
 
     @HostListener("window:beforeunload", ["$event"])
     beforeunloadHandler(event) {
-        if (this.preventDirtyUnload() === true && this.dirty) {
+        if (this.preventDirtyUnload() === true && this.dirty && this.touched) {
             event.preventDefault();
             event.returnValue = true;
         }
-    }
-
-    ngOnDestroy(): void {
-        this.subs.forEach((s) => s.unsubscribe());
     }
 
     isFormGroup(control: AbstractControl): control is FormGroup {

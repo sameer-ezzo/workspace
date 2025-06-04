@@ -67,6 +67,7 @@ export const DF_MATERIAL_THEME_INPUTS = {
     color: { component: MatColorInputComponent },
     chips: { component: MatChipsComponent },
     "autocomplete-text": { component: MatAutoCompleteTextComponent },
+    autocomplete: { component: MatAutoCompleteTextComponent },
     address: { component: MatAddressComponent },
 };
 

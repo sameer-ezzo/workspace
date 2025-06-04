@@ -3,6 +3,7 @@
     <label style="margin-block: 0.5rem 1rem">{{ label() }}</label>
 }
 @let _vm = viewModel();
+
 <dynamic-form
     class="form-wrapper"
     #dynForm
@@ -18,9 +19,8 @@
     (submitted)="onSubmit($event)"
     [control]="control()"
 ></dynamic-form>
-<!-- [formGroup]="control()" -->
 @if (actions()?.length) {
-    <div class="toolbar footer">
+    <div class="toolbar">
         @for (descriptor of actions(); track descriptor.name) {
             @if (descriptor.type == "submit") {
                 <mat-btn

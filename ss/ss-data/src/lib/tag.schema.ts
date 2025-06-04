@@ -1,9 +1,17 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 
+@Schema({ _id: false, strict: true, timestamps: true })
+class TranslationDocument {
+    @Prop({ type: String, index: true })
+    lang: string;
+    @Prop({ type: mongoose.Schema.Types.Mixed })
+    translation: any;
+}
+
 @Schema({ strict: false, timestamps: true })
 export class TagModel {
-    @Prop({ type: mongoose.SchemaTypes.ObjectId })
+    @Prop({ type: String })
     _id: string;
 
     @Prop({ required: true, index: true, unique: true })
@@ -33,7 +41,13 @@ export class TagModel {
     @Prop({ type: mongoose.SchemaTypes.Mixed, default: undefined })
     meta?: Record<string, unknown>;
 
-    @Prop({ type: [mongoose.SchemaTypes.Mixed], default: undefined })
-    translations?: Record<string, unknown>;
+    @Prop({ type: String, index: true, required: true, default: "en" })
+    lang: string;
+
+    @Prop({ type: mongoose.Schema.Types.String, index: true })
+    translation_id: string;
+
+    @Prop({ type: [TranslationDocument], default: undefined })
+    translations: TranslationDocument[];
 }
 export const TagSchema = SchemaFactory.createForClass(TagModel);

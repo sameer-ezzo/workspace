@@ -1,24 +1,20 @@
 import { DOCUMENT } from "@angular/common";
-import { Injectable, InjectionToken, inject } from "@angular/core";
+import { inject } from "@angular/core";
 import { MetadataUpdateStrategy } from "../metadata.service";
-import { ContentMetadataConfig } from "./page-metadata.strategy";
+import { ContentMetadataConfig, renderMetaTags } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";
-import { createTag, MetaTag } from "../link";
 
-export const OPEN_GRAPH_CONFIG = new InjectionToken<OpenGraphConfig>("OPEN_GRAPH_CONFIG");
 export type OpenGraphConfig = Pick<ContentMetadataConfig<OpenGraphMetadata>, "imageLoading">;
 
-@Injectable()
-export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
-    readonly config = inject(OPEN_GRAPH_CONFIG);
+// @Injectable()
+export class OpenGraphMetadataStrategy extends MetadataUpdateStrategy<OpenGraphConfig> {
     private readonly dom = inject(DOCUMENT);
 
-    private metaUpdateFn = (name: string, content: string | undefined) => {
-        createTag(this.dom, new MetaTag(name, content, "property"));
-        // appendTagToHead(this.dom, name, content, "meta", "property");
-    };
+    constructor(config: OpenGraphConfig) {
+        super(config);
+    }
 
-    async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
+    override async update(meta: any, metaFallback: Partial<ContentMetadataConfig>) {
         const pageMetadata = metaFallback.fallback ?? {};
         const fallback = {
             "og:title": meta?.title ?? pageMetadata.title,
@@ -31,14 +27,8 @@ export class OpenGraphMetadataStrategy implements MetadataUpdateStrategy<any> {
 
         const image_path = og["og:image"] ?? metaFallback.fallback?.image ?? "";
         const image = this.config?.imageLoading ? this.config.imageLoading(image_path) : image_path;
-        this.metaUpdateFn("og:image", image);
-        delete og["og:image"];
+        og["og:image"] = image;
 
-        for (const key in og) {
-            const k = key; //as keyof OpenGraphData;
-            const content = (og[k] ?? "").trim();
-            if (!content.length) continue;
-            this.metaUpdateFn(key, content);
-        }
+        renderMetaTags(this.dom, og, "property");
     }
 }

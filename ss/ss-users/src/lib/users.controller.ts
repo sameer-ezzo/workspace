@@ -3,7 +3,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { firstValueFrom } from "rxjs";
 
 import type { IncomingMessage, UserDevice } from "@noah-ark/common";
-import { User } from "@noah-ark/common";
+import { delay, User } from "@noah-ark/common";
 
 import { Authorize, AuthorizeService } from "@ss/rules";
 import { appName, Broker, EndPoint, Message } from "@ss/common";

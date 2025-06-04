@@ -1,10 +1,9 @@
-import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Provider, Signal, ViewContainerRef, inject, makeEnvironmentProviders } from "@angular/core";
+import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Provider, Signal, inject, makeEnvironmentProviders } from "@angular/core";
 import { MatDialogConfig, MatDialog, MatDialogRef, MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
 import { DialogRef } from "./dialog-ref";
-import { DataAdapter } from "@upupa/data";
-import { NavigationEnd, Router } from "@angular/router";
+import { Router } from "@angular/router";
 
 export type UpupaDialogActionContext<C = any> = {
     host: DialogWrapperComponent<C>;
@@ -42,6 +41,7 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
 
 @Injectable({ providedIn: "root" })
 export class DialogService {
+    
     // stack: DialogRef[] = [];
     readonly dialog: MatDialog = inject(MatDialog);
     readonly router = inject(Router);
@@ -67,7 +67,7 @@ export class DialogService {
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
-            // componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
+            componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
             //viewContainerRef:
         });
 

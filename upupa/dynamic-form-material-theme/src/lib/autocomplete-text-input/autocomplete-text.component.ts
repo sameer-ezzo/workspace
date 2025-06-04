@@ -9,6 +9,8 @@ import { DataAdapter } from "@upupa/data";
 
 import { DataComponentBase } from "@upupa/table";
 import { InputDefaults } from "../defaults";
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
     standalone: true,
@@ -46,4 +48,22 @@ export class MatAutoCompleteTextComponent extends DataComponentBase<string> {
     hint = input("");
 
     _onlySelected = false;
+
+    _searchRequest$ = new Subject<string>();
+    _search$ = this._searchRequest$.pipe(debounceTime(300), distinctUntilChanged());
+
+    constructor() {
+        super();
+        this._search$.pipe(takeUntilDestroyed()).subscribe((value) => {
+            this._doSearch(value);
+        });
+    }
+
+    _search(value: string) {
+        this._searchRequest$.next(value);
+    }
+
+    _doSearch(value: string) {
+        return this.adapter().load({ filter: { search: value } });
+    }
 }

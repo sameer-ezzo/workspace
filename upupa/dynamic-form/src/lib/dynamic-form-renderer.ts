@@ -3,8 +3,7 @@ import { _mergeFields } from "./dynamic-form.helper";
 import { DynamicFormService } from "./dynamic-form.service";
 import { Field, Validator, FormScheme, Fieldset } from "./types";
 import { JsonPointer } from "@noah-ark/json-patch";
-import { Injector } from "@angular/core";
-import { FormGraph } from "./dynamic-form.component";
+import { Injector, input } from "@angular/core";
 import { FieldRef } from "./field-ref";
 
 export class DynamicFormBuilder {
@@ -13,30 +12,43 @@ export class DynamicFormBuilder {
         private readonly formService: DynamicFormService,
     ) {}
 
-    build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGraph {
-        const graph = new Map<string, FieldRef>();
+    build(form: FormGroup, scheme: FormScheme, value: any, path = "/", rootForm: FormGroup = form): FormGroup {
         // this.removeControls(form);
         for (const fieldName in scheme) {
-            const field = scheme[fieldName];
+            const field: Field = scheme[fieldName];
             const fieldValue = JsonPointer.get(value ?? {}, fieldName);
             const _path = `${path}${fieldName}` as `/${string}`;
 
-            if (field.input === "object") {
-                const group = this.getFieldset(fieldName, field, _path, rootForm);
-
+            if (field.input === "object" || field.input === "fieldset") {
+                const f = field as Fieldset;
+                const group = this.getFieldset(fieldName, f, _path, rootForm);
                 form.addControl(fieldName, group, { emitEvent: false });
-                graph.set(_path, group["fieldRef"]);
-                const subControls = this.build(group, field.items, fieldValue, `${path}${fieldName}/`, rootForm);
-                for (const [key, value] of subControls) {
-                    graph.set(key, value);
-                }
-            } else if (field.input == "group") {
-                const subControls = this.build(form, field.items, fieldValue, path, rootForm);
-                graph.set(`group:${fieldName}`, new FieldRef(this.injector, fieldName, `group:${fieldName}`, field, rootForm));
+                this.build(group, f.items, fieldValue, `${path}${fieldName}/`, rootForm);
+            }
+            if (field.input === "form") {
+                const f = field as Fieldset;
+                const formGroup = this.getFieldset(fieldName, f, _path, rootForm);
+                form.addControl(fieldName, formGroup, { emitEvent: false });
+                (formGroup["fieldRef"] as FieldRef).inputs.update((inputs) => ({
+                    ...inputs,
+                    control: formGroup,
+                    name: fieldName,
+                    value: fieldValue,
+                }));
 
-                for (const [key, value] of subControls) {
-                    graph.set(key, value);
-                }
+                // const subControls = this.build(group, f.items, fieldValue, `${path}${fieldName}/`, rootForm);
+                // for (const [key, value] of subControls) {
+                //     graph.set(key, value);
+                // }
+            } else if (field.input == "group") {
+                const f = field as Fieldset;
+                const subControls = this.build(form, f.items, fieldValue, path, rootForm);
+                form[`group:${fieldName}`] = new FieldRef(this.injector, fieldName, `group:${fieldName}`, field, rootForm);
+                // graph.set(`group:${fieldName}`, new FieldRef(this.injector, fieldName, `group:${fieldName}`, field, rootForm));
+
+                // for (const [key, control] of Object.entries(subControls)) {
+                //     graph.set(key, control);
+                // }
             } else if (field.input == "array") {
                 // const array = new FormArray([], { validators: this.getValidators(field), asyncValidators: this.getAsyncValidators(field) });
                 // array["name"] = field.name;
@@ -45,11 +57,11 @@ export class DynamicFormBuilder {
             } else {
                 const control = this.getControl(fieldName, field, fieldValue, _path, rootForm);
                 form.addControl(fieldName, control, { emitEvent: false });
-                graph.set(_path, control["fieldRef"]);
+                // graph.set(_path, control["fieldRef"]);
             }
         }
 
-        return graph;
+        return form;
     }
 
     private getFieldset(name: string, field: Fieldset, _path: `/${string}`, rootForm: FormGroup) {
@@ -62,6 +74,7 @@ export class DynamicFormBuilder {
         );
         const fieldRef = new FieldRef(this.injector, name, _path, field, rootForm, group);
         group["fieldRef"] = fieldRef;
+
         return group;
     }
     getControl(name: string, field: Field, value: any, path: `/${string}`, form: FormGroup) {

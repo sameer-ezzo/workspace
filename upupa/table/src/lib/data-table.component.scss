@@ -84,7 +84,7 @@
 tr[cdk-header-row] > th {
     // background-color: var(--mat-sys-surface-bright);
 }
-[mat-row]:hover {
+tr[mat-row]:hover {
     background-color: var(--mat-sys-surface-container-low) !important;
 }
 

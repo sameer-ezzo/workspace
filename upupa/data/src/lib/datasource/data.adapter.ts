@@ -1,10 +1,9 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
-import { computed, InputSignal, Resource, Signal, WritableSignal } from "@angular/core";
-
+import { computed, InputSignal, Resource, signal, Signal, WritableSignal } from "@angular/core";
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
-import { ReplaySubject } from "rxjs";
+import { BehaviorSubject, combineLatest, filter, first, firstValueFrom, ReplaySubject, timeout } from "rxjs";
 
 export type DataAdapterType = "server" | "api" | "client" | "http" | "signal" | "resource";
 
@@ -159,6 +158,9 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
     normalized = computed(() => this.entities());
 
+    private _consumer = new BehaviorSubject<number>(0);
+    private _producer = new BehaviorSubject<number>(1);
+
     async load(options?: {
         page?: PageDescriptor;
         sort?: SortDescriptor;
@@ -168,22 +170,25 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         behavior?: "prepend" | "append" | "replace";
         freshness?: "fresh" | "stale";
     }): Promise<NormalizedItem<T>[]> {
-        // should we load all data or only the keys that are not loaded already
-        // if (options?.keys?.length && options?.freshness === "stale") {
-        //     const loadedEntities = [];
-        //     const notLoadedKeys = [];
+        const consumer = this._consumer.getValue() + 1;
+        this._consumer.next(consumer);
+        await firstValueFrom(
+            this._producer.pipe(
+                filter((x) => x === consumer),
+                timeout(30000),
+            ),
+        );
+        return this._load(options);
+    }
 
-        //     const map = this.entityMap();
-        //     for (const key of options.keys) {
-        //         const entity = map[key as EntityId];
-        //         if (entity) loadedEntities.push(entity);
-        //         else notLoadedKeys.push(key);
-        //     }
-
-        //     if (!notLoadedKeys.length) return loadedEntities;
-        //     options = { ...options, keys: notLoadedKeys };
-        // }
-
+    async _load(options?: {
+        page?: PageDescriptor;
+        sort?: SortDescriptor;
+        filter?: FilterDescriptor;
+        terms?: Term<T>[];
+        keys?: (keyof T)[];
+        behavior?: "prepend" | "append" | "replace";
+    }): Promise<NormalizedItem<T>[]> {
         const _options = {
             page: options?.page ?? this.page(),
             filter: options?.filter ?? this.filter(),
@@ -200,32 +205,47 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             const p = _options.page ?? this.page() ?? { pageIndex: 0 };
             const page = { ...p, length: readResult.total, previousPageIndex: p.pageIndex > 0 ? p.pageIndex - 1 : undefined } as PageDescriptor;
 
-            const entities = readResult.data.map((x) => {
+            const fetchedEntities = readResult.data.map((x) => {
                 const entity = this.normalize(x);
-                if (selectionMap[entity.key]) {
-                    entity.selected = selectionMap[entity.key].selected;
-                    delete selectionMap[entity.key];
-                }
+                entity.selected = selectionMap[entity.key]?.selected ?? false;
                 return entity;
             });
 
-            switch (options?.behavior) {
-                case "prepend":
-                    patchState(this, { ..._options, page, loading: false }, setAllEntities([...entities, ...this.entities()]));
-                    break;
-                case "append":
-                    patchState(this, { ..._options, page, loading: false }, setAllEntities([...this.entities(), ...entities]));
-                    break;
-                case "replace":
-                default:
-                    patchState(this, { ..._options, page, loading: false }, setAllEntities(entities));
-                    break;
+            const entityMap = this.entityMap();
+
+            if (!options?.behavior || options.behavior === "replace") {
+                const selected = this.entities().filter((x) => x.selected && !fetchedEntities.find((y) => y.key === x.key));
+                patchState(this, { ..._options, page, loading: false }, setAllEntities([...selected, ...fetchedEntities]));
+            } else {
+                // avoid changing index of duplicates (prepend/append only unique items)
+                const unique = [];
+                const duplicates = [];
+                for (const entity of fetchedEntities) {
+                    if (entityMap[entity.key] === undefined) unique.push(entity);
+                    else {
+                        entity.selected = selectionMap[entity.key]?.selected ?? false;
+                        duplicates.push(entity);
+                    }
+                }
+
+                // replace duplicates in the current entities
+                const entities = this.entities();
+                for (const entity of duplicates) {
+                    const i = entities.findIndex((x) => x.key === entity.key);
+                    if (i > -1) entities[i] = entity;
+                }
+
+                // prepend/append unique items
+                if (options.behavior === "prepend") patchState(this, { ..._options, page, loading: false }, setAllEntities([...unique, ...entities]));
+                else patchState(this, { ..._options, page, loading: false }, setAllEntities([...entities, ...unique]));
             }
 
             return this.entities();
         } catch (error) {
             patchState(this, { error, loading: false }, setAllEntities([]));
             return [];
+        } finally {
+            this._producer.next(this._producer.getValue() + 1);
         }
     }
 
@@ -270,7 +290,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
         if (records.length) {
             // some keys are not loaded
-            this.load({ keys: records.map((x) => x.key), behavior: "prepend" });
+            this.load({ keys: records.map((x) => x.key).filter((x) => x != undefined), behavior: "prepend" });
         }
 
         return this.selection();
@@ -299,7 +319,8 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     selectionMap = computed(() => Object.fromEntries(this.selection().map((x) => [x.key, x])));
 
     refresh() {
-        return this.load();
+        if (!this.loading()) return this.load();
+        else return Promise.resolve(this.entities());
     }
 
     updateState(item: T, state: "loading" | "loaded" | "error", error?: string) {

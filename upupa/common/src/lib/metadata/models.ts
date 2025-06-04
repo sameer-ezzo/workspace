@@ -261,6 +261,7 @@ export interface PageMetadata {
     keywords?: string;
     author?: string;
     canonicalUrl?: string;
+    canonicalBaseUrl?: string;
     image?: string;
     twitter?: Partial<TwitterCardMetadata>;
     og?: Partial<OpenGraphMetadata>;

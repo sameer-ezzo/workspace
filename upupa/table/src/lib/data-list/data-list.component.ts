@@ -6,6 +6,7 @@ import {
     OnDestroy,
     Type,
     computed,
+    effect,
     forwardRef,
     inject,
     input,
@@ -22,6 +23,7 @@ import { Class } from "@noah-ark/common";
 import { DataTableComponent } from "../data-table.component";
 import { reflectTableViewModel } from "../decorator";
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, NgControl, UntypedFormControl } from "@angular/forms";
+import { toObservable } from "@angular/core/rxjs-interop";
 
 @Component({
     selector: "data-list",
@@ -76,17 +78,33 @@ export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, C
     secondaryRows = computed(() => reflectTableViewModel(this.viewModel()).secondaryRows);
     columns = computed(() => reflectTableViewModel(this.viewModel()).columns);
     instance: Class;
-
+    dataAdapterChanged$ = toObservable(this.dataAdapter);
     ngOnInit() {
-        this.instance?.["onInit"]?.();
+        this.instance = new (this.viewModel())();
+        this.dataAdapterChanged$.subscribe((adapter: DataAdapter) => {
+            this._runHookInInjectionContext("onDataAdapterChange", adapter);
+        });
+
+        this._runHookInInjectionContext("onInit");
+    }
+
+    private _runHookInInjectionContext(funcName: string, ...params: any[]): Promise<any> | void {
+        if (!this.instance) return;
+        if (!(funcName in this.instance)) return;
+        if (typeof this.instance[funcName] !== "function") return;
+        if (this.instance[funcName].length !== params.length) return;
+    
+        return runInInjectionContext(this.injector, async () => {
+            await this.instance[funcName](...params);
+        });
     }
 
     ngAfterViewInit() {
-        this.instance?.["afterViewInit"]?.();
+        this._runHookInInjectionContext("afterViewInit");
     }
 
     ngOnDestroy() {
-        this.instance?.["onDestroy"]?.();
+        this._runHookInInjectionContext("onDestroy");
     }
 
     onSelectionChange(event: any) {

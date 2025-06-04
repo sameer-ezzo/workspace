@@ -1,4 +1,8 @@
 export class ObjectId {
+    static test(id: string): boolean {
+        const pattern = /^[0-9a-f]{24}$/;
+        return pattern.test(id);
+    }
     static generate(): string {
         let result = Math.round(new Date().getTime() / 1000).toString(16);
         for (let i = 0; i < 16; i++) {

@@ -92,17 +92,6 @@ export type WizardStepRef = {
             } as StepperOptions,
         },
     ],
-    styles: [
-        `
-            :host {
-                display: block;
-                portal{
-                    display: block;
-                    margin-block-start: 1.5rem;
-                }
-            }
-                `,
-    ],
 })
 export class WizardLayoutComponent implements OnChanges {
     _stepper = viewChild("stepper", { read: ElementRef });
@@ -215,18 +204,16 @@ type WizardLayoutConfig = {
     outputs?: ComponentOutputsHandlers<WizardLayoutComponent>;
 };
 
-export function provideWizardLayout(config: Route & WizardLayoutConfig, ...features: RouteFeature[]): Route {
+export function provideWizardLayout(config: Omit<DynamicComponentRoute<WizardLayoutComponent>, "component"> & WizardLayoutConfig, ...features: RouteFeature[]): Route {
     return provideRoute(withWizardLayout(config), ...features);
 }
 
-export function withWizardLayout(config: Route & WizardLayoutConfig): DynamicComponentRoute {
+export function withWizardLayout(config: Omit<DynamicComponentRoute<WizardLayoutComponent>, "component"> & WizardLayoutConfig): DynamicComponentRoute {
     return {
         name: "WizardLayout",
         ...config,
-        component: {
-            component: WizardLayoutComponent,
-            outputs: config.outputs,
-        },
+        component: WizardLayoutComponent,
+        outputs: config.outputs,
         data: {
             steps: config.steps,
             isLinear: config.isLinear ?? true,

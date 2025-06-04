@@ -6,7 +6,7 @@ import { ActionsDescriptor } from "@upupa/common";
 import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
-import { DynamicFormComponent, ExtendedValueChangeEvent, FORM_GRAPH } from "../dynamic-form.component";
+import { DynamicFormComponent, ExtendedValueChangeEvent, FORM_GROUP } from "../dynamic-form.component";
 import { CommonModule, DOCUMENT } from "@angular/common";
 import { MatBtnComponent } from "@upupa/mat-btn";
 
@@ -23,17 +23,17 @@ import { MatBtnComponent } from "@upupa/mat-btn";
             multi: true,
         },
         {
-            provide: FORM_GRAPH,
-            useFactory: (self: CollectorComponent) => self.dynamicForm().graph,
+            provide: FORM_GROUP,
+            useFactory: (self: CollectorComponent) => self.dynamicForm().form(),
             deps: [CollectorComponent],
         },
-    ]
+    ],
 })
 export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     dynamicForm = viewChild<DynamicFormComponent>("dynForm");
-    form = computed(() => this.dynamicForm().control());
-    valid = computed(() => this.dynamicForm().control().valid);
-    touched = computed(() => this.dynamicForm().control().touched);
+    form = computed(() => this.dynamicForm().form());
+    valid = computed(() => this.dynamicForm().form().valid);
+    touched = computed(() => this.dynamicForm().form().touched);
     submit = output<T>();
     action = output<ActionDescriptor>();
     activePageChange = output<number>();
@@ -74,7 +74,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     design = input<FormDesign>();
 
     get controls() {
-        return this.dynamicForm().graph;
+        return this.dynamicForm().form().controls;
     }
 
     get formElement() {
@@ -118,7 +118,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
         if (pageIndex < 0 || pageIndex > this.pages.length - 1) return this._pageInvalid.set(false);
 
         const page = this.pages[pageIndex];
-        if (page?.fields) this._pageInvalid.set(Array.from(page.fields).some(([name, f]) => this.controls.get("")?.control.invalid === true));
+        if (page?.fields) this._pageInvalid.set(Object.values(page.fields).some((f) => f.invalid === true));
     }
 
     showFieldsOfPage() {
@@ -155,7 +155,7 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
     }
 
     next() {
-        this.dynamicForm().control().markAsTouched();
+        this.dynamicForm().form().markAsTouched();
         if (this.canGoNext()) this.activePage.update((a) => a + 1);
     }
 

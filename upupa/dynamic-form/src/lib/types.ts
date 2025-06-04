@@ -1,4 +1,3 @@
-
 import { Type } from "@angular/core";
 import { DynamicComponent } from "@upupa/common";
 
@@ -21,7 +20,7 @@ export type FieldItem<TCom = any> = {
     inputs?: DynamicComponent<TCom>["inputs"];
     outputs?: DynamicComponent<TCom>["outputs"];
     hidden?: boolean;
-    updateOn?: 'change' | 'blur' | 'submit';
+    updateOn?: "change" | "blur" | "submit";
 };
 
 const INPUTS = [
@@ -51,10 +50,11 @@ const INPUTS = [
     "tree",
     "switch",
     "address",
+    "autocomplete",
 ] as const;
 export type FieldInputType = (typeof INPUTS)[number];
 
-export const SET_INPUTS = ["object", "array", "group"] as const;
+export const SET_INPUTS = ["object", "form", "group"] as const;
 export type FieldGroupType = (typeof SET_INPUTS)[number];
 
 export type Fieldset = FieldItem & {
@@ -116,7 +116,6 @@ export type LessThanValidator = { name: "lessThan"; arguments: number; message?:
 
 export type BeforeValidator = { name: "before"; arguments: Date; message?: string };
 export type AfterValidator = { name: "after"; arguments: Date; message?: string };
-
 
 export type Validator =
     | RequiredValidator

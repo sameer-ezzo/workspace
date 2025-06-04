@@ -1,34 +1,28 @@
 import { DOCUMENT } from "@angular/common";
-import { inject, Injectable, InjectionToken } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 
-import { ContentMetadataConfig, PAGE_METADATA_CONFIG } from "./strategies/page-metadata.strategy";
+import { ContentMetadataConfig } from "./strategies/page-metadata.strategy";
 import { PageMetadata } from "./models";
 
-export interface MetadataUpdateStrategy<C extends ContentMetadataConfig = ContentMetadataConfig> {
-    // config: Partial<C>;
-    update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>): Promise<void>;
+export abstract class MetadataUpdateStrategy<C extends ContentMetadataConfig = ContentMetadataConfig> {
+    constructor(protected readonly config: C) {}
+    abstract update(meta: PageMetadata, metaFallback: Partial<ContentMetadataConfig>): Promise<void>;
 }
-
-export const PAGE_METADATA_STRATEGIES = new InjectionToken<MetadataUpdateStrategy[]>("PAGE_METADATA_STRATEGIES");
 
 /**
  * Service that listens for route changes and updates the page metadata accordingly. You don't need to use this service directly, it's used automatically when you use the `providePageMetadata` function.
  */
 @Injectable({ providedIn: "root" })
 export class MetadataService {
-    private readonly metadataUpdateStrategies = inject(PAGE_METADATA_STRATEGIES);
+    private readonly metadataUpdateStrategies = [];
 
     private readonly router = inject(Router);
     private readonly dom = inject(DOCUMENT);
-    readonly config = inject(PAGE_METADATA_CONFIG);
+    private _config: ContentMetadataConfig<PageMetadata> = undefined;
 
-    // this function helps to update the config object
-    // in new versions of Angular, this could not be set during the app initialization.
-    updateConfig(config: Partial<ContentMetadataConfig>) {
-        Object.assign(this.config, config);
-    }
-    async listenForRouteChanges() {
+    initialize(config: ContentMetadataConfig<PageMetadata>) {
+        this._config = config;
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
                 //accumulate metadata from child route up to the root route
@@ -44,12 +38,18 @@ export class MetadataService {
                 if (!meta.title && event.snapshot.title) meta.title = event.snapshot.title;
 
                 //URL
-                const baseUrl = this.config.canonicalBaseUrl ?? this.dom.location.origin;
+                const baseUrl = this._config.canonicalBaseUrl ?? this.dom.location.origin;
                 const path = meta.canonicalPath ?? this.dom.location.pathname + this.dom.location.search;
                 meta.url = baseUrl + path;
-                this.updateMeta(meta, this.config, event.snapshot);
+                this.updateMeta(meta, this._config, event.snapshot);
             }
         });
+    }
+
+    // this function helps to update the config object
+    // in new versions of Angular, this could not be set during the app initialization.
+    updateConfig(config: Partial<ContentMetadataConfig>) {
+        Object.assign(this._config ?? {}, config);
     }
 
     extractMetadataForRoute(route: ActivatedRouteSnapshot) {

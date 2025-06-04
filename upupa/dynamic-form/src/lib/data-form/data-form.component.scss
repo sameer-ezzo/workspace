@@ -1,11 +1,12 @@
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 
     .mat-form-field {
         width: 100%;
     }
 
-    
     .horizontal.choices {
         margin: 0.5rem;
     }
@@ -23,4 +24,10 @@
     .mat-form-field-subscript-wrapper {
         position: relative !important;
     }
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: row-reverse;
 }
