@@ -322,8 +322,8 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
         }
 
         for (const r of rows) {
-            if (event.checked) this.select(r.key);
-            else this.unselect(r.key);
+            if (event.checked) this.select([r.value]);
+            else this.unselect([r.value]);
         }
 
         this.focusedItem.set(row);

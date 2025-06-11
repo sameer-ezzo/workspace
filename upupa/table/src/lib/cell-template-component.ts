@@ -105,7 +105,6 @@ export type LinkRouterCellInputs = {
         `
             :host {
                 display: inline-block;
-                min-width: 150px;
             }
         `,
     ],

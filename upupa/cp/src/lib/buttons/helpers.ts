@@ -27,7 +27,7 @@ export class InlineButtonComponent {
 export function inlineButton<T = unknown>(options: {
     descriptor?: Partial<ActionDescriptor>;
     inputItem?: T;
-    clickHandler: (btnInstance: InlineButtonComponent) => void;
+    clicked: (btnInstance: InlineButtonComponent) => void;
 }): DynamicComponent {
     const template = {
         component: InlineButtonComponent,
@@ -37,7 +37,7 @@ export function inlineButton<T = unknown>(options: {
         },
         outputs: {
             clicked: (source, e) => {
-                runInInjectionContext(source.injector, () => options.clickHandler(source.instance));
+                runInInjectionContext(source.injector, () => options.clicked(source.instance));
             },
         },
     } as DynamicComponent;
@@ -121,7 +121,7 @@ export function deleteButton(
     const confirmOptions = { ...{ title: "Delete", confirmText: "Are you sure you want to delete this item?", no: "Keep it", yes: "Delete" }, ...options?.confirm };
     return inlineButton({
         descriptor: options.descriptor,
-        clickHandler: (source) => {
+        clicked: (source) => {
             // const item = readInput('item', source);
             deleteItem.call(source, confirmOptions, deleteFn);
         },

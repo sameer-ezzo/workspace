@@ -199,8 +199,8 @@ export class SelectorsCellTemplateComponent extends DefaultTableCellTemplate {
                 rows: 25,
                 title: "Edit Filters",
                 value: v,
-                no: "Cancel",
-                yes: "Update",
+
+                actionText: "Update",
                 text: "Please enter the filters for this permission",
                 placeholder: JSON.stringify({ query: { "createdBy.email": "$msg.principle.email" } }, null, 2),
             },

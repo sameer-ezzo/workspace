@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Provider, Signal, inject, makeEnvironmentProviders } from "@angular/core";
+import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Injector, Provider, Signal, inject, makeEnvironmentProviders } from "@angular/core";
 import { MatDialogConfig, MatDialog, MatDialogRef, MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
@@ -41,7 +41,6 @@ export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
 
 @Injectable({ providedIn: "root" })
 export class DialogService {
-    
     // stack: DialogRef[] = [];
     readonly dialog: MatDialog = inject(MatDialog);
     readonly router = inject(Router);
@@ -74,11 +73,29 @@ export class DialogService {
         matDialogRef.componentRef.setInput("template", _template);
         matDialogRef.componentRef.setInput(
             "header",
-            (options?.header ?? []).map((t) => component(t)),
+            (options?.header ?? []).map((t) =>
+                component({
+                    ...t,
+                    injector: Injector.create({
+                        providers: [{ provide: DialogRef, useValue: matDialogRef as DialogRef<TCom, TResult> }], // provide the DialogRef to the header components
+                        parent: injector,
+                        name: "DialogHeaderInjector",
+                    }),
+                } as DynamicTemplate<TCom>),
+            ),
         );
         matDialogRef.componentRef.setInput(
             "footer",
-            (options?.footer ?? []).map((t) => component(t)),
+            (options?.footer ?? []).map((t) =>
+                component({
+                    ...t,
+                    injector: Injector.create({
+                        providers: [{ provide: DialogRef, useValue: matDialogRef as DialogRef<TCom, TResult> }], // provide the DialogRef to the footer components
+                        parent: injector,
+                        name: "DialogFooterInjector",
+                    }),
+                } as DynamicTemplate<TCom>),
+            ),
         );
         matDialogRef.componentRef.setInput("title", options?.title);
         matDialogRef.componentRef.setInput("hideCloseButton", options?.hideCloseButton);
