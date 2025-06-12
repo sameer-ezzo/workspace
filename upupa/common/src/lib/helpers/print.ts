@@ -11,6 +11,7 @@ export type PrintElementOptions = {
     timeout?: number; // Timeout for print operation in milliseconds
     waitForImages?: boolean; // Wait for images to load before printing
     removeAfterPrint?: boolean; // Whether to remove iframe after printing
+    baseUrl?: string; // Base URL for resolving relative paths (defaults to current origin)
 };
 
 /**
@@ -36,6 +37,7 @@ export type PrintElementOptions = {
  * @param options.timeout - Timeout for the entire print operation in milliseconds. Defaults to 30000
  * @param options.waitForImages - Whether to wait for images to load before printing. Defaults to true
  * @param options.removeAfterPrint - Whether to remove iframe after printing. Defaults to true
+ * @param options.baseUrl - Base URL for resolving relative paths. Defaults to window.location.origin
  *
  * @returns Promise that resolves when printing is complete or rejects on error
  *
@@ -57,6 +59,13 @@ export type PrintElementOptions = {
  *   title: 'Custom Print',
  *   onBeforePrint: () => console.log('Starting print...'),
  *   onAfterPrint: () => console.log('Print completed!')
+ * });
+ *
+ * // Print with relative URLs automatically resolved
+ * const htmlWithImages = '<div><img src="/assets/logo.png"><img src="./images/photo.jpg"></div>';
+ * await printElement(document, htmlWithImages, {
+ *   title: 'Content with Images',
+ *   baseUrl: 'https://myapp.com' // Optional: override default base URL
  * });
  *
  * // Print with timeout and error handling
@@ -94,6 +103,7 @@ export function printElement(doc: Document, el: string | HTMLElement = doc.body,
             timeout: 30000,
             waitForImages: true,
             removeAfterPrint: true,
+            baseUrl: typeof window !== "undefined" ? window.location.origin : undefined,
             ...options,
         };
 
@@ -194,6 +204,13 @@ export function printElement(doc: Document, el: string | HTMLElement = doc.body,
                     iframeDoc.open();
                     iframeDoc.write(html);
 
+                    // Add base URL to resolve relative paths automatically
+                    if (config.baseUrl) {
+                        const baseElement = iframeDoc.createElement("base");
+                        baseElement.href = config.baseUrl;
+                        iframeDoc.head.appendChild(baseElement);
+                    }
+
                     // Set title
                     if (config.title) {
                         iframeDoc.title = config.title;
@@ -222,7 +239,7 @@ export function printElement(doc: Document, el: string | HTMLElement = doc.body,
                                 const linkPromise = new Promise<void>((linkResolve) => {
                                     newLink.onload = () => linkResolve();
                                     newLink.onerror = () => linkResolve(); // Continue even if stylesheet fails
-                                    setTimeout(() => linkResolve(), 5000); // Fallback timeout
+                                    setTimeout(() => linkResolve(), config.timeout); // Fallback timeout
                                 });
                                 linkPromises.push(linkPromise);
                             }
@@ -276,7 +293,7 @@ export function printElement(doc: Document, el: string | HTMLElement = doc.body,
                                             if (linkElement.sheet) {
                                                 resolve();
                                             } else {
-                                                const timeout = setTimeout(() => resolve(), 2000);
+                                                const timeout = setTimeout(() => resolve(), config.timeout);
                                                 link.addEventListener("load", () => {
                                                     clearTimeout(timeout);
                                                     resolve();
@@ -295,7 +312,7 @@ export function printElement(doc: Document, el: string | HTMLElement = doc.body,
                                             if (img.complete) {
                                                 resolve();
                                             } else {
-                                                const timeout = setTimeout(() => resolve(), 5000);
+                                                const timeout = setTimeout(() => resolve(), config.timeout);
                                                 img.addEventListener("load", () => {
                                                     clearTimeout(timeout);
                                                     resolve();
