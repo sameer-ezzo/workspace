@@ -32,6 +32,7 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
     const mirror = { ..._mirror, actions: [] };
 
     const v = await runInInjectionContext(injector, async () => value);
+    console.log("openFormDialog", v, value);
 
     let formActions = [...(_mirror.actions ?? [])] as ActionDescriptor[];
     let defaultAction = formActions.find((x) => x.type === "submit");

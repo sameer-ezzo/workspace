@@ -5,7 +5,7 @@ import {  createButton, deleteButton, editButton } from "@upupa/cp";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DialogRef } from "@upupa/dialog";
 import { DynamicFormInitializedEvent, fieldRef, formInput, OnSubmit } from "@upupa/dynamic-form";
-import { column, DataListComponent, withTableHeader } from "@upupa/table";
+import { column, DataListComponent, withHeader } from "@upupa/table";
 
 export class RoleListViewModel implements OnSubmit {
     @formInput({ input: "text", label: "Id" })
@@ -62,7 +62,7 @@ export function withRolesTable(config?: Partial<RolesTableConfig>): RouteFeature
                     ],
                 },
             },
-            tableHeaderComponent: config?.tableHeaderComponent ?? withTableHeader(true, createButton(RoleListViewModel)),
+            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, createButton(RoleListViewModel)),
         },
     } as DynamicComponent<DataListComponent>;
 

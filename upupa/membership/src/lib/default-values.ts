@@ -1,5 +1,6 @@
 import { PasswordStrength } from "@noah-ark/common";
 import { Field, formInput, formScheme, FormScheme, hiddenField, switchField } from "@upupa/dynamic-form";
+import { ɵ$localize } from "@angular/localize";
 
 export const defaultVerifyCodeField: FormScheme = {
     code: {
@@ -18,18 +19,55 @@ export const defaultVerifyCodeField: FormScheme = {
 };
 
 @formScheme()
-export class LoginFormViewModel {
-    @formInput({ input: "email" })
-    email = "";
-    @formInput({ input: "password", passwordStrength: new PasswordStrength(), showConfirmPasswordInput: false })
+export class LoginWithUsernameFormViewModel {
+    @formInput({ input: "text", label: $localize`Username`, placeholder: $localize`Use a valid username` })
+    username = "";
+    @formInput({
+        input: "password",
+        label: $localize`Password`,
+        placeholder: $localize`Use a valid password`,
+        passwordStrength: new PasswordStrength(),
+        showConfirmPasswordInput: false,
+    })
     password = "";
-    @formInput({ input: "switch" })
+    @formInput({ input: "switch", label: $localize`Remember Me` })
+    rememberMe = true;
+}
+
+@formScheme()
+export class LoginWithEmailFormViewModel {
+    @formInput({ input: "email", label: $localize`Email`, placeholder: $localize`Use a valid email` })
+    email = "";
+    @formInput({
+        input: "password",
+        label: $localize`Password`,
+        placeholder: $localize`Use a valid password`,
+        passwordStrength: new PasswordStrength(),
+        showConfirmPasswordInput: false,
+    })
+    password = "";
+    @formInput({ input: "switch", label: $localize`Remember Me` })
     rememberMe = true;
 }
 export const defaultEmailField: Field = {
     input: "email",
-    inputs: { label: "Email", placeholder: "Use a valid email" },
+    inputs: { label: $localize`Email`, placeholder: $localize`Use a valid email` },
     validations: [{ name: "required" }, { name: "email" }],
+};
+
+export const usernameLoginFormFields: FormScheme = {
+    username: { input: "text", inputs: { label: $localize`Username`, placeholder: $localize`Use a valid username` }, validations: [{ name: "required" }] },
+    password: {
+        input: "text",
+        inputs: {
+            label: $localize`Password`,
+            type: "password",
+            placeholder: $localize`Password`,
+            PasswordStrength: null,
+        },
+        validations: [{ name: "required" }],
+    },
+    rememberMe: switchField("rememberMe", $localize`Remember Me`),
 };
 
 export const defaultLoginFormFields: FormScheme = {
@@ -37,14 +75,14 @@ export const defaultLoginFormFields: FormScheme = {
     password: {
         input: "text",
         inputs: {
-            label: "Password",
+            label: $localize`Password`,
             type: "password",
-            placeholder: "Password",
+            placeholder: $localize`Password`,
             PasswordStrength: null,
         },
         validations: [{ name: "required" }],
     },
-    rememberMe: switchField("rememberMe", "Remember Me"),
+    rememberMe: switchField("rememberMe", $localize`Remember Me`),
 };
 
 export const defaultForgotPasswordFormFields: FormScheme = {

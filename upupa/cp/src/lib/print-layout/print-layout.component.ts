@@ -1,6 +1,8 @@
-import { isPlatformBrowser } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { Component, computed, effect, inject, input, PLATFORM_ID } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { delay } from "@noah-ark/common";
+import { printElement } from "@upupa/common";
 
 /**
  * @description Value is of this type is passed directly to the CSS content property. Therefore, to display a static text, it should be wrapped in quotes. Also, content functions can be used.
@@ -23,6 +25,10 @@ export type CssContent = string;
                 }
                 button {
                     display: none;
+                }
+
+                body {
+                    background: transparent !important;
                 }
             }
         }
@@ -54,10 +60,8 @@ export class PrintLayoutComponent {
 
     openPrint = input(true);
 
-    styleElement = computed(() => {
-        const style = document.createElement("style");
-        style.id = "print-layout-style";
-        style.innerHTML = `
+    printStyles = computed(() => {
+        return `
             @page {
                 size: ${this.size() ?? "A4"};
                 @top-left-corner { content: ${this.topLeftCorner() ?? ""}; }
@@ -81,6 +85,15 @@ export class PrintLayoutComponent {
                 @right-bottom { content: ${this.rightBottom() ?? ""}; }
             }
         `;
+    });
+
+    styleElement = computed(() => {
+        const style = document.createElement("style");
+        style.id = "print-layout-style";
+        style.innerHTML = this.printStyles();
+        style.type = "text/css";
+        style.media = "print";
+
         return style;
     });
 
@@ -93,9 +106,16 @@ export class PrintLayoutComponent {
         });
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
         if (this.isBrowser && this.openPrint()) {
-            window.print();
+            // alert("This is a print layout. Please use the browser's print functionality to print this page.");
+            // window.print();
+            // await delay(1000); // wait for the styles to be applied
+            // await printElement(this.doc, this.doc.body, {
+            //     customCSS: this.printStyles(),
+            //     copyStyles: false,
+            //     waitForImages: true,
+            // });
         }
     }
 }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Injector, computed, inject, input, model, runInInjectionContext } from "@angular/core";
+import { AfterViewInit, Component, Injector, SimpleChanges, computed, inject, input, model, output, runInInjectionContext } from "@angular/core";
 
 import { AuthService, IdPName } from "@upupa/auth";
 import { CommonModule } from "@angular/common";
@@ -8,6 +8,7 @@ import { FormScheme } from "@upupa/dynamic-form";
 import { defaultLoginFormFields } from "../default-values";
 import { FormHandler, loginErrorHandler, loginSuccessHandler } from "../types";
 import { GoogleIdProviderButton } from "../idps-buttons/google-login-button.component";
+import { DynamicComponent } from "@upupa/common";
 
 @Component({
     selector: "login",
@@ -20,9 +21,10 @@ export class LoginComponent implements AfterViewInit {
     readonly auth = inject(AuthService);
 
     fields = input<FormScheme>(defaultLoginFormFields);
-    providers = input<IdPName[]>(this.auth.IdProviders);
-    on_success = input<FormHandler, FormHandler>(loginSuccessHandler, { transform: (value: FormHandler | undefined) => value ?? loginSuccessHandler });
-    on_error = input<FormHandler, FormHandler>(loginErrorHandler, { transform: (value: FormHandler | undefined) => value ?? loginErrorHandler });
+    providers = input<IdPName[], IdPName[]>(this.auth.IdProviders, { transform: (providers) => providers ?? ["email-and-password"] });
+    externalLinks = input<DynamicComponent>(null);
+    login_success = output<{ value: any; provider: IdPName }>();
+    login_error = output<{ error: any; provider: IdPName }>();
 
     emailAndPasswordProvider = computed(() => this.providers().find((p) => p === "email-and-password"));
     idps = computed(() =>
@@ -33,7 +35,9 @@ export class LoginComponent implements AfterViewInit {
                 return { name: idp, provider: provider, options: provider.options };
             }),
     );
-
+    ngOnChanges(changes: SimpleChanges) {
+        console.log("Changes detected in LoginComponent:", changes);
+    }
     value = model<any>();
     injector = inject(Injector);
 
@@ -42,23 +46,17 @@ export class LoginComponent implements AfterViewInit {
     idpLogin(idp: IdPName) {
         try {
             const e = this.auth.signinWithProvider(idp);
-            this.onSuccess(e);
+            this.onSuccess({ value: e, provider: idp });
         } catch (e) {
-            this.onFailed(e);
+            this.onFailed({ error: e, provider: idp });
         }
     }
 
-    onSuccess(value: any) {
-        const cb = this.on_success();
-        if (cb && typeof cb === "function") {
-            runInInjectionContext(this.injector, () => cb(this, value));
-        }
+    onSuccess(value: any, provider?: IdPName) {
+        runInInjectionContext(this.injector, () => this.login_success.emit({ value, provider: provider ?? "email-and-password" }));
     }
 
-    onFailed(error: any) {
-        const cb = this.on_error();
-        if (cb && typeof cb === "function") {
-            runInInjectionContext(this.injector, () => cb(this, error));
-        }
+    onFailed(error: any, provider?: IdPName) {
+        runInInjectionContext(this.injector, () => this.login_error.emit({ error, provider: provider ?? "email-and-password" }));
     }
 }

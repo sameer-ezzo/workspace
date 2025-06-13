@@ -45,7 +45,7 @@ export type DynamicComponentRoute<T = any> = Omit<NamedRoute, "component" | "res
     component: Type<T>;
     resolve?: { [key in keyof ComponentInputs<T>]?: ResolveFn<unknown> } & Record<string, ResolveFn<unknown>>;
     data?: { [key in keyof ComponentInputs<T>]?: any } & Record<string, any>;
-    outputs?: Pick<DynamicComponent<T>, "outputs">;
+    outputs?: Pick<DynamicComponent<T>, "outputs">["outputs"];
     on?: (event: RouterEvent, snapshot: ActivatedRouteSnapshot) => void;
 };
 
@@ -100,7 +100,9 @@ export function provideRoute<T = any>(
 
     let route = _route as Route;
     route.runGuardsAndResolvers ??= "always";
-    if ("outputs" in route && route.outputs) route.data = { ...route.data, outputs: route.outputs };
+    if ("outputs" in route && route.outputs) {
+        route.data = { ...route.data, outputs: { ...route.data?.["outputs"], ...(route["outputs"] as DynamicComponentRoute["outputs"]) } };
+    }
 
     for (const modifier of features) {
         route = applyRouteFeature(route, modifier);
@@ -113,7 +115,7 @@ export function withAction(
         action: string;
         name?: string;
         path?: string;
-        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string, action?: string };
+        group?: string | { name?: string; text?: string; expanded?: boolean; icon?: string; action?: string };
     },
 ): RouteFeature {
     return {

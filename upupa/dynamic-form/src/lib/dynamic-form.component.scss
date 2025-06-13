@@ -55,7 +55,14 @@ form {
     }
 }
 mat-expansion-panel {
-    margin-block-end: 1rem;
+    // add margin block end to all expansion panels if the following sibling is not a mat-expansion-panel or last-child
+    margin-block-end: 0;
+    &:last-child {
+        margin-block-end: 1rem;
+    }
+    &:not(:last-child) ~ mat-expansion-panel {
+        margin-block-end: 1rem;
+    }
 }
 
 ::ng-deep .mat-expansion-panel-body {

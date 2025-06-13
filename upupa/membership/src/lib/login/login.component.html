@@ -1,5 +1,5 @@
 @if (emailAndPasswordProvider()) {
-    <login-form [fields]="fields()" (success)="onSuccess($event)" (fail)="onFailed($event)"></login-form>
+    <login-form [fields]="fields()" (success)="onSuccess($event)" [externalLinks]="externalLinks()" (fail)="onFailed($event)"></login-form>
 }
 @if (idps().length) {
     <div class="idps-container">
