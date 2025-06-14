@@ -74,15 +74,18 @@ export class MembershipSignupOptions extends BaseMembershipFormOptions {
 export function loginSuccessHandler(instance, response) {
     const router = inject(Router);
     const route = inject(ActivatedRoute);
-    const base_url = inject(LocationStrategy).getBaseHref();
+    const location = inject(LocationStrategy);
+    const base_url = location.getBaseHref();
+
     const { redirect, redirectTo } = route.snapshot.queryParams ?? {};
-    const redirectUrl = redirect ?? redirectTo ?? base_url;
-    router.navigateByUrl(decodeURIComponent(redirectUrl));
+    if (redirectTo || redirect) {
+        const redirectUrl = redirect ?? redirectTo ?? base_url;
+        router.navigateByUrl(decodeURIComponent(redirectUrl));
+    } else location.back();
 }
 
 export function loginErrorHandler(instance, error) {
-    const snack = inject(SnackBarService);
-    snack.openFailed(error.message);
+    inject(SnackBarService).openFailed(error.message);
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
     constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {

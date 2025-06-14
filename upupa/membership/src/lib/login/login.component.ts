@@ -6,9 +6,12 @@ import { LoginFormComponent } from "../login-form/login-form.component";
 import { MatButtonModule } from "@angular/material/button";
 import { FormScheme } from "@upupa/dynamic-form";
 import { defaultLoginFormFields } from "../default-values";
-import { FormHandler, loginErrorHandler, loginSuccessHandler } from "../types";
+
 import { GoogleIdProviderButton } from "../idps-buttons/google-login-button.component";
 import { DynamicComponent } from "@upupa/common";
+
+const loginFormMatcher = (provider) => provider === "email-and-password" || provider === "username-and-password";
+const loginFormProviders = (providers) => providers.filter(loginFormMatcher);
 
 @Component({
     selector: "login",
@@ -17,31 +20,30 @@ import { DynamicComponent } from "@upupa/common";
     imports: [LoginFormComponent, MatButtonModule, CommonModule, GoogleIdProviderButton],
     host: { class: "login-page" },
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent {
     readonly auth = inject(AuthService);
+    injector = inject(Injector);
 
+    value = model<any>();
     fields = input<FormScheme>(defaultLoginFormFields);
-    providers = input<IdPName[], IdPName[]>(this.auth.IdProviders, { transform: (providers) => providers ?? ["email-and-password"] });
+    providers = input<IdPName[], IdPName[]>(this.auth.IdProviders, { transform: (providers) => providers ?? [] });
     externalLinks = input<DynamicComponent>(null);
-    login_success = output<{ value: any; provider: IdPName }>();
-    login_error = output<{ error: any; provider: IdPName }>();
+    on_success = output<{ value: any; provider: IdPName }>();
+    on_error = output<{ error: any; provider: IdPName }>();
 
-    emailAndPasswordProvider = computed(() => this.providers().find((p) => p === "email-and-password"));
+    emailAndPasswordProvider = computed(() => loginFormProviders(this.providers()));
     idps = computed(() =>
         this.providers()
-            .filter((p) => p !== "email-and-password")
+            .filter((p) => !loginFormMatcher(p))
             .map((idp) => {
                 const provider = this.auth.getProviderByName(idp);
                 return { name: idp, provider: provider, options: provider.options };
             }),
     );
-    ngOnChanges(changes: SimpleChanges) {
-        console.log("Changes detected in LoginComponent:", changes);
-    }
-    value = model<any>();
-    injector = inject(Injector);
 
-    ngAfterViewInit(): void {}
+    ngOnChanges(changes: SimpleChanges) {
+        console.log("LoginComponent changes", changes);
+    }
 
     idpLogin(idp: IdPName) {
         try {
@@ -53,10 +55,10 @@ export class LoginComponent implements AfterViewInit {
     }
 
     onSuccess(value: any, provider?: IdPName) {
-        runInInjectionContext(this.injector, () => this.login_success.emit({ value, provider: provider ?? "email-and-password" }));
+        runInInjectionContext(this.injector, () => this.on_success.emit({ value, provider: provider }));
     }
 
     onFailed(error: any, provider?: IdPName) {
-        runInInjectionContext(this.injector, () => this.login_error.emit({ error, provider: provider ?? "email-and-password" }));
+        runInInjectionContext(this.injector, () => this.on_error.emit({ error, provider: provider }));
     }
 }

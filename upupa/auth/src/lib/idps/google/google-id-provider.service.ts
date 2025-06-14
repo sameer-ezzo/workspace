@@ -2,6 +2,7 @@ import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { inject, Injectable, InjectionToken, LOCALE_ID, NgZone, PLATFORM_ID } from "@angular/core";
 import { IdPName, IdProviderOptions } from "../types";
 import { loadScript } from "@noah-ark/common";
+import { preferTheme } from "./google.idp";
 
 declare let google: any;
 
@@ -43,7 +44,7 @@ export class GoogleIdProviderService implements IdProviderService<"google"> {
         await this.init(cb); // Ensure Google API is initialized
 
         google.accounts.id.renderButton(el, {
-            theme: "outline",
+            theme: preferTheme(),
             size: "large",
             locale: browserLocale,
             ...this.options.options.customize,
