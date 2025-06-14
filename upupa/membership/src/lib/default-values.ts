@@ -1,5 +1,7 @@
-import { PasswordStrength } from "@noah-ark/common";
+
 import { Field, formInput, formScheme, FormScheme, hiddenField, switchField } from "@upupa/dynamic-form";
+import { PasswordStrength } from "@noah-ark/common";
+
 import { ɵ$localize } from "@angular/localize";
 
 export const defaultVerifyCodeField: FormScheme = {
@@ -26,11 +28,11 @@ export class LoginWithUsernameFormViewModel {
         input: "password",
         label: $localize`Password`,
         placeholder: $localize`Enter your password`,
-        passwordStrength: new PasswordStrength(),
+        passwordStrength: null,
         showConfirmPasswordInput: false,
     })
     password = "";
-    @formInput({ input: "switch", label: $localize`Remember Me` })
+    @formInput({ input: "switch", template: 'checkbox', label: $localize`Remember Me` })
     rememberMe = true;
 }
 
@@ -42,11 +44,11 @@ export class LoginWithEmailFormViewModel {
         input: "password",
         label: $localize`Password`,
         placeholder: $localize`Enter your password`,
-        passwordStrength: new PasswordStrength(),
+        passwordStrength: null,
         showConfirmPasswordInput: false,
     })
     password = "";
-    @formInput({ input: "switch", label: $localize`Remember Me` })
+    @formInput({ input: "switch", template: 'checkbox', label: $localize`Remember Me` })
     rememberMe = true;
 }
 export const defaultEmailField: Field = {
