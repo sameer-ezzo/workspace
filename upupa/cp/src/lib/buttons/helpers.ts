@@ -1,5 +1,5 @@
 import { Component, input, inject, Type, Injector, runInInjectionContext, output, viewChild } from "@angular/core";
-import { ActionDescriptor, ActionEvent, deepAssign, DynamicComponent } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, DynamicComponent } from "@upupa/common";
 import { ConfirmOptions, ConfirmService, DialogConfig, SnackBarService } from "@upupa/dialog";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { firstValueFrom } from "rxjs";
@@ -7,6 +7,7 @@ import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { EmbedTranslationButton, LinkTranslationButton, translateButton, TranslationButtonComp } from "./translate-btn.component";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
+import { $localize } from "@angular/localize/init";
 
 @Component({
     selector: "inline-button",
@@ -111,14 +112,17 @@ export function deleteButton(
 ): Type<any> | DynamicComponent {
     options ??= {};
     const defaultDeleteDescriptor: Partial<ActionDescriptor> = {
-        text: "Delete",
+        text: $localize`Delete`,
         icon: "delete",
         variant: "icon",
         color: "warn",
     };
     options.descriptor = { ...defaultDeleteDescriptor, ...options.descriptor };
 
-    const confirmOptions = { ...{ title: "Delete", confirmText: "Are you sure you want to delete this item?", no: "Keep it", yes: "Delete" }, ...options?.confirm };
+    const confirmOptions = {
+        ...{ title: $localize`Delete`, confirmText: $localize`Are you sure you want to delete this item?`, no: $localize`Keep it`, yes: $localize`Delete` },
+        ...options?.confirm,
+    };
     return inlineButton({
         descriptor: options.descriptor,
         clicked: (source) => {

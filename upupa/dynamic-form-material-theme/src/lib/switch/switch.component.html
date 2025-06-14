@@ -1,32 +1,18 @@
-<div style="margin: 0; display: flex; align-items: flex-start">
-    @if (!template()) {
-        <mat-slide-toggle
-            #_inputElement
-            style="max-width: 40px; margin-inline-end: 0.5rem"
-            [checked]="value()"
-            (change)="handleUserInput($event.checked)"
-            (blur)="markAsTouched()"
-            [attr.name]="name()"
-            [formControl]="control()"
-        >
-        </mat-slide-toggle>
-    }
-    @if (template()) {
-        <mat-checkbox
-            #_inputElement
-            style="max-width: 40px; margin-inline-end: 0.5rem"
-            [checked]="value()"
-            (change)="handleUserInput($event.checked)"
-            (blur)="markAsTouched()"
-            [attr.name]="name()"
-            [formControl]="control()"
-        >
-        </mat-checkbox>
-    }
-    @if (label()) {
-        <paragraph (click)="toggle()" [text]="label()" [renderer]="renderer()"></paragraph>
-    }
-</div>
+@if (template() === "toggle") {
+    <mat-slide-toggle #_inputElement [checked]="value()" (change)="handleUserInput($event.checked)" (blur)="markAsTouched()" [attr.name]="name()" [formControl]="control()">
+        @if (label()) {
+            <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+        }
+    </mat-slide-toggle>
+}
+@if (template() === "checkbox") {
+    <mat-checkbox #_inputElement [checked]="value()" (change)="handleUserInput($event.checked)" (blur)="markAsTouched()" [attr.name]="name()" [formControl]="control()">
+        @if (label()) {
+            <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+        }
+    </mat-checkbox>
+}
+
 @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
 }

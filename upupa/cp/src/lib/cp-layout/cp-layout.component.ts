@@ -13,7 +13,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { AuthorizeActionDirective, AuthzDirective } from "@upupa/authz";
 import { MatButtonModule } from "@angular/material/button";
 import { from, map, Observable, of } from "rxjs";
-import { MatDivider } from "@angular/material/divider";
 import { DynamicComponent, PortalComponent } from "@upupa/common";
 
 function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewModel> | Observable<SideBarViewModel>) {
@@ -34,7 +33,6 @@ function sideBarItemsTransform(items: SideBarViewModel | Promise<SideBarViewMode
         RouterModule,
         MatSidenavModule,
         MatExpansionModule,
-        MatDivider,
         PortalComponent,
         AuthzDirective,
         AuthorizeActionDirective,

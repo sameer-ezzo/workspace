@@ -20,6 +20,9 @@ import { MatInputComponent } from "../input/input.component";
     ],
     imports: [MatCheckbox, UtilsModule, MatSlideToggle, MatError, MatHint, ParagraphComponent, ReactiveFormsModule, ErrorsDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "[class]": "template()",
+    },
 })
 export class MatSwitchComponent extends MatInputComponent<boolean> {
     template = input<"checkbox" | "toggle", "checkbox" | "toggle">("toggle", { transform: (v) => v ?? "toggle" });
