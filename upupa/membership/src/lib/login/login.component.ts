@@ -41,10 +41,6 @@ export class LoginComponent {
             }),
     );
 
-    ngOnChanges(changes: SimpleChanges) {
-        console.log("LoginComponent changes", changes);
-    }
-
     idpLogin(idp: IdPName) {
         try {
             const e = this.auth.signinWithProvider(idp);

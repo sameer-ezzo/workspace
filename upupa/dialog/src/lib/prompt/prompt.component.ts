@@ -80,6 +80,11 @@ export class PromptComponent<T = string> implements OnChanges {
         this.valueFormControl.markAsTouched();
         e?.stopPropagation();
         e?.preventDefault();
+        this.doSubmit();
+    }
+
+    doSubmit(): void {
+        this.valueFormControl.markAsTouched();
 
         if (this.valueFormControl.invalid) return;
         runInInjectionContext(this.injector, () => {

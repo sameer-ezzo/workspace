@@ -65,7 +65,7 @@ export class PromptService {
                                     action: async (e) => {
                                         const dialogRef = inject(DialogRef);
                                         const compRef = await firstValueFrom(dialogRef.afterAttached());
-                                        compRef.instance.submitOnEnter(e);
+                                        compRef.instance.doSubmit();
                                     },
                                 },
                             },
