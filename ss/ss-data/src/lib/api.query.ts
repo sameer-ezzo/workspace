@@ -394,7 +394,7 @@ export class QueryParser {
         let fields2: { [field: string]: any } | undefined;
         let fields3: { [field: string]: any } | undefined;
         let lookups: Lookup[] = [];
-        let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
+        let lookupsMatch: { from: string; foreignField: string; localField: string; pipeline: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
         let $text: string;
@@ -457,14 +457,15 @@ export class QueryParser {
                     let p = l.split(":");
 
                     const [from, foreignField, localField, as] = p;
-                    const match = [];
+                    const pipeline = [];
                     p = p.slice(p[4] === "unwind" ? 5 : 4); // skip unwind if exists
+                    logger.info("LOOKUP_MATCH", { from, foreignField, localField, as, pipeline: p });
                     for (let i = 0; i < p.length; i += 2) {
                         const exp = this.parseExpression(p[i], p[i + 1], model);
                         if (!exp) continue;
-                        match.push(exp);
+                        pipeline.push(exp);
                     }
-                    return { from, foreignField, localField, as, match };
+                    return { from, foreignField, localField, as, pipeline };
                 });
             } else if (x.value) {
                 const exp = this.parseExpression(x.key, x.value, model);

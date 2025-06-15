@@ -48,6 +48,8 @@ export class DataListComponent<T = any[]> implements AfterViewInit, OnDestroy, C
     readonly injector = inject(Injector);
     readonly route = inject(ActivatedRoute);
 
+    lazyLoadData = input(false);
+
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
             if (c instanceof Type) return { component: c };
