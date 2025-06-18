@@ -34,7 +34,7 @@ export class MatBtnComponent {
 
     context = input(undefined);
     data = input<any>();
-    private readonly injector = inject(Injector);
+    readonly injector = inject(Injector);
     async onAction(event: Event) {
         event.preventDefault();
         event.stopPropagation();

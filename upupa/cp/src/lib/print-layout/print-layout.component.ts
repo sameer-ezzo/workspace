@@ -98,7 +98,7 @@ export class PrintLayoutComponent {
     styleElement = computed(() => {
         const style = document.createElement("style");
         style.id = "print-layout-style";
-        style.innerHTML = this.printStyles();
+        style.textContent = this.printStyles();
         style.type = "text/css";
         style.media = "print";
 
