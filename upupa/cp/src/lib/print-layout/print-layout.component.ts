@@ -84,6 +84,14 @@ export class PrintLayoutComponent {
                 @right-middle { content: ${this.rightMiddle() ?? ""}; }
                 @right-bottom { content: ${this.rightBottom() ?? ""}; }
             }
+                html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+
+            }
         `;
     });
 
@@ -106,15 +114,16 @@ export class PrintLayoutComponent {
         });
     }
 
+    doc = inject(DOCUMENT);
     async ngAfterViewInit() {
         if (this.isBrowser && this.openPrint()) {
             // alert("This is a print layout. Please use the browser's print functionality to print this page.");
-            // window.print();
+            window.print();
             // await delay(1000); // wait for the styles to be applied
             // await printElement(this.doc, this.doc.body, {
-            //     customCSS: this.printStyles(),
-            //     copyStyles: false,
-            //     waitForImages: true,
+            // customCSS: this.printStyles(),
+            // copyStyles: false,
+            // waitForImages: true,
             // });
         }
     }
