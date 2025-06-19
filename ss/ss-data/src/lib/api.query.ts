@@ -305,7 +305,10 @@ export class QueryParser {
         const keyType = key && model ? (this.getPathType(key, model, value) ?? "String") : "String";
         if (keyType === "String") return value;
         if (keyType === "Date") return new Date(value);
-        if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
+        if (keyType === "ObjectId") {
+            if (Array.isArray(value)) return value.map((v) => (ObjectId.isValid(v) ? new ObjectId(v) : v));
+            return ObjectId.isValid(value) ? new ObjectId(value) : value;
+        }
         if (keyType === "Number") return +value;
         if (keyType === "Array") {
             if (Array.isArray(value)) return value.map((x) => this.autoParseValue(x, key + "[0]", model));
@@ -493,6 +496,7 @@ export class QueryParser {
                 group.items = items;
             }
         }
+
         return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch, $text };
     }
     // private _replaceRootWithLocale(locale: string): any[] {
