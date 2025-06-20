@@ -1,16 +1,17 @@
-import { Inject, Injectable, LOCALE_ID, inject } from "@angular/core";
+import { Inject, Injectable, inject } from "@angular/core";
 import { Router, ActivationEnd } from "@angular/router";
-import { distinctUntilChanged, filter, map, shareReplay, startWith } from "rxjs/operators";
+import { distinctUntilChanged, shareReplay } from "rxjs/operators";
 import { BehaviorSubject, ReplaySubject } from "rxjs";
 import { DEFAULT_LANG, ROUTE_VARIABLE_NAME } from "./di.token";
 import { Direction, languageDir, languagesList } from "./iso.languages";
 import { DOCUMENT } from "@angular/common";
+import { language } from "@upupa/common";
 
 @Injectable({
     providedIn: "root",
 })
 export class LanguageService {
-    private _language: string | null = inject(LOCALE_ID);
+    private _language: string | null = language();
     private readonly _language$ = new ReplaySubject<string>(1);
     readonly language$ = this._language$.asObservable().pipe(distinctUntilChanged(), shareReplay(1));
 

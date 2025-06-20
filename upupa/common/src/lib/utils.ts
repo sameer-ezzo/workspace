@@ -1,4 +1,4 @@
-import { OutputEmitterRef, DestroyRef } from "@angular/core";
+import { OutputEmitterRef, DestroyRef, inject, LOCALE_ID } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Observable, ReplaySubject } from "rxjs";
 import { ComponentOutputs } from "./dynamic-component";
@@ -36,4 +36,12 @@ export function isClass(func) {
 
 export function isSignal(func) {
     return typeof func === "function" && func[SIGNAL];
+}
+
+export function local() {
+    return inject(LOCALE_ID);
+}
+
+export function language() {
+    return local().split("-")[0];
 }
