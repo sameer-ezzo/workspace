@@ -35,8 +35,13 @@ export class UploadService {
                 } else if (event instanceof HttpResponse) {
                     task.progress$.complete();
                     const body = event.body.streams ? event.body.streams : event.body[0];
-                    task.response$.next(body); //todo maybe upload is complex and multiple streams got sent in the same response
-                    task.response$.complete();
+                    if (body) {
+                        task.response$.next(body); //todo maybe upload is complex and multiple streams got sent in the same response
+                        task.response$.complete();
+                    } else {
+                        task.progress$.error({ error: new Error("No file uploaded") });
+                        task.response$.error({ error: new Error("No file uploaded") });
+                    }
                 }
             },
             error: (err: HttpErrorResponse) => {
