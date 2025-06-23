@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, forwardRef, input } from "@angular/core";
+import { Component, computed, forwardRef, input, model, SimpleChanges } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
@@ -36,8 +36,8 @@ export class MatNumbersRangeComponent<T = number> extends InputBaseComponent {
         transform: (v: number) => Math.max(5, v),
     });
 
-    from: any;
-    to: any;
+    from = model<T | undefined>(undefined);
+    to = model<T | undefined>(undefined);
 
     _items = [];
     _options: {
@@ -61,6 +61,38 @@ export class MatNumbersRangeComponent<T = number> extends InputBaseComponent {
     items = computed(() => {
         return new Array(this.ceiling() - this.floor()).fill(0).map((_, i) => i);
     });
+
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        await super.ngOnChanges(changes);
+        console.log("MatNumbersRangeComponent ngOnChanges", changes);
+        
+        if (changes["from"] || changes["to"]) {
+            this.value.set({
+                from: this.from(),
+                to: this.to(),
+            });
+        }
+        if (changes["control"] && this.control()) {
+            this.value.set(this.control().value);
+        }
+        if (changes["value"]) {
+            const value = this.value();
+            if (value) {
+                this.from.set(value.from);
+                this.to.set(value.to);
+            } else {
+                this.from.set(undefined);
+                this.to.set(undefined);
+            }
+        }
+    }
+
+    updateValue() {
+        this.handleUserInput({
+            from: this.from(),
+            to: this.to(),
+        });
+    }
 
     // override propagateChange() {
 

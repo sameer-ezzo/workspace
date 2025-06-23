@@ -64,9 +64,9 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
             const isDisabled = this.disabled(); // if required is false, we consider it as disabled
 
             if (isDisabled) {
-                this._ngControl.control?.disable({ emitEvent: false });
+                this._ngControl?.control?.disable({ emitEvent: false });
             } else {
-                this._ngControl.control?.enable({ emitEvent: false });
+                this._ngControl?.control?.enable({ emitEvent: false });
             }
         }
     }
