@@ -111,13 +111,19 @@ export class MatAddressComponent extends InputBaseComponent<AddressModel> {
         });
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        await super.ngOnChanges(changes);
         if (changes["required"]) {
             if (this.required()) this.addressFormGroup.setValidators([Validators.required]);
         }
-        if (this.readonly() === true) {
-            this.addressFormGroup.disable();
-        } else this.addressFormGroup.enable();
+        if (changes["required"] || changes["disabled"]) {
+            const isDisabled = this.disabled() || this.readonly();
+            if (isDisabled) {
+                this.addressFormGroup.disable({ emitEvent: false });
+            } else {
+                this.addressFormGroup.enable({ emitEvent: false });
+            }
+        }
     }
 
     onSubmit(x) {}

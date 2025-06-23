@@ -142,6 +142,15 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
             const v = Array.isArray(value) ? value : [value];
             this.select(v);
         }
+
+        if (changes["disabled"]) {
+            const isDisabled = this.disabled(); // if required is false, we consider it as disabled
+            if (isDisabled) {
+                this._ngControl.control?.disable({ emitEvent: false });
+            } else {
+                this._ngControl.control?.enable({ emitEvent: false });
+            }
+        }
     }
 
     injector = inject(Injector);

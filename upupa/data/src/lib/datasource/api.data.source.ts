@@ -82,7 +82,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
     async put(item: T, value: Partial<T>) {
         const key = item?.[this.key];
         if (key == undefined) throw new Error("Item has no key");
-        const { document } = await this.dataService.put(`${this.pathname}/${key}`, value);
+        const document = await this.dataService.put(`${this.pathname}/${key}`, value);
         return document as T;
     }
 

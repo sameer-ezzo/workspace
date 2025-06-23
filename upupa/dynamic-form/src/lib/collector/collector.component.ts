@@ -88,7 +88,8 @@ export class CollectorComponent<T = any> extends InputBaseComponent<T> {
 
     private readonly document = inject(DOCUMENT);
 
-    async ngOnChanges(changes: SimpleChanges) {
+    override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
         if (changes["design"]) applyFormDesign(this.document, this.design(), this.document.documentElement);
         if (changes["fields"] || changes["focusedField"]) {
             if (this.pages?.length === 0) this.populatePagesInFields();

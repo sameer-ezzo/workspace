@@ -118,7 +118,7 @@ export function formScheme(options?: DynamicFormOptions) {
     };
 }
 
-export function formAction(action: Partial<ActionDescriptor> & { order?: number },stateFn?:()=>void) {
+export function formAction(action: Partial<ActionDescriptor> & { order?: number }, stateFn?: () => void) {
     return function (property: any, propertyKey: string) {
         const formMetadata = reflectFormMetadata(property.constructor) ?? createFormMetadata();
         formMetadata.actions ??= [];
@@ -200,6 +200,7 @@ export function formInputArray(
             ...options,
             input: "table",
             inputs: {
+                ...options?.inputs,
                 viewModel: tableViewModel,
                 tableHeaderComponent: {
                     component: ArrayFormTableHeaderComponent,

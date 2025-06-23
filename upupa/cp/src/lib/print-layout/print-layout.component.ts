@@ -117,14 +117,8 @@ export class PrintLayoutComponent {
     doc = inject(DOCUMENT);
     async ngAfterViewInit() {
         if (this.isBrowser && this.openPrint()) {
-            // alert("This is a print layout. Please use the browser's print functionality to print this page.");
             window.print();
-            // await delay(1000); // wait for the styles to be applied
-            // await printElement(this.doc, this.doc.body, {
-            // customCSS: this.printStyles(),
-            // copyStyles: false,
-            // waitForImages: true,
-            // });
+            window.close();
         }
     }
 }

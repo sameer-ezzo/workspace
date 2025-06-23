@@ -5,7 +5,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { Class } from "@noah-ark/common";
 import { DynamicComponent, InputBaseComponent, PortalComponent } from "@upupa/common";
-import { ClientDataSource, DataAdapter, DataAdapterCRUDEvent } from "@upupa/data";
+import { ClientDataSource, DataAdapter, DataAdapterCRUDEvent, NormalizedItem } from "@upupa/data";
 
 import { DataTableComponent, reflectTableViewModel } from "@upupa/table";
 
@@ -29,6 +29,8 @@ import { DataTableComponent, reflectTableViewModel } from "@upupa/table";
 export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);
     label = input("");
+    rowClass = input<(item: NormalizedItem<T>) => string>((item) => (item.key ?? item).toString());
+
     // todo: pass key property (_id passed to the dataSource to identify the unique key of the data source)
     readonly dataSource = new ClientDataSource<T>([], "_id" as keyof T);
     readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as keyof T, undefined, undefined, undefined, {
@@ -63,7 +65,8 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     updateValueFromDataSource() {
         this.handleUserInput(this.dataSource.all());
     }
-    ngOnChanges(changes: SimpleChanges) {
+    override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
         if (changes["value"]) {
             this.dataSource.all = this.value();
         }

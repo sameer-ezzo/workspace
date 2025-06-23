@@ -1,12 +1,26 @@
 @if (template() === "toggle") {
-    <mat-slide-toggle #_inputElement [checked]="value()" (change)="handleUserInput($event.checked)" (blur)="markAsTouched()" [attr.name]="name()" [formControl]="control()">
+    <mat-slide-toggle
+        #_inputElement
+        [checked]="value()"
+        (change)="handleUserInput($event.checked)"
+        (blur)="markAsTouched()"
+        [attr.name]="name()"
+        [formControl]="control()"
+    >
         @if (label()) {
             <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
         }
     </mat-slide-toggle>
 }
 @if (template() === "checkbox") {
-    <mat-checkbox #_inputElement [checked]="value()" (change)="handleUserInput($event.checked)" (blur)="markAsTouched()" [attr.name]="name()" [formControl]="control()">
+    <mat-checkbox
+        #_inputElement
+        [checked]="value()"
+        (change)="handleUserInput($event.checked)"
+        (blur)="markAsTouched()"
+        [attr.name]="name()"
+        [formControl]="control()"
+    >
         @if (label()) {
             <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
         }

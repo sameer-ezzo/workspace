@@ -160,7 +160,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
         if (this.editor) this.editor.setData(value || "", { internal: true });
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        await super.ngOnChanges(changes);
         if (changes["value"]) {
             this.editor?.setData(this.value() ?? "");
         }
