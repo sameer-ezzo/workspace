@@ -1,22 +1,10 @@
-<mat-form-field
-    [appearance]="appearance()"
-    [floatLabel]="floatLabel()"
-    style="width: 100%"
->
+<mat-form-field [appearance]="appearance()" [floatLabel]="floatLabel()" style="width: 100%">
     @if (label()) {
-    <mat-label>{{ label() }}</mat-label>
+        <mat-label>{{ label() }}</mat-label>
     }
-    <mat-date-range-input [rangePicker]="picker">
-        <input
-            matStartDate
-            [(ngModel)]="from"
-            (ngModelChange)="markAsTouched(); propagateChange()"
-        />
-        <input
-            matEndDate
-            [(ngModel)]="to"
-            (ngModelChange)="markAsTouched(); propagateChange()"
-        />
+    <mat-date-range-input [formGroup]="rangeForm" [rangePicker]="picker" [dateFilter]="filterFn()">
+        <input matStartDate formControlName="start" />
+        <input matEndDate formControlName="end" />
     </mat-date-range-input>
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
     <mat-date-range-picker #picker></mat-date-range-picker>

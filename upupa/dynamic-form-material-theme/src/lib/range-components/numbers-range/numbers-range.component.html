@@ -1,13 +1,13 @@
 @if (label()) {
     <mat-label>{{ label() }}</mat-label>
 }
-<div style="display: flex; width: 100%">
+<div style="display: flex; width: 100%" [formGroup]="rangeForm" class="numbers-range">
     <mat-form-field style="flex: 1" [appearance]="appearance()" [floatLabel]="floatLabel()">
-        <input type="number" placeholder="Min" matInput [(ngModel)]="from" (ngModelChange)="updateValue()" (blur)="markAsTouched()" />
+        <input type="number" placeholder="Min" matInput matStartDate formControlName="start" (blur)="markAsTouched()" />
     </mat-form-field>
     <span style="min-width: 5px"></span>
     <mat-form-field style="flex: 1" [appearance]="appearance()" [floatLabel]="floatLabel()">
-        <input type="number" placeholder="Max" matInput [(ngModel)]="to" (ngModelChange)="updateValue()" (blur)="markAsTouched()" />
+        <input type="number" placeholder="Max" matInput matEndDate formControlName="end" (blur)="markAsTouched()" />
     </mat-form-field>
 </div>
 @if (hint()) {
