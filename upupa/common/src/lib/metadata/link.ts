@@ -30,6 +30,16 @@ interface LinkStylesheet extends BaseLinkProps {
     type?: "text/css"; // Often omitted as it's the default
     // media, title, integrity, fetchpriority, crossorigin are inherited optionally
 }
+interface LinkScript extends BaseLinkProps {
+    rel: "script";
+    src?: string;
+    content?: string;
+    type?: "text/javascript" | "module"; // 'module' for ES modules, 'text/javascript' is default
+    async?: boolean; // Load asynchronously
+    defer?: boolean; // Defer execution until after the document has been parsed
+
+    // crossorigin, integrity are inherited optionally
+}
 
 interface LinkIcon extends BaseLinkProps {
     rel: "icon" | "shortcut icon"; // 'shortcut icon' is non-standard but common
@@ -225,12 +235,19 @@ export class StylesheetTag {
 export class ScriptTag {
     type = "text/javascript";
     rel = "script";
-    content: string;
+    content?: string;
+    src?: string;
     attributes?: Record<string, string>;
 
-    constructor(props: Partial<Omit<LinkStylesheet, "rel" | "type">> & { content: string }) {
-        this.content = props.content;
-        delete props.content;
+    constructor(props: Partial<LinkScript>) {
+        this.content = props['content'];
+        delete props['content'];
+        this.src = props['src'];
+        delete props['src'];
+        this.type = props['type'] || "text/javascript";
+        delete props['type'];
+        this.rel = props['rel'] || "script";
+        delete props['rel'];
         this.attributes = { ...props } as unknown as Record<string, string>;
     }
 }
@@ -271,11 +288,23 @@ function createStylesheetTag(dom: Document, tag: StylesheetTag): HTMLStyleElemen
 }
 
 function createScriptTag(dom: Document, tag: ScriptTag): HTMLScriptElement {
+
+    if (tag.src) {
+        const el: HTMLScriptElement = dom.createElement("script");
+        el.src = tag.src;
+        el.type = tag.type || "text/javascript";
+        if (tag.attributes) {
+            for (const [key, value] of Object.entries(tag.attributes)) {
+                el.setAttribute(key, value);
+            }
+        }
+        dom.querySelector(`script[src="${tag.src}"]`)?.remove();
+        return el;
+    }
     if (!tag.content) {
         console.debug("Script tag is missing content", tag);
         return undefined as unknown as HTMLScriptElement;
     }
-
     const el: HTMLScriptElement = dom.createElement("script");
     el.type = tag.type;
     el.textContent = tag.content;

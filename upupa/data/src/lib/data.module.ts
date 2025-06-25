@@ -3,16 +3,18 @@ import { APIBASE } from "./di.token";
 import { DataConfig } from "./model";
 import { DOCUMENT } from "@angular/common";
 
-export function provideApi(api_base: string, config?: DataConfig) {
+type ProviderValue<T = string> = T | (() => T | Promise<T>);
+export function provideApi(api_base: ProviderValue, config?: DataConfig) {
     return makeEnvironmentProviders([
         {
             provide: APIBASE,
-            useFactory: (doc: Document) => {
-                api_base = (api_base.length ? api_base : "/api").trim().toLocaleLowerCase();
-                if (api_base.startsWith("http")) return api_base;
-                const base = `${doc.location.protocol}//${doc.location.hostname}`;
-                const url = new URL(api_base, base).toString();
-                return url;
+            useFactory: async (doc: Document) => {
+                const fn = typeof api_base === "function" ? api_base : () => api_base;
+                const url = ((await fn()) ?? "/api").trim();
+                if (url.startsWith("http")) return url;
+                const base = doc.location.origin;
+                const apiUrl = new URL(url, base).toString();
+                return apiUrl;
             },
             deps: [DOCUMENT],
         },

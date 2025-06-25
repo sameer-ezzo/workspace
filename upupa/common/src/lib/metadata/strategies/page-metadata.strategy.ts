@@ -5,8 +5,14 @@ import { PageMetadata } from "../models";
 import { createTag, LinkTag, MetaTag, TitleMetaTag } from "../link";
 
 export const CONTENT_METADATA_CONFIG = new InjectionToken<ContentMetadataConfig>("CONTENT_METADATA_CONFIG");
-const stripLeadingSlashes = (path: string) => path.replace(/^\/+/, "");
-const stripTrailingSlashes = (path: string) => path.replace(/\/+$/, "");
+const stripLeadingSlashes = (path: string) => {
+    path ??= "";
+    return path.startsWith("/") ? path.slice(1) : path;
+};
+const stripTrailingSlashes = (path: string) => {
+    path ??= "";
+    return path.endsWith("/") ? path.slice(0, -1) : path;
+};
 
 export function resourceLinkNormalize(baseUrl: string, path: string) {
     path = stripLeadingSlashes((path || "").trim());
@@ -24,6 +30,7 @@ export type MetaImageLinkOptions = {
 
 export function metaImageLinkNormalize(
     baseUrl: string,
+    baseHref: string,
     path: string,
     options: Partial<MetaImageLinkOptions> = {
         view: { attachment: "inline" },
@@ -35,34 +42,34 @@ export function metaImageLinkNormalize(
     delete options.view;
 
     baseUrl = stripTrailingSlashes(baseUrl);
+    baseHref = baseHref || "/";
     path = stripLeadingSlashes((path || "").trim());
-    let src = "";
-    if (!path.length) src = baseUrl;
-    else if (path.startsWith("http")) src = path;
-    else src = baseUrl + "/" + path;
 
-    const [base, qps] = src.split("?");
-    const queryParams = (qps || "").split("&").map((q) => q.split("="));
+    if (path.startsWith("http")) return path;
+    else if (path.startsWith("storage/")) {
+        const [base, qps] = (baseUrl + "/" + path).split("?");
+        const queryParams = (qps || "").split("&").map((q) => q.split("="));
 
-    const imageResizeOptions = new Map<string, string>(Object.entries(options as Record<string, string>));
-    if (attachment) imageResizeOptions.set("attachment", attachment);
-    if (w || h || attachment) imageResizeOptions.set("view", "1");
-    if (w) imageResizeOptions.set("w", w + "");
-    if (h) imageResizeOptions.set("h", h + "");
+        const imageResizeOptions = new Map<string, string>(Object.entries(options as Record<string, string>));
+        if (attachment) imageResizeOptions.set("attachment", attachment);
+        if (w) imageResizeOptions.set("w", w + "");
+        if (h) imageResizeOptions.set("h", h + "");
 
-    for (const q of queryParams) {
-        if (q[0] === "attachment") continue;
-        if (!q[0] || !q[1]) continue;
-        if (q[1] === "undefined") continue;
-        imageResizeOptions.set(q[0], q[1]);
+        for (const q of queryParams) {
+            if (q[0] === "attachment") continue;
+            if (!q[0] || !q[1]) continue;
+            if (q[1] === "undefined") continue;
+            imageResizeOptions.set(q[0], q[1]);
+        }
+        const qStr =
+            "?" +
+            Array.from(imageResizeOptions.entries())
+                .map(([k, v]) => `${k}=${v}`)
+                .join("&");
+
+        return base + qStr;
     }
-    const qStr =
-        "?" +
-        Array.from(imageResizeOptions.entries())
-            .map(([k, v]) => `${k}=${v}`)
-            .join("&");
-
-    return base + qStr;
+    return baseHref + path;
 }
 
 export type ContentMetadataConfig<M = PageMetadata> = {

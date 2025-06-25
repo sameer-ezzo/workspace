@@ -1,5 +1,5 @@
 import { map, multicast, refCount, startWith } from "rxjs/operators";
-import { afterNextRender, Injectable } from "@angular/core";
+import { afterNextRender, inject, Injectable } from "@angular/core";
 import { Observable, ReplaySubject, interval, NEVER, combineLatest, firstValueFrom } from "rxjs";
 import { LocalService } from "./local.service";
 import { DataResult, DataConfig } from "./model";
@@ -31,7 +31,9 @@ export class DataService {
 
     private readonly cache = new CacheStore<DataListener>();
 
-    constructor(public readonly api: ApiService) {
+    readonly api = inject(ApiService);
+    
+    constructor() {
         afterNextRender(() => {
             interval(10000).subscribe(() => this.recycleCache());
         });
