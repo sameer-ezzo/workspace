@@ -1,7 +1,5 @@
 @let _secondaryRows = secondaryRows() | keyvalue;
-<span class="table-header">
-    <ng-content select=".table-header"></ng-content>
-</span>
+<ng-content select=".table-header"><div class="table-header"></div> </ng-content>
 
 <div class="table-container">
     @if (adapter().loading()) {
