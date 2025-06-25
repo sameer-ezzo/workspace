@@ -53,7 +53,8 @@ export class LocalFileInputComponent extends InputBaseComponent implements OnCha
     auth = inject(AuthService);
     dialog = inject(DialogService);
 
-    ngOnChanges(changes: SimpleChanges): void {
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        await super.ngOnChanges(changes);
         if (this.includeAccess() === true) {
             this.auth.token$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => this.access_token.set(`?access_token=${t}`));
         }

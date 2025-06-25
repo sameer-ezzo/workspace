@@ -2,15 +2,15 @@ import { Injectable, PLATFORM_ID, REQUEST, Signal, inject } from "@angular/core"
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
-import { Router, ActivationEnd } from "@angular/router";
+import { Router } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
 import { analyzePassword, MutexAsync, Principle } from "@noah-ark/common";
 
 import { DeviceService } from "./device.service";
 import { DOCUMENT, isPlatformBrowser } from "@angular/common";
-import { AUTH_IDPs, IdPName, IdProviderOptions } from "./idps";
+import { AUTH_IDPs, IdPName } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
 
 export const ACCESS_TOKEN = "token";

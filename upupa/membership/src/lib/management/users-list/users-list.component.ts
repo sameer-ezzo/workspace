@@ -1,5 +1,5 @@
 import { DataAdapterDescriptor } from "@upupa/data";
-import { DataListComponent, withTableHeader } from "@upupa/table";
+import { DataListComponent, withHeader } from "@upupa/table";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
 import { Route } from "@angular/router";
 import { Type } from "@angular/core";
@@ -35,7 +35,7 @@ export function withUsersTable(config?: Partial<UsersTableConfig>): RouteFeature
                     ],
                 },
             },
-            tableHeaderComponent: config?.tableHeaderComponent ?? withTableHeader(true, createButton(config?.createUserViewModel ?? CreateUserFromViewModel)),
+            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, createButton(config?.createUserViewModel ?? CreateUserFromViewModel)),
         },
     } as DynamicComponent<DataListComponent>;
 

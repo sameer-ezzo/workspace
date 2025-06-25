@@ -74,14 +74,16 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         return firstValueFrom(data$).then((res: ApiGetResult<T[]>) => res as ReadResult<T>);
     }
 
-    create(value: Partial<T>) {
-        return this.dataService.post(this.pathname, value);
+    async create(value: Partial<T>) {
+        const { document } = await this.dataService.post(this.pathname, value);
+        return document as T;
     }
 
-    put(item: T, value: Partial<T>) {
+    async put(item: T, value: Partial<T>) {
         const key = item?.[this.key];
         if (key == undefined) throw new Error("Item has no key");
-        return this.dataService.put(`${this.pathname}/${key}`, value);
+        const document = await this.dataService.put(`${this.pathname}/${key}`, value);
+        return document as T;
     }
 
     patch(item: T, patches: Patch[]) {

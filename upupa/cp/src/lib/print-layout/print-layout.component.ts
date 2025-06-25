@@ -1,6 +1,8 @@
-import { isPlatformBrowser } from "@angular/common";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { Component, computed, effect, inject, input, PLATFORM_ID } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { delay } from "@noah-ark/common";
+import { printElement } from "@upupa/common";
 
 /**
  * @description Value is of this type is passed directly to the CSS content property. Therefore, to display a static text, it should be wrapped in quotes. Also, content functions can be used.
@@ -23,6 +25,10 @@ export type CssContent = string;
                 }
                 button {
                     display: none;
+                }
+
+                body {
+                    background: transparent !important;
                 }
             }
         }
@@ -54,10 +60,8 @@ export class PrintLayoutComponent {
 
     openPrint = input(true);
 
-    styleElement = computed(() => {
-        const style = document.createElement("style");
-        style.id = "print-layout-style";
-        style.innerHTML = `
+    printStyles = computed(() => {
+        return `
             @page {
                 size: ${this.size() ?? "A4"};
                 @top-left-corner { content: ${this.topLeftCorner() ?? ""}; }
@@ -80,7 +84,24 @@ export class PrintLayoutComponent {
                 @right-middle { content: ${this.rightMiddle() ?? ""}; }
                 @right-bottom { content: ${this.rightBottom() ?? ""}; }
             }
+                html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+
+            }
         `;
+    });
+
+    styleElement = computed(() => {
+        const style = document.createElement("style");
+        style.id = "print-layout-style";
+        style.textContent = this.printStyles();
+        style.type = "text/css";
+        style.media = "print";
+
         return style;
     });
 
@@ -93,9 +114,11 @@ export class PrintLayoutComponent {
         });
     }
 
-    ngAfterViewInit() {
+    doc = inject(DOCUMENT);
+    async ngAfterViewInit() {
         if (this.isBrowser && this.openPrint()) {
             window.print();
+            window.close();
         }
     }
 }

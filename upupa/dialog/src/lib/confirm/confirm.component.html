@@ -1,12 +1,11 @@
-<div class="body">
-    @if (img()) {
-        <img [src]="img()" alt="{{ confirmTitle() }}" />
-    }
-    <p>
-        {{ confirmText() }}
-    </p>
-</div>
-<div class="footer">
+@if (img()) {
+    <img [src]="img()" alt="{{ confirmTitle() }}" />
+}
+<p>
+    {{ confirmText() }}
+</p>
+
+<!-- <div class="footer">
     <mat-btn [buttonDescriptor]="discardButton()" (action)="dialogRef.close(false)"></mat-btn>
     <mat-btn [buttonDescriptor]="confirmButton()" (action)="dialogRef.close(true)"></mat-btn>
-</div>
+</div> -->

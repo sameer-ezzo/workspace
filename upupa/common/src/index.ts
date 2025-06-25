@@ -60,3 +60,5 @@ export * from "./lib/utils";
 export * from "./lib/theme/theme-picker-component";
 export * from "./lib/theme/theme.service";
 export * from "./lib/theme/material-symbols";
+
+export * from "./lib/helpers/print";

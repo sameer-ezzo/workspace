@@ -8,7 +8,7 @@ import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/
 import { interceptFn } from "../auth.interceptor";
 import { AuthService } from "../auth.service";
 
-export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password";
+export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password" | "username-and-password";
 
 export type IdPsOptions<Name extends IdPName = "email-and-password"> = { name: Name; options: unknown } & (Name extends "google"
     ? { options: GoogleIdProviderOptions }

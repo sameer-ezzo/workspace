@@ -47,7 +47,8 @@ export class MatSliderComponent extends MatInputComponent<number> {
         stepsArray: [],
     } as any; //as Options;
 
-    ngOnChanges(changes: SimpleChanges) {
+    override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
         if (changes["floor"]) {
             if (this.value() < this.floor()) this.value.set(this.floor());
         }

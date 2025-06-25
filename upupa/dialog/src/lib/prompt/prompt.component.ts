@@ -1,10 +1,10 @@
-import { Component, OnInit, DestroyRef, inject, input, model } from "@angular/core";
+import { Component, OnInit, DestroyRef, inject, input, model, output, SimpleChanges, OnChanges, runInInjectionContext, Injector } from "@angular/core";
 import { MatFormFieldAppearance } from "@angular/material/form-field";
 
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators } from "@angular/forms";
+import { FormControl, ReactiveFormsModule, UntypedFormControl, Validators, ValidatorFn } from "@angular/forms";
 
 import { ActionDescriptor } from "@upupa/common";
 
@@ -28,44 +28,67 @@ import { MatBtnComponent } from "@upupa/mat-btn";
             }
         `,
     ],
-    imports: [MatDialogModule, MatBtnComponent, MatInputModule, MatFormFieldModule, ReactiveFormsModule]
+    imports: [MatDialogModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
-export class PromptComponent implements OnInit {
+export class PromptComponent<T = string> implements OnChanges {
+    submit = output<T | undefined>();
+
     promptText = input("Please enter value");
-    promptNoButton = input("No");
-    promptYesButton = input("Yes");
+    // promptNoButton = input("No");
+    // promptYesButton = input("Yes");
     placeholder = input("");
-    submitBtn = input<ActionDescriptor>({ name: "submit", text: "Submit", type: "submit", color: "primary", variant: "raised" });
+    // submitBtn = input<ActionDescriptor>({ name: "submit", text: "Submit", type: "submit", color: "primary", variant: "raised" });
     rows = input<number>(10);
     type = input("text");
     required = input(false);
-
     appearance = input<MatFormFieldAppearance>("outline");
+
     valueFormControl = new UntypedFormControl("", []);
     view = input<"input" | "textarea">("input");
-    value = model<string | number>("");
-    private readonly destroyRef = inject(DestroyRef);
+    value = model<T>(undefined);
 
-    ngOnInit(): void {
-        const validators = this.required ? [Validators.required] : [];
-
-        if (this.type() === "number") this.valueFormControl = new FormControl<number>(+(this.value() ?? 0), [...validators]);
-        else if (this.type() === "email") this.valueFormControl = new FormControl<string>(this.value() as string, [...validators, Validators.email]);
-        else this.valueFormControl = new FormControl<string>(this.value() as string, [...validators]);
+    ngOnChanges(changes: SimpleChanges): void {
+        const validators: ValidatorFn[] = [];
+        if (changes["required"]) {
+            if (this.required()) {
+                validators.push(Validators.required);
+            }
+        }
+        if (changes["type"]) {
+            if (this.type() === "number") {
+                validators.push(Validators.pattern(/^-?\d*\.?\d*$/)); // Allow only numbers
+            } else if (this.type() === "email") {
+                validators.push(Validators.email); // Validate email format
+            }
+        }
+        if (changes["value"]) {
+            if (this.value() === undefined || this.value() === null) {
+                this.valueFormControl.setValue("");
+            } else {
+                this.valueFormControl.setValue(this.value());
+            }
+        }
+        this.valueFormControl.setValidators(validators);
+        this.valueFormControl.updateValueAndValidity();
 
         this.valueFormControl.updateValueAndValidity();
     }
 
-    enterAction(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (this.submitBtn() && e.key === "Enter") {
-            this.submit();
-        }
+    private injector = inject(Injector);
+
+    submitOnEnter(e?: Event | KeyboardEvent): void {
+        this.valueFormControl.markAsTouched();
+        e?.stopPropagation();
+        e?.preventDefault();
+        this.doSubmit();
     }
-    private readonly dialogRef = inject(DialogRef);
-    async submit() {
+
+    doSubmit(): void {
+        this.valueFormControl.markAsTouched();
+
         if (this.valueFormControl.invalid) return;
-        this.dialogRef.close(this.valueFormControl.value);
+        runInInjectionContext(this.injector, () => {
+            this.submit.emit(this.valueFormControl.value);
+        });
     }
 }

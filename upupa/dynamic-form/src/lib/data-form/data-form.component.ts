@@ -7,7 +7,7 @@ import { Class } from "@noah-ark/common";
 import { FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormViewModelMirror, reflectFormViewModelType } from "../decorators/form-input.decorator";
-import { DynamicFormComponent, DynamicFormInitializedEvent, FORM_GROUP } from "../dynamic-form.component";
+import { DynamicFormComponent, DynamicFormInitializedEvent, ExtendedValueChangeEvent, FORM_GROUP } from "../dynamic-form.component";
 
 export const FORM_VIEW_MODEL = new InjectionToken<any>("FORM_VIEW_MODEL");
 
@@ -108,7 +108,7 @@ export class DataFormComponent<T = any> {
         if (!(vm && "onInit" in vm && typeof vm["onInit"] === "function")) return;
         runInInjectionContext(this._injector(), () => vm["onInit"](e));
     }
-    onValueChange(e: any) {
+    onValueChange(e: ExtendedValueChangeEvent<T>) {
         const vm = this.value();
         runInInjectionContext(this._injector(), async () => {
             await vm["onValueChange"]?.(e);

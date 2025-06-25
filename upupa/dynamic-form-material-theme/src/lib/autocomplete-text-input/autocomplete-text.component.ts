@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, forwardRef, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, input, InputSignalWithTransform, model, signal } from "@angular/core";
 import { FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -11,6 +11,7 @@ import { DataComponentBase } from "@upupa/table";
 import { InputDefaults } from "../defaults";
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { BooleanInput } from "@angular/cdk/coercion";
 
 @Component({
     standalone: true,
@@ -36,10 +37,10 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
         },
     ],
 })
-export class MatAutoCompleteTextComponent extends DataComponentBase<string> {
+export class MatAutoCompleteTextComponent extends DataComponentBase {
     name = input("");
     inlineError = true;
-
+    override multiple = input<boolean>(false);
     appearance = input(InputDefaults.appearance);
     floatLabel = input(InputDefaults.floatLabel);
     label = input("");
@@ -65,5 +66,17 @@ export class MatAutoCompleteTextComponent extends DataComponentBase<string> {
 
     _doSearch(value: string) {
         return this.adapter().load({ filter: { search: value } });
+    }
+
+    displayOfKey(key: string) {
+        return (this.adapter()
+            .normalized()
+            .find((x) => x.key === key)?.display ?? key) as string;
+    }
+    selectByKey(key: string) {
+        const v = this.adapter()
+            .normalized()
+            .find((x) => x.key === key)?.value;
+        this.select(Array.isArray(v) ? v : [v], { clearSelection: true, emitEvent: true });
     }
 }

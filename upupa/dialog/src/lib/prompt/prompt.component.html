@@ -2,13 +2,14 @@
     <mat-form-field [appearance]="appearance()" style="width: 100%">
         <mat-label>{{ promptText() }}</mat-label>
         <textarea
+            id="prompt-input"
             matInput
             (click)="valueFormControl.markAsTouched()"
             (blur)="valueFormControl.markAsTouched()"
             [placeholder]="placeholder()"
             [formControl]="valueFormControl"
             [required]="required()"
-            (keydown.enter)="enterAction($event)"
+            (keydown.enter)="submitOnEnter($event)"
             [rows]="rows()"
         ></textarea>
     </mat-form-field>
@@ -16,6 +17,7 @@
     <mat-form-field [appearance]="appearance()" style="width: 100%">
         <mat-label>{{ promptText() }}</mat-label>
         <input
+            id="prompt-input"
             matInput
             (click)="valueFormControl.markAsTouched()"
             (blur)="valueFormControl.markAsTouched()"
@@ -23,10 +25,7 @@
             [formControl]="valueFormControl"
             [type]="type()"
             [required]="required()"
-            (keydown.enter)="enterAction($event)"
+            (keydown.enter)="submitOnEnter($event)"
         />
     </mat-form-field>
-}
-@if (submitBtn()) {
-    <mat-btn [buttonDescriptor]="submitBtn()" [disabled]="valueFormControl.invalid" (action)="submit()"></mat-btn>
 }

@@ -1,15 +1,15 @@
-@if (emailAndPasswordProvider()) {
-    <login-form [fields]="fields()" (success)="onSuccess($event)" (fail)="onFailed($event)"></login-form>
+@if (emailAndPasswordProvider().length) {
+    <login-form [fields]="fields()" (success)="onSuccess($event)" [externalLinks]="externalLinks()" (fail)="onFailed($event)"></login-form>
 }
 @if (idps().length) {
     <div class="idps-container">
-        @if (emailAndPasswordProvider()) {
-            <h3>Or log in with</h3>
+        @if (emailAndPasswordProvider().length) {
+            <h3>Or</h3>
         }
         <div class="idps">
             @for (idp of idps(); track idp) {
                 @if (idp.name === "google") {
-                    <google-id-provider [idp]="idp.provider" (success)="onSuccess($event)"></google-id-provider>
+                    <google-id-provider [idp]="idp.provider" (success)="onSuccess($event, idp.name)" (error)="onFailed($event, idp.name)"></google-id-provider>
                 }
             }
         </div>

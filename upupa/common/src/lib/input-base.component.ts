@@ -1,4 +1,4 @@
-import { Component, inject, input, model } from "@angular/core";
+import { Component, inject, input, model, SimpleChanges } from "@angular/core";
 import { ControlValueAccessor, FormControl, FormGroup, NgControl, UntypedFormControl } from "@angular/forms";
 
 export function _defaultControl(parentComponent: any) {
@@ -59,6 +59,17 @@ export class InputBaseComponent<T = any> implements ControlValueAccessor {
         }
     }
 
+    async ngOnChanges(changes: SimpleChanges) {
+        if (changes["disabled"]) {
+            const isDisabled = this.disabled(); // if required is false, we consider it as disabled
+
+            if (isDisabled) {
+                this._ngControl?.control?.disable({ emitEvent: false });
+            } else {
+                this._ngControl?.control?.enable({ emitEvent: false });
+            }
+        }
+    }
     // >>>>> ControlValueAccessor ----------------------------------------
     _onChange: (value: T) => void;
     _onTouch: () => void;

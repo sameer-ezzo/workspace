@@ -95,6 +95,7 @@ export type FieldOptions =
               | ({ input: "autocomplete" } & AdapterFieldOptions)
               | ({ input: "list" } & AdapterFieldOptions & { viewModel: Class; tableHeaderComponent?: DynamicComponent }) // this is used to render table with selection capability (like select input but with table view)
               | { input: "date" }
+              | { input: "date-range" }
               | { input: "time" }
               | { input: "calendar" }
               | ({ input: "file" } & FileInputOptions)

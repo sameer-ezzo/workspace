@@ -1,5 +1,5 @@
-import { Component, input, ViewEncapsulation } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, inject, input, ViewEncapsulation } from "@angular/core";
+import { ActivatedRoute, RouterOutlet } from "@angular/router";
 
 @Component({
     selector: "center-layout",
@@ -15,7 +15,7 @@ import { RouterOutlet } from "@angular/router";
             max-width: 500px;
             // width:100%;
             margin: auto;
-            flex-direction:column;
+            flex-direction: column;
         }
 
         center-layout > * {
@@ -25,20 +25,18 @@ import { RouterOutlet } from "@angular/router";
             display: flex;
             justify-content: center;
             margin-bottom: 3rem;
-
         }
     `,
     template: `
+        @if (logo()) {
+            <div class="logo-holder">
+                <img src="/assets/logo.png" alt="" />
+            </div>
+        }
 
-@if(logo()){
-
-    <div class="logo-holder">
-        <img src="/assets/logo.png"  alt="">
-    </div>
-}
-
-     <router-outlet style="display: none"></router-outlet> `,
+        <router-outlet style="display: none"></router-outlet>
+    `,
 })
 export class CenterLayoutComponent {
-    logo = input<string|undefined>()
+    logo = input<string | undefined>();
 }

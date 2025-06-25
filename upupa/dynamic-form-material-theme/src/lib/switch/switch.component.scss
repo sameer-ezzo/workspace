@@ -1,9 +1,5 @@
 :host {
-  display: block;
-  color: var(--mat-app-text-color);
-
-  mat-checkbox + paragraph {
-    padding-block-start: 8px;
-
-  }
+    display: block;
+    margin: 0;
+    
 }

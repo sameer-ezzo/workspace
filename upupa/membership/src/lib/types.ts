@@ -1,5 +1,5 @@
 import { FormScheme, reflectFormViewModelType } from "@upupa/dynamic-form";
-import { defaultForgotPasswordFormFields, defaultResetPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginFormViewModel } from "./default-values";
+import { defaultForgotPasswordFormFields, defaultResetPasswordFormFields, defaultSignupFormFields, defaultVerifyFormFields, LoginWithEmailFormViewModel } from "./default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { ComponentRef, inject } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
@@ -74,19 +74,22 @@ export class MembershipSignupOptions extends BaseMembershipFormOptions {
 export function loginSuccessHandler(instance, response) {
     const router = inject(Router);
     const route = inject(ActivatedRoute);
-    const base_url = inject(LocationStrategy).getBaseHref();
+    const location = inject(LocationStrategy);
+    const base_url = location.getBaseHref();
+
     const { redirect, redirectTo } = route.snapshot.queryParams ?? {};
-    const redirectUrl = redirect ?? redirectTo ?? base_url;
-    router.navigateByUrl(decodeURIComponent(redirectUrl));
+    if (redirectTo || redirect) {
+        const redirectUrl = redirect ?? redirectTo ?? base_url;
+        router.navigateByUrl(decodeURIComponent(redirectUrl));
+    } else location.back();
 }
 
 export function loginErrorHandler(instance, error) {
-    const snack = inject(SnackBarService);
-    snack.openFailed(error.message);
+    inject(SnackBarService).openFailed(error.message);
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
     constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
-        const { fields: fs, conditions: cnds } = reflectFormViewModelType(LoginFormViewModel);
+        const { fields: fs, conditions: cnds } = reflectFormViewModelType(LoginWithEmailFormViewModel);
         on_success = on_success ?? loginSuccessHandler;
         on_error = on_error ?? loginErrorHandler;
         super(fields ?? fs, conditions ?? cnds, on_success, on_error);

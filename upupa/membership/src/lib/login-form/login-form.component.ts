@@ -23,11 +23,12 @@ export class LoginFormComponent {
     error: string;
     control = new FormControl();
 
+    
     success = output<Principle | { type: "reset-pwd"; reset_token: string }>();
     resetPassword = output<{ reset_token: string }>();
     fail = output<any>();
 
-    value = model<{ email: string; password: string; rememberMe?: boolean }>();
+    value = model<{ email: string; username: string; password: string; rememberMe?: boolean }>();
     submitBtn = input<ActionDescriptor>({
         name: "login",
         type: "submit",

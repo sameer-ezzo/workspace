@@ -48,7 +48,7 @@ export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
 
 export function formDialogButton<TItem = unknown>(
     formVM: Class,
-    value:  ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
+    value: (btn: FormDialogButton<TItem>) => TItem = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -68,7 +68,7 @@ export function formDialogButton<TItem = unknown>(
 
 export function createButton<TItem = unknown>(
     formVM: Class,
-    value: ((btn: FormDialogButton<TItem>) => TItem) = () => new formVM(),
+    value: (btn: FormDialogButton<TItem>) => TItem = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -76,20 +76,20 @@ export function createButton<TItem = unknown>(
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
     const defaultCreateDescriptor: Partial<ActionDescriptor> = {
-        text: "Create",
+        text: $localize`Create`,
         icon: "add",
         variant: "raised",
         color: "primary",
         type: "button",
     };
     const btn = { ...defaultCreateDescriptor, ...options?.descriptor } as ActionDescriptor;
-    const dialogOptions = { title: "Create", ...options?.dialogOptions };
+    const dialogOptions = { title: $localize`Create`, ...options?.dialogOptions };
     return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, outputs: options?.outputs });
 }
 
 export function editButton<TItem = unknown>(
     formVM: Class,
-    value: ((btn: FormDialogButton<TItem>) => TItem) = (btn) => btn.item(),
+    value: (btn: FormDialogButton<TItem>) => TItem = (btn) => btn.item(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
         dialogOptions?: Partial<DialogConfig>;
@@ -98,14 +98,14 @@ export function editButton<TItem = unknown>(
 ): DynamicComponent<FormDialogButton<TItem>> {
     options ??= {};
     const defaultEditDescriptor: Partial<ActionDescriptor> = {
-        text: "Edit",
+        text: $localize`Edit`,
         icon: "edit",
         variant: "icon",
         color: "accent",
         type: "button",
     };
     const btn = { ...defaultEditDescriptor, ...options?.descriptor } as ActionDescriptor;
-    const dialogOptions = { title: "Edit", ...options?.dialogOptions };
+    const dialogOptions = { title: $localize`Edit`, ...options?.dialogOptions };
 
     return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, outputs: options?.outputs });
 }

@@ -39,7 +39,7 @@
                                 }
                             </mat-expansion-panel>
                         </mat-accordion>
-                        <mat-divider [authz]="g.action"></mat-divider>
+                        <!-- <mat-divider [authz]="g.action"></mat-divider> -->
                     } @else {
                         <ng-container *ngTemplateOutlet="linkTemplate; context: { item: g }"></ng-container>
                     }

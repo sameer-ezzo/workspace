@@ -1,5 +1,5 @@
 <!-- label -->
-@if (label()) {
+@if (label()?.length) {
     <label style="margin-block: 0.5rem 1rem">{{ label() }}</label>
 }
 @let _vm = viewModel();

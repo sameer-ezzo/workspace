@@ -4,6 +4,8 @@ import { GOOGLE_ID_PROVIDER_OPTIONS, GoogleIdProviderService } from "./google-id
 import { loadScript } from "@noah-ark/common";
 import { isPlatformBrowser } from "@angular/common";
 
+// https://developers.google.com/identity/gsi/web/reference/js-reference#theme
+export type GoogleTheme = "outline" | "filled_blue" | "filled_black";
 export type GoogleIdProviderOptions = {
     /*
     This field is your application's client ID, which is found and created in the Google Cloud console.
@@ -115,15 +117,24 @@ This field determines if the upgraded One Tap UX should be enabled on browsers t
     );
     customize?: {
         class: "g_id_signin";
-        type: "standard";
-        size: "large";
-        theme: "outline";
-        text: "sign_in_with";
-        shape: "pill";
-        logo_alignment: "left";
+        type: "standard" | "icon";
+        size: "large" | "medium" | "small";
+        theme: GoogleTheme;
+        text: "signin" | "continue_with" | "continue_with" | "signin_with";
+        shape: "rectangular" | "circle" | "square" | "pill";
+        logo_alignment: "left" | "center";
     };
 };
 
+export const preferTheme = (): GoogleTheme => {
+    let theme: GoogleTheme = "outline"; // default theme
+    if (typeof window !== "undefined" && window.matchMedia) {
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "filled_black";
+        if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "filled_blue";
+    }
+
+    return theme;
+};
 const defaultOptions: IdProviderOptions<"google"> = {
     name: "google",
     options: {
@@ -139,8 +150,8 @@ const defaultOptions: IdProviderOptions<"google"> = {
             class: "g_id_signin",
             type: "standard",
             size: "large",
-            theme: "outline",
-            text: "sign_in_with",
+            theme: preferTheme(),
+            text: "signin_with",
             shape: "pill",
             logo_alignment: "left",
         },

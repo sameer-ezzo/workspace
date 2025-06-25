@@ -305,7 +305,10 @@ export class QueryParser {
         const keyType = key && model ? (this.getPathType(key, model, value) ?? "String") : "String";
         if (keyType === "String") return value;
         if (keyType === "Date") return new Date(value);
-        if (keyType === "ObjectId") return ObjectId.isValid(value) ? new ObjectId(value) : value;
+        if (keyType === "ObjectId") {
+            if (Array.isArray(value)) return value.map((v) => (ObjectId.isValid(v) ? new ObjectId(v) : v));
+            return ObjectId.isValid(value) ? new ObjectId(value) : value;
+        }
         if (keyType === "Number") return +value;
         if (keyType === "Array") {
             if (Array.isArray(value)) return value.map((x) => this.autoParseValue(x, key + "[0]", model));
@@ -394,18 +397,18 @@ export class QueryParser {
         let fields2: { [field: string]: any } | undefined;
         let fields3: { [field: string]: any } | undefined;
         let lookups: Lookup[] = [];
-        let lookupsMatch: { from: string; foreignField: string; localField: string; match: any[]; as: string }[] | undefined;
+        let lookupsMatch: { from: string; foreignField: string; localField: string; pipeline: any[]; as: string }[] | undefined;
         let group_fields: { [field: string]: any } | undefined;
         let group: any;
         let $text: string;
 
-        const localeIndex = q.findIndex((x) => x.key === "locale");
-        let locale = null;
+        // const localeIndex = q.findIndex((x) => x.key === "locale");
+        // let locale = null;
 
-        if (localeIndex > -1) {
-            locale = this.validateLocale(q[localeIndex].value);
-            q.splice(localeIndex, 1); // Remove the locale query parameter from the array
-        }
+        // if (localeIndex > -1) {
+        //     locale = this.validateLocale(q[localeIndex].value);
+        //     q.splice(localeIndex, 1); // Remove the locale query parameter from the array
+        // }
 
         for (let i = 0; i < q.length; ++i) {
             const x = q[i];
@@ -453,19 +456,19 @@ export class QueryParser {
             } else if (x.key === "lookup_match") {
                 //lookup_match=lookup_1;lookup_2
                 lookupsMatch = x.value.split(";").map((l) => {
-                    //lookup=collection:foriegn:local:as:f1:v1
+                    //lookup=collection:foriegn:local:as:[unwind]:f1:v1
                     let p = l.split(":");
 
                     const [from, foreignField, localField, as] = p;
-                    const match = [];
-                    p = p.slice(4);
+                    const pipeline = [];
+                    p = p.slice(p[4] === "unwind" ? 5 : 4); // skip unwind if exists
+                    logger.info("LOOKUP_MATCH", { from, foreignField, localField, as, pipeline: p });
                     for (let i = 0; i < p.length; i += 2) {
                         const exp = this.parseExpression(p[i], p[i + 1], model);
-                        logger.info(exp);
-
-                        match.push(exp);
+                        if (!exp) continue;
+                        pipeline.push(exp);
                     }
-                    return { from, foreignField, localField, as, match };
+                    return { from, foreignField, localField, as, pipeline };
                 });
             } else if (x.value) {
                 const exp = this.parseExpression(x.key, x.value, model);
@@ -496,70 +499,70 @@ export class QueryParser {
 
         return { page, per_page, filter, select, sort, fields1, fields2, fields3, group, lookups, lookupsMatch, $text };
     }
-    private _replaceRootWithLocale(locale: string): any[] {
-        return [
-            // Stage 1: (Keep from original) Add a field that contains the translation object for the target locale.
-            // This is calculated regardless, but only used if root lang doesn't match.
-            {
-                $addFields: {
-                    selectedTranslation: {
-                        $arrayElemAt: [
-                            {
-                                $filter: {
-                                    input: "$translations", // Look into the 'translations' array
-                                    as: "trans", // Alias each element in the array as 'trans'
-                                    // Assuming each translation object has a 'lang' field matching root lang
-                                    cond: { $eq: ["$$trans.lang", locale] },
-                                },
-                            },
-                            0, // Get the first element of the filtered array (assuming at most one match)
-                        ],
-                    },
-                },
-            },
-            // Stage 2: Determine the content to be used for replacing the root based on the condition
-            {
-                $addFields: {
-                    contentToUseAsRoot: {
-                        $cond: {
-                            // Condition: Check if the root document's 'lang' field matches the target locale
-                            if: { $eq: ["$$ROOT.lang", locale] },
-                            // If true (root language matches), use the original root document.
-                            // We will exclude 'translations' later in the $project stage.
-                            then: "$$ROOT",
-                            // If false (root language does not match), check if a translation was found.
-                            else: {
-                                $cond: {
-                                    // Sub-condition: Check if a translation for the locale was found
-                                    if: { $ne: ["$selectedTranslation", null] },
-                                    // If translation found, merge original root with the translation.
-                                    // Translated fields overwrite original fields.
-                                    then: { $mergeObjects: ["$$ROOT", "$selectedTranslation"] },
-                                    // If no translation found, use the original root document.
-                                    else: "$$ROOT",
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            // Stage 3: Replace the root with the determined content
-            {
-                $replaceRoot: {
-                    newRoot: "$contentToUseAsRoot",
-                },
-            },
-            // Stage 4: Clean up intermediate fields and the original translations array
-            {
-                $project: {
-                    translations: 0, // Exclude the original translations array
-                    selectedTranslation: 0, // Exclude the temporary field
-                    contentToUseAsRoot: 0, // Exclude the temporary field used for the new root source
-                    // All other fields from the chosen newRoot will be included by default
-                },
-            },
-        ];
-    }
+    // private _replaceRootWithLocale(locale: string): any[] {
+    //     return [
+    //         // Stage 1: (Keep from original) Add a field that contains the translation object for the target locale.
+    //         // This is calculated regardless, but only used if root lang doesn't match.
+    //         {
+    //             $addFields: {
+    //                 selectedTranslation: {
+    //                     $arrayElemAt: [
+    //                         {
+    //                             $filter: {
+    //                                 input: "$translations", // Look into the 'translations' array
+    //                                 as: "trans", // Alias each element in the array as 'trans'
+    //                                 // Assuming each translation object has a 'lang' field matching root lang
+    //                                 cond: { $eq: ["$$trans.lang", locale] },
+    //                             },
+    //                         },
+    //                         0, // Get the first element of the filtered array (assuming at most one match)
+    //                     ],
+    //                 },
+    //             },
+    //         },
+    //         // Stage 2: Determine the content to be used for replacing the root based on the condition
+    //         {
+    //             $addFields: {
+    //                 contentToUseAsRoot: {
+    //                     $cond: {
+    //                         // Condition: Check if the root document's 'lang' field matches the target locale
+    //                         if: { $eq: ["$$ROOT.lang", locale] },
+    //                         // If true (root language matches), use the original root document.
+    //                         // We will exclude 'translations' later in the $project stage.
+    //                         then: "$$ROOT",
+    //                         // If false (root language does not match), check if a translation was found.
+    //                         else: {
+    //                             $cond: {
+    //                                 // Sub-condition: Check if a translation for the locale was found
+    //                                 if: { $ne: ["$selectedTranslation", null] },
+    //                                 // If translation found, merge original root with the translation.
+    //                                 // Translated fields overwrite original fields.
+    //                                 then: { $mergeObjects: ["$$ROOT", "$selectedTranslation"] },
+    //                                 // If no translation found, use the original root document.
+    //                                 else: "$$ROOT",
+    //                             },
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         },
+    //         // Stage 3: Replace the root with the determined content
+    //         {
+    //             $replaceRoot: {
+    //                 newRoot: "$contentToUseAsRoot",
+    //             },
+    //         },
+    //         // Stage 4: Clean up intermediate fields and the original translations array
+    //         {
+    //             $project: {
+    //                 translations: 0, // Exclude the original translations array
+    //                 selectedTranslation: 0, // Exclude the temporary field
+    //                 contentToUseAsRoot: 0, // Exclude the temporary field used for the new root source
+    //                 // All other fields from the chosen newRoot will be included by default
+    //             },
+    //         },
+    //     ];
+    // }
 }
 
 //todo test lookup_mach for non array join

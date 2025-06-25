@@ -18,6 +18,7 @@ export * from "./lib/password/password.component";
 export * from "./lib/address-edit/address.component";
 export * from "./lib/scale-component/review-scale/review-input.component";
 export * from "./lib/scale-component/slider/slider.component";
+export * from "./lib/range-components/rang-input-base.component";
 export * from "./lib/range-components/numbers-range/numbers-range.component";
 export * from "./lib/range-components/date-range/date-range.component";
 export * from "./lib/paragraph/paragraph.component";

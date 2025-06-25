@@ -142,8 +142,7 @@ export class VerifyComponent {
             value: this.value(),
             placeholder: this.name(),
             required: true,
-            yes: "submit",
-            no: "cancel",
+            actionText: "Submit"
         });
 
         if (value && value !== this.value) {
