@@ -7,7 +7,13 @@ import { signal } from "@angular/core";
 export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDataSource<T> {
     readonly allDataLoaded = signal(false);
 
-    private readonly url: URL;
+    private _url: URL;
+    get url(): URL {
+        return this._url;
+    }
+    private set url(value: URL) {
+        this._url = value;
+    }
     private get pathname() {
         return this.url ? this.url.pathname : this.path;
     }
@@ -19,8 +25,12 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         readonly path: string,
         readonly key: keyof T = "_id",
     ) {
-        const _url = new URL("/", dataService.api.api_base);
-        this.url = new URL(path, _url.protocol + "//" + _url.host);
+        this._initUrl();
+    }
+    private async _initUrl() {
+        const apiBase = await this.dataService.api.api_base_Promise;
+        const _url = new URL("/", apiBase);
+        this.url = new URL(this.path, _url.protocol + "//" + _url.host);
     }
 
     _evalTerm(term: Term<T>, value: string) {

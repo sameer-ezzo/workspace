@@ -180,7 +180,7 @@ export class PortalComponent<TCom = any> {
                 }
             }
         }
-        this.componentRef.changeDetectorRef.detectChanges();
+        this.componentRef?.changeDetectorRef?.detectChanges();
     }
 
     subscribeToOutputs(outputs: Record<string, (source: ComponentRef<any>, e: any) => void | Promise<void>>) {
