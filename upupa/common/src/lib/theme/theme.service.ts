@@ -20,11 +20,18 @@ export class ThemeService {
     constructor(@Inject(DOCUMENT) private document: Document) {}
 
     init(themes: Theme[]) {
+        if (!themes || themes.length === 0 || themes.some((theme) => !theme.name || !theme.className))
+            throw new Error("Invalid themes provided. Each theme must have a name and className.");
         this.themes = themes;
+        this.apply(this.themes[0].name);
     }
 
     apply(themeName: string) {
         const theme = this.themes.find((theme) => theme.name === themeName);
+        if (!theme) {
+            console.error(`Theme "${themeName}" not found.`);
+            return;
+        }
         this.selectedTheme = theme;
         this.document.documentElement.classList.remove(...this.themes.flatMap((theme) => theme.className));
         this.document.documentElement.classList.add(...theme.className);
