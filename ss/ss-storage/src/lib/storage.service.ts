@@ -21,8 +21,8 @@ import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, stat
 
 const separator = "/";
 
-export function getStorageDir(){
-    return process.env.STORAGE_DIR || __dirname;
+export function getStorageDir() {
+    return process.env.STORAGE_DIR || join(__dirname, "storage");
 }
 export function makeDir(dir: string) {
     dir = dir.replace(/\\/g, "/");
