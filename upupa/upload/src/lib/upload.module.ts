@@ -1,4 +1,4 @@
-import { NgModule, Optional, SkipSelf, ModuleWithProviders, makeEnvironmentProviders } from "@angular/core";
+import { makeEnvironmentProviders, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -19,11 +19,22 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { UtilsModule } from "@upupa/common";
 
-const declarations = [];
+function defaultUploadBase(baseUrl: string) {
+    return () => {
+        const doc = inject(DOCUMENT);
+        baseUrl = (baseUrl.length ? baseUrl : "/storage").trim().toLocaleLowerCase();
+        if (baseUrl.startsWith("http")) return baseUrl;
+        const base = doc.location.pathname;
+        const url = new URL(baseUrl, base).toString();
+        return url;
+    };
+}
 
-@NgModule({
-    declarations,
-    imports: [
+export function provideUpload(baseUrl: string | (() => string)) {
+    const opts = typeof baseUrl === "function" ? baseUrl : defaultUploadBase(baseUrl);
+    return makeEnvironmentProviders([
+        UploadService,
+        UploadClient,
         FileSizePipe,
         CommonModule,
         MatIconModule,
@@ -41,48 +52,9 @@ const declarations = [];
         MatCheckboxModule,
         MatProgressSpinnerModule,
         MatProgressBarModule,
-    ],
-    exports: declarations,
-    bootstrap: [],
-})
-export class UploadModule {
-    constructor(@Optional() @SkipSelf() parentModule: UploadModule) {
-        // if (parentModule) {
-        //   throw new Error('UploadModule is already loaded. Import it in the AppModule only');
-        // }
-    }
-
-    public static forChild(baseUrl: string): ModuleWithProviders<UploadModule> {
-        return {
-            ngModule: UploadModule,
-            providers: [
-                ...declarations,
-                UploadService,
-                UploadClient,
-                {
-                    provide: STORAGE_BASE,
-                    useValue: baseUrl,
-                },
-            ],
-        };
-    }
-}
-
-export function provideUpload(baseUrl: string) {
-    return makeEnvironmentProviders([
-        ...declarations,
-        UploadService,
-        UploadClient,
         {
             provide: STORAGE_BASE,
-            useFactory: (doc: Document) => {
-                baseUrl = (baseUrl.length ? baseUrl : "/storage").trim().toLocaleLowerCase();
-                if (baseUrl.startsWith("http")) return baseUrl;
-                const base = `${doc.location.protocol}//${doc.location.hostname}`;
-                const url = new URL(baseUrl, base).toString();
-                return url;
-            },
-            deps: [DOCUMENT],
+            useFactory: opts as () => string,
         },
     ]);
 }

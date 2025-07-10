@@ -23,12 +23,14 @@ export type IdProviderOptions<Name extends IdPName> = Partial<IdPsOptions<Name>>
 export type AuthIdProvider<Name extends IdPName = IdPName> = IdProviderService<Name>;
 export const AUTH_IDPs = new InjectionToken<AuthIdProvider[]>("AUTH_IdPs");
 
-export function provideAuth(options: Partial<AuthOptions>, ...features: (Provider | EnvironmentProviders)[][]): EnvironmentProviders {
+export function provideAuth(options: () => Partial<AuthOptions> | Partial<AuthOptions>, ...features: (Provider | EnvironmentProviders)[][]): EnvironmentProviders {
     const providers = features.flat();
-    if (!options.base_url) throw new Error("Base URL must be provided in AuthOptions");
+
+    const opts = typeof options === "function" ? options : () => options;
+    // if (!options.base_url) throw new Error("Base URL must be provided in AuthOptions");
 
     return makeEnvironmentProviders([
-        ...authProviders(options),
+        ...authProviders(opts),
         ...providers,
         provideHttpClient(withFetch(), withInterceptors([interceptFn])),
         provideAppInitializer(async () => {

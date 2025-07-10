@@ -42,8 +42,9 @@ const pipes = [
     I18nSelectPipe,
 ];
 
-export function provideDataTable(options: DataTableOptions, providers: Provider[] = []) {
-    return makeEnvironmentProviders([...pipes, ...providers, { provide: DATA_TABLE_OPTIONS, useValue: { ...new DataTableOptions(), ...options } }]);
+export function provideDataTable(options: () => DataTableOptions | DataTableOptions, providers: Provider[] = []) {
+    const opts = typeof options === "function" ? options : () => ({ ...new DataTableOptions(), ...(options as DataTableOptions) });
+    return makeEnvironmentProviders([...pipes, ...providers, { provide: DATA_TABLE_OPTIONS, useFactory: opts }]);
 }
 
 type _DataAdapter<T = unknown> = DataAdapter<T> | DataAdapterDescriptor<T>;

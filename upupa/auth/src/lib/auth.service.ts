@@ -262,6 +262,8 @@ export class AuthService {
                 if (status.startsWith("4")) {
                     console.warn("SIGNING OUT: ", error);
                     this.signout();
+                } else if (status === "0") {
+                    console.warn("Network error: ", error);
                 } else {
                     console.error("Error refreshing token: ", error);
                 }
