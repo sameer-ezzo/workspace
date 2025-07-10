@@ -42,7 +42,7 @@ const pipes = [
     I18nSelectPipe,
 ];
 
-export function provideDataTable(options: () => DataTableOptions | DataTableOptions, providers: Provider[] = []) {
+export function provideDataTable(options: (() => DataTableOptions) | DataTableOptions, providers: Provider[] = []) {
     const opts = typeof options === "function" ? options : () => ({ ...new DataTableOptions(), ...(options as DataTableOptions) });
     return makeEnvironmentProviders([...pipes, ...providers, { provide: DATA_TABLE_OPTIONS, useFactory: opts }]);
 }
