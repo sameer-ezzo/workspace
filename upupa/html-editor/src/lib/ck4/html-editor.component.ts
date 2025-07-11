@@ -98,8 +98,10 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             image2_captionedClass: "image-captioned",
 
             // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
-            extraAllowedContent: "*[style,id](*);",
-            disallowedContent: "*{font-family,font-size}",
+            extraAllowedContent: "*[style,id](*);iframe[]; figure()[]; oembed[];",
+            // disallowedContent: "*{font-family,font-size}",
+            allowedContent:true,
+
             ...this.config(),
         };
         this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
