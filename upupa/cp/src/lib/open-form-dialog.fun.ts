@@ -26,12 +26,17 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
         submit_error: Promise<Error>;
     };
     const _injector = context?.injector ?? inject(Injector);
-    const injector = Injector.create({ providers: [{ provide: NgControl, useValue: undefined }], parent: _injector }); // disconnect parent form control (dialog form will start a new control context)
+    const injector = Injector.create({
+        providers: [
+            { provide: NgControl, useValue: undefined }, // disconnect parent form control (dialog form will start a new control context)
+        ],
+        parent: _injector,
+    });
     const dialog = injector.get(DialogService);
     const _mirror = isFormViewModelMirror(vm) ? vm : reflectFormViewModelType(vm);
     const mirror = { ..._mirror, actions: [] };
 
-    const v = await runInInjectionContext(injector, async () => value && typeof value === "function" ? value() : value);
+    const v = await runInInjectionContext(injector, async () => (value && typeof value === "function" ? value() : value));
 
     let formActions = [...(_mirror.actions ?? [])] as ActionDescriptor[];
     let defaultAction = formActions.find((x) => x.type === "submit");

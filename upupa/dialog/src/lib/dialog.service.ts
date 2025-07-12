@@ -1,4 +1,4 @@
-import { ComponentFactoryResolver, EnvironmentProviders, Injectable, Injector, Provider, Signal, inject, makeEnvironmentProviders } from "@angular/core";
+import { EnvironmentProviders, Injectable, Injector, Provider, Signal, ViewContainerRef, inject, makeEnvironmentProviders } from "@angular/core";
 import { MatDialogConfig, MatDialog, MatDialogRef, MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
@@ -66,8 +66,9 @@ export class DialogService {
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
-            componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
-            //viewContainerRef:
+
+            //TODO check componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
+            // viewContainerRef: injector?.get(ViewContainerRef),
         });
 
         matDialogRef.componentRef.setInput("template", _template);

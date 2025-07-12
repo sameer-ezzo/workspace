@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser, isPlatformServer } from "@angular/common";
-import { inject, Inject, Injectable, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser, isPlatformServer } from "@angular/common";
+import { inject, Inject, Injectable, PLATFORM_ID, DOCUMENT } from "@angular/core";
 
 export type Theme = {
     name: string;
@@ -19,11 +19,11 @@ export class ThemeService {
 
     constructor(@Inject(DOCUMENT) private document: Document) {}
 
-    init(themes: Theme[]) {
+    init(themes: Theme[], defaultTheme = themes[0]?.name) {
         if (!themes || themes.length === 0 || themes.some((theme) => !theme.name || !theme.className))
             throw new Error("Invalid themes provided. Each theme must have a name and className.");
         this.themes = themes;
-        this.apply(this.themes[0].name);
+        this.apply(defaultTheme);
     }
 
     apply(themeName: string) {
