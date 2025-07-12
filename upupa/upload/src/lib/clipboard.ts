@@ -1,7 +1,7 @@
 import { filter, map } from "rxjs/operators";
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, DOCUMENT } from "@angular/core";
 import { Observable, fromEvent } from "rxjs";
-import { DOCUMENT } from "@angular/common";
+
 
 @Injectable({ providedIn: "root" })
 export class ClipboardService {

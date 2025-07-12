@@ -1,5 +1,5 @@
-import { inject, Injectable, InjectionToken, Injector, runInInjectionContext } from "@angular/core";
-import { DOCUMENT } from "@angular/common";
+import { inject, Injectable, InjectionToken, Injector, runInInjectionContext, DOCUMENT } from "@angular/core";
+
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { PageMetadata } from "../models";
 import { createTag, LinkTag, MetaTag, TitleMetaTag } from "../link";

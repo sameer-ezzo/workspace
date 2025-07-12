@@ -33,24 +33,24 @@ form {
 
     fieldset {
         legend {
-            color: var(--mdc-outlined-text-field-label-text-color);
+            color: var(--mat-form-field-outlined-label-text-color);
         }
         &:hover {
             legend {
-                color: var(--mdc-outlined-text-field-hover-label-text-color);
+                color: var(--mat-form-field-outlined-hover-label-text-color);
             }
         }
         &:not(:disabled) {
-            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-outline-color);
+            border: var(--mat-form-field-outlined-outline-width) solid var(--mat-form-field-outlined-outline-color);
         }
         &:disabled {
-            border: 1px solid var(--mdc-outlined-text-field-disabled-outline-color);
+            border: 1px solid var(--mat-form-field-outlined-disabled-outline-color);
         }
         &:not(:disabled):hover {
-            border: var(--mdc-outlined-text-field-outline-width) solid var(--mdc-outlined-text-field-hover-outline-color);
+            border: var(--mat-form-field-outlined-outline-width) solid var(--mat-form-field-outlined-hover-outline-color);
         }
 
-        border-radius: var(--mdc-outlined-text-field-container-shape);
+        border-radius: var(--mat-form-field-outlined-container-shape);
         padding: 1rem;
     }
 }

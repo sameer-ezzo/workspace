@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
-import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { isPlatformBrowser, LocationStrategy } from "@angular/common";
+import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild, DOCUMENT } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";

@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
-import { inject, Injectable, InjectionToken, LOCALE_ID, NgZone, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
+import { inject, Injectable, InjectionToken, LOCALE_ID, NgZone, PLATFORM_ID, DOCUMENT } from "@angular/core";
 import { IdPName, IdProviderOptions } from "../types";
 import { loadScript } from "@noah-ark/common";
 import { preferTheme } from "./google.idp";

@@ -5,8 +5,8 @@ import { DataService } from "@upupa/data";
 import { getUserInitialsImage } from "./user-image.service";
 import { AuthService } from "@upupa/auth";
 import { catchError, map, of, switchMap } from "rxjs";
-import { DOCUMENT } from "@angular/common";
-import { makeEnvironmentProviders } from "@angular/core";
+
+import { makeEnvironmentProviders, DOCUMENT } from "@angular/core";
 
 export const DEFAULT_USER_AVATAR_PROVIDER = {
     provide: USER_PICTURE_RESOLVER,

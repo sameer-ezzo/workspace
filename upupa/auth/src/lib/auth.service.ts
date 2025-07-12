@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, REQUEST, Signal, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
@@ -9,7 +9,7 @@ import { httpFetch } from "./http-fetch.function";
 import { analyzePassword, MutexAsync, Principle } from "@noah-ark/common";
 
 import { DeviceService } from "./device.service";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser } from "@angular/common";
 import { AUTH_IDPs, IdPName } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
 

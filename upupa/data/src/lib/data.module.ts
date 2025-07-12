@@ -1,7 +1,7 @@
-import { makeEnvironmentProviders } from "@angular/core";
+import { makeEnvironmentProviders, DOCUMENT } from "@angular/core";
 import { APIBASE } from "./di.token";
 import { DataConfig } from "./model";
-import { DOCUMENT } from "@angular/common";
+
 
 type ProviderValue<T = string> = T | (() => T | Promise<T>);
 export function provideApi(api_base: ProviderValue, config?: DataConfig) {

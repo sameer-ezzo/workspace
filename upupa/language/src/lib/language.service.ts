@@ -1,10 +1,10 @@
-import { Inject, Injectable, inject } from "@angular/core";
+import { Inject, Injectable, inject, DOCUMENT } from "@angular/core";
 import { Router, ActivationEnd } from "@angular/router";
 import { distinctUntilChanged, shareReplay } from "rxjs/operators";
 import { BehaviorSubject, ReplaySubject } from "rxjs";
 import { DEFAULT_LANG, ROUTE_VARIABLE_NAME } from "./di.token";
 import { Direction, languageDir, languagesList } from "./iso.languages";
-import { DOCUMENT } from "@angular/common";
+
 import { language } from "@upupa/common";
 
 @Injectable({

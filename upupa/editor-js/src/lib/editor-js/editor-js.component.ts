@@ -23,7 +23,7 @@ import { HtmlUploadAdapter } from "../html-upload-adapter";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { UploadClient, UploadModule } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
-import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser } from "@angular/common";
 import { OutputData, ToolConstructable } from "@editorjs/editorjs";
 import { languageDir } from "@upupa/language";
 import { FileInfo } from "@noah-ark/common";
@@ -41,7 +41,7 @@ declare let Delimiter: any;
     selector: "editor-js-input",
     templateUrl: "./editor-js.component.html",
     styleUrls: ["./editor-js.component.scss"],
-    imports: [CommonModule, UploadModule, ErrorsDirective],
+    imports: [UploadModule, ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

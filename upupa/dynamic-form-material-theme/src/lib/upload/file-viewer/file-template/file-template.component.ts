@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal, SimpleChanges, ViewEncapsulation } from "@angular/core";
+import { Component, computed, inject, input, output, signal, SimpleChanges, ViewEncapsulation, DOCUMENT } from "@angular/core";
 import { ActionDescriptor } from "@upupa/common";
 import {
     CancelUploadFileEvent,
@@ -17,7 +17,7 @@ import { FileUploadService } from "../../file-upload.service";
 import { Subscription } from "rxjs";
 import { FileSizePipe, UploadStream } from "@upupa/upload";
 import { AuthService } from "@upupa/auth";
-import { AsyncPipe, DatePipe, DOCUMENT } from "@angular/common";
+import { AsyncPipe, DatePipe } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";

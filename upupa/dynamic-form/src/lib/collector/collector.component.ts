@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, inject, input, model, output, signal, SimpleChanges, viewChild } from "@angular/core";
+import { Component, computed, forwardRef, inject, input, model, output, signal, SimpleChanges, viewChild, DOCUMENT } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
 import { ActionDescriptor, InputBaseComponent, UtilsModule } from "@upupa/common";
@@ -7,7 +7,7 @@ import { Field, FormScheme } from "../types";
 import { CollectStyle, FormDesign } from "./types";
 import { fieldsArrayToPages, FormPage, getGoogleFontUri, loadFontFromUri } from "./utils";
 import { DynamicFormComponent, ExtendedValueChangeEvent, FORM_GROUP } from "../dynamic-form.component";
-import { CommonModule, DOCUMENT } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { MatBtnComponent } from "@upupa/mat-btn";
 
 @Component({

@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
-import { Component, computed, effect, inject, input, PLATFORM_ID } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
+import { Component, computed, effect, inject, input, PLATFORM_ID, DOCUMENT } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { delay } from "@noah-ark/common";
 import { printElement } from "@upupa/common";

@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { ChangeDetectionStrategy, Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatNativeDateModule } from "@angular/material/core";
@@ -18,7 +18,7 @@ import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ MatDatepickerModule, MatNativeDateModule, ReactiveFormsModule, MatFormFieldModule, ErrorsDirective, CommonModule],
+    imports: [MatDatepickerModule, MatNativeDateModule, ReactiveFormsModule, MatFormFieldModule, ErrorsDirective],
     styles: [
         `
             :host {

@@ -8,7 +8,7 @@ import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
 import { PromptService, SnackBarService } from "@upupa/dialog";
 import { MatIconModule } from "@angular/material/icon";
 import { FormsModule } from "@angular/forms";
-import { CommonModule, JsonPipe, TitleCasePipe } from "@angular/common";
+import { JsonPipe, TitleCasePipe } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 
 import { toSignal } from "@angular/core/rxjs-interop";
@@ -269,7 +269,7 @@ export class PermissionRowViewModel {
     templateUrl: "./rule-permissions-table.component.html",
     styleUrls: ["./rule-permissions-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule, CommonModule],
+    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule],
 })
 export class RulePermissionsTableComponent {
     focused = model<SimplePermission>();

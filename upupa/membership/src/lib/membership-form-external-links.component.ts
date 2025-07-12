@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, computed, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
@@ -15,7 +15,7 @@ import { RouterLink } from "@angular/router";
     template: ` @for (link of links(); track $index) {
         <a i18n [routerLink]="link.routerLink" [queryParams]="link.queryParams">{{ link.text }}</a>
     }`,
-    imports: [CommonModule, RouterLink]
+    imports: [RouterLink]
 })
 export class MembershipFormExternalLinksComponent {
     links = input.required<({ text: string } & RouterLink)[]>();

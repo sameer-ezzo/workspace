@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { ChangeDetectionStrategy, Component, forwardRef, input, InputSignalWithTransform, model, signal } from "@angular/core";
 import { FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
@@ -18,7 +18,7 @@ import { BooleanInput } from "@angular/cdk/coercion";
     selector: "mat-form-autocomplete-text-input",
     templateUrl: "./autocomplete-text.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatAutocompleteModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, MatAutocompleteModule],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

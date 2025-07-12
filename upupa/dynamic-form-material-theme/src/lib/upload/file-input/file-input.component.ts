@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef, SimpleChanges, computed, inject, DestroyRef } from "@angular/core";
+import { Component, Input, forwardRef, SimpleChanges, computed, inject, DestroyRef, DOCUMENT } from "@angular/core";
 import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { ThemePalette } from "@angular/material/core";
@@ -12,7 +12,7 @@ import { DataComponentBase } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT } from "@angular/common";
+
 
 @Component({ standalone: true,
     selector: "file-input",

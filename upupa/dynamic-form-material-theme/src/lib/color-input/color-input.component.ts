@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -19,7 +19,7 @@ import { InputDefaults } from "../defaults";
             multi: true,
         },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective],
 })
 export class MatColorInputComponent extends InputBaseComponent<string> {
     appearance = input(InputDefaults.appearance);

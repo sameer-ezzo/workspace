@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, Input, SimpleChanges, input, model } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -22,7 +22,7 @@ import { MatInputComponent } from "../../input/input.component";
             multi: true,
         },
     ],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
+    imports: [MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
 })
 export class MatSliderComponent extends MatInputComponent<number> {
     floor = model<number>(0);

@@ -1,5 +1,5 @@
-import { DOCUMENT } from "@angular/common";
-import { inject } from "@angular/core";
+
+import { inject, DOCUMENT } from "@angular/core";
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { ContentMetadataConfig, renderMetaTags } from "./page-metadata.strategy";
 import { OpenGraphMetadata } from "../models";

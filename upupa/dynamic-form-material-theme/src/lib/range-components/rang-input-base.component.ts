@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, SimpleChanges } from "@angular/core";
 import {
     NG_VALUE_ACCESSOR,
@@ -21,7 +21,7 @@ import { startWith } from "rxjs";
     template: ``,
     styles: ``,
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => RangeInputBaseComponent), multi: true }],
-    imports: [CommonModule, MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule],
+    imports: [MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule],
 })
 export class RangeInputBaseComponent<T = unknown> extends InputBaseComponent<T> {
     readonly rangeForm = new FormGroup({

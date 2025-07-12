@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, input } from "@angular/core";
 import { ParagraphComponent } from "../paragraph/paragraph.component";
 import { MatCheckbox } from "@angular/material/checkbox";
@@ -9,7 +9,7 @@ import { ReactiveFormsModule } from "@angular/forms";
 
 @Component({
     selector: "check-boxes-template",
-    imports: [CommonModule, ParagraphComponent, MatCheckbox, ErrorsDirective, CommonModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
+    imports: [ParagraphComponent, MatCheckbox, ErrorsDirective, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
     host: {
         "[attr.name]": "name()",
     },

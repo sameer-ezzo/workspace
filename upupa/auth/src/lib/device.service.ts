@@ -1,11 +1,11 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, PLATFORM_ID, inject } from "@angular/core";
+import { Injectable, PLATFORM_ID, inject, DOCUMENT } from "@angular/core";
 
 import { loadScript, randomString, UserDevice } from "@noah-ark/common";
 
 import { firstValueFrom } from "rxjs";
 import { AUTH_OPTIONS } from "./di.token";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser } from "@angular/common";
 
 export type Platform = {
     id: string;

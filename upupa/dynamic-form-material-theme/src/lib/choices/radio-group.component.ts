@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, input } from "@angular/core";
 import { MatRadioModule } from "@angular/material/radio";
 import { ParagraphComponent } from "../paragraph/paragraph.component";
@@ -11,7 +11,7 @@ import { MatError, MatHint } from "@angular/material/form-field";
 
 @Component({
     selector: "radio-group-input",
-    imports: [MatRadioModule, CommonModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
+    imports: [MatRadioModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
     host: {
         "[attr.name]": "name()",
     },

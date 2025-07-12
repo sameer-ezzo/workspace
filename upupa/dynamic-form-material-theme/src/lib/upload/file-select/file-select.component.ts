@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, output, signal } from "@angular/core";
+import { Component, DestroyRef, ElementRef, HostListener, PLATFORM_ID, computed, effect, forwardRef, inject, input, output, signal, DOCUMENT } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { filter } from "rxjs";
@@ -7,7 +7,7 @@ import { ThemePalette } from "@angular/material/core";
 import { FileEvent, RemoveFileEvent, UploadFileSuccessEvent, ViewerExtendedFileVm } from "../viewer-file.vm";
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 
 import { MatError, MatFormFieldModule } from "@angular/material/form-field";
 import { MatButtonModule } from "@angular/material/button";

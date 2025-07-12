@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, input, model } from "@angular/core";
 import { AbstractControl, FormControl, FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -22,7 +22,7 @@ import { PasswordStrength, generatePassword, verifyPassword } from "@noah-ark/co
         },
         { provide: MatFormFieldControl, useExisting: MatPasswordInputComponent },
     ],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule, MatIconModule, MatButtonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, MatIconModule, MatButtonModule],
 })
 export class MatPasswordInputComponent extends MatInputComponent implements Validator {
     confirmPwd = null;
