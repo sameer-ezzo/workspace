@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, SimpleChanges } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
 import { ActionDescriptor, ActionEvent } from "@upupa/common";
-import { AccessType, AuthorizeMessage, Rule, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
+import { AccessType, Rule, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
 import { column, ColumnsDescriptor, DataTableComponent, DefaultTableCellTemplate, reflectTableViewModel } from "@upupa/table";
 import { AUTHORIZATION_TEMPLATES } from "@noah-ark/expression-engine";
@@ -269,7 +269,7 @@ export class PermissionRowViewModel {
     templateUrl: "./rule-permissions-table.component.html",
     styleUrls: ["./rule-permissions-table.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIconModule, MatButtonModule, DataTableComponent, FormsModule],
+    imports: [MatIconModule, TitleCasePipe, MatButtonModule, DataTableComponent, FormsModule],
 })
 export class RulePermissionsTableComponent {
     focused = model<SimplePermission>();
