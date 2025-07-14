@@ -1,4 +1,4 @@
-import { EnvironmentProviders, Injectable, Injector, Provider, Signal, ViewContainerRef, ViewContainerRef, inject, makeEnvironmentProviders } from "@angular/core";
+import { EnvironmentProviders, Injectable, Injector, Provider, Signal, ViewContainerRef, inject, makeEnvironmentProviders } from "@angular/core";
 import { MatDialogConfig, MatDialog, MatDialogRef, MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 import { ActionDescriptor, ActionEvent, component, DynamicTemplate } from "@upupa/common";
 import { DialogWrapperComponent } from "./dialog-wrapper.component";
