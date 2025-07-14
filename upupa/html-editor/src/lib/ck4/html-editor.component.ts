@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser, LocationStrategy } from "@angular/common";
-import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
+import { isPlatformBrowser, LocationStrategy } from "@angular/common";
+import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild, DOCUMENT } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { loadScript } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
@@ -98,9 +98,10 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             image2_captionedClass: "image-captioned",
 
             // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
-            extraAllowedContent: "*[style,id](*);iframe[]; figure()[]; oembed[];",
+            extraAllowedContent: "*[style,id](*);iframe[*]{*}[*]'; figure()[]; oembed[];source[];",
             // disallowedContent: "*{font-family,font-size}",
             allowedContent:true,
+            protectedSource: [ /<iframe[\s\S]*?<\/iframe>/gi ] ,
 
             ...this.config(),
         };

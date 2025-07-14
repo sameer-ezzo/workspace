@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import {
     Component,
     EnvironmentInjector,
@@ -27,7 +27,7 @@ import { signalLink } from "./routing/signals";
 
 @Component({
     selector: "portal",
-    imports: [CommonModule],
+    imports: [],
     template: ` <ng-container #portal></ng-container> `,
 })
 export class PortalComponent<TCom = any> {

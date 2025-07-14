@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, input, Injector, runInInjectionContext, model, viewChild, SimpleChanges, output, InjectionToken } from "@angular/core";
 
 import { MatBtnComponent } from "@upupa/mat-btn";
-import { CommonModule } from "@angular/common";
+
 import { _defaultControl, _defaultForm, ActionEvent, deepAssign, waitForOutput } from "@upupa/common";
 import { Class } from "@noah-ark/common";
 import { FormControl, FormGroup, NG_VALUE_ACCESSOR, NgControl, ReactiveFormsModule } from "@angular/forms";
@@ -24,7 +24,7 @@ export function injectFormViewModel(viewModel: Class | FormViewModelMirror) {
 
 @Component({
     selector: "data-form",
-    imports: [CommonModule, MatBtnComponent, DynamicFormComponent, ReactiveFormsModule, MatProgressSpinnerModule],
+    imports: [MatBtnComponent, DynamicFormComponent, ReactiveFormsModule, MatProgressSpinnerModule],
     templateUrl: "./data-form.component.html",
     styleUrls: ["./data-form.component.scss"],
     providers: [

@@ -1,8 +1,8 @@
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, DOCUMENT } from "@angular/core";
 
 import { ContentMetadataConfig, renderMetaTags } from "./page-metadata.strategy";
 import { MetadataUpdateStrategy } from "../metadata.service";
-import { DOCUMENT } from "@angular/common";
+
 import { TwitterCardMetadata } from "../models";
 
 export type TwitterCardConfig = Pick<ContentMetadataConfig<TwitterCardMetadata>, "imageLoading">;

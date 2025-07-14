@@ -1,4 +1,4 @@
-import { Component, inject, computed, Injector } from "@angular/core";
+import { Component, inject, computed, Injector, DOCUMENT } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { DataService } from "@upupa/data";
 import { AuthService, UserBase } from "@upupa/auth";
@@ -7,7 +7,7 @@ import { DataTableComponent, DefaultTableCellTemplate } from "@upupa/table";
 import { firstValueFrom } from "rxjs";
 import { AdminUserPasswordRestComponent } from "../admin-userpwd-reset/admin-userpwd-reset.component";
 import { ConfirmService, DialogService, SnackBarService } from "@upupa/dialog";
-import { DOCUMENT } from "@angular/common";
+
 import { MatIconModule } from "@angular/material/icon";
 import { MatBtnComponent } from "@upupa/mat-btn";
 import { openFormDialog } from "@upupa/cp";

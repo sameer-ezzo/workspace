@@ -1,5 +1,5 @@
-import { DOCUMENT } from "@angular/common";
-import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef } from "@angular/core";
+
+import { EnvironmentInjector, Type, input, createComponent, TemplateRef, Injector, ComponentRef, DOCUMENT } from "@angular/core";
 import { RouteFeature } from "./route-feature";
 import { PortalComponent } from "../portal.component";
 import { ContentNode } from "./content-node";

@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, model, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, model, signal, DOCUMENT } from "@angular/core";
 import { PermissionsService } from "../permissions.service";
 import { NodeModel } from "../node-model";
-import { DOCUMENT } from "@angular/common";
+
 import { RuleFormComponent } from "../rule-form/rule-form.component";
 import { PermissionsSideBarComponent } from "../permissions-side-bar/permissions-side-bar.component";
 import { MatIconModule } from "@angular/material/icon";

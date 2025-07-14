@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatSliderComponent } from "../slider/slider.component";
@@ -20,7 +20,7 @@ const off = Number.MAX_SAFE_INTEGER;
             multi: true,
         },
     ],
-    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    imports: [FormsModule, ReactiveFormsModule],
 })
 export class MatReviewScaleComponent extends MatSliderComponent {
     readonly image = input<string>(undefined);

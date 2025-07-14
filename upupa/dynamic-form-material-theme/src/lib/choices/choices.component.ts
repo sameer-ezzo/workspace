@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { ChangeDetectionStrategy, Component, computed, ElementRef, forwardRef, HostListener, inject, input, output } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -16,7 +16,7 @@ import { NormalizedItem } from "@upupa/data";
 
 @Component({
     selector: "choice-view",
-    imports: [CommonModule, ParagraphComponent, MatIcon],
+    imports: [ParagraphComponent, MatIcon],
     template: ` @if (item().image) {
             <img [src]="item().image" alt="Item Image" />
         } @else {
@@ -66,18 +66,17 @@ export class ChoiceViewTemplateComponent<T extends NormalizedItem = NormalizedIt
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatChoicesComponent), multi: true }],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        FormsModule,
-        PortalComponent,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        FocusDirective,
-        CommonModule,
-        MatCheckboxModule,
-        MatRadioModule,
-        MatIcon,
-        ErrorsDirective,
-    ],
+    FormsModule,
+    PortalComponent,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FocusDirective,
+    MatCheckboxModule,
+    MatRadioModule,
+    MatIcon,
+    ErrorsDirective
+],
 })
 export class MatChoicesComponent extends MatSelectComponent {
     direction = input<"horizontal" | "vertical">("horizontal");

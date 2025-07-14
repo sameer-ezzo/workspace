@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Injector, SimpleChanges, computed, inject, input, model, output, runInInjectionContext } from "@angular/core";
 
 import { AuthService, IdPName } from "@upupa/auth";
-import { CommonModule } from "@angular/common";
+
 import { LoginFormComponent } from "../login-form/login-form.component";
 import { MatButtonModule } from "@angular/material/button";
 import { FormScheme } from "@upupa/dynamic-form";
@@ -17,7 +17,7 @@ const loginFormProviders = (providers) => providers.filter(loginFormMatcher);
     selector: "login",
     styleUrls: ["./login.component.scss"],
     templateUrl: "./login.component.html",
-    imports: [LoginFormComponent, MatButtonModule, CommonModule, GoogleIdProviderButton],
+    imports: [LoginFormComponent, MatButtonModule, GoogleIdProviderButton],
     host: { class: "login-page" },
 })
 export class LoginComponent {

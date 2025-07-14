@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { ChangeDetectionStrategy, Component, effect, ElementRef, forwardRef, inject, Injector, input, viewChild, ViewEncapsulation } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
@@ -19,7 +19,7 @@ import { InputDefaults } from "../defaults";
         },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, ErrorsDirective, MatFormFieldModule, MatInputModule, ErrorsDirective],
 })
 export class MatInputComponent<T = string> extends InputBaseComponent<T> {
     inlineError = true;

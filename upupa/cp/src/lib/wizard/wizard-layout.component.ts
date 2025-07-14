@@ -18,7 +18,7 @@ import {
 import { AbstractControl, ReactiveFormsModule, StatusChangeEvent } from "@angular/forms";
 import { MatStepper, MatStepperModule } from "@angular/material/stepper";
 import { ComponentOutputsHandlers, DynamicComponent, DynamicComponentRoute, PortalComponent, provideRoute, RouteFeature, waitForOutput } from "@upupa/common";
-import { CommonModule } from "@angular/common";
+
 import { MatButton, MatButtonModule } from "@angular/material/button";
 import { Route } from "@angular/router";
 import { CdkStep, STEPPER_GLOBAL_OPTIONS, StepperOptions, StepperOrientation, StepperSelectionEvent } from "@angular/cdk/stepper";
@@ -82,7 +82,7 @@ export type WizardStepRef = {
 @Component({
     selector: "wizard-layout",
     templateUrl: "./wizard-layout.component.html",
-    imports: [MatStepperModule, PortalComponent, CommonModule, MatButtonModule, ReactiveFormsModule, ButtonControl],
+    imports: [MatStepperModule, PortalComponent, MatButtonModule, ReactiveFormsModule, ButtonControl],
     providers: [
         {
             provide: STEPPER_GLOBAL_OPTIONS,

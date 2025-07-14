@@ -1,4 +1,4 @@
-import { makeEnvironmentProviders, inject } from "@angular/core";
+import { makeEnvironmentProviders, inject, DOCUMENT } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -9,7 +9,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatTabsModule } from "@angular/material/tabs";
-import { CommonModule, DOCUMENT } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { UploadService } from "./upload.service";
 import { UploadClient } from "./upload.client";
 import { STORAGE_BASE } from "./di.token";

@@ -1,23 +1,24 @@
 import {
-    Component,
-    OnChanges,
-    SimpleChanges,
-    Type,
-    ElementRef,
-    ChangeDetectionStrategy,
-    WritableSignal,
-    signal,
-    HostListener,
-    inject,
-    input,
-    output,
-    effect,
-    Injector,
-    InjectionToken,
-    DestroyRef,
-    forwardRef,
-    InjectOptions,
-    viewChild,
+  Component,
+  OnChanges,
+  SimpleChanges,
+  Type,
+  ElementRef,
+  ChangeDetectionStrategy,
+  WritableSignal,
+  signal,
+  HostListener,
+  inject,
+  input,
+  output,
+  effect,
+  Injector,
+  InjectionToken,
+  DestroyRef,
+  forwardRef,
+  InjectOptions,
+  viewChild,
+  DOCUMENT
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -32,21 +33,7 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable, MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
-import {
-    CommonModule,
-    CurrencyPipe,
-    DatePipe,
-    DecimalPipe,
-    KeyValuePipe,
-    PercentPipe,
-    SlicePipe,
-    LowerCasePipe,
-    I18nPluralPipe,
-    I18nSelectPipe,
-    TitleCasePipe,
-    UpperCasePipe,
-    DOCUMENT,
-} from "@angular/common";
+import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe, PercentPipe, SlicePipe, LowerCasePipe, I18nPluralPipe, I18nSelectPipe, TitleCasePipe, UpperCasePipe } from "@angular/common";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";

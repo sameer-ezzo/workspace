@@ -18,7 +18,7 @@ import { createDataAdapter, DataAdapter, DataAdapterDescriptor } from "@upupa/da
 import { ActivatedRoute } from "@angular/router";
 import { _defaultControl, DynamicComponent, PortalComponent } from "@upupa/common";
 
-import { CommonModule } from "@angular/common";
+
 import { Class } from "@noah-ark/common";
 import { DataTableComponent } from "../data-table.component";
 import { reflectTableViewModel } from "../decorator";
@@ -27,7 +27,7 @@ import { toObservable } from "@angular/core/rxjs-interop";
 
 @Component({
     selector: "data-list",
-    imports: [CommonModule, PortalComponent, DataTableComponent],
+    imports: [PortalComponent, DataTableComponent],
     templateUrl: "./data-list.component.html",
     styleUrls: ["./data-list.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,

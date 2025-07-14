@@ -1,4 +1,4 @@
-import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, DestroyRef, PLATFORM_ID } from "@angular/core";
+import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, DestroyRef, PLATFORM_ID, DOCUMENT } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ThemePalette } from "@angular/material/core";
 import { DataService } from "@upupa/data";
@@ -8,7 +8,7 @@ import { AuthService } from "@upupa/auth";
 import { openFileDialog } from "@upupa/upload";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { isPlatformBrowser } from "@angular/common";
 import { MatError } from "@angular/material/form-field";
 
 @Component({

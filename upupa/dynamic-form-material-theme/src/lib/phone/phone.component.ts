@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, forwardRef } from "@angular/core";
+import { Component, DOCUMENT, forwardRef } from "@angular/core";
 import { ElementRef, input, viewChild, model, inject } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -13,7 +13,7 @@ import { InputDefaults } from "../defaults";
 import { InputBaseComponent } from "@upupa/common";
 import { takeWhile, tap } from "rxjs/operators";
 import { FloatLabelType, MatFormFieldAppearance } from "@angular/material/form-field";
-import { DOCUMENT } from "@angular/common";
+
 import { loadScript } from "@noah-ark/common";
 
 declare const libphonenumber: any;

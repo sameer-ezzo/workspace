@@ -1,8 +1,8 @@
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, DOCUMENT } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 import { HttpClient, HttpRequest, HttpEventType, HttpResponse, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { FileInfo, UploadStream } from "./model";
-import { DOCUMENT } from "@angular/common";
+
 
 @Injectable({ providedIn: "root" })
 export class UploadService {

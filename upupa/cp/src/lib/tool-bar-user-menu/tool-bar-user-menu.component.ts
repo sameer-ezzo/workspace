@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, Input } from "@angular/core";
+import { Component, computed, inject, input, Input, DOCUMENT } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
@@ -8,7 +8,7 @@ import { USER_PICTURE_RESOLVER } from "../di.token";
 import { getUserInitialsImage } from "../user-image.service";
 import { RouterLink } from "@angular/router";
 import { MatIcon } from "@angular/material/icon";
-import { CommonModule, DOCUMENT } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { MatDivider } from "@angular/material/divider";
 import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
 import { MatIconButton } from "@angular/material/button";

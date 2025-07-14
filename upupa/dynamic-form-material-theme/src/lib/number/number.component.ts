@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, forwardRef, input } from "@angular/core";
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
@@ -11,7 +11,7 @@ import { InputDefaults } from "../defaults";
     templateUrl: "./number.component.html",
     styleUrls: ["./number.component.scss"],
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MatNumberComponent), multi: true }],
-    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective, CommonModule],
+    imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, ErrorsDirective],
 })
 export class MatNumberComponent extends InputBaseComponent<number> {
     inlineError = true;
