@@ -6,9 +6,11 @@ import { DialogConfig } from "@upupa/dialog";
 import { reflectFormViewModelType, SubmitResult } from "@upupa/dynamic-form";
 import { ITableCellTemplate } from "@upupa/table";
 import { openFormDialog } from "../open-form-dialog.fun";
+import { MatDialogState } from "@angular/material/dialog";
 
+type FormDialogOptions = { closeOnSuccess?: boolean } & Partial<DialogConfig>;
 @Component({
-    selector: "edit-btn",
+    selector: "form-dialog-button",
     template: ` <mat-btn (action)="openDialog()" [buttonDescriptor]="btn()"></mat-btn>`,
     imports: [MatBtnComponent],
 })
@@ -17,7 +19,7 @@ export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
 
     item = input<TItem>(); //from cell template
     data = input<(btn: FormDialogButton<TItem>) => TItem>(() => this.item());
-    dialogOptions = input<any>({});
+    dialogOptions = input<FormDialogOptions>({});
     btn = input<ActionDescriptor>({ name: "_", color: "primary", variant: "raised" });
     formViewModel = input<Class<TItem>>();
 
@@ -33,12 +35,17 @@ export class FormDialogButton<TItem = unknown> implements ITableCellTemplate {
             return (await this.data()?.(this)) ?? this.item() ?? new mirror.viewModelType();
         });
 
-        const { dialogRef, componentRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, { dialogOptions, defaultAction: true, injector: this.injector });
+        const { dialogRef, componentRef } = await openFormDialog<Class, TItem>(this.formViewModel(), value, {
+            dialogOptions,
+            closeOnSuccess: dialogOptions.closeOnSuccess ?? true,
+            defaultAction: true,
+            injector: this.injector,
+        });
         componentRef.instance.submitted.subscribe((result: SubmitResult<TItem>) => {
             this.submit.emit(result);
             if (result?.submitResult) {
                 const { submitResult } = result;
-                dialogRef.close(result);
+                if (dialogOptions.closeOnSuccess !== false && dialogRef.getState() === MatDialogState.OPEN) dialogRef.close(result);
                 this.success.emit(submitResult);
             } else if (result?.error) this.error.emit(result.error);
             else this.cancel.emit();
@@ -51,7 +58,7 @@ export function formDialogButton<TItem = unknown>(
     value: (btn: FormDialogButton<TItem>) => TItem = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
-        dialogOptions?: Partial<DialogConfig>;
+        dialogOptions?: FormDialogOptions;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
@@ -71,7 +78,7 @@ export function createButton<TItem = unknown>(
     value: (btn: FormDialogButton<TItem>) => TItem = () => new formVM(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
-        dialogOptions?: Partial<DialogConfig>;
+        dialogOptions?: FormDialogOptions;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
@@ -83,7 +90,7 @@ export function createButton<TItem = unknown>(
         type: "button",
     };
     const btn = { ...defaultCreateDescriptor, ...options?.descriptor } as ActionDescriptor;
-    const dialogOptions = { title: $localize`Create`, ...options?.dialogOptions };
+    const dialogOptions = { title: $localize`Create`, ...options?.dialogOptions } as FormDialogOptions;
     return formDialogButton<TItem>(formVM, value, { descriptor: btn, dialogOptions, outputs: options?.outputs });
 }
 
@@ -92,7 +99,7 @@ export function editButton<TItem = unknown>(
     value: (btn: FormDialogButton<TItem>) => TItem = (btn) => btn.item(),
     options?: {
         descriptor?: Partial<ActionDescriptor>;
-        dialogOptions?: Partial<DialogConfig>;
+        dialogOptions?: FormDialogOptions;
         outputs?: ComponentOutputsHandlers<FormDialogButton<TItem>>;
     },
 ): DynamicComponent<FormDialogButton<TItem>> {
