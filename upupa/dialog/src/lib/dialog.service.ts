@@ -45,7 +45,6 @@ export class DialogService {
     readonly dialog: MatDialog = inject(MatDialog);
     readonly router = inject(Router);
     private readonly _injector = inject(Injector);
-    private readonly viewContainerRef = inject(ViewContainerRef, { optional: true });
     constructor() {
         // What if the dialog is opened with the option closeOnNavigation = false?
         // this.router.events.subscribe((event) => {
@@ -67,10 +66,11 @@ export class DialogService {
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
-            viewContainerRef: this.viewContainerRef, //https://github.com/angular/components/issues/25262#issuecomment-2574327824 AND https://github.com/angular/components/pull/30610
+            // viewContainerRef: this.viewContainerRef,
 
             //TODO check componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
-            // viewContainerRef: injector?.get(ViewContainerRef),
+            viewContainerRef: injector?.get(ViewContainerRef, undefined, { optional: true }),
+            //https://github.com/angular/components/issues/25262#issuecomment-2574327824 AND https://github.com/angular/components/pull/30610
         });
 
         matDialogRef.componentRef.setInput("template", _template);
