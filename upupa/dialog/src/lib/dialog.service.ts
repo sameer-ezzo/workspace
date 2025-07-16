@@ -44,7 +44,7 @@ export class DialogService {
     // stack: DialogRef[] = [];
     readonly dialog: MatDialog = inject(MatDialog);
     readonly router = inject(Router);
-
+    private readonly _injector = inject(Injector);
     constructor() {
         // What if the dialog is opened with the option closeOnNavigation = false?
         // this.router.events.subscribe((event) => {
@@ -61,14 +61,16 @@ export class DialogService {
         if (!template) throw new Error("template is not provided for dialog!");
 
         const _template = component(template);
-        const injector = _template.injector ?? options?.injector;
+        const injector = _template.injector ?? options?.injector ?? this._injector;
         _template.injector = undefined; // make the portal component use the DialogWrapperComponent injector that can provide DialogRef
         const matDialogRef = this.dialog.open<DialogWrapperComponent, TData, TResult>(DialogWrapperComponent, {
             ...options,
             injector,
+            // viewContainerRef: this.viewContainerRef,
 
             //TODO check componentFactoryResolver: injector?.get(ComponentFactoryResolver), // workaround to make injector passed into attached component https://github.com/angular/components/issues/25262
-            // viewContainerRef: injector?.get(ViewContainerRef),
+            viewContainerRef: injector?.get(ViewContainerRef, undefined, { optional: true }),
+            //https://github.com/angular/components/issues/25262#issuecomment-2574327824 AND https://github.com/angular/components/pull/30610
         });
 
         matDialogRef.componentRef.setInput("template", _template);

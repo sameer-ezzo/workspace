@@ -15,7 +15,8 @@
     flex-flow: row nowrap;
     align-items: center;
     height: 100%;
-    width: fit-content;
+    max-width: 400px;
+
     overflow: hidden;
     position: relative;
     justify-content: center;
