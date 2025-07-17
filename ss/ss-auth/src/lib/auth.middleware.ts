@@ -16,7 +16,10 @@ function promisify<T>(o: Observable<T>): Promise<T> {
 export class AuthenticationInterceptor implements NestInterceptor {
     constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
-    providers: HttpAuthenticationProvider[] = [new BearerAuthenticationProvider(this.auth!), new CloudflareCookieAuthenticationProvider(this.auth!)];
+    providers: HttpAuthenticationProvider[] = [
+        new BearerAuthenticationProvider(this.auth!),
+        new CloudflareCookieAuthenticationProvider(this.auth!),
+    ];
 
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
         switch (context.getType()) {

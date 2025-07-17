@@ -1,7 +1,9 @@
-import { Principle } from './user';
-import { File } from './file';
+import { Principle } from "./user";
+import { File } from "./file";
 
 export type IncomingMessage<TPayload = unknown> = {
+    req?: any;
+    res?: any;
     /**
      * @description a friendly name marking up the action being handled. It is used for authorization, logging, documentation etc...
      */
@@ -22,7 +24,7 @@ export type IncomingMessage<TPayload = unknown> = {
      * @description Additional data that can be passed with the message.
      */
     ctx: {
-        transport?: 'http' | 'rpc' | 'ws';
+        transport?: "http" | "rpc" | "ws";
         route?: string;
         authProvider?: any; // HttpAuthenticationProvider from @ss/auth
     } & Record<string, unknown>;

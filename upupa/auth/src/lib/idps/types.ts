@@ -5,7 +5,7 @@ import { authProviders } from "../auth.provider";
 import { FacebookIdProviderOptions } from "./facebook/facebook.idp";
 import { IdProviderService } from "./google/google-id-provider.service";
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
-import { interceptFn } from "../auth.interceptor";
+import { AuthInterceptor } from "../auth.interceptor";
 import { AuthService } from "../auth.service";
 
 export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password" | "username-and-password";
@@ -32,10 +32,10 @@ export function provideAuth(options: (() => Partial<AuthOptions>) | Partial<Auth
     return makeEnvironmentProviders([
         ...authProviders(opts),
         ...providers,
-        provideHttpClient(withFetch(), withInterceptors([interceptFn])),
-        provideAppInitializer(async () => {
-            const auth = inject(AuthService);
-            await auth.refresh();
-        }),
+        provideHttpClient(withFetch(), withInterceptors([AuthInterceptor])),
+        // provideAppInitializer(async () => {
+        //     const auth = inject(AuthService);
+        //     await auth.refresh();
+        // }),
     ]);
 }

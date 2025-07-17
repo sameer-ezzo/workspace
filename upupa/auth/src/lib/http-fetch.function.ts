@@ -6,7 +6,7 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
 
     if (timeout > 0) {
         controller = new AbortController();
-        options['signal'] = controller.signal;
+        options["signal"] = controller.signal;
     }
 
     if (body === null) {
@@ -16,14 +16,16 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
         const headers: any = {};
         let payload = null;
 
-        if (t === 'string' || t === 'number') {
-            payload = body + '';
+        if (t === "string" || t === "number") {
+            payload = body + "";
         } else {
             payload = JSON.stringify(body);
-            headers['Content-Type'] = 'application/json';
+            headers["Content-Type"] = "application/json";
         }
 
-        fetcher = fetch(url, { method: 'POST', body: payload, headers, ...options });
+        console.log(`HTTP Fetch URL: ${url}`);
+
+        fetcher = fetch(url, { method: "POST", credentials: "include", body: payload, headers, ...options });
     }
 
     // Create a timeout promise
@@ -40,10 +42,10 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
         response = await f;
 
         if (!(response instanceof Response)) throw new Error("Unexpected response type");
-        const contentType = response.headers.get('content-type') || '';
+        const contentType = response.headers.get("content-type") || "";
         let responseBody: any;
 
-        if (contentType.startsWith('application/json')) {
+        if (contentType.startsWith("application/json")) {
             responseBody = await response.json();
         } else {
             responseBody = await response.text();
@@ -55,8 +57,8 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
             throw { status: response.status, body: responseBody, response };
         }
     } catch (e) {
-        const error = typeof e === 'object' && 'message' in e ? e : { message: e };
-        if (error['message'] === "Failed to fetch") throw { status: 0, ...error };
+        const error = typeof e === "object" && "message" in e ? e : { message: e };
+        if (error["message"] === "Failed to fetch") throw { status: 0, ...error };
         throw e;
     }
 }

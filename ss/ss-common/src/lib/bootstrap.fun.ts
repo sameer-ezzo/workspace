@@ -21,6 +21,7 @@ import { ConfigOptions } from "express-handlebars/types";
 import { env } from "process";
 import { NestFactoryStatic } from "@nestjs/core/nest-factory";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
+import cookieParser from "cookie-parser";
 
 export let appName: string;
 export let application: NestExpressApplication;
@@ -37,6 +38,11 @@ export type AppOptions = {
     cors?: {
         enabled: boolean; // Indicates if CORS should be enabled
         options?: CorsOptions; // Optional configuration when CORS is enabled
+    };
+
+    useCookies?: {
+        secret: string | string[]; // Secret for signing cookies
+        options?: cookieParser.CookieParseOptions;
     };
 };
 
@@ -146,6 +152,7 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
             parameterLimit: 1000,
         }),
     );
+
     if (options.middlewares) for (const mw of options.middlewares) application.use(mw);
 
     //START SOCKET ADAPTER
@@ -159,7 +166,10 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
 
     const cors = options.cors ?? { enabled: env["NODE_ENV"] === "development", options: { origin: "*" } };
     if (cors.enabled) application.enableCors(cors.options);
-
+    
+    if (options["useCookies"]) {
+        application.use(cookieParser(options["useCookies"].secret, options["useCookies"].options));
+    }
     application.useGlobalInterceptors();
 
     //START MICROSERVICES

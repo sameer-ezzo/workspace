@@ -1,8 +1,8 @@
-import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT } from "@angular/core";
+import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT, makeStateKey, TransferState } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpRequest } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router } from "@angular/router";
 import { httpFetch } from "./http-fetch.function";
@@ -64,7 +64,7 @@ export class LocalStorageTokenStore implements TokenStore {
 
 export class RequestTokenStore implements TokenStore {
     req = inject(REQUEST);
-
+    store = new Map<string, unknown>();
     getHeader(key: string): string {
         return this.req?.headers.get(key) ?? "";
     }
@@ -94,10 +94,10 @@ export class RequestTokenStore implements TokenStore {
     }
 
     setToken(key: string, value: string): void {
-        throw new Error("Method not implemented.");
+        this.store.set(key, value);
     }
     removeToken(key: string): void {
-        throw new Error("Method not implemented.");
+        this.store.delete(key);
     }
 
     removeRefreshToken() {
@@ -122,31 +122,16 @@ export class AuthService {
     user$ = this._user$.asObservable();
     userSignal: Signal<Principle> = toSignal(this._user$);
     user: Principle = null;
+    private readonly transferState = inject(TransferState);
 
     private _token$ = new Subject<string>();
     token$ = this._token$.asObservable();
-
-    // observeUrlAccessToken$ = interval(200).pipe(
-    //     filter(() => !this.router),
-    //     take(1),
-    //     switchMap((x) => this.router.events),
-    //     filter((e) => e instanceof ActivationEnd), //if access_token is provided by the link switch to it
-    //     tap((e: ActivationEnd) => {
-    //         const access_token = e.snapshot.queryParams["access_token"];
-    //         const principle = this.jwt(access_token);
-    //         if (access_token && principle) {
-    //             const refresh_token = e.snapshot.queryParams["refresh_token"] || this.get_refresh_token();
-    //             this.setTokens({ access_token, refresh_token });
-    //             this.triggerNext(principle);
-    //         }
-    //     }),
-    //     switchMap((x) => this.user$),
-    // );
 
     private readonly localStorage: TokenStore = this.isBrowser ? new LocalStorageTokenStore() : new RequestTokenStore();
 
     public readonly options = inject(AUTH_OPTIONS);
     public readonly baseUrl = this.options.base_url;
+
     readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
     get IdProviders(): IdPName[] {
         return this.authIdPs.map((x) => x.IdpName);
@@ -173,9 +158,35 @@ export class AuthService {
             //auto refresh identity
             this.refreshed$.pipe(delayWhen(() => interval(1000 * 60 * 15))).subscribe(() => this.refresh());
             this.refresh();
-        } else {
-            this.refresh();
         }
+    }
+
+    fromCookies(req: Request | HttpRequest<unknown>): Principle | null {
+        if (!req) {
+            console.warn("No request object provided");
+            return null;
+        }
+        const cookies = req.headers.get("cookie"); // Get the raw Cookie header
+
+        if (cookies) {
+            // Parse the cookies to find 'ssr_jwt'
+            const parsedCookies = cookies
+                .split(";")
+                .map((s) => s.trim())
+                .reduce((acc, current) => {
+                    const [key, value] = current.split("=");
+                    acc[key] = value;
+                    return acc;
+                }, {});
+
+            const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies["ssr_jwt"] || "{}")) as { access_token?: string; refresh_token?: string };
+            if (!access_token) return this.user;
+            this._access_token = access_token;
+            this._refresh_token = refresh_token;
+            this.triggerNext(this.jwt(access_token));
+        }
+
+        return this.user;
     }
 
     private readonly doc = inject(DOCUMENT);
@@ -185,6 +196,8 @@ export class AuthService {
             this.setTokens(null);
         });
     }
+    private _access_token: string | null = null;
+    private _refresh_token: string | null = null;
 
     private triggerNext(user: any) {
         if (user) {
@@ -200,10 +213,10 @@ export class AuthService {
     }
 
     get_token() {
-        return this.localStorage.getAccessToken();
+        return this._access_token ?? this.localStorage.getAccessToken();
     }
     get_refresh_token() {
-        return this.localStorage.getRefreshToken();
+        return this._refresh_token ?? this.localStorage.getRefreshToken();
     }
 
     jwt(tokenString: string): any {
@@ -223,10 +236,16 @@ export class AuthService {
             return null;
         }
     }
-    signout() {
-        this.localStorage.removeAccessToken();
-        this.localStorage.removeRefreshToken();
-        this.triggerNext(null);
+    async signout() {
+        try {
+            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
+            if (!success) return;
+            this.localStorage.removeAccessToken();
+            this.localStorage.removeRefreshToken();
+            this.triggerNext(null);
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
     }
 
     async checkUser(usernameOrEmailOrPhone: string): Promise<{ canLogin: boolean } & Record<string, unknown>> {
@@ -248,6 +267,7 @@ export class AuthService {
     async refresh(refresh_token?: string): Promise<Principle | null> {
         refresh_token = refresh_token ? refresh_token : this.get_refresh_token();
         let principle: Principle = null;
+
         if (refresh_token) {
             try {
                 const tokens = await httpFetch(this.baseUrl, { grant_type: "refresh", refresh_token });
@@ -276,6 +296,8 @@ export class AuthService {
 
     private setTokens(tokens: { access_token: string; refresh_token: string }) {
         if (tokens) {
+            this._access_token = tokens.access_token;
+            this._refresh_token = tokens.refresh_token;
             this.localStorage.setAccessToken(tokens?.access_token);
             this.localStorage.setRefreshToken(tokens?.refresh_token);
         } else {

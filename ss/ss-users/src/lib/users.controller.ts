@@ -1,16 +1,16 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Redirect, Req, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Redirect, Req, Request, Res, UseGuards } from "@nestjs/common";
+import { Response } from "express";
 import { AuthGuard } from "@nestjs/passport";
-import { firstValueFrom } from "rxjs";
 
 import type { IncomingMessage, UserDevice } from "@noah-ark/common";
-import { delay, User } from "@noah-ark/common";
+import { User } from "@noah-ark/common";
 
 import { Authorize, AuthorizeService } from "@ss/rules";
-import { appName, Broker, EndPoint, Message } from "@ss/common";
+import { EndPoint, Message } from "@ss/common";
 import { DataChangedEvent, DataService } from "@ss/data";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { logger } from "./logger";
-import { Auth, AuthService, TokenTypes, UserDocument } from "@ss/auth";
+import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
 import { AuthException, AuthExceptions } from "./auth-exception";
 import { UsersOptions } from "./types";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
@@ -194,6 +194,7 @@ export class UsersController {
         const resetToken = await this.auth.issueResetPasswordToken(user);
         const result = await this.auth.resetPassword(resetToken, new_password, forceChangePwd === true);
         await this.auth.signOut(user);
+
         if (result) return { result: true };
         else throw new HttpException("INVALID_OPERATION", HttpStatus.BAD_REQUEST);
     }
@@ -462,13 +463,33 @@ export class UsersController {
 
     @Authorize({ by: "anonymous", access: "grant" })
     @EndPoint({ http: { method: "POST", path: "" }, operation: "Login" })
-    public async signIn(@Message() msg: IncomingMessage<SigninRequest>) {
+    public async signIn(@Res() res: Response, @Message() msg: IncomingMessage<SigninRequest>) {
         try {
-            return await this._doSignIn(msg);
+            const { access_token, refresh_token } = await this._doSignIn(msg);
+            // --- NEW: Set a non-HttpOnly cookie for SSR handover ---
+            res.cookie("ssr_jwt", JSON.stringify({ access_token, refresh_token }), {
+                httpOnly: false, // Client-side JS can read this (important for SSR server)
+                secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+                maxAge: 3600000, // 1 hour (same as token expiry)
+                sameSite: "lax", // Good for CSRF protection
+                // path: '/', // Default, usually not needed to specify
+            });
+            res.send({ access_token, refresh_token });
         } catch (error) {
             if (error instanceof AuthException) throw new HttpException(error, HttpStatus.BAD_REQUEST);
             else throw error;
         }
+    }
+
+    @Authorize({ by: "user", access: "grant" })
+    @EndPoint({ http: { method: "GET", path: "signout" }, operation: "Sign out" })
+    public async signOut(@Res() res: Response) {
+        res.clearCookie("ssr_jwt", {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+        res.send({ success: true, message: "Logout successful" });
     }
 
     @EndPoint({ http: { method: "POST", path: "signup" }, operation: "Sign up" })

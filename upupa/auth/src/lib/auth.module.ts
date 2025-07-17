@@ -1,7 +1,5 @@
-import { NgModule, ModuleWithProviders, Provider, InjectionToken, makeEnvironmentProviders, EnvironmentProviders } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Provider, InjectionToken } from "@angular/core";
 import { AuthOptions } from "./auth-options";
-import { authProviders } from "./auth.provider";
 
 const _options = new AuthOptions();
 
