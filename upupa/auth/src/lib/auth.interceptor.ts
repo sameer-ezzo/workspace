@@ -15,7 +15,7 @@ function tryRefreshToken(auth: AuthService, req: Request | HttpRequest<unknown>)
         if (now > exp || exp - now < 60000) return (refreshingIdentity = auth.refresh());
     }
     // if (isServer) return Promise.resolve(); // no need to refresh on server side
-    if (auth.get_refresh_token()) return (refreshingIdentity = auth.refresh());
+    else if (auth.get_refresh_token()) return (refreshingIdentity = auth.refresh());
     return Promise.resolve();
 }
 export function AuthInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
