@@ -35,6 +35,7 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     readonly dataSource = new ClientDataSource<T>([], "_id" as keyof T);
     readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as keyof T, undefined, undefined, undefined, {
         page: { pageSize: Number.MAX_SAFE_INTEGER },
+        autoRefresh: true,
     });
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
@@ -69,6 +70,7 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
         await super.ngOnChanges(changes);
         if (changes["value"]) {
             this.dataSource.all = this.value();
+            this.adapter.refresh();
         }
     }
     override writeValue(value: T[]): void {
