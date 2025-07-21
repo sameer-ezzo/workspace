@@ -1,5 +1,23 @@
 import { _env_secret } from "@ss/common";
 import { userSchemaFactory } from "./user.schema";
+import { CookieOptions } from "express";
+
+export class AuthCookiesOptions {
+    constructor(
+        readonly enabled = false,
+        readonly cookieName = "ssr_jwt",
+        readonly options?: CookieOptions,
+    ) {
+        this.options = {
+            httpOnly: false, // Client-side JS can read this (important for SSR server)
+            secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+            maxAge: 3600000, // 1 hour (same as token expiry)
+            sameSite: "lax", // Good for CSRF protection
+            // path: '/', // Default, usually not needed to specify
+            ...options,
+        };
+    }
+}
 
 export class AuthOptions {
     resetTokenExpiry: number | string = "10m"; // https://github.com/zeit/ms
@@ -18,4 +36,6 @@ export class AuthOptions {
 
     dbName = "DB_DEFAULT";
     userSchema = userSchemaFactory("ObjectId");
+
+    useCookies = new AuthCookiesOptions();
 }

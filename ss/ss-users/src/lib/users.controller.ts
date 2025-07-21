@@ -466,14 +466,10 @@ export class UsersController {
     public async signIn(@Res() res: Response, @Message() msg: IncomingMessage<SigninRequest>) {
         try {
             const { access_token, refresh_token } = await this._doSignIn(msg);
-            // --- NEW: Set a non-HttpOnly cookie for SSR handover ---
-            res.cookie("ssr_jwt", JSON.stringify({ access_token, refresh_token }), {
-                httpOnly: false, // Client-side JS can read this (important for SSR server)
-                secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-                maxAge: 3600000, // 1 hour (same as token expiry)
-                sameSite: "lax", // Good for CSRF protection
-                // path: '/', // Default, usually not needed to specify
-            });
+            const { useCookies } = this.auth.options;
+            if (useCookies?.enabled === true) {
+                res.cookie(useCookies.cookieName, JSON.stringify({ access_token, refresh_token }), useCookies.options);
+            }
             res.send({ access_token, refresh_token });
         } catch (error) {
             if (error instanceof AuthException) throw new HttpException(error, HttpStatus.BAD_REQUEST);
@@ -484,11 +480,10 @@ export class UsersController {
     @Authorize({ by: "user", access: "grant" })
     @EndPoint({ http: { method: "GET", path: "signout" }, operation: "Sign out" })
     public async signOut(@Res() res: Response) {
-        res.clearCookie("ssr_jwt", {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
+        const { useCookies } = this.auth.options;
+        if (useCookies?.enabled === true) {
+            res.clearCookie(useCookies.cookieName, useCookies.options);
+        }
         res.send({ success: true, message: "Logout successful" });
     }
 

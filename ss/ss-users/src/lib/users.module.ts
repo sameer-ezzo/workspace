@@ -1,9 +1,8 @@
-import { DynamicModule, Inject, Module, OnModuleInit, Provider } from "@nestjs/common";
+import { DynamicModule, Inject, OnModuleInit, Provider } from "@nestjs/common";
 import { UsersController } from "./users.controller";
-import { CommonModule, logger } from "@ss/common";
+import { logger } from "@ss/common";
 import { DataService } from "@ss/data";
-import { RulesModule } from "@ss/rules";
-import { AuthModule, AuthService } from "@ss/auth";
+import { AuthService } from "@ss/auth";
 import { UsersOptions } from "./types";
 import { User } from "@noah-ark/common";
 import { EventEmitterModule } from "@nestjs/event-emitter";
