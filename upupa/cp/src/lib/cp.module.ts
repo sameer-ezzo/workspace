@@ -4,7 +4,7 @@ import { CP_OPTIONS, USER_PICTURE_RESOLVER } from "./di.token";
 import { DataService } from "@upupa/data";
 import { getUserInitialsImage } from "./user-image.service";
 import { AuthService } from "@upupa/auth";
-import { catchError, map, of, switchMap } from "rxjs";
+import { catchError, filter, map, of, switchMap } from "rxjs";
 
 import { makeEnvironmentProviders, DOCUMENT } from "@angular/core";
 
@@ -13,6 +13,7 @@ export const DEFAULT_USER_AVATAR_PROVIDER = {
     useFactory: (auth: AuthService, data: DataService, document) => {
         if (!auth.user$) return of(getUserInitialsImage(document, ""));
         return auth.user$.pipe(
+            filter((u) => !!u),
             switchMap((u) =>
                 data.get<{ picture: string }>(`/user/${u.sub}?select=picture`).pipe(
                     map((res) => res.data?.[0]),

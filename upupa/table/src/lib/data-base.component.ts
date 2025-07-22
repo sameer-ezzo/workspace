@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, inject, input, model, output, signal } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { DataAdapter, FilterDescriptor, NormalizedItem } from "@upupa/data";
 import { SelectionModel } from "@angular/cdk/collections";
 import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
 import { _defaultControl } from "@upupa/common";
@@ -157,7 +157,13 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     pageChange = output<PageEvent>();
     async goto(page: PageEvent) {
-        await this.adapter().load({ page });
+        const filter = this.adapter().filter();
+        console.log(filter);
+
+        await this.adapter().load({
+            filter,
+            page,
+        });
         this.pageChange.emit(page);
     }
 

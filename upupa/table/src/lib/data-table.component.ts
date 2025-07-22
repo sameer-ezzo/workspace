@@ -1,24 +1,23 @@
 import {
-  Component,
-  OnChanges,
-  SimpleChanges,
-  Type,
-  ElementRef,
-  ChangeDetectionStrategy,
-  WritableSignal,
-  signal,
-  HostListener,
-  inject,
-  input,
-  output,
-  effect,
-  Injector,
-  InjectionToken,
-  DestroyRef,
-  forwardRef,
-  InjectOptions,
-  viewChild,
-  DOCUMENT
+    Component,
+    OnChanges,
+    SimpleChanges,
+    Type,
+    ElementRef,
+    ChangeDetectionStrategy,
+    WritableSignal,
+    signal,
+    HostListener,
+    inject,
+    input,
+    output,
+    effect,
+    Injector,
+    InjectionToken,
+    DestroyRef,
+    forwardRef,
+    InjectOptions,
+    viewChild,
 } from "@angular/core";
 
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -33,7 +32,20 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable, MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
-import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe, PercentPipe, SlicePipe, LowerCasePipe, I18nPluralPipe, I18nSelectPipe, TitleCasePipe, UpperCasePipe } from "@angular/common";
+import {
+    CommonModule,
+    CurrencyPipe,
+    DatePipe,
+    DecimalPipe,
+    KeyValuePipe,
+    PercentPipe,
+    SlicePipe,
+    LowerCasePipe,
+    I18nPluralPipe,
+    I18nSelectPipe,
+    TitleCasePipe,
+    UpperCasePipe,
+} from "@angular/common";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
@@ -192,12 +204,12 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
     }
 
     override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
         if (changes["adapter"]) {
             const adapter = this.adapter();
             if (!adapter) throw new Error("Adapter is required");
             if (!this.lazyLoadData()) this.loadData();
         }
-        await super.ngOnChanges(changes);
 
         if (changes["columns"]) this.generateColumns();
     }

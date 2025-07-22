@@ -1,8 +1,7 @@
 import { isPlatformBrowser } from "@angular/common";
 import { Component, computed, effect, inject, input, PLATFORM_ID, DOCUMENT } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
-import { delay } from "@noah-ark/common";
-import { printElement } from "@upupa/common";
+import { ThemeService } from "@upupa/common";
 
 /**
  * @description Value is of this type is passed directly to the CSS content property. Therefore, to display a static text, it should be wrapped in quotes. Also, content functions can be used.
@@ -104,9 +103,11 @@ export class PrintLayoutComponent {
 
         return style;
     });
-
+    private readonly theme = inject(ThemeService);
+    private _activeTheme = this.theme.selectedTheme?.name;
     constructor() {
         if (!this.isBrowser) return;
+        this.theme.apply("light");
         effect(() => {
             const style = this.styleElement();
             document.getElementById("print-layout-style")?.remove();
@@ -118,6 +119,7 @@ export class PrintLayoutComponent {
     async ngAfterViewInit() {
         if (this.isBrowser && this.openPrint()) {
             window.print();
+            this.theme.apply(this._activeTheme);
             window.close();
         }
     }

@@ -23,8 +23,6 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
             headers["Content-Type"] = "application/json";
         }
 
-        console.log(`HTTP Fetch URL: ${url}`);
-
         fetcher = fetch(url, { method: "POST", credentials: "include", body: payload, headers, ...options });
     }
 

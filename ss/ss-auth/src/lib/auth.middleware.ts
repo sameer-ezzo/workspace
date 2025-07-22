@@ -16,10 +16,7 @@ function promisify<T>(o: Observable<T>): Promise<T> {
 export class AuthenticationInterceptor implements NestInterceptor {
     constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
-    providers: HttpAuthenticationProvider[] = [
-        new BearerAuthenticationProvider(this.auth!),
-        new CloudflareCookieAuthenticationProvider(this.auth!),
-    ];
+    providers: HttpAuthenticationProvider[] = [new BearerAuthenticationProvider(this.auth!), new CloudflareCookieAuthenticationProvider(this.auth!)];
 
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
         switch (context.getType()) {
@@ -73,7 +70,10 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
     ) {}
     async authenticate(req: Request & Record<string, any>): Promise<Principle> {
         if (req.principle) return req.principle;
-
+        if (this.auth.options.useCookies?.enabled === true) {
+            const { access_token } = this.tokenFromCookie(req);
+            if (access_token) req.principle = await this._authenticateBearer(access_token);
+        }
         const auth = req.get(this.headerName) as string;
         if (auth) {
             const spaceIndex = auth.indexOf(" ");
@@ -82,8 +82,7 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
                 case "Bearer":
                     req.principle = await this._authenticateBearer(auth.substring(7));
             }
-        }
-        if (req.query.access_token) {
+        } else if (req.query.access_token) {
             const access_token = req.query.access_token as string;
             req.principle = await this._authenticateBearer(access_token);
         }
@@ -102,8 +101,25 @@ export class BearerAuthenticationProvider implements HttpAuthenticationProvider 
     shouldCreateUser(): boolean {
         return false;
     }
-}
 
+    tokenFromCookie(req: Request): { access_token: string; refresh_token: string } {
+        const options = this.auth.options.useCookies;
+        if (!options) return undefined;
+
+        const cookies = req.get("cookie") ?? "";
+        const parsedCookies = cookies
+            .split(";")
+            .map((s) => s.trim())
+            .reduce((acc, current) => {
+                const [key, value] = current.split("=");
+                acc[key] = value;
+                return acc;
+            }, {});
+
+        const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies[options.cookieName] || "{}")) as { access_token?: string; refresh_token?: string };
+        return { access_token, refresh_token };
+    }
+}
 export class CookieAuthenticationProvider implements HttpAuthenticationProvider {
     jkws_cache: Record<string, any> = {};
 

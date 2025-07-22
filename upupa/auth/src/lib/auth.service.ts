@@ -152,6 +152,8 @@ export class AuthService {
 
     constructor() {
         const user = this.jwt(this.get_token());
+        console.log(user);
+        
         this.triggerNext(user);
 
         if (this.isBrowser) {
