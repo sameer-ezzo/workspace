@@ -225,18 +225,18 @@ export class StorageController {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
-        if (!isFile(msg.path)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
-
-        const fname = Path.basename(msg.path);
-
-        const ext = Path.extname(msg.path);
         const decodedPath = decodeURIComponent(msg.path.startsWith("/") ? msg.path.substring(1) : msg.path);
+        if (!isFile(decodedPath)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
+
+        const fname = Path.basename(decodedPath);
+
+        const ext = Path.extname(decodedPath);
 
         const _id = fname.substring(0, fname.length - ext.length);
 
         const files = await this.data.get<File[]>("storage", { path: decodedPath });
         const file = files.find((f) => f._id === _id);
-        const fullPath = join(getStorageDir(), file ? file!.path : msg.path);
+        const fullPath = join(getStorageDir(), file ? file!.path : decodedPath);
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
         const extension = Path.extname(fullPath).substring(1);
@@ -264,7 +264,7 @@ export class StorageController {
             });
         } else {
             if (isImgFile(fullPath)) {
-                const img = await this.imageService.get(getStorageDir(), msg.path, msg.query!); // Retrieve the image stream
+                const img = await this.imageService.get(getStorageDir(), decodedPath, msg.query!); // Retrieve the image stream
                 if (!img) return res.status(404).send("");
 
                 res.setHeader("Content-Type", `image/${format ?? extension}`);
