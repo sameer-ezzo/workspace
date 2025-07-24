@@ -465,6 +465,9 @@ export class AuthService {
             const res = await this.refresh(original_refresh_token);
             this.localStorage.removeToken(`ORG_${REFRESH_TOKEN}`);
             return res;
+        } else {
+            // when no ORG_TOKEN unimpersonate equals signout
+            this.signout();
         }
         return null;
     }
