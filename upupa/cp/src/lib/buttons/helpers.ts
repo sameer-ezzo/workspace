@@ -7,7 +7,7 @@ import { DataAdapter, DataService } from "@upupa/data";
 import { Class } from "@noah-ark/common";
 import { EmbedTranslationButton, LinkTranslationButton, translateButton, TranslationButtonComp } from "./translate-btn.component";
 import { injectDataAdapter, injectRowItem } from "@upupa/table";
-
+import { $localize } from "@angular/localize/init";
 @Component({
     selector: "inline-button",
     imports: [MatBtnComponent],
