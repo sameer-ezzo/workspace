@@ -3,6 +3,7 @@ import { FilterDescriptor, Key, PageDescriptor, ReadResult, SortDescriptor, Tabl
 import { ApiGetResult, DataService } from "../data.service";
 import { Patch } from "@noah-ark/json-patch";
 import { signal } from "@angular/core";
+import { cloneDeep } from "@noah-ark/common";
 
 export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDataSource<T> {
     readonly allDataLoaded = signal(false);
@@ -52,18 +53,19 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
-        const filter = options?.filter ?? {};
+        const _opts = cloneDeep(options);
+        const filter = _opts?.filter ?? {};
         const search = filter.search;
         delete filter.search;
 
-        const sort = options?.sort;
-        const page = options?.page ?? { pageIndex: 0, pageSize: 25 };
-        const terms = (options?.terms ?? []).slice();
+        const sort = _opts?.sort;
+        const page = _opts?.page ?? { pageIndex: 0, pageSize: 25 };
+        const terms = (_opts?.terms ?? []).slice();
 
-        const query: Record<string | "page" | "per_page", string | number> = options?.keys?.length
-            ? { [this.key]: `{in}${options.keys.join(",")}`, per_page: options.keys.length }
+        const query: Record<string | "page" | "per_page", string | number> = _opts?.keys?.length
+            ? { [this.key]: `{in}${_opts.keys.join(",")}`, per_page: _opts.keys.length }
             : { ...this.queryParams };
-        if (!options?.keys?.length) {
+        if (!_opts?.keys?.length) {
             // when passing keys we want to make sure items are returned
             if (search && terms.length) {
                 const r = terms.map((f) => [String(f.field), this._evalTerm(f, search)]);

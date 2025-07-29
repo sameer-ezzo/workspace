@@ -2,7 +2,7 @@ import { Component, forwardRef, OnChanges, SimpleChanges, input, inject, Destroy
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { ThemePalette } from "@angular/material/core";
 import { DataService } from "@upupa/data";
-import { InputBaseComponent } from "@upupa/common";
+import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 
 import { AuthService } from "@upupa/auth";
 import { openFileDialog } from "@upupa/upload";
@@ -15,14 +15,14 @@ import { MatError } from "@angular/material/form-field";
     selector: "local-file-input",
     templateUrl: "./local-file-input.component.html",
     styleUrls: ["./local-file-input.component.scss"],
-    imports: [MatError],
+    imports: [MatError, ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
             useExisting: forwardRef(() => LocalFileInputComponent),
             multi: true,
         },
-    ]
+    ],
 })
 export class LocalFileInputComponent extends InputBaseComponent implements OnChanges {
     color = input<ThemePalette>("accent");

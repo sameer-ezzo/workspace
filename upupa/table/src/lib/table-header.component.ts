@@ -49,10 +49,10 @@ export class TableHeaderComponent {
         this.filter$.next(this.q());
     }
 
-    _doFilter(q) {
+    async _doFilter(q) {
         const adapter = this.injector.get(DataAdapter); // lazy injected because adaptor is provided to input signal not during construction
         const f = { ...adapter.filter(), search: q };
-        adapter.load({ filter: f });
+        await adapter.load({ filter: f, page: { ...adapter.page(), pageIndex: 0 } });
     }
 
     onAttached({ componentRef }, i: number) {

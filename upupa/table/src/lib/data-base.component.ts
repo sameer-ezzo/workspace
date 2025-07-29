@@ -157,11 +157,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     pageChange = output<PageEvent>();
     async goto(page: PageEvent) {
-        const filter = this.adapter().filter();
-        console.log(filter);
-
         await this.adapter().load({
-            filter,
             page,
         });
         this.pageChange.emit(page);

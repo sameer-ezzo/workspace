@@ -1,4 +1,3 @@
-
 import { Component, input } from "@angular/core";
 import { MatRadioModule } from "@angular/material/radio";
 import { ParagraphComponent } from "../paragraph/paragraph.component";
@@ -8,10 +7,11 @@ import { MatSelectComponent } from "../select/select.component";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatLabel } from "@angular/material/form-field";
 import { MatError, MatHint } from "@angular/material/form-field";
+import { ErrorsDirective } from "@upupa/common";
 
 @Component({
     selector: "radio-group-input",
-    imports: [MatRadioModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule],
+    imports: [MatRadioModule, MatLabel, ParagraphComponent, MatError, MatHint, ReactiveFormsModule, ErrorsDirective],
     host: {
         "[attr.name]": "name()",
     },

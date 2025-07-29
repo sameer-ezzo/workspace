@@ -3,6 +3,7 @@ import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
 import { computed, InputSignal, Signal, signal, WritableSignal } from "@angular/core";
+import { cloneDeep } from "@noah-ark/common";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -50,13 +51,14 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
+        const _opts = cloneDeep(options);
         const all = this._all();
-        if (options?.keys) {
-            const data = options.keys.map((k) => all.find((item) => this._key(item) === k));
+        if (_opts?.keys) {
+            const data = _opts.keys.map((k) => all.find((item) => this._key(item) === k));
             return { data: mapper ? mapper(data) : data, total: data.length, query: [] };
         } else {
-            const data = filter(all, options?.filter, options?.sort, options?.page, options?.terms);
-            return { data: mapper ? mapper(data) : data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
+            const data = filter(all, _opts?.filter, _opts?.sort, _opts?.page, _opts?.terms);
+            return { data: mapper ? mapper(data) : data, total: data.length, query: _opts?.filter ? Array.from(Object.entries(_opts.filter)) : [] };
         }
     }
 
