@@ -80,17 +80,20 @@
         top: 0;
     }
 }
-
+tr{
+    --datatabe-background-color-low: var(--mat-sys-surface-container-low);
+    --datatabe-background-color-high: var(--mat-sys-surface-container-high);
+}
 tr[cdk-header-row] > th {
     // background-color: var(--mat-sys-surface-bright);
 }
 tr[mat-row]:hover {
-    background-color: var(--mat-sys-surface-container-low) !important;
+    background-color: var(--datatabe-background-color-low) ;
 }
 
 [mat-row].focused,
 [mat-row].selected {
-    background-color: var(--mat-sys-surface-container-high);
+    background-color: var(--datatabe-background-color-high);
 }
 
 /* select */
