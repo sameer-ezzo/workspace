@@ -27,6 +27,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         return computed(() => this._all());
     }
     set all(items: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]> | T[]) {
+        if (items == null) items = [];
         this._all.set(items instanceof Array ? items : items());
     }
 

@@ -1,7 +1,7 @@
 import { inject, Type } from "@angular/core";
 import { Route } from "@angular/router";
 import { DynamicComponent, provideRoute, RouteFeature } from "@upupa/common";
-import {  createButton, deleteButton, editButton } from "@upupa/cp";
+import { createButton, deleteButton, editButton } from "@upupa/cp";
 import { DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { DialogRef } from "@upupa/dialog";
 import { DynamicFormInitializedEvent, fieldRef, formInput, OnSubmit } from "@upupa/dynamic-form";
@@ -40,8 +40,8 @@ export type RolesTableConfig = {
     tableHeaderComponent?: DynamicComponent;
 };
 
-export function provideRolesTable(route: Omit<Route, "component"> & RolesTableConfig,...features:RouteFeature[]): Route {
-    return provideRoute(route, withRolesTable(route),...features);
+export function provideRolesTable(route: Omit<Route, "component"> & RolesTableConfig, ...features: RouteFeature[]): Route {
+    return provideRoute(route, withRolesTable(route), ...features);
 }
 export function withRolesTable(config?: Partial<RolesTableConfig>): RouteFeature {
     const tableComponent = {
@@ -62,7 +62,7 @@ export function withRolesTable(config?: Partial<RolesTableConfig>): RouteFeature
                     ],
                 },
             },
-            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, createButton(RoleListViewModel)),
+            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, "spacer", createButton(RoleListViewModel)),
         },
     } as DynamicComponent<DataListComponent>;
 

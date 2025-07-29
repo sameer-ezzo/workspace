@@ -35,7 +35,7 @@ export function withUsersTable(config?: Partial<UsersTableConfig>): RouteFeature
                     ],
                 },
             },
-            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, createButton(config?.createUserViewModel ?? CreateUserFromViewModel)),
+            tableHeaderComponent: config?.tableHeaderComponent ?? withHeader(true, "spacer", createButton(config?.createUserViewModel ?? CreateUserFromViewModel)),
         },
     } as DynamicComponent<DataListComponent>;
 
