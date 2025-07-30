@@ -122,7 +122,7 @@ export class AuthService {
     user$ = this._user$.asObservable();
     userSignal: Signal<Principle> = toSignal(this._user$);
     user: Principle = null;
-    private readonly transferState = inject(TransferState);
+    // private readonly transferState = inject(TransferState); // use this to transfer authenticated user in ssr to client
 
     private _token$ = new Subject<string>();
     token$ = this._token$.asObservable();
@@ -152,8 +152,7 @@ export class AuthService {
 
     constructor() {
         const user = this.jwt(this.get_token());
-        console.log(user);
-        
+
         this.triggerNext(user);
 
         if (this.isBrowser) {
@@ -168,10 +167,10 @@ export class AuthService {
             console.warn("No request object provided");
             return null;
         }
-        const cookies = req.headers.get("cookie"); // Get the raw Cookie header
+        const cookies = req.headers.get("cookie");
 
         if (cookies) {
-            // Parse the cookies to find 'ssr_jwt'
+            // Parse the cookies to find 'ssr_jwt' this could be variable! find a way to configure it or get it from the server
             const parsedCookies = cookies
                 .split(";")
                 .map((s) => s.trim())
@@ -240,11 +239,10 @@ export class AuthService {
     }
     async signout() {
         try {
-            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
-            if (!success) return;
             this.localStorage.removeAccessToken();
             this.localStorage.removeRefreshToken();
             this.triggerNext(null);
+            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
         } catch (error) {
             console.error("Error signing out: ", error);
         }
@@ -300,13 +298,13 @@ export class AuthService {
         if (tokens) {
             this._access_token = tokens.access_token;
             this._refresh_token = tokens.refresh_token;
-            this.localStorage.setAccessToken(tokens?.access_token);
-            this.localStorage.setRefreshToken(tokens?.refresh_token);
+            this.localStorage.setAccessToken(this._access_token);
+            this.localStorage.setRefreshToken(this._refresh_token);
         } else {
             this.localStorage.removeAccessToken();
             this.localStorage.removeRefreshToken();
         }
-        this._token$.next(tokens?.access_token);
+        this._token$.next(this._access_token);
     }
     async signin_Google(user: { token: string }) {
         const res = await httpFetch(`${this.baseUrl}/google-auth`, user);
@@ -440,26 +438,36 @@ export class AuthService {
     }
 
     async impersonate(sub: string) {
-        const impersonation_tokens = await firstValueFrom(this.httpAuthorized.post<{ access_token: string; refresh_token: string }>(`${this.baseUrl}/impersonate`, { sub }));
-
         //save tokens away
         const original_refresh_token = this.get_refresh_token();
         this.localStorage.setToken(`ORG_${REFRESH_TOKEN}`, original_refresh_token);
 
-        //override current user tokens
-        this.setTokens(impersonation_tokens);
+        try {
+            const impersonation_tokens = await firstValueFrom(this.httpAuthorized.post<{ access_token: string; refresh_token: string }>(`${this.baseUrl}/impersonate`, { sub }));
+            //override current user tokens
+            this.setTokens(impersonation_tokens);
 
-        //notify app
-        const principle = this.jwt(impersonation_tokens.access_token);
-        this.triggerNext(principle);
-        return principle;
+            //notify app
+            const principle = this.jwt(impersonation_tokens.access_token);
+            this.triggerNext(principle);
+            return principle;
+        } catch (error) {
+            this.localStorage.removeToken(`ORG_${original_refresh_token}`);
+            return this.user;
+        }
     }
 
-    unimpersonate() {
+    async unimpersonate() {
         const original_refresh_token = this.localStorage.getToken(`ORG_${REFRESH_TOKEN}`);
         if (original_refresh_token) {
+            this._access_token = undefined;
+            this._refresh_token = original_refresh_token;
+            const res = await this.refresh(original_refresh_token);
             this.localStorage.removeToken(`ORG_${REFRESH_TOKEN}`);
-            return this.refresh(original_refresh_token);
+            return res;
+        } else {
+            // when no ORG_TOKEN unimpersonate equals signout
+            this.signout();
         }
         return null;
     }

@@ -208,7 +208,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             const fetchedEntities = readResult.data.map((x) => {
                 const entity = this.normalize(x);
                 entity.selected = selectionMap[entity.key]?.selected ?? false;
-                entity.state = this.entityMap()[entity.key]?.state ?? "loaded"; 
+                entity.state = this.entityMap()[entity.key]?.state ?? "loaded";
                 entity.error = this.entityMap()[entity.key]?.error ?? null;
                 return entity;
             });

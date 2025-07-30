@@ -166,9 +166,10 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
 
     const cors = options.cors ?? { enabled: env["NODE_ENV"] === "development", options: { origin: "*" } };
     if (cors.enabled) application.enableCors(cors.options);
-    
+
     if (options["useCookies"]) {
-        application.use(cookieParser(options["useCookies"].secret, options["useCookies"].options));
+        if (!options.cors?.enabled) logger.warn("CORS Should be enabled and configured to use cookies");
+        else application.use(cookieParser(options["useCookies"].secret, options["useCookies"].options));
     }
     application.useGlobalInterceptors();
 

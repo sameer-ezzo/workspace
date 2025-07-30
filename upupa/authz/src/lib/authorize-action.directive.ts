@@ -62,8 +62,12 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     }
 
     private async _authorize(path: string, action: string, principle: Principle) {
-        if (!(path ?? "").trim().length) return;
         const el = this.hostElement.nativeElement as HTMLElement;
+
+        if (!(path ?? "").trim().length) {
+            this.grant(el);
+            return;
+        }
         const authResult = await this.authorizeService.authorize(path, action, principle);
 
         if (authResult.access === "deny") this.deny(el);
@@ -87,7 +91,7 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     readonly user = input<Principle>(this.auth.user);
 
     readonly segments = computed(() => {
-        const segments = this.authz()?.split(":") ?? [undefined, "/"];
+        const segments = this.authz()?.split(":") ?? [undefined, undefined];
         return segments.length === 1 ? [undefined, segments[0]] : segments;
     });
 
@@ -136,8 +140,11 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     }
 
     private async _authorize(path: string, action: string, principle: Principle) {
-        if (!(path ?? "").trim().length) return;
         const el = this.hostElement.nativeElement as HTMLElement;
+        if (!(path ?? "").trim().length) {
+            this.grant(el);
+            return;
+        }
         const authResult = await this.authorizeService.authorize(path, action, principle);
 
         if (authResult.access === "deny") this.deny(el);

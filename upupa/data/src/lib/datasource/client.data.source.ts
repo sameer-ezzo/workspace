@@ -27,6 +27,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         return computed(() => this._all());
     }
     set all(items: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]> | T[]) {
+        if (items == null) items = [];
         this._all.set(items instanceof Array ? items : items());
     }
 
@@ -49,13 +50,14 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
+        const _opts = Object.assign({}, options);
         const all = this._all();
-        if (options?.keys) {
-            const data = options.keys.map((k) => all.find((item) => this._key(item) === k));
+        if (_opts?.keys) {
+            const data = _opts.keys.map((k) => all.find((item) => this._key(item) === k));
             return { data: mapper ? mapper(data) : data, total: data.length, query: [] };
         } else {
-            const data = filter(all, options?.filter, options?.sort, options?.page, options?.terms);
-            return { data: mapper ? mapper(data) : data, total: data.length, query: options?.filter ? Array.from(Object.entries(options.filter)) : [] };
+            const data = filter(all, _opts?.filter, _opts?.sort, _opts?.page, _opts?.terms);
+            return { data: mapper ? mapper(data) : data, total: data.length, query: _opts?.filter ? Array.from(Object.entries(_opts.filter)) : [] };
         }
     }
 

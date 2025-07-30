@@ -52,23 +52,39 @@
 </main>
 
 <ng-template #linkTemplate let-item="item" let-index="index" let-indent="indent">
-    <a
-        class="cp-item-link"
-        [attr.id]="item.name || index"
-        [authz]="item.action"
-        authAction
-        [path]="item.path"
-        [action]="item.action"
-        [routerLink]="item.link"
-        [queryParams]="item.queryParams"
-        routerLinkActive="active"
-        [ngStyle]="{
-            'padding-inline-start': indent ? indent * 0.25 + 'rem' : '12px',
-        }"
-    >
-        <ng-container *ngTemplateOutlet="iconTemplate; context: { item: item }"></ng-container>
-        <span style="margin: 0 0.5rem">{{ item.text ?? item.name }}</span>
-    </a>
+    @if (item.path && item.action) {
+        <a
+            class="cp-item-link"
+            [attr.id]="item.name || index"
+            authAction
+            [path]="item.path"
+            [action]="item.action"
+            [routerLink]="item.link"
+            [queryParams]="item.queryParams"
+            routerLinkActive="active"
+            [ngStyle]="{
+                'padding-inline-start': indent ? indent * 0.25 + 'rem' : '12px',
+            }"
+        >
+            <ng-container *ngTemplateOutlet="iconTemplate; context: { item: item }"></ng-container>
+            <span style="margin: 0 0.5rem">{{ item.text ?? item.name }}</span>
+        </a>
+    } @else {
+        <a
+            class="cp-item-link"
+            [attr.id]="item.name || index"
+            [authz]="item.action"
+            [routerLink]="item.link"
+            [queryParams]="item.queryParams"
+            routerLinkActive="active"
+            [ngStyle]="{
+                'padding-inline-start': indent ? indent * 0.25 + 'rem' : '12px',
+            }"
+        >
+            <ng-container *ngTemplateOutlet="iconTemplate; context: { item: item }"></ng-container>
+            <span style="margin: 0 0.5rem">{{ item.text ?? item.name }}</span>
+        </a>
+    }
 </ng-template>
 
 <ng-template #iconTemplate let-item="item">
