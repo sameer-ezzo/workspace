@@ -117,13 +117,12 @@ export class WizardLayoutComponent implements OnChanges {
     selected = input<CdkStep | undefined>();
 
     async getSelectedStepRef(): Promise<WizardStepRef> {
-        const ref = this.gtWizardStepRef(this.selectedIndex());
+        const ref = this.getWizardStepRef(this.selectedIndex());
         if (ref) return ref;
 
         return await waitForOutput(this as WizardLayoutComponent, "attached");
     }
 
-    selectionChange = output<StepperSelectionEvent>();
     done = output();
 
     _stepsRefs: WizardStepRef[] = []; // instance of each step component
@@ -159,11 +158,7 @@ export class WizardLayoutComponent implements OnChanges {
         this.done.emit();
     }
 
-    onSelectedChange(e: StepperSelectionEvent) {
-        this.selectionChange.emit(e);
-    }
-
-    gtWizardStepRef(index: number): WizardStepRef {
+    getWizardStepRef(index: number): WizardStepRef {
         return this._stepsRefs[index];
     }
 
