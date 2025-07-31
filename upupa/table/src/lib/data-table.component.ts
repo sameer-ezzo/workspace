@@ -32,20 +32,7 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable, MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
-import {
-    CommonModule,
-    CurrencyPipe,
-    DatePipe,
-    DecimalPipe,
-    KeyValuePipe,
-    PercentPipe,
-    SlicePipe,
-    LowerCasePipe,
-    I18nPluralPipe,
-    I18nSelectPipe,
-    TitleCasePipe,
-    UpperCasePipe,
-} from "@angular/common";
+import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe, PercentPipe, SlicePipe, LowerCasePipe, I18nPluralPipe, I18nSelectPipe, TitleCasePipe, UpperCasePipe } from "@angular/common";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
