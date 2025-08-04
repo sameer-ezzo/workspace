@@ -286,7 +286,7 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             const fileOptions = fieldOptions as any;
             field.inputs["minAllowedFiles"] = fileOptions.minAllowedFiles;
             field.inputs["maxAllowedFiles"] = fileOptions.maxAllowedFiles;
-            field.inputs["path"] = fileOptions.path || fieldName;
+            field.inputs["path"] = fileOptions.path;
             field.inputs["accept"] = fileOptions.accept || "*.*";
             field.inputs["view"] = fileOptions.view || "list";
             field.inputs["fileSelector"] = fileOptions.fileSelector || "system";
