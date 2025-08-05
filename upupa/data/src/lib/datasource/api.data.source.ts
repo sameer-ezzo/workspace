@@ -3,6 +3,7 @@ import { FilterDescriptor, Key, PageDescriptor, ReadResult, SortDescriptor, Tabl
 import { ApiGetResult, DataService } from "../data.service";
 import { Patch } from "@noah-ark/json-patch";
 import { signal } from "@angular/core";
+import { cloneDeep } from "@noah-ark/common";
 
 export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDataSource<T> {
     readonly allDataLoaded = signal(false);
@@ -52,7 +53,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
-        const _opts = Object.assign({}, options);
+        const _opts = cloneDeep(options);
         const filter = _opts?.filter ?? {};
         const search = filter.search;
         delete filter.search;

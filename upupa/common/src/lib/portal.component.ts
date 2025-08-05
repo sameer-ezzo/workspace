@@ -1,4 +1,3 @@
-
 import {
     Component,
     EnvironmentInjector,
@@ -150,7 +149,7 @@ export class PortalComponent<TCom = any> {
             this.setInputs(template.inputs ?? {});
             // this.applyBindings(template.bindings ?? {});
         } catch (error) {
-            console.error("Error during component attach:", error);
+            console.error(`Error during component ${template.component.name} attach:`, error);
         }
 
         this.attached.emit({ componentRef: this.componentRef, componentMirror: this.componentMirror });

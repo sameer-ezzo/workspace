@@ -21,6 +21,8 @@ export class TableHeaderComponent {
     components = input<(DynamicComponent | "spacer")[], (Type<any> | DynamicComponent | "spacer")[]>([], {
         transform: (components) =>
             components.map((c) => {
+                console.log("c", c);
+
                 if (c instanceof Type) return { component: c };
                 else if (c === "spacer") return c;
                 return c;
