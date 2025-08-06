@@ -34,7 +34,7 @@ export class StorageController {
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
         private readonly imageService: ImageService,
-    ) {}
+    ) { }
 
     @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
@@ -236,13 +236,13 @@ export class StorageController {
 
         const files = await this.data.get<File[]>("storage", { path: decodedPath });
         const file = files.find((f) => f._id === _id);
-        const fullPath = join(getStorageDir(), file ? file!.path : decodedPath);
+        const fullPath = join(getStorageDir(), (file ? file!.path : decodedPath).replace(`storage/`, ""));
         if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
 
         const extension = Path.extname(fullPath).substring(1);
 
         const { attachment, format } = msg.query!;
-        const originalFilename = file ? file!.originalname : _id;
+        const originalFilename = (file ? file!.originalname : _id) + "." + extension;
         const encodedFilename = encodeURIComponent(originalFilename);
         const fallbackFilename = _id + "." + extension;
 

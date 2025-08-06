@@ -57,10 +57,16 @@ export async function openFormDialog<TViewModelClass extends Class | FormViewMod
                     component: MatBtnComponent,
                     inputs: { buttonDescriptor: descriptor },
                     outputs: {
-                        action: async () => {
+                        action: async (e) => {
                             if (descriptor.type === "submit") {
                                 const componentInstance = await firstValueFrom(dialogRef.afterAttached()).then((ref) => ref.instance);
-                                componentInstance.submit();
+                                e.instance.loading.set(true);
+                                const { error } = await componentInstance.submit();
+                                if (error) {
+                                    e.instance.loading.set(false);
+                                    return;
+                                }
+                                componentInstance.submitted.subscribe((result) => e.instance.loading.set(false));
                             }
                         },
                     },
