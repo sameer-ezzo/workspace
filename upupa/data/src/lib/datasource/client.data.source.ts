@@ -3,6 +3,7 @@ import { filter } from "./filter.fun";
 
 import { JsonPatch, JsonPointer, Patch } from "@noah-ark/json-patch";
 import { computed, InputSignal, Signal, signal, WritableSignal } from "@angular/core";
+import { cloneDeep } from "@noah-ark/common";
 
 export function getByPath(obj: any, path: string) {
     const segments = path.split(".");
@@ -50,7 +51,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],
     ): Promise<ReadResult<T>> {
-        const _opts = Object.assign({}, options);
+        const _opts = cloneDeep(options);
         const all = this._all();
         if (_opts?.keys) {
             const data = _opts.keys.map((k) => all.find((item) => this._key(item) === k));

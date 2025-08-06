@@ -417,7 +417,9 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
-        const id = `${key}`;
+        let id = key;
+        if (key === undefined || key === null || typeof key === "object") id = Date.now().toString();
+
         const item_t = typeof item;
 
         const display = this.extract(item, this.displayProperty, item_t == "string" || item_t == "number" ? item : undefined, true);
