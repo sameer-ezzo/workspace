@@ -183,7 +183,7 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnCh
 
     fieldValueChange = output<ExtendedValueChangeEvent<T>>();
     initialized = output<DynamicFormInitializedEvent<T>>();
-    submitted = output<{ event: SubmitEvent; form: FormGroup; result?: T; error?: any }>();
+    submitted = output<{ event: SubmitEvent; form: FormGroup; result?: T; error?: any; control?: AbstractControl<any, any> }>();
     preventDirtyUnload = input(false);
 
     get patches(): Patch[] {
@@ -359,8 +359,8 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnCh
                     panel.open();
                 }
             }
-            this.scrollToError();
-            this.submitted.emit({ event, form: this.form(), error: "FORM_IS_INVALID" });
+            const erroredControl = this.scrollToError();
+            this.submitted.emit({ event, form: this.form(), error: "FORM_IS_INVALID", control: erroredControl });
         } else if (this.form().pristine) {
             this.submitted.emit({ event, form: this.form(), result: this.value(), error: "FORM_IS_PRISTINE" });
         } else this.submitted.emit({ event, form: this.form(), result: this.value() });
@@ -403,12 +403,14 @@ export class DynamicFormComponent<T = any> implements ControlValueAccessor, OnCh
             }, 400); //wait scroll animation
     }
     host = inject<ElementRef<HTMLElement>>(ElementRef);
-    scrollToError() {
+    scrollToError(): undefined | AbstractControl<any, any> {
         const control = Object.values(this.form().controls).find((c) => c.invalid);
-        if (!control) return;
+        if (!control) return undefined;
         control.markAsTouched();
         const el = this.host.nativeElement.querySelector(`form [name=${control["fieldRef"].name}]`) as HTMLElement;
-        if (el) this.scrollToElement(el);
+        if (!el) return undefined;
+        this.scrollToElement(el);
+        return control;
     }
 
     /// @deprecated use patches instead

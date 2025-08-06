@@ -18,7 +18,6 @@ import { createDataAdapter, DataAdapter, DataAdapterDescriptor } from "@upupa/da
 import { ActivatedRoute } from "@angular/router";
 import { _defaultControl, DynamicComponent, PortalComponent } from "@upupa/common";
 
-
 import { Class } from "@noah-ark/common";
 import { DataTableComponent } from "../data-table.component";
 import { reflectTableViewModel } from "../decorator";

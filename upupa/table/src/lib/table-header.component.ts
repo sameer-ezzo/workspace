@@ -20,9 +20,7 @@ export class TableHeaderComponent {
 
     components = input<(DynamicComponent | "spacer")[], (Type<any> | DynamicComponent | "spacer")[]>([], {
         transform: (components) =>
-            components.map((c) => {
-                console.log("c", c);
-
+            (components ?? []).map((c) => {
                 if (c instanceof Type) return { component: c };
                 else if (c === "spacer") return c;
                 return c;
@@ -34,7 +32,7 @@ export class TableHeaderComponent {
      * @deprecated Use `withHeader` instead.
      */
     inlineEndSlot = input<DynamicComponent[], (Type<any> | DynamicComponent)[]>([], {
-        transform: (components) => components.map((c) => (c instanceof Type ? { component: c } : c)),
+        transform: (components) => (components ?? []).map((c) => (c instanceof Type ? { component: c } : c)),
     });
     /**
      * @deprecated Use `withHeader` instead.

@@ -17,13 +17,13 @@
     @if (com == "spacer") {
         <span style="flex: 1 1 auto"></span>
     } @else {
-        <portal [component]="com['component']" [inputs]="com.inputs" [outputs]="com['outputs']" (attached)="onAttached($event, $index)"></portal>
+        <portal [template]="com" (attached)="onAttached($event, $index)"></portal>
     }
 } @empty {
     <span style="flex: 1 1 auto"></span>
     <div style="display: flex; align-items: center">
-        @for (template of inlineEndSlot() ?? []; track $index) {
-            <portal [component]="template['component']" [inputs]="template.inputs" [outputs]="template['outputs']" (attached)="onAttached($event, $index)"></portal>
+        @for (template of inlineEndSlot(); track $index) {
+            <portal [template]="template" (attached)="onAttached($event, $index)"></portal>
         }
         <ng-content select></ng-content>
     </div>
