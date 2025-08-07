@@ -97,7 +97,7 @@ export class FileTemplateComponent {
                 reader.readAsDataURL(f);
                 this.startUpload(file);
             } else {
-                if (file.fileType !== "image") src = `/assets/upload/files-icons/${this.fi.transform(f)}.svg`;
+                if (file.fileType !== "image") src = `/assets/upload/files-icons/${this.fi.transform(f)}.png`;
                 else src = this.base() + f.path;
                 this.imageSrc.set(src + (this.includeAccess() ? `?access_token=${this.auth.get_token()}` : ""));
             }

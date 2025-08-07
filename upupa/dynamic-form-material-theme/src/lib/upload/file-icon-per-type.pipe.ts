@@ -1,6 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FileInfo } from '@noah-ark/common';
-
 
 @Pipe({ name: 'fileIcon', standalone: true })
 export class FileIconPerTypePipe implements PipeTransform {

@@ -1,18 +1,18 @@
 @switch (renderer()) {
     @case ("markdown") {
-        <p [innerHTML]="text() | markdown | html"></p>
+        <p [innerHTML]="value() | markdown | html"></p>
     }
     @case ("html") {
-        <p [innerHTML]="text() | html"></p>
+        <p [innerHTML]="value() | html"></p>
     }
     @case ("none") {
-        <p>{{ text() }}</p>
+        <p>{{ value() }}</p>
     }
     @default {
         @if (rendererTemplate()) {
             <portal [template]="rendererTemplate()"></portal>
         } @else {
-            {{ text() }}
+            {{ value() }}
         }
     }
 }

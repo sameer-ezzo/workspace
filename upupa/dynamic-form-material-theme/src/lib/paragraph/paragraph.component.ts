@@ -1,7 +1,7 @@
 import { AsyncPipe } from "@angular/common";
-import { Component, InjectionToken, computed, inject, input } from "@angular/core";
+import { Component, InjectionToken, computed, inject, input, model } from "@angular/core";
 import { UntypedFormControl } from "@angular/forms";
-import { DynamicComponent, HtmlPipe, MarkdownPipe, PortalComponent, UtilsModule } from "@upupa/common";
+import { DynamicComponent, HtmlPipe, InputBaseComponent, MarkdownPipe, PortalComponent, UtilsModule } from "@upupa/common";
 
 export const PARAGRAPH_RENDERER_TEMPLATE = new InjectionToken<"markdown" | "html" | "none" | DynamicComponent>("PARAGRAPH_RENDERER_TEMPLATE");
 @Component({
@@ -10,17 +10,14 @@ export const PARAGRAPH_RENDERER_TEMPLATE = new InjectionToken<"markdown" | "html
     styleUrls: ["./paragraph.component.scss"],
     imports: [UtilsModule, PortalComponent, MarkdownPipe, HtmlPipe],
 })
-export class ParagraphComponent {
+export class ParagraphComponent extends InputBaseComponent<string | any> {
     // to avoid setting none existing control input during dynamic form rendering phase.
-    control = input<UntypedFormControl>();
-
-    text = input<string | any>();
     defaultRenderer = inject(PARAGRAPH_RENDERER_TEMPLATE, { optional: true }) ?? "none";
-    renderer = input<"markdown" | "html" | "none" | DynamicComponent>(this.defaultRenderer);
+    renderer = input<"markdown" | "html" | "none" | DynamicComponent>(this.defaultRenderer || "html");
 
     rendererTemplate = computed<DynamicComponent | undefined>(() => {
         const r = this.renderer() ?? this.defaultRenderer;
-        const t = this.text();
+        const t = this.value();
         if (typeof r === "string") return undefined;
         const dc = (r && "component" in r ? r : { component: r }) as DynamicComponent;
         dc.inputs ??= {};

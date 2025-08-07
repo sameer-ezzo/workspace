@@ -24,7 +24,7 @@ import { JsonPipe } from "@angular/common";
     imports: [PortalComponent, ParagraphComponent],
     template: `
         @if (fieldRef().text()) {
-            <paragraph [text]="fieldRef().text()" [renderer]="textRenderer()"></paragraph>
+            <paragraph [value]="fieldRef().text()" [renderer]="textRenderer()"></paragraph>
         }
         @if (component()) {
             <portal [component]="component()" [class]="fieldRef().class()" [inputs]="fieldRef().inputs()" [outputs]="fieldRef().outputs()" (attached)="onAttached($event)">

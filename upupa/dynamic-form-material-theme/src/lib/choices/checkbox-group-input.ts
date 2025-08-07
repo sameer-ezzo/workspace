@@ -19,7 +19,7 @@ import { ReactiveFormsModule } from "@angular/forms";
         }
         @for (item of items(); track item.key) {
             <mat-checkbox class="choice" (change)="toggle(item.key)" [checked]="item.selected">
-                <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
+                <paragraph [value]="item.display + ''" [renderer]="renderer()"></paragraph>
             </mat-checkbox>
         }
 

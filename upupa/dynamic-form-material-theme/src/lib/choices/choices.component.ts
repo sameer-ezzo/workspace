@@ -26,7 +26,7 @@ import { NormalizedItem } from "@upupa/data";
                 <mat-icon>{{ item().selected ? "radio_button_checked" : "radio_button_unchecked" }}</mat-icon>
             }
         }
-        <paragraph [text]="item().display + ''" [renderer]="renderer()"></paragraph>`,
+        <paragraph [value]="item().display + ''" [renderer]="renderer()"></paragraph>`,
     styles: ``,
     host: {
         "[class]": "_classList()",

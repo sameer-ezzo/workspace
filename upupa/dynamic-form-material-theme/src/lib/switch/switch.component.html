@@ -8,7 +8,7 @@
         [formControl]="control()"
     >
         @if (label()) {
-            <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+            <paragraph [value]="label()" [renderer]="renderer()"></paragraph>
         }
     </mat-slide-toggle>
 }
@@ -22,7 +22,7 @@
         [formControl]="control()"
     >
         @if (label()) {
-            <paragraph [text]="label()" [renderer]="renderer()"></paragraph>
+            <paragraph [value]="label()" [renderer]="renderer()"></paragraph>
         }
     </mat-checkbox>
 }

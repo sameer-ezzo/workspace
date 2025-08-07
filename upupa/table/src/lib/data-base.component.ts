@@ -1,9 +1,8 @@
-import { Component, EventEmitter, Injector, OnChanges, Output, SimpleChanges, computed, inject, input, model, output, signal } from "@angular/core";
+import { Component, Injector, OnChanges, SimpleChanges, computed, inject, input, model, output } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
-import { DataAdapter, FilterDescriptor, NormalizedItem } from "@upupa/data";
-import { SelectionModel } from "@angular/cdk/collections";
-import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NgControl, UntypedFormControl, ValidationErrors, Validator } from "@angular/forms";
+import { DataAdapter, NormalizedItem } from "@upupa/data";
+import { AbstractControl, AsyncValidator, ControlValueAccessor, FormControl, NgControl, UntypedFormControl, ValidationErrors } from "@angular/forms";
 import { _defaultControl } from "@upupa/common";
 import { filter, firstValueFrom, Observable } from "rxjs";
 import { toObservable } from "@angular/core/rxjs-interop";

@@ -68,7 +68,7 @@
             [attr.name]="fieldName"
             class="{{ input }}-input {{ fieldName }}-container"
             [class.hidden]="fieldRef.hidden() === true"
-            [text]="fieldRef.text()"
+            [value]="fieldRef.text()"
             [renderer]="fieldRef.inputs()?.['renderer']"
             #panel
             (load)="fieldRef.attachedComponentRef.set({ instance: panel })"
@@ -88,7 +88,7 @@
     @let input = field.input;
 
     @if (input === "paragraph" || fieldRef.text()) {
-        <paragraph [text]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer']" #panel (load)="fieldRef.attachedComponentRef.set({ instance: panel })"></paragraph>
+        <paragraph [value]="fieldRef.text()" [renderer]="fieldRef.inputs()?.['renderer']" #panel (load)="fieldRef.attachedComponentRef.set({ instance: panel })"></paragraph>
     }
     @for (record of field.items | orderedKeyValue; track $index) {
         @let _fieldName = record.key;

@@ -22,7 +22,7 @@ import { ErrorsDirective } from "@upupa/common";
         <mat-radio-group [formControl]="control()" [attr.name]="name()">
             @for (item of items(); track item.key) {
                 <mat-radio-button class="choice" [value]="item.value">
-                    <paragraph [text]="item.display + ''" [renderer]="renderer()"></paragraph>
+                    <paragraph [value]="item.display + ''" [renderer]="renderer()"></paragraph>
                 </mat-radio-button>
             }
         </mat-radio-group>
