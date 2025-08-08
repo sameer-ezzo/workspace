@@ -1,5 +1,22 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, SimpleChanges, TemplateRef, ViewEncapsulation, forwardRef, input, model, viewChild } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    SimpleChanges,
+    TemplateRef,
+    ViewEncapsulation,
+    effect,
+    forwardRef,
+    inject,
+    input,
+    model,
+    viewChild,
+} from "@angular/core";
 import { FormControl, FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validator } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -54,7 +71,6 @@ import { DataAdapter } from "@upupa/data";
 })
 export class MatSelectComponent<T = any> extends DataComponentBase<T> implements Validator {
     selectInput = viewChild<MatSelect>(MatSelect);
-
     name = input("");
     ngAfterViewInit() {
         this.filterControl.valueChanges.pipe(debounceTime(300)).subscribe((v) => {

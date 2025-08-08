@@ -10,13 +10,25 @@ import { BooleanInput } from "@angular/cdk/coercion";
 
 function compareObjectWithFn(keyProperty: any) {
     return (optVal: any, selectVal: any) => {
+        const oType = typeof optVal;
+        const sType = typeof selectVal;
+        if (oType !== sType) {
+            console.warn(`Type mismatch: ${oType} !== ${sType}`, { option: optVal, value: selectVal });
+            return false;
+        }
         if (optVal === selectVal) return true;
         if (optVal == undefined || selectVal == undefined) return false;
-        return typeof optVal == "object" ? optVal[keyProperty] === selectVal[keyProperty] : false;
+        return oType == "object" ? optVal[keyProperty] === selectVal[keyProperty] : false;
     };
 }
 
 function compareWithFn(optVal: any, selectVal: any) {
+    const oType = typeof optVal;
+    const sType = typeof selectVal;
+    if (oType !== sType) {
+        console.warn(`Type mismatch: ${oType} !== ${sType}`, { option: optVal, value: selectVal });
+        return false;
+    }
     return optVal === selectVal;
 }
 
@@ -118,7 +130,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     compareWithFn = compareWithFn;
 
-    ngOnChanges(changes: SimpleChanges) {
+    async ngOnChanges(changes: SimpleChanges) {
         if (changes["adapter"]) {
             this._firstLoad = false;
             const adapter = this.adapter();
@@ -128,11 +140,11 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
             this.compareWithFn = keyProperty && Array.isArray(adapter?.valueProperty) ? compareObjectWithFn(keyProperty) : compareWithFn;
 
-            if (!this.lazyLoadData()) this.loadData();
+            if (!this.lazyLoadData()) await this.loadData();
         }
 
         if (changes["lazyLoadData"]) {
-            if (!this.lazyLoadData()) this.loadData();
+            if (!this.lazyLoadData()) await this.loadData();
         }
 
         if (changes["value"]) {
@@ -156,9 +168,7 @@ export class DataComponentBase<T = any> implements ControlValueAccessor, OnChang
 
     pageChange = output<PageEvent>();
     async goto(page: PageEvent) {
-        await this.adapter().load({
-            page,
-        });
+        await this.adapter().load({ page });
         this.pageChange.emit(page);
     }
 

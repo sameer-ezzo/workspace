@@ -52,7 +52,7 @@ export function isDir(path: string): boolean {
     }
 }
 export function isFile(path: string) {
-    return existsSync(join(getStorageDir(), path.replace(`storage/`, ""))) && !isDir(path);
+    return existsSync(join(getStorageDir(), path)) && !isDir(path);
 }
 
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {

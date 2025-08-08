@@ -198,7 +198,6 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
     events = output<FileEvent>();
 
     viewerEventsHandler(e: FileEvent) {
-        this.events.emit(e);
         if (e instanceof RemoveFileEvent) {
             this.viewModel.update((v) => v.filter((f) => f.file !== e.file));
             const vm = this.viewModel()
@@ -218,6 +217,7 @@ export class FileSelectComponent extends InputBaseComponent<FileInfo[]> {
             this.viewModel.set(vm);
             this.handleUserInput(vm.filter((f) => !f.error && !(f.file instanceof File)).map((f) => f.file as FileInfo));
         }
+        this.events.emit(e);
     }
 
     private validateFileExtensions(file: File, accepts: string) {
