@@ -462,12 +462,13 @@ export class QueryParser {
                     const [from, foreignField, localField, as] = p;
                     const pipeline = [];
                     p = p.slice(p[4] === "unwind" ? 5 : 4); // skip unwind if exists
-                    logger.info("LOOKUP_MATCH", { from, foreignField, localField, as, pipeline: p });
                     for (let i = 0; i < p.length; i += 2) {
-                        const exp = this.parseExpression(p[i], p[i + 1], model);
+                        const [key, value] = p[i].split("=");
+                        const exp = this.parseExpression(key, value, model);
                         if (!exp) continue;
                         pipeline.push(exp);
                     }
+                    logger.info("LOOKUP_MATCH", { from, foreignField, localField, as, pipeline: p });
                     return { from, foreignField, localField, as, pipeline };
                 });
             } else if (x.value) {
