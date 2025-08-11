@@ -103,7 +103,7 @@ export function deleteValueFromApi(path: string) {
 }
 
 export function deleteButton(
-    deleteFn: () => any | Promise<any> = (adapter = injectDataAdapter()) => adapter.delete(injectRowItem()),
+    deleteFn: (btn: InlineButtonComponent) => any | Promise<any> = (btn) => injectDataAdapter().delete(btn.item()),
     options?: {
         confirm?: ConfirmOptions;
         descriptor?: Partial<ActionDescriptor>;
@@ -126,7 +126,7 @@ export function deleteButton(
         descriptor: options.descriptor,
         clicked: (source) => {
             // const item = readInput('item', source);
-            deleteItem.call(source, confirmOptions, deleteFn);
+            deleteItem.call(source, confirmOptions, deleteFn(source));
         },
         inputItem: null,
     });
