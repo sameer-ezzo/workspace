@@ -63,7 +63,12 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
     }
 
     _key(item: T) {
-        return typeof this.key === "function" ? this.key(item) : JsonPointer.get(item, this.key as string);
+        if (this.key == null) return this.all().findIndex((x) => x === item);
+        if (typeof this.key === "function") return this.key(item);
+        if (typeof this.key === "string") {
+            return JsonPointer.get(item, this.key as string);
+        }
+        return item;
     }
 
     create(value: Partial<T>) {

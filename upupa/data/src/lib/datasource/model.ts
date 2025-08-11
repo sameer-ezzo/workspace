@@ -25,6 +25,7 @@ export type Key<T> = keyof T | (keyof T)[];
 export type NormalizedItem<T = any> = {
     id: string;
     key: any;
+    index?: number;
     item: T;
     display: Partial<T>;
     value: Partial<T>;

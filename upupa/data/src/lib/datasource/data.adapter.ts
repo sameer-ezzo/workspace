@@ -4,6 +4,7 @@ import { computed, InputSignal, Resource, signal, Signal, WritableSignal } from 
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
 import { BehaviorSubject, combineLatest, filter, first, firstValueFrom, ReplaySubject, timeout } from "rxjs";
+import { randomString } from "@noah-ark/common";
 
 export type DataAdapterType = "server" | "api" | "client" | "http" | "signal" | "resource";
 
@@ -205,11 +206,12 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             const p = _options.page ?? this.page() ?? { pageIndex: 0 };
             const page = { ...p, length: readResult.total, previousPageIndex: p.pageIndex > 0 ? p.pageIndex - 1 : undefined } as PageDescriptor;
 
-            const fetchedEntities = readResult.data.map((x) => {
+            const fetchedEntities = readResult.data.map((x, idx) => {
                 const entity = this.normalize(x);
                 entity.selected = selectionMap[entity.key]?.selected ?? false;
                 entity.state = this.entityMap()[entity.key]?.state ?? "loaded";
                 entity.error = this.entityMap()[entity.key]?.error ?? null;
+
                 return entity;
             });
 
@@ -217,7 +219,13 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
             if (!options?.behavior || options.behavior === "replace") {
                 const selected = this.entities().filter((x) => x.selected && !fetchedEntities.find((y) => y.key === x.key));
-                patchState(this, { ..._options, page, loading: false }, setAllEntities([...selected, ...fetchedEntities]));
+                const all = [...selected, ...fetchedEntities].map((c, index) => ({
+                    ...c,
+                    index,
+                    id: (this.keyProperty == null ? index : c.key) as string,
+                }));
+
+                patchState(this, { ..._options, page, loading: false }, setAllEntities(all as NormalizedItem<T>[]));
             } else {
                 // avoid changing index of duplicates (prepend/append only unique items)
                 const unique = [];
@@ -238,8 +246,21 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 }
 
                 // prepend/append unique items
-                if (options.behavior === "prepend") patchState(this, { ..._options, page, loading: false }, setAllEntities([...unique, ...entities]));
-                else patchState(this, { ..._options, page, loading: false }, setAllEntities([...entities, ...unique]));
+                if (options.behavior === "prepend") {
+                    const all = [...unique, ...entities].map((c, index) => ({
+                        ...c,
+                        index,
+                        id: (this.keyProperty == null ? index : c.key) as string,
+                    }));
+                    patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
+                } else {
+                    const all = [...entities, ...unique].map((c, index) => ({
+                        ...c,
+                        index,
+                        id: (this.keyProperty == null ? index : c.key) as string,
+                    }));
+                    patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
+                }
             }
 
             return this.entities();
@@ -288,7 +309,8 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             entity.selected = options?.select === "select" ? true : false;
             entities.push(entity);
         }
-        if (entities.length) patchState(this, setAllEntities(entities));
+
+        if (entities.length) patchState(this, setAllEntities(entities.map((c, index) => ({ ...c, index, id: (this.keyProperty == null ? index : c.key) as string }))));
 
         if (records.length) {
             // some keys are not loaded
@@ -417,8 +439,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
-        let id = key;
-        if (key === undefined || key === null || typeof key === "object") id = Date.now().toString();
+        let id = this.keyProperty == null ? key : randomString(12);
 
         const item_t = typeof item;
 

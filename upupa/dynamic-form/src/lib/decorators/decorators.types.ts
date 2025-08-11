@@ -61,6 +61,7 @@ export type TableInputOptions = {
         listViewModel: any;
         rowActions: [];
         headerActions: [];
+        keyProperty: string;
     };
 };
 export type FieldOptions =

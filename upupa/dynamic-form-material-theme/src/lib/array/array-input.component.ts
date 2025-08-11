@@ -1,4 +1,4 @@
-import { Component, ComponentRef, computed, forwardRef, inject, Injector, input, SimpleChanges, Type } from "@angular/core";
+import { Component, ComponentRef, computed, DestroyRef, forwardRef, inject, Injector, input, SimpleChanges, Type } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -30,13 +30,11 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
     injector = inject(Injector);
     label = input("");
     rowClass = input<(item: NormalizedItem<T>) => string>((item) => (item.key ?? item).toString());
-
+    keyProperty = input<string>("_id");
     // todo: pass key property (_id passed to the dataSource to identify the unique key of the data source)
-    readonly dataSource = new ClientDataSource<T>([], "_id" as keyof T);
-    readonly adapter = new DataAdapter<T>(this.dataSource, "_id" as keyof T, undefined, undefined, undefined, {
-        page: { pageSize: Number.MAX_SAFE_INTEGER },
-        autoRefresh: true,
-    });
+    private dataSource: ClientDataSource<T> = undefined; //([], this.keyProperty() as keyof T);
+    adapter: DataAdapter;
+
 
     tableHeaderComponent = input<DynamicComponent, Type<any> | DynamicComponent>(undefined, {
         transform: (c) => {
@@ -56,23 +54,47 @@ export class MatArrayInputComponent<T = any> extends InputBaseComponent<T[]> {
 
     constructor() {
         super();
-        this.adapter.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+    }
+
+    ngAfterViewInit() {
+        if (this.shouldInitAdapter) {
+            this.initAdapterFromKey();
+        }
+    }
+
+    updateValueFromDataSource(e?: any) {
+        this.handleUserInput(this.dataSource?.all());
+    }
+    shouldInitAdapter = true;
+    override async ngOnChanges(changes: SimpleChanges) {
+        await super.ngOnChanges(changes);
+
+        if (changes["keyProperty"]) {
+            this.initAdapterFromKey();
+            this.shouldInitAdapter = false;
+        }
+
+        if (changes["value"]) {
+            this.dataSource.all = this.value();
+            this.adapter.refresh();
+        }
+    }
+
+    private readonly destroyRef = inject(DestroyRef);
+    private initAdapterFromKey() {
+        const key = this.keyProperty();
+        this.dataSource = new ClientDataSource<T>(this.value() ?? [], key as keyof T);
+        this.adapter = new DataAdapter<T>(this.dataSource, key as keyof T, undefined, undefined, undefined, {
+            page: { pageSize: Number.MAX_SAFE_INTEGER },
+            autoRefresh: true,
+        });
+        this.adapter.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
             if (event instanceof DataAdapterCRUDEvent) {
                 this.updateValueFromDataSource();
             }
         });
     }
 
-    updateValueFromDataSource() {
-        this.handleUserInput(this.dataSource.all());
-    }
-    override async ngOnChanges(changes: SimpleChanges) {
-        await super.ngOnChanges(changes);
-        if (changes["value"]) {
-            this.dataSource.all = this.value();
-            this.adapter.refresh();
-        }
-    }
     override writeValue(value: T[]): void {
         super.writeValue(value);
         // check if the value is an array and if it is not, throw an error

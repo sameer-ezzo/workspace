@@ -82,7 +82,10 @@ export class ImageCellTemplate {
 
     openImageDialog(file: FileInfo) {
         if (this.canOpenImageDialog()) {
-            this.dialog.open({ component: ImageViewerComponent, inputs: { path: file.path } });
+            this.dialog.open(
+                { component: ImageViewerComponent, inputs: { path: file.path } },
+                { width: "100%", maxWidth: "970px", title: file["originalName"] || $localize`:@@radiology-image-result:Radiology Image Result` },
+            );
         }
     }
 }
