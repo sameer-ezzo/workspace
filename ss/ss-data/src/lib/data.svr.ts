@@ -669,12 +669,14 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
         const model = await this.getModel(segments.collection);
         if (!model) throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
-
+        let _id = undefined;
         if (segments.id) {
+            _id = this.convertToModelId(segments.id, "_id", model, `Delete ${path}`);
+
             if (segments.projectionPath) {
                 const update: any = { $unset: {} };
                 update.$unset[segments.projectionPath] = "";
-                const result = await model.findByIdAndUpdate(segments.id, update, {
+                const result = await model.findByIdAndUpdate(_id, update, {
                     new: true,
                 });
                 this.broker.emit(`data-changed/${path}`, {
@@ -683,9 +685,9 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                     patches: [{ op: "remove", path: <string>segments.pointer }],
                     user,
                 });
-                return { _id: segments.id, ...result } as WriteResult<T>;
+                return { _id: _id, ...result } as WriteResult<T>;
             } else {
-                const result = await model.findByIdAndDelete(segments.id);
+                const result = await model.findByIdAndDelete(_id);
                 this.broker.emit(`data-changed/${path}`, {
                     path,
                     data: result,

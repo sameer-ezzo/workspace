@@ -80,13 +80,14 @@ export function openConfirmationDialog(options: ConfirmOptions): Promise<boolean
     return confirm.openWarning(options);
 }
 
-async function deleteItem<T>(confirmOptions: ConfirmOptions, deleteFn: () => any | Promise<any>) {
+async function deleteItem<T>(source: InlineButtonComponent, confirmOptions: ConfirmOptions, deleteFn: (source?: InlineButtonComponent) => any | Promise<any>) {
     const snack = inject(SnackBarService);
     const injector = inject(Injector);
-    if (!(await openConfirmationDialog(confirmOptions))) return;
+    const confirmRes = await openConfirmationDialog(confirmOptions);
+    if (!confirmRes) return;
     try {
         runInInjectionContext(injector, async () => {
-            return await deleteFn?.();
+            return await deleteFn?.(source);
         });
     } catch (error) {
         snack.openFailed("", error);
@@ -126,7 +127,7 @@ export function deleteButton(
         descriptor: options.descriptor,
         clicked: (source) => {
             // const item = readInput('item', source);
-            deleteItem.call(source, confirmOptions, deleteFn(source));
+            deleteItem.call(source, source, confirmOptions, deleteFn);
         },
         inputItem: null,
     });
