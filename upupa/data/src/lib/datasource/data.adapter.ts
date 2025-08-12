@@ -222,7 +222,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 const all = [...selected, ...fetchedEntities].map((c, index) => ({
                     ...c,
                     index,
-                    id: (this.keyProperty == null ? index : c.key) as string,
+                    id: (!!this.keyProperty ? c.key : index) as string,
                 }));
 
                 patchState(this, { ..._options, page, loading: false }, setAllEntities(all as NormalizedItem<T>[]));
@@ -250,14 +250,14 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                     const all = [...unique, ...entities].map((c, index) => ({
                         ...c,
                         index,
-                        id: (this.keyProperty == null ? index : c.key) as string,
+                        id: (!!this.keyProperty ? c.key : index) as string,
                     }));
                     patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
                 } else {
                     const all = [...entities, ...unique].map((c, index) => ({
                         ...c,
                         index,
-                        id: (this.keyProperty == null ? index : c.key) as string,
+                        id: (!!this.keyProperty ? c.key : index) as string,
                     }));
                     patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
                 }
@@ -310,7 +310,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             entities.push(entity);
         }
 
-        if (entities.length) patchState(this, setAllEntities(entities.map((c, index) => ({ ...c, index, id: (this.keyProperty == null ? index : c.key) as string }))));
+        if (entities.length) patchState(this, setAllEntities(entities.map((c, index) => ({ ...c, index, id: (!!this.keyProperty ? c.key : index) as string }))));
 
         if (records.length) {
             // some keys are not loaded
@@ -439,7 +439,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
-        let id = this.keyProperty == null ? key : randomString(12);
+        let id = !!this.keyProperty ? key : randomString(12);
 
         const item_t = typeof item;
 
