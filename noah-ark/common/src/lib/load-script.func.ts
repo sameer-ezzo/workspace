@@ -2,13 +2,13 @@ const scripts = new Map<string, Promise<HTMLScriptElement>>();
 export async function loadScript(
     doc: Document,
     src: string,
-    options: { type?: "module" | "text/javascript"; async?: boolean; defer?: boolean } = { async: true, defer: true },
+    options: { type?: "module" | "text/javascript"; async?: boolean; defer?: boolean } = { type: "text/javascript", async: true, defer: true },
 ): Promise<HTMLScriptElement> {
     if (scripts.has(src)) return scripts.get(src)!;
 
     const script = doc.createElement("script");
     script.src = src;
-    script.type = options.type || "text/javascript";
+    script.type = options.type === "module" || options.type === "text/javascript" ? options.type : "text/javascript";
     script.async = options?.async === true;
     script.defer = options?.defer === true;
 
@@ -35,11 +35,11 @@ export async function embedScript(
     options: { id: string; type?: "module" | "text/javascript"; async?: boolean; defer?: boolean } = { id: randId(), async: true, defer: true },
 ): Promise<HTMLScriptElement> {
     const id = options.id || randId();
-    if (scripts.has(id)) return scripts.get(id)!;
+    if (scripts.has(id)) return scripts.get(id);
 
     const script = doc.createElement("script");
     script.textContent = content;
-    script.type = options.type || "text/javascript";
+    script.type = options.type === "module" || options.type === "text/javascript" ? options.type : "text/javascript";
     script.async = options?.async === true;
     script.defer = options?.defer === true;
 
