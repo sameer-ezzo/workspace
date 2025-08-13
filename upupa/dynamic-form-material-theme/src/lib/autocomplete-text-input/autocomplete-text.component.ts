@@ -1,5 +1,4 @@
-
-import { ChangeDetectionStrategy, Component, forwardRef, input, InputSignalWithTransform, model, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, ElementRef, forwardRef, input, InputSignalWithTransform, model, signal, viewChild } from "@angular/core";
 import { FormsModule, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -53,10 +52,23 @@ export class MatAutoCompleteTextComponent extends DataComponentBase {
     _searchRequest$ = new Subject<string>();
     _search$ = this._searchRequest$.pipe(debounceTime(300), distinctUntilChanged());
 
+    readonly displayInput = viewChild<ElementRef>("displayInput");
     constructor() {
         super();
         this._search$.pipe(takeUntilDestroyed()).subscribe((value) => {
             this._doSearch(value);
+        });
+
+        effect(() => {
+            // this short effect is responsible for updating the display input value from the current input value
+            // if this is not present the input value will not be reflected in the display input for the first time the control is opened in edit mode.
+            const displayInput = this.displayInput();
+            const v = this.value();
+            const keys = this.adapter().getKeysFromValue(v);
+            const display = this.displayOfKey(keys[0] as string);
+            if (displayInput) {
+                displayInput.nativeElement.value = display;
+            }
         });
     }
 
@@ -68,10 +80,13 @@ export class MatAutoCompleteTextComponent extends DataComponentBase {
         return this.adapter().load({ filter: { search: value } });
     }
 
-    displayOfKey(key: string) {
-        return (this.adapter()
+    displayOfKey(key: string): string {
+        const item = this.adapter()
             .normalized()
-            .find((x) => x.key === key)?.display ?? key) as string;
+            .find((x) => x.key === key);
+
+        if (item) return item.display as unknown as string;
+        return key as string;
     }
     selectByKey(key: string) {
         const v = this.adapter()

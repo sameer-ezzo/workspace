@@ -3,12 +3,17 @@
     @if (label()) {
         <mat-label>{{ label() }}</mat-label>
     }
-    <input #input matInput type="text" [disabled]="disabled()" [matAutocomplete]="auto" [required]="required()" (input)="_search(input.value)" [placeholder]="placeholder()" />
-    <mat-autocomplete
-        autoActiveFirstOption
-        #auto="matAutocomplete"
-        (optionSelected)="input.value = displayOfKey($event.option.value); selectByKey($event.option.value)"
-    >
+    <input
+        #displayInput
+        matInput
+        type="text"
+        [disabled]="disabled()"
+        [matAutocomplete]="auto"
+        [required]="required()"
+        (input)="_search(displayInput.value)"
+        [placeholder]="placeholder()"
+    />
+    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="displayInput.value = displayOfKey($event.option.value); selectByKey($event.option.value)">
         @for (item of adapter().normalized(); track item.key) {
             <mat-option [value]="item.key">
                 @if (item.image) {
