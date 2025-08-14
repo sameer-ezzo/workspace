@@ -63,12 +63,11 @@ export class MatAutoCompleteTextComponent extends DataComponentBase {
             // this short effect is responsible for updating the display input value from the current input value
             // if this is not present the input value will not be reflected in the display input for the first time the control is opened in edit mode.
             const displayInput = this.displayInput();
+            if (!displayInput) return;
             const v = this.value();
             const keys = this.adapter().getKeysFromValue(v);
-            const display = this.displayOfKey(keys[0] as string);
-            if (displayInput) {
-                displayInput.nativeElement.value = display;
-            }
+            const display = this.displayOfKey(keys[0] as string) ?? displayInput.nativeElement.value;
+            displayInput.nativeElement.value = display;
         });
     }
 
