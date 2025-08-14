@@ -21,6 +21,10 @@
                 }
                 <span>{{ item.display }}</span>
             </mat-option>
+        } @empty {
+            <mat-option [value]="displayInput.value">
+                <span>{{ displayInput.value }}</span>
+            </mat-option>
         }
     </mat-autocomplete>
     @if (hint()) {

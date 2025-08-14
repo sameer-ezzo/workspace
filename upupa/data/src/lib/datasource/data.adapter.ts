@@ -461,8 +461,15 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         if (property && item) {
             if (Array.isArray(property)) {
                 if (property.length === 1) return JsonPointer.get(item, property[0] as string, ".");
-                const result: Partial<T> = {};
-                property.forEach((k) => (result[k] = JsonPointer.get(item, k as string, ".")));
+                let result: Partial<T> = undefined;
+                property.forEach((k) => {
+                    const v = JsonPointer.get(item, k as string, ".");
+                    if (!!v) {
+                        result ??= {};
+                        result[k] = v;
+                    }
+                });
+
                 if (flatten) return Object.values(result).join(" ");
                 else return result;
             } else return JsonPointer.get(item, property as string, ".") ?? fallback;

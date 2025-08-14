@@ -1,5 +1,5 @@
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ChangeDetectionStrategy, Component, forwardRef, input, model, output, runInInjectionContext } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, InjectionToken, Injector, input, model, output, runInInjectionContext } from "@angular/core";
 import { ControlValueAccessor, NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { FloatLabelType, MatError, MatFormField, MatFormFieldAppearance, MatLabel, MatSuffix } from "@angular/material/form-field";
 
@@ -14,6 +14,7 @@ import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { debounceTime, distinctUntilChanged } from "rxjs";
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
 
+export const ADDING_CHIP_VALUE = new InjectionToken<string>("Adding chip value");
 @Component({
     selector: "chips-input",
     templateUrl: "./chips-input.component.html",
@@ -86,14 +87,29 @@ export class MatChipsComponent<T = any> extends DataComponentBase implements Con
         this.text$.pipe(takeUntilDestroyed()).subscribe(() => this._applyFilter());
     }
 
+    emptyText() {
+        setTimeout(() => {
+            if (!this._adding) this.text.set("");
+        }, 50);
+    }
+
+    private _adding = false;
     async onAddChip(value: string) {
         if (!this.canAdd()) return;
-
+        this._adding = true;
+        const injector = Injector.create({
+            name: `${MatChipsComponent.name}_${this.name()}`,
+            providers: [{ provide: ADDING_CHIP_VALUE, useValue: value }],
+            parent: this.injector,
+        });
         try {
-            runInInjectionContext(this.injector, () => {
+            runInInjectionContext(injector, () => {
                 this.add.emit(value);
             });
             this.text.set("");
-        } catch (error) {}
+        } catch (error) {
+        } finally {
+            this._adding = false;
+        }
     }
 }
