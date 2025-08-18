@@ -1,59 +1,52 @@
-
-
-import { isPlatformBrowser } from '@angular/common';
-import { Directive, ElementRef, Inject, Input, NgZone, PLATFORM_ID } from '@angular/core';
-
+import { isPlatformBrowser } from "@angular/common";
+import { Directive, ElementRef, Inject, NgZone, PLATFORM_ID, inject, input } from "@angular/core";
 
 @Directive({
-    selector: '[focus]',
-    standalone: true
+    selector: "[focus]",
+    standalone: true,
 })
 export class FocusDirective {
-    @Input() focus = false
-    @Input() focusType?: 'select' | 'focus' = 'select'
+    readonly focus = input(false);
+    readonly focusType = input<"select" | "focus">("select");
 
     //focus after ngModel change
+    private readonly platformId = inject(PLATFORM_ID);
+    private readonly zone = inject(NgZone);
+    private readonly elementRef = inject(ElementRef);
 
-    constructor(
-        @Inject(PLATFORM_ID) private platformId: any,
-        private zone: NgZone,
-        private elementRef: ElementRef) {
-
-    }
-
-
-    observer: IntersectionObserver | undefined
+    private _observer: IntersectionObserver | undefined;
     ngAfterViewInit() {
-        if (!isPlatformBrowser(this.platformId)) return
-        if (!this.focus) {
-            this.observer?.disconnect()
-            return
+        if (!isPlatformBrowser(this.platformId)) return;
+        if (!this.focus()) {
+            this._observer?.disconnect();
+            return;
         }
-        this.observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
+        this._observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    this.zone.runOutsideAngular(() => { this.doFocus() })
+                    this.zone.runOutsideAngular(() => {
+                        this.doFocus();
+                    });
                 }
             });
         });
-        this.observer.observe(this.elementRef.nativeElement);
+        this._observer.observe(this.elementRef.nativeElement);
     }
 
     ngOnDestroy() {
-        this.observer?.disconnect()
+        this._observer?.disconnect();
     }
 
     doFocus() {
         setTimeout(() => {
-            switch (this.focusType) {
-                case 'select':
+            switch (this.focusType()) {
+                case "select":
                     this.elementRef.nativeElement.select();
                     break;
-                case 'focus':
+                case "focus":
                     this.elementRef.nativeElement.focus();
                     break;
             }
         }, 50);
     }
-
 }
