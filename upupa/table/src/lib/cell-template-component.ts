@@ -1,10 +1,11 @@
 import { DatePipe, KeyValue } from "@angular/common";
-import { Component, computed, input, InputSignal, SimpleChanges } from "@angular/core";
+import { Component, computed, inject, Injector, input, InputSignal, model, output, runInInjectionContext, SimpleChanges, viewChild } from "@angular/core";
 import { ColumnDescriptor } from "./types";
 import { NormalizedItem } from "@upupa/data";
 import { DynamicComponent } from "@upupa/common";
 import { DynamicPipe } from "./dynamic.pipe";
 import { ActivatedRoute, Params, QueryParamsHandling, RouterModule, UrlTree } from "@angular/router";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 export interface ITableCellTemplate<TValue = any, TRow = any> {
     /**
@@ -64,6 +65,23 @@ export function objectCell<T = unknown>(textProp: keyof T = "title" as any, href
             href,
         },
     };
+}
+
+@Component({
+    selector: "app-boolean-value-cell-template",
+    imports: [MatSlideToggleModule],
+    template: `
+        <mat-slide-toggle #toggle [disabled]="disabled()" #_inputElement [checked]="value() === true" (change)="emitChange($event)" [attr.name]="dataIndex()"> </mat-slide-toggle>
+    `,
+})
+export class BooleanValueCellTemplate extends DefaultTableCellTemplate {
+    toggle = viewChild.required<MatSlideToggleModule>("toggle");
+    changed = output<{ item: any; event: any }>();
+    disabled = model<boolean>(true);
+    private readonly injector = inject(Injector);
+    emitChange(event: any) {
+        runInInjectionContext(this.injector, () => this.changed.emit({ item: this.item(), event }));
+    }
 }
 
 export type LinkRouterCellInputs = {
