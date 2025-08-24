@@ -1,48 +1,35 @@
 {
-  "name": "ss-api",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/workspace/ss/ss-api/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/workspace/ss/ss-api",
-        "tsConfig": "libs/workspace/ss/ss-api/tsconfig.lib.json",
-        "packageJson": "libs/workspace/ss/ss-api/package.json",
-        "main": "libs/workspace/ss/ss-api/src/index.ts",
-        "assets": [
-          "libs/workspace/ss/ss-api/*.md"
-        ]
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/ss/ss-api/**/*.ts"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/ss/ss-api"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/ss/ss-api/jest.config.ts",
-        "passWithNoTests": true
-      }
+    "name": "ss-api",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/workspace/ss/ss-api/src",
+    "projectType": "library",
+    "tags": ["framework:nestjs", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/workspace/ss/ss-api",
+                "tsConfig": "libs/workspace/ss/ss-api/tsconfig.lib.json",
+                "packageJson": "libs/workspace/ss/ss-api/package.json",
+                "main": "libs/workspace/ss/ss-api/src/index.ts",
+                "assets": ["libs/workspace/ss/ss-api/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/workspace/ss/ss-api/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/ss/ss-api"],
+            "options": {
+                "jestConfig": "libs/workspace/ss/ss-api/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  },
-  "tags": [
-    "framework:nestjs",
-    "type:library"
-  ]
 }

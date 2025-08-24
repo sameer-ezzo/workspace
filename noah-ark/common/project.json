@@ -1,45 +1,34 @@
 {
-  "name": "noah-ark-common",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/workspace/noah-ark/common/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/workspace/noah-ark/common",
-        "tsConfig": "libs/workspace/noah-ark/common/tsconfig.lib.json",
-        "packageJson": "libs/workspace/noah-ark/common/package.json",
-        "main": "libs/workspace/noah-ark/common/src/index.ts",
-        "assets": [
-          "libs/workspace/noah-ark/common/*.md"
-        ]
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/noah-ark/common/**/*.ts"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/noah-ark/common"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/noah-ark/common/jest.config.ts",
-        "passWithNoTests": true
-      }
+    "name": "noah-ark-common",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/workspace/noah-ark/common/src",
+    "projectType": "library",
+    "tags": ["framework:none", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/workspace/noah-ark/common",
+                "tsConfig": "libs/workspace/noah-ark/common/tsconfig.lib.json",
+                "packageJson": "libs/workspace/noah-ark/common/package.json",
+                "main": "libs/workspace/noah-ark/common/src/index.ts",
+                "assets": ["libs/workspace/noah-ark/common/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/workspace/noah-ark/common/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/noah-ark/common"],
+            "options": {
+                "jestConfig": "libs/workspace/noah-ark/common/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  },
-  "tags": [
-    "framework:none",
-    "type:library"
-  ]
 }

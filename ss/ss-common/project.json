@@ -1,48 +1,35 @@
 {
-  "name": "ss-common",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/workspace/ss/ss-common/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/workspace/ss/ss-common",
-        "tsConfig": "libs/workspace/ss/ss-common/tsconfig.lib.json",
-        "packageJson": "libs/workspace/ss/ss-common/package.json",
-        "main": "libs/workspace/ss/ss-common/src/index.ts",
-        "assets": [
-          "libs/workspace/ss/ss-common/*.md"
-        ]
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/ss/ss-common/**/*.ts"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/ss/ss-common"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/ss/ss-common/jest.config.ts",
-        "passWithNoTests": true
-      }
+    "name": "ss-common",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/workspace/ss/ss-common/src",
+    "projectType": "library",
+    "tags": ["framework:nestjs", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/workspace/ss/ss-common",
+                "tsConfig": "libs/workspace/ss/ss-common/tsconfig.lib.json",
+                "packageJson": "libs/workspace/ss/ss-common/package.json",
+                "main": "libs/workspace/ss/ss-common/src/index.ts",
+                "assets": ["libs/workspace/ss/ss-common/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/workspace/ss/ss-common/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/ss/ss-common"],
+            "options": {
+                "jestConfig": "libs/workspace/ss/ss-common/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  },
-  "tags": [
-    "framework:nestjs",
-    "type:library"
-  ]
 }

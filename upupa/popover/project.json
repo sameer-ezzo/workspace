@@ -1,43 +1,36 @@
 {
-  "name": "upupa-popover",
-  "projectType": "library",
-  "sourceRoot": "libs/workspace/upupa/popover/src",
-  "prefix": "raptor7-workspace",
-  "targets": {
-    "build": {
-      "executor": "@nx/angular:package",
-      "options": {
-        "tsConfig": "libs/workspace/upupa/popover/tsconfig.lib.json",
-        "project": "libs/workspace/upupa/popover/ng-package.json"
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "libs/workspace/upupa/popover/tsconfig.lib.prod.json"
+    "name": "upupa-popover",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/workspace/upupa/popover/src",
+    "prefix": "raptor7-workspace",
+    "tags": ["framework:angular", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/angular:package",
+            "options": {
+                "tsConfig": "libs/workspace/upupa/popover/tsconfig.lib.json",
+                "project": "libs/workspace/upupa/popover/ng-package.json"
+            },
+            "configurations": {
+                "production": {
+                    "tsConfig": "libs/workspace/upupa/popover/tsconfig.lib.prod.json"
+                }
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/workspace/upupa/popover/src/**/*.ts", "libs/workspace/upupa/popover/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/upupa/popover"],
+            "options": {
+                "jestConfig": "libs/workspace/upupa/popover/jest.config.ts",
+                "passWithNoTests": true
+            }
         }
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/upupa/popover/src/**/*.ts",
-          "libs/workspace/upupa/popover/src/**/*.html"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/upupa/popover"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/upupa/popover/jest.config.ts",
-        "passWithNoTests": true
-      }
     }
-  },
-  "tags": [
-    "framework:angular",
-    "type:library"
-  ]
 }

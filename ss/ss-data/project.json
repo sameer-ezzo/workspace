@@ -1,48 +1,35 @@
 {
-  "name": "ss-data",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/workspace/ss/ss-data/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/workspace/ss/ss-data",
-        "tsConfig": "libs/workspace/ss/ss-data/tsconfig.lib.json",
-        "packageJson": "libs/workspace/ss/ss-data/package.json",
-        "main": "libs/workspace/ss/ss-data/src/index.ts",
-        "assets": [
-          "libs/workspace/ss/ss-data/*.md"
-        ]
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/ss/ss-data/**/*.ts"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/ss/ss-data"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/ss/ss-data/jest.config.ts",
-        "passWithNoTests": true
-      }
+    "name": "ss-data",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/workspace/ss/ss-data/src",
+    "projectType": "library",
+    "tags": ["framework:nestjs", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/workspace/ss/ss-data",
+                "tsConfig": "libs/workspace/ss/ss-data/tsconfig.lib.json",
+                "packageJson": "libs/workspace/ss/ss-data/package.json",
+                "main": "libs/workspace/ss/ss-data/src/index.ts",
+                "assets": ["libs/workspace/ss/ss-data/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/workspace/ss/ss-data/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/ss/ss-data"],
+            "options": {
+                "jestConfig": "libs/workspace/ss/ss-data/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  },
-  "tags": [
-    "framework:nestjs",
-    "type:library"
-  ]
 }
