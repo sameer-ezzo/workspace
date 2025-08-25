@@ -23,6 +23,7 @@ export function compare(a, b): number {
 }
 
 export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Partial<T>> {
+    readonly allDataLoaded = signal(false);
     private readonly _all: WritableSignal<T[]> = signal<T[]>([]);
     get all(): Signal<T[]> {
         return computed(() => this._all());
@@ -30,6 +31,7 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
     set all(items: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]> | T[]) {
         if (items == null) items = [];
         this._all.set(items instanceof Array ? items : items());
+        this.allDataLoaded.set(true);
     }
 
     entries = computed(() => {

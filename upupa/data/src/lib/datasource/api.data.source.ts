@@ -83,7 +83,12 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         if (sort?.active) query["sort_by"] = `${sort.active},${sort.direction}`;
 
         const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: mapper ? mapper(res.data ?? []) : res.data })));
-        return firstValueFrom(data$).then((res: ApiGetResult<T[]>) => res as ReadResult<T>);
+        return firstValueFrom(data$)
+            .then((res: ApiGetResult<T[]>) => res as ReadResult<T>)
+            .then((res) => {
+                this.allDataLoaded.set(res.data.length === res.total);
+                return res;
+            });
     }
 
     async create(value: Partial<T>) {

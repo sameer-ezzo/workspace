@@ -1,6 +1,7 @@
 import { Sort } from "@angular/material/sort";
 import { PageEvent } from "@angular/material/paginator";
 import { Patch } from "@noah-ark/json-patch";
+import { WritableSignal } from "@angular/core";
 
 export type PageDescriptor = Partial<PageEvent>;
 export type SortDescriptor = Sort;
@@ -45,6 +46,7 @@ export type ReadResult<T = any> = {
 };
 
 export interface TableDataSource<T = any, WriteResult = any> {
+    allDataLoaded: WritableSignal<boolean>;
     load(
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
         mapper?: (raw: unknown) => T[],

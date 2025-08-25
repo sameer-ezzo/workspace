@@ -225,7 +225,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                     id: (!!this.keyProperty ? c.key : index) as string,
                 }));
 
-                patchState(this, { ..._options, page, loading: false }, setAllEntities(all as NormalizedItem<T>[]));
+                patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all as NormalizedItem<T>[]));
             } else {
                 // avoid changing index of duplicates (prepend/append only unique items)
                 const unique = [];
@@ -252,20 +252,20 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                         index,
                         id: (!!this.keyProperty ? c.key : index) as string,
                     }));
-                    patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
+                    patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all));
                 } else {
                     const all = [...entities, ...unique].map((c, index) => ({
                         ...c,
                         index,
                         id: (!!this.keyProperty ? c.key : index) as string,
                     }));
-                    patchState(this, { ..._options, page, loading: false }, setAllEntities(all));
+                    patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all));
                 }
             }
 
             return this.entities();
         } catch (error) {
-            patchState(this, { error, loading: false }, setAllEntities([]));
+            patchState(this, { error, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities([]));
             return [];
         } finally {
             this._producer.next(this._producer.getValue() + 1);
