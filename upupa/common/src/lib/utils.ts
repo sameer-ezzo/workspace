@@ -1,4 +1,4 @@
-import { OutputEmitterRef, DestroyRef, inject, LOCALE_ID } from "@angular/core";
+import { OutputEmitterRef, DestroyRef, inject, LOCALE_ID, DOCUMENT } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Observable, ReplaySubject } from "rxjs";
 import { ComponentOutputs } from "./dynamic-component";
@@ -43,5 +43,7 @@ export function local() {
 }
 
 export function language() {
-    return local().split("-")[0];
+    const doc = inject(DOCUMENT);
+    let language = doc.body.parentElement.lang || local().split("-")[0];
+    return language;
 }

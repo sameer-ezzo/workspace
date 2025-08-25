@@ -1,45 +1,34 @@
 {
-  "name": "noah-ark-json-patch",
-  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/workspace/noah-ark/json-patch/src",
-  "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/workspace/noah-ark/json-patch",
-        "tsConfig": "libs/workspace/noah-ark/json-patch/tsconfig.lib.json",
-        "packageJson": "libs/workspace/noah-ark/json-patch/package.json",
-        "main": "libs/workspace/noah-ark/json-patch/src/index.ts",
-        "assets": [
-          "libs/workspace/noah-ark/json-patch/*.md"
-        ]
-      }
-    },
-    "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/workspace/noah-ark/json-patch/**/*.ts"
-        ]
-      }
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/workspace/noah-ark/json-patch"
-      ],
-      "options": {
-        "jestConfig": "libs/workspace/noah-ark/json-patch/jest.config.ts",
-        "passWithNoTests": true
-      }
+    "name": "noah-ark-json-patch",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/workspace/noah-ark/json-patch/src",
+    "projectType": "library",
+    "tags": ["framework:none", "type:library"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/workspace/noah-ark/json-patch",
+                "tsConfig": "libs/workspace/noah-ark/json-patch/tsconfig.lib.json",
+                "packageJson": "libs/workspace/noah-ark/json-patch/package.json",
+                "main": "libs/workspace/noah-ark/json-patch/src/index.ts",
+                "assets": ["libs/workspace/noah-ark/json-patch/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/workspace/noah-ark/json-patch/**/*.ts"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/workspace/noah-ark/json-patch"],
+            "options": {
+                "jestConfig": "libs/workspace/noah-ark/json-patch/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
     }
-  },
-  "tags": [
-    "framework:none",
-    "type:library"
-  ]
 }

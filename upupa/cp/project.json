@@ -4,6 +4,7 @@
     "projectType": "library",
     "sourceRoot": "libs/workspace/upupa/cp/src",
     "prefix": "raptor7-workspace",
+    "tags": ["framework:angular", "type:library"],
     "targets": {
         "build": {
             "executor": "@nx/angular:package",
@@ -36,6 +37,5 @@
                 "lintFilePatterns": ["libs/workspace/upupa/cp/src/**/*.ts", "libs/workspace/upupa/cp/src/**/*.html"]
             }
         }
-    },
-    "tags": ["framework:angular", "type:library"]
+    }
 }
