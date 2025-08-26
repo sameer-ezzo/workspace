@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir } from "./storage.service";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir, normalizePath } from "./storage.service";
 import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
 import { ImageService } from "./image.svr";
 
-import * as Path from "path";
+import path, * as Path from "path";
 import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
 import { Principle } from "@noah-ark/common";
 
@@ -225,7 +225,7 @@ export class StorageController {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
-        const decodedPath = decodeURIComponent(msg.path.startsWith("/") ? msg.path.substring(1) : msg.path);
+        const decodedPath = normalizePath(msg.path);
         if (!isFile(decodedPath)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
 
         const fname = Path.basename(decodedPath);

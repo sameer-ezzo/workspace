@@ -22,7 +22,8 @@ import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, stat
 const separator = "/";
 
 export function getStorageDir() {
-    return process.env.STORAGE_DIR || join(__dirname, "storage");
+    const base = process.env.STORAGE_DIR || __dirname;
+    return base.endsWith("storage") ? base : join(base, "storage");
 }
 export function makeDir(dir: string) {
     dir = dir.replace(/\\/g, "/");
@@ -51,8 +52,14 @@ export function isDir(path: string): boolean {
         return false;
     }
 }
+
+export const normalizePath = (path: string, base = "storage") => {
+    return decodeURIComponent(path.startsWith("/") ? path.substring(1) : path).replace(new RegExp(`^${base}/`), "");
+};
+
 export function isFile(path: string) {
-    return existsSync(join(getStorageDir(), path)) && !isDir(path);
+    const p = join(getStorageDir(), normalizePath(path));
+    return existsSync(p) && !isDir(p);
 }
 
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
