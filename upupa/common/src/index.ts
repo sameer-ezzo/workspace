@@ -9,7 +9,6 @@ export * from "./lib/directives/errors.directive";
 export * from "./lib/local-storage.service";
 export * from "./lib/routing/route-output-binder";
 
-export * from "./lib/deep-assign.func";
 export * from "./lib/utils.module";
 
 export * from "./lib/models/models";

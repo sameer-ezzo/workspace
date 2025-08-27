@@ -31,7 +31,7 @@ import {
     FormArray,
 } from "@angular/forms";
 import { Condition } from "@noah-ark/expression-engine";
-import { _defaultControl, _defaultForm, deepAssign, EventBus } from "@upupa/common";
+import { _defaultControl, _defaultForm, EventBus } from "@upupa/common";
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
 import { DynamicFormBuilder } from "./dynamic-form-renderer";
 import { DynamicFormService } from "./dynamic-form.service";
@@ -46,6 +46,7 @@ import { FormScheme } from "./types";
 import { LoadDirective } from "./load.directive";
 import { ParagraphComponent } from "@upupa/dynamic-form-material-theme";
 import { MatIconModule } from "@angular/material/icon";
+import { deepAssign } from "@noah-ark/common";
 
 @Pipe({
     name: "orderedKeyValue",

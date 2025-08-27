@@ -21,4 +21,5 @@ export * from "./lib/rules/rules-manager";
 export * from "./lib/password-strength-policy";
 export * from "./lib/func/group-by";
 export * from "./lib/func/clone-deep";
+export * from "./lib/func/assign-deep";
 export * from "./lib/async";

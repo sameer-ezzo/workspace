@@ -32,7 +32,20 @@ import { ColumnsDescriptorStrict, ColumnsDescriptor } from "./types";
 import { MatTable, MatTableModule } from "@angular/material/table";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
-import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe, KeyValuePipe, PercentPipe, SlicePipe, LowerCasePipe, I18nPluralPipe, I18nSelectPipe, TitleCasePipe, UpperCasePipe } from "@angular/common";
+import {
+    CommonModule,
+    CurrencyPipe,
+    DatePipe,
+    DecimalPipe,
+    KeyValuePipe,
+    PercentPipe,
+    SlicePipe,
+    LowerCasePipe,
+    I18nPluralPipe,
+    I18nSelectPipe,
+    TitleCasePipe,
+    UpperCasePipe,
+} from "@angular/common";
 import { DefaultTableCellTemplate } from "./cell-template-component";
 import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
@@ -265,9 +278,15 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
             }
         }
         for (const _prop in this._properties) {
-            if (this._properties[_prop].width == null) continue;
+            const w = this._properties[_prop].width;
+            let width = w || "auto";
+            if (typeof w === "number") {
+                if (w < 0) width = "auto";
+                if (w >= 0 && w <= 1) width = w * 100 + "%";
+                else width = w + "px";
+            }
             this._properties[_prop]["style"] = {
-                width: this._properties[_prop].width + "%",
+                width,
             };
         }
 
