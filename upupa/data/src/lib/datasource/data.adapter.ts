@@ -470,7 +470,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                     }
                 });
 
-                if (flatten) return Object.values(result).join(" ");
+                if (flatten && result) return Object.values(result).join(" ");
                 else return result;
             } else return JsonPointer.get(item, property as string, ".") ?? fallback;
         } else return fallback;
