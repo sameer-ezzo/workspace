@@ -27,7 +27,7 @@ export function getStorageDir() {
 }
 export function makeDir(dir: string) {
     dir = dir.replace(/\\/g, "/");
-    if (existsSync(join(getStorageDir(), dir))) return;
+    if (existsSync(join(getStorageDir(), normalizePath(dir)))) return;
 
     const segments = dir.split(separator);
     for (let i = 1; i < segments.length; i++) {
@@ -43,10 +43,18 @@ export function makeDir(dir: string) {
 export function mv(oldpath: string, newpath: string) {
     execSync(`mv "${oldpath}" "${newpath}"`);
 }
+export function mvToStorage(oldpath: string, newpath: string) {
+    const newPathFull = join(getStorageDir(), normalizePath(newpath));
+    let dirSegments = newPathFull.split("/");
+    dirSegments.pop();
+    const newPathFullDir = dirSegments.join("/");
+    if (!isDir(newPathFullDir)) makeDir(newPathFullDir);
+    mv(oldpath, newPathFull);
+}
 
 export function isDir(path: string): boolean {
     try {
-        opendirSync(join(getStorageDir(), path));
+        opendirSync(join(getStorageDir(), normalizePath(path)));
         return true;
     } catch (error) {
         return false;
@@ -54,12 +62,13 @@ export function isDir(path: string): boolean {
 }
 
 export const normalizePath = (path: string, base = "storage") => {
-    return decodeURIComponent(path.startsWith("/") ? path.substring(1) : path).replace(new RegExp(`^${base}/`), "");
+    const decoded = decodeURIComponent(path.startsWith("/") ? path.substring(1) : path);
+    return decoded.replace(new RegExp(`^${base}/|/${base}$|^${base}$`, "ig"), "");
 };
 
 export function isFile(path: string) {
     const p = join(getStorageDir(), normalizePath(path));
-    return existsSync(p) && !isDir(p);
+    return existsSync(p) && !isDir(path);
 }
 
 export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {

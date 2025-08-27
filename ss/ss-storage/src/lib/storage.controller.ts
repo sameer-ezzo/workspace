@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir, normalizePath } from "./storage.service";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir, normalizePath, isDir, mvToStorage } from "./storage.service";
 import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
 import { ImageService } from "./image.svr";
 
@@ -9,13 +9,13 @@ import type { IncomingMessage, IncomingMessageStream, PostedFile, File } from "@
 import { Principle } from "@noah-ark/common";
 
 import mongoose, { get } from "mongoose";
-import { WriteFileOptions } from "fs";
+import { existsSync, WriteFileOptions } from "fs";
 
 import { DataService } from "@ss/data";
 import { AuthorizeService } from "@ss/rules";
 import { EndPoint, Message, MessageStream } from "@ss/common";
 import { logger } from "./logger";
-import { join } from "path";
+import { extname, join } from "path";
 
 async function _uploadToTmp(postedFile: PostedFile, ctx: ExecutionContext): Promise<File> {
     const path = ctx.switchToHttp().getRequest<Request>().path;
@@ -34,7 +34,9 @@ export class StorageController {
         private readonly authorizeService: AuthorizeService,
         private readonly storageService: StorageService,
         private readonly imageService: ImageService,
-    ) {}
+    ) {
+        logger.info(`Storage dir: ${getStorageDir()}`);
+    }
 
     @EndPoint({ http: { method: "POST", path: "/" }, operation: "Upload New" })
     async post_(
@@ -78,12 +80,11 @@ export class StorageController {
                 file.user = msg$.principle?.sub;
 
                 const tmp = file.path;
-                const path = Path.join(file.destination, file.filename);
-                if (fs.existsSync(path)) throw "CANNOT OVERWRITE"; //TODO error handle
-
+                const path = join(file.destination, file.filename);
+                if (isFile(path)) throw "CANNOT OVERWRITE"; //TODO error handle
                 //mv file from tmp to path
                 try {
-                    mv(tmp, Path.join(getStorageDir(), path));
+                    mvToStorage(tmp, path);
                     file.path = path;
                 } catch (err) {
                     console.error("FILE NOT MOVED", err);
@@ -137,14 +138,14 @@ export class StorageController {
             file.user = msg$.principle?.sub;
 
             const tmp = file.path;
-            const path = Path.join(file.destination, file.filename);
+            const path = join(file.destination, file.filename);
             file.path = path;
 
-            if (fs.existsSync(path)) fs.unlinkSync(path);
+            if (isFile(path)) fs.unlinkSync(path);
 
             //mv file from tmp to path
             try {
-                fs.renameSync(tmp, Path.join(getStorageDir(), path));
+                fs.renameSync(tmp, join(getStorageDir(), normalizePath(path)));
             } catch (err) {
                 logger.error(err);
             } //TODO how error should be handled
@@ -166,7 +167,7 @@ export class StorageController {
                 .split(separator)
                 .filter((s) => s);
             const filename = f.filename;
-            const ext = Path.extname(filename);
+            const ext = extname(filename);
 
             f._id = new mongoose.Types.ObjectId();
             f.originalname = filename;
@@ -174,10 +175,10 @@ export class StorageController {
 
             const destination: string = segments.join(separator);
             f.destination = destination;
-            const targetPath = Path.join(getStorageDir(), destination);
-            if (!fs.existsSync(targetPath)) makeDir(destination);
+            const targetPath = join(getStorageDir(), normalizePath(destination));
+            if (!fs.existsSync(targetPath)) makeDir(targetPath);
 
-            f.path = Path.join(destination, f.filename);
+            f.path = join(destination, f.filename);
 
             const buffer = Buffer.from((f.content, "base64"));
             f.size = buffer.length;
@@ -185,7 +186,7 @@ export class StorageController {
             //f.mimetype //TODO
 
             try {
-                await this.writeFile(Path.join(targetPath, f.filename), buffer);
+                await this.writeFile(join(targetPath, f.filename), buffer);
             } catch (error) {
                 throw new HttpException("Error", HttpStatus.BAD_REQUEST);
             }
@@ -203,13 +204,6 @@ export class StorageController {
                 else resolve();
             });
         });
-    }
-
-    _path(path: string) {
-        return decodeURIComponent(path)
-            .split("/")
-            .filter((s) => s)
-            .join("/");
     }
 
     @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
