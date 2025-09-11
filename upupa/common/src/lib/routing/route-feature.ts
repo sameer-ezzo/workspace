@@ -220,10 +220,10 @@ export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterCon
     return makeEnvironmentProviders([
         provideAppInitializer(async () => {
             const injector = inject(Injector);
-            const router = inject(Router);
+            const router = inject<Router>(Router);
             router.events.subscribe((event) => {
                 if (typeof window !== "undefined" && event instanceof NavigationEnd) {
-                    window["_navigation"] = router.getCurrentNavigation();
+                    window["_navigation"] = router.currentNavigation();
                 }
 
                 if ("state" in event) {

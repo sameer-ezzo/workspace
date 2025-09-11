@@ -1,4 +1,3 @@
-
 import { inject, Injectable, DOCUMENT } from "@angular/core";
 import { ActivatedRouteSnapshot, ActivationEnd, Router } from "@angular/router";
 
@@ -17,8 +16,8 @@ export abstract class MetadataUpdateStrategy<C extends ContentMetadataConfig = C
 export class MetadataService {
     private readonly metadataUpdateStrategies = [];
 
-    private readonly router = inject(Router);
-    private readonly dom = inject(DOCUMENT);
+    private readonly router = inject<Router>(Router);
+    private readonly dom = inject<Document>(DOCUMENT);
     private _config: ContentMetadataConfig<PageMetadata> = undefined;
 
     initialize(config: ContentMetadataConfig<PageMetadata>) {
@@ -26,7 +25,7 @@ export class MetadataService {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
                 //accumulate metadata from child route up to the root route
-                const navigation = this.router.getCurrentNavigation();
+                const navigation = this.router.currentNavigation();
 
                 const meta = { ...this.extractMetadataForRoute(event.snapshot), ...navigation.extras["meta"] };
                 navigation.extras["meta"] = meta;

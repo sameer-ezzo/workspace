@@ -72,6 +72,7 @@ function DataAdapterStore<T>() {
             sort: null as SortDescriptor,
             filter: {} as FilterDescriptor,
             terms: [] as Term<T>[],
+            keys: [] as (keyof T)[],
         }),
     );
 }
