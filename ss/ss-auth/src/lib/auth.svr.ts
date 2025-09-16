@@ -42,13 +42,14 @@ export type TokenBase = { t: TokenTypes } & Record<string, any>;
 
 @Injectable()
 export class AuthService {
-    #secret = new TextEncoder().encode(this.options.secret);
+    #secret: Uint8Array;
     model: mongoose.Model<any, {}, {}, {}, any, any>;
 
     constructor(
         @Inject("DB_AUTH") public readonly data: DataService,
         @Inject("AUTH_OPTIONS") public readonly options: AuthOptions,
     ) {
+        this.#secret = new TextEncoder().encode(this.options.secret);
         this.getModel();
     }
 

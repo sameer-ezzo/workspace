@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir, normalizePath, isDir, mvToStorage } from "./storage.service";
+import { StorageService, saveStreamToTmp, isFile, mv, makeDir, getStorageDir, normalizePath, mvToStorage } from "./storage.service";
 import { Controller, ExecutionContext, HttpException, HttpStatus, Inject, Res } from "@nestjs/common";
 import { ImageService } from "./image.svr";
 
