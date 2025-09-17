@@ -223,7 +223,7 @@ export function provideEnhancedRouting(routes: Routes, config: EnhancedRouterCon
             const router = inject<Router>(Router);
             router.events.subscribe((event) => {
                 if (typeof window !== "undefined" && event instanceof NavigationEnd) {
-                    window["_navigation"] = router.currentNavigation();
+                    window["_navigation"] = router.getCurrentNavigation();
                 }
 
                 if ("state" in event) {

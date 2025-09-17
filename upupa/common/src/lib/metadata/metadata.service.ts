@@ -25,7 +25,7 @@ export class MetadataService {
         this.router.events.subscribe((event) => {
             if (event instanceof ActivationEnd) {
                 //accumulate metadata from child route up to the root route
-                const navigation = this.router.currentNavigation();
+                const navigation = this.router.getCurrentNavigation();
 
                 const meta = { ...this.extractMetadataForRoute(event.snapshot), ...navigation.extras["meta"] };
                 navigation.extras["meta"] = meta;
