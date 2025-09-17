@@ -34,7 +34,7 @@ export class ViewTransitionService {
                 // begin setting up the transition as early as possible
                 if (!e) return this.events.next(undefined);
 
-                const navigation = this.router.getCurrentNavigation();
+                const navigation = this.router.currentNavigation();
                 const transitionEvent: ViewTransitionEvent = {
                     stage: "start",
                     fromUrl: this.router.routerState.snapshot.url,
@@ -84,7 +84,7 @@ export class ViewTransitionSourceDirective {
             )
             .subscribe((e) => {
                 // skip changes if navigation is back/forward history
-                const navigation = this.router.getCurrentNavigation();
+                const navigation = this.router.currentNavigation();
                 if (!e || navigation?.trigger !== "imperative") return;
 
                 // clear the previous transition name (this directive is attached to multiple elements and at this stage we don't know which one is the source)
@@ -146,7 +146,7 @@ export class ViewTransitionDestinationDirective implements OnInit, OnDestroy {
             .pipe(filter((e) => e?.stage === "source")) // this stage is ensured to be emmited after 'start' stage
             .subscribe((e) => {
                 // nothing on history navigation
-                const navigation = this.router.getCurrentNavigation();
+                const navigation = this.router.currentNavigation();
                 if (!e || navigation?.trigger != "imperative") return;
 
                 this.updateViewTransition();
