@@ -1,4 +1,4 @@
-import { Directive, HostListener, Input, Output, EventEmitter } from "@angular/core";
+import { Directive, HostListener, Output, EventEmitter, output, input } from "@angular/core";
 import { PromptService } from "./prompt.service";
 
 @Directive({
@@ -6,25 +6,25 @@ import { PromptService } from "./prompt.service";
     standalone: true,
 })
 export class PromptDirective {
-    @Output() prompt = new EventEmitter<Event>();
-    @Input("prompt-text") label: string;
-    @Input("prompt-title") title: string;
-    @Input("action-text") actionText: string;
-    @Input("prompt-placeholder") placeholder: string;
-    @Input("prompt-type") type: string;
-    @Input("prompt-value") value: string;
+     prompt = output<Event>();
+    readonly label = input<string>(undefined, { alias: "prompt-text" });
+    readonly title = input<string>(undefined, { alias: "prompt-title" });
+    readonly actionText = input<string>(undefined, { alias: "action-text" });
+    readonly placeholder = input<string>(undefined, { alias: "prompt-placeholder" });
+    readonly type = input<string>(undefined, { alias: "prompt-type" });
+    readonly value = input<string>(undefined, { alias: "prompt-value" });
 
     constructor(public promptService: PromptService) {}
 
     @HostListener("click", ["$event"])
     async onClick() {
         const result = await this.promptService.open({
-            title: this.title,
-            text: this.label,
-            actionText: this.actionText,
-            placeholder: this.placeholder,
-            value: this.value,
-            type: this.type,
+            title: this.title(),
+            text: this.label(),
+            actionText: this.actionText(),
+            placeholder: this.placeholder(),
+            value: this.value(),
+            type: this.type(),
         });
         if (result) {
             this.prompt.emit(result);

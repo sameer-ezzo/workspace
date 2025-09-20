@@ -36,7 +36,7 @@ import { NormalizedItem } from "@upupa/data";
         "[attr.aria-checked]": "item().selected",
         "[attr.aria-label]": "item().display",
         "[attr.aria-labelledby]": "item().key",
-        "[attr.aria-describedby]": "item().description || item().display",
+        "[attr.aria-describedby]": "item()?.['description'] || item().display",
     },
 })
 export class ChoiceViewTemplateComponent<T extends NormalizedItem = NormalizedItem<any>> {
