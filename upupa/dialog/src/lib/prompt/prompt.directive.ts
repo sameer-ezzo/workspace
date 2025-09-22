@@ -6,7 +6,7 @@ import { PromptService } from "./prompt.service";
     standalone: true,
 })
 export class PromptDirective {
-     prompt = output<Event>();
+    prompt = output<Event>();
     readonly label = input<string>(undefined, { alias: "prompt-text" });
     readonly title = input<string>(undefined, { alias: "prompt-title" });
     readonly actionText = input<string>(undefined, { alias: "action-text" });
@@ -16,7 +16,7 @@ export class PromptDirective {
 
     constructor(public promptService: PromptService) {}
 
-    @HostListener("click", ["$event"])
+    @HostListener("click")
     async onClick() {
         const result = await this.promptService.open({
             title: this.title(),
