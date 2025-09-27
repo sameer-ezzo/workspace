@@ -21,8 +21,7 @@
         [trackBy]="trackByFn"
         (contentChanged)="contentChanged.emit()"
         [class.loading]="adapter().loading()"
-    >
-        >
+>
         <ng-container matColumnDef="select" [sticky]="columns()['select']?.sticky === 'start'" [stickyEnd]="columns()['select']?.sticky === 'end'">
             <th mat-header-cell *matHeaderCellDef>
                 @if (multiple() === true) {
