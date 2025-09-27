@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from "@angular/common";
-import { afterNextRender, inject, Injectable, PLATFORM_ID } from "@angular/core";
+import { inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { EventBusBase } from "@noah-ark/event-bus";
 
 @Injectable({ providedIn: "root" })
@@ -11,7 +11,7 @@ export class EventBus extends EventBusBase {
     }
 
     async init() {
-        if (this.isBrowser) return;
+        if (!this.isBrowser) return;
         await navigator.serviceWorker.ready;
         navigator.serviceWorker.onmessage = (event) => {
             const data = event.data;
