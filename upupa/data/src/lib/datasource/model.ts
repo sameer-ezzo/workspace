@@ -9,6 +9,7 @@ export type SortDescriptor = Sort;
 export type FilterDescriptor = Record<string, string | string[]> & { search?: string };
 
 export declare type Dictionary<T = string> = Record<string, T>;
+export type DataMapperFunction<T = any, R = any> = (items: T[]) => R[];
 
 export declare type DataLoaderOptions<T> = {
     terms?: Term<T>[];
@@ -16,6 +17,7 @@ export declare type DataLoaderOptions<T> = {
     sort?: SortDescriptor;
     filter?: Partial<FilterDescriptor>;
     autoRefresh?: boolean;
+    mapper?: (items: unknown[]) => T[];
 };
 
 /**
@@ -49,7 +51,7 @@ export interface TableDataSource<T = any, WriteResult = any> {
     allDataLoaded: WritableSignal<boolean>;
     load(
         options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
-        mapper?: (raw: unknown) => T[],
+        mapper?: (raw: unknown) => T[]
     ): Promise<ReadResult<T>>;
     create(value: Partial<T>): Promise<WriteResult>;
     put(item: T, value: Partial<T>): Promise<WriteResult>;

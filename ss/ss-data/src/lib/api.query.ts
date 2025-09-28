@@ -82,7 +82,7 @@ https://docs.mongodb.com/manual/meta/aggregation-quick-reference/#aggregation-ex
 ?page=x&per_page=y WHERE 'per_page' by default is the max value 100
 Pagination comes as the last operator in the pipeline limiting the results after the filter and sort.
 ## Pagination and Grouping
-In general limiting results come as the last operation but in the case of grouping the limit is applied before. Meaning the results won't necessarly contain all subitems of group and moving to next page could reveal the otheres.
+In general limiting results come as the last operation but in the case of grouping the limit is applied before. Meaning the results won't necessarily contain all subitems of group and moving to next page could reveal the others.
 One exception to this is the use of DISTINCT (grouping but not including group items)
 */
 

@@ -54,6 +54,7 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
         sort: descriptor.sort ?? descriptor.options?.sort,
         filter: descriptor.filter ?? descriptor.options?.filter,
         autoRefresh: descriptor.autoRefresh ?? descriptor.options?.autoRefresh,
+        mapper: descriptor.mapper,
     };
     return runInInjectionContext(
         injector,

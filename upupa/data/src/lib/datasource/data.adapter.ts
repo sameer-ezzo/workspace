@@ -1,13 +1,12 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult } from "./model";
-import { computed, InputSignal, Resource, signal, Signal, WritableSignal } from "@angular/core";
+import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult, DataMapperFunction } from "./model";
+import { computed, InputSignal, Resource, Signal, WritableSignal } from "@angular/core";
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
-import { BehaviorSubject, combineLatest, filter, first, firstValueFrom, ReplaySubject, timeout } from "rxjs";
+import { BehaviorSubject, filter, firstValueFrom, ReplaySubject, timeout } from "rxjs";
 import { randomString } from "@noah-ark/common";
 
 export type DataAdapterType = "server" | "api" | "client" | "http" | "signal" | "resource";
-
 /**
  * Describes the configuration for a data adapter.
  *
@@ -42,14 +41,13 @@ export type DataAdapterDescriptor<TData = any> = {
     sort?: SortDescriptor;
     filter?: Partial<FilterDescriptor>;
     autoRefresh?: boolean;
-
-    mapper?: (items: TData[]) => TData[];
+    mapper?: DataMapperFunction<TData, any>;
 } & (
     | ({ type: "server"; path: string } | { type: "api"; path: string })
     | { type: "client"; data: TData[] }
     | { type: "signal"; data: InputSignal<TData[]> | Signal<TData[]> | WritableSignal<TData[]> }
-    | { type: "resource"; resource: Resource<TData[]> } //this could be used as a general interactive data source based on the resource api syntax
-);
+    | { type: "resource"; resource: Resource<TData[]> }
+); //this could be used as a general interactive data source based on the resource api syntax
 
 /**
  * DataAdapterStore is a function that creates a signal store framework
@@ -73,7 +71,8 @@ function DataAdapterStore<T>() {
             filter: {} as FilterDescriptor,
             terms: [] as Term<T>[],
             keys: [] as (keyof T)[],
-        }),
+            mapper: (items: T[]) => (items ?? []).slice() as T[],
+        })
     );
 }
 
@@ -104,10 +103,7 @@ export class DataAdapterCreateItemEvent<T = any> extends DataAdapterCRUDEvent<T>
  * @template T - The type of the updated entity.
  */
 export class DataAdapterUpdateItemEvent<T = any> extends DataAdapterCRUDEvent<T> {
-    constructor(
-        readonly previous: T,
-        readonly current: NormalizedItem<T>,
-    ) {
+    constructor(readonly previous: T, readonly current: NormalizedItem<T>) {
         super();
     }
 }
@@ -140,7 +136,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         readonly displayProperty?: Key<T>,
         readonly valueProperty?: Key<T>,
         readonly imageProperty?: Key<T>,
-        options?: DataLoaderOptions<T>,
+        options?: DataLoaderOptions<T>
     ) {
         super();
 
@@ -154,6 +150,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             filter: options?.filter,
             terms: options?.terms ?? Array.from(new Set(_displayProperties)).map((field) => ({ field, type: "like" })),
             autoRefresh: options?.autoRefresh === false ? false : true,
+            mapper: options?.mapper ?? ((items) => items.slice()),
         };
         patchState(this, _initial);
     }
@@ -177,8 +174,8 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         await firstValueFrom(
             this._producer.pipe(
                 filter((x) => x === consumer),
-                timeout(30000),
-            ),
+                timeout(30000)
+            )
         );
         return this._load(options);
     }
@@ -201,7 +198,10 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
 
         try {
             patchState(this, { loading: true });
-            const readResult: ReadResult = await this.dataSource.load(_options);
+            const readResult: ReadResult = await this.dataSource.load(_options).then((r) => {
+                if (this.mapper()) r.data = this.mapper()(r.data) as any;
+                return r;
+            });
             const selectionMap = this.selectionMap(); // to reserve the selected items
 
             const p = _options.page ?? this.page() ?? { pageIndex: 0 };
@@ -223,7 +223,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 const all = [...selected, ...fetchedEntities].map((c, index) => ({
                     ...c,
                     index,
-                    id: (!!this.keyProperty ? c.key : index) as string,
+                    id: (this.keyProperty ? c.key : index) as string,
                 }));
 
                 patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all as NormalizedItem<T>[]));
@@ -251,14 +251,14 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                     const all = [...unique, ...entities].map((c, index) => ({
                         ...c,
                         index,
-                        id: (!!this.keyProperty ? c.key : index) as string,
+                        id: (this.keyProperty ? c.key : index) as string,
                     }));
                     patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all));
                 } else {
                     const all = [...entities, ...unique].map((c, index) => ({
                         ...c,
                         index,
-                        id: (!!this.keyProperty ? c.key : index) as string,
+                        id: (this.keyProperty ? c.key : index) as string,
                     }));
                     patchState(this, { ..._options, page, loading: false, allDataLoaded: this.dataSource.allDataLoaded() }, setAllEntities(all));
                 }
@@ -281,7 +281,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         } = {
             select: "select",
             clearSelection: false,
-        },
+        }
     ) {
         if (!value) throw new Error("No value provided");
         const _v = Array.isArray(value) ? value : [value];
@@ -311,7 +311,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             entities.push(entity);
         }
 
-        if (entities.length) patchState(this, setAllEntities(entities.map((c, index) => ({ ...c, index, id: (!!this.keyProperty ? c.key : index) as string }))));
+        if (entities.length) patchState(this, setAllEntities(entities.map((c, index) => ({ ...c, index, id: (this.keyProperty ? c.key : index) as string }))));
 
         if (records.length) {
             // some keys are not loaded
@@ -332,11 +332,11 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
     }
 
     selectAll() {
-        const entities = this.entities().map((x) => ({ ...x, selected: true }) as NormalizedItem<T>);
+        const entities = this.entities().map((x) => ({ ...x, selected: true } as NormalizedItem<T>));
         patchState(this, setAllEntities(entities));
     }
     unselectAll() {
-        const entities = this.entities().map((x) => ({ ...x, selected: false }) as NormalizedItem<T>);
+        const entities = this.entities().map((x) => ({ ...x, selected: false } as NormalizedItem<T>));
         patchState(this, setAllEntities(entities));
     }
 
@@ -440,7 +440,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             } as NormalizedItem<T>;
 
         const key = this.extract(item, this.keyProperty, item) ?? item;
-        let id = !!this.keyProperty ? key : randomString(12);
+        const id = this.keyProperty ? key : randomString(12);
 
         const item_t = typeof item;
 
@@ -465,7 +465,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
                 let result: Partial<T> = undefined;
                 property.forEach((k) => {
                     const v = JsonPointer.get(item, k as string, ".");
-                    if (!!v) {
+                    if (v) {
                         result ??= {};
                         result[k] = v;
                     }
