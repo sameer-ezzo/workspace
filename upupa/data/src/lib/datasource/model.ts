@@ -9,7 +9,7 @@ export type SortDescriptor = Sort;
 export type FilterDescriptor = Record<string, string | string[]> & { search?: string };
 
 export declare type Dictionary<T = string> = Record<string, T>;
-export type DataMapperFunction<T = any, R = any> = (items: T[]) => R[];
+export type DataAdapterTransformer<T = any, R = any> = (items: T[]) => R[];
 
 export declare type DataLoaderOptions<T> = {
     terms?: Term<T>[];
