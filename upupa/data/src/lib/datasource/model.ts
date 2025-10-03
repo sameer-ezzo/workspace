@@ -17,7 +17,7 @@ export declare type DataLoaderOptions<T> = {
     sort?: SortDescriptor;
     filter?: Partial<FilterDescriptor>;
     autoRefresh?: boolean;
-    mapper?: (items: unknown[]) => T[];
+    transformer?: DataAdapterTransformer;
 };
 
 /**
@@ -49,10 +49,7 @@ export type ReadResult<T = any> = {
 
 export interface TableDataSource<T = any, WriteResult = any> {
     allDataLoaded: WritableSignal<boolean>;
-    load(
-        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
-        mapper?: (raw: unknown) => T[]
-    ): Promise<ReadResult<T>>;
+    load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] }): Promise<ReadResult<T>>;
     create(value: Partial<T>): Promise<WriteResult>;
     put(item: T, value: Partial<T>): Promise<WriteResult>;
     patch(item: T, patches: Patch[]): Promise<WriteResult>;

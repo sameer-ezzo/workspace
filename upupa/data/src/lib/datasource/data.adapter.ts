@@ -150,7 +150,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             filter: options?.filter,
             terms: options?.terms ?? Array.from(new Set(_displayProperties)).map((field) => ({ field, type: "like" })),
             autoRefresh: options?.autoRefresh === false ? false : true,
-            transformer: options?.mapper ?? ((items) => items.slice()),
+            transformer: options?.transformer ?? ((items) => items.slice()),
         };
         patchState(this, _initial);
     }

@@ -42,25 +42,19 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         }
         return map;
     });
-    constructor(
-        all: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]>,
-        readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R,
-    ) {
+    constructor(all: InputSignal<T[]> | Signal<T[]> | WritableSignal<T[]>, readonly key: keyof T | ((item: T) => R) = (item) => item as unknown as R) {
         this._all.set(all());
     }
 
-    async load(
-        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
-        mapper?: (raw: unknown) => T[],
-    ): Promise<ReadResult<T>> {
+    async load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] }): Promise<ReadResult<T>> {
         const _opts = cloneDeep(options);
         const all = this._all();
         if (_opts?.keys) {
             const data = _opts.keys.map((k) => all.find((item) => this._key(item) === k));
-            return { data: mapper ? mapper(data) : data, total: data.length, query: [] };
+            return { data: data, total: data.length, query: [] };
         } else {
             const data = filter(all, _opts?.filter, _opts?.sort, _opts?.page, _opts?.terms);
-            return { data: mapper ? mapper(data) : data, total: data.length, query: _opts?.filter ? Array.from(Object.entries(_opts.filter)) : [] };
+            return { data: data, total: data.length, query: _opts?.filter ? Array.from(Object.entries(_opts.filter)) : [] };
         }
     }
 
