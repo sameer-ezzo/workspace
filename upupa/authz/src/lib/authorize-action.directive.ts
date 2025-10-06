@@ -1,9 +1,11 @@
 import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input, computed, effect } from "@angular/core";
-import { Principle } from "@noah-ark/common";
+import { AuthorizeResult, Principle } from "@noah-ark/common";
 import { AuthService } from "@upupa/auth";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 import { AuthorizationService } from "./authorization.service";
+
+const authzCache0 = new Map<string, AuthorizeResult>();
 
 @Directive({
     selector: "[authAction]",
@@ -68,13 +70,15 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
             this.grant(el);
             return;
         }
-        const authResult = await this.authorizeService.authorize(path, action, principle);
+        const authResult = authzCache0.get(`${action}:${path}`) ?? (await this.authorizeService.authorize(path, action, principle));
+        authzCache0.set(`${action}:${path}`, authResult);
 
         if (authResult.access === "deny") this.deny(el);
         else this.grant(el);
     }
 }
 
+const authzCache = new Map<string, AuthorizeResult>();
 @Directive({
     selector: "[authz]",
     standalone: true,
@@ -90,6 +94,13 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     readonly authz = input<string>(undefined);
     readonly user = input<Principle>(this.auth.user);
 
+    constructor() {
+        effect(() => {
+            const user = this.user();
+            authzCache.clear();
+        });
+    }
+
     readonly segments = computed(() => {
         const segments = this.authz()?.split(":") ?? [undefined, undefined];
         return segments.length === 1 ? [undefined, segments[0]] : segments;
@@ -98,7 +109,7 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     readonly action = computed(() => this.segments()[0]);
     readonly path = computed(() => {
         const path = this.segments()[1];
-        if (path && !path.startsWith("/")) console.error(`Path must start with / Path:${path}`, this.hostElement.nativeElement);
+        if (path && !path.startsWith("/")) console.error(`Path:${path} must start with /`, this.hostElement.nativeElement);
         return path;
     });
 
@@ -145,7 +156,9 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
             this.grant(el);
             return;
         }
-        const authResult = await this.authorizeService.authorize(path, action, principle);
+
+        const authResult = authzCache.get(this.authz()) ?? (await this.authorizeService.authorize(path, action, principle));
+        authzCache.set(this.authz(), authResult);
 
         if (authResult.access === "deny") this.deny(el);
         else this.grant(el);
