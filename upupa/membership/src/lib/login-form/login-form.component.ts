@@ -23,7 +23,6 @@ export class LoginFormComponent {
     error: string;
     control = new FormControl();
 
-    
     success = output<Principle | { type: "reset-pwd"; reset_token: string }>();
     resetPassword = output<{ reset_token: string }>();
     fail = output<any>();
@@ -50,7 +49,7 @@ export class LoginFormComponent {
 
                 return fields;
             },
-        },
+        }
     );
     conditions = input<Condition[]>([]);
 
@@ -70,11 +69,7 @@ export class LoginFormComponent {
 
         try {
             const res = await this.auth.signin(this.value() as Credentials);
-            if (res?.type === "reset-pwd") {
-                //todo: add handeler for reset password in login options
-                const { reset_token } = res;
-                this.resetPassword.emit({ reset_token: reset_token as string });
-            } else this.success.emit(res);
+            this.success.emit(res)
         } catch (error) {
             const err = error?.msg ?? error?.message ?? error;
             if (err === "INVALID_ATTEMPT") this.error = "username-password-wrong";

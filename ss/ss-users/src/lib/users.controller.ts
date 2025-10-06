@@ -75,7 +75,7 @@ export class UsersController {
         @Inject("USERS_OPTIONS") private readonly options: UsersOptions,
         @Inject("DB_AUTH") private dataService: DataService,
         private authorizationService: AuthorizeService,
-        private eventEmitter: EventEmitter2,
+        private eventEmitter: EventEmitter2
     ) {
         // this.http = new Axios({
         //     transformResponse: [(data) => JSON.parse(data)],
@@ -122,7 +122,7 @@ export class UsersController {
     @Authorize({ by: "anonymous", access: "grant" })
     public async resetpassword(
         @Message()
-        msg: IncomingMessage<{ new_password: string; reset_token: string }>,
+        msg: IncomingMessage<{ new_password: string; reset_token: string }>
     ) {
         const new_password = msg.payload.new_password;
         const reset_token = msg.payload.reset_token;
@@ -145,7 +145,7 @@ export class UsersController {
     @Authorize({ by: "user", access: "grant" })
     public async changePassword(
         @Message()
-        msg: IncomingMessage<{ new_password: string; old_password: string }>,
+        msg: IncomingMessage<{ new_password: string; old_password: string }>
     ) {
         if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
         const { new_password, old_password } = msg.payload;
@@ -180,7 +180,7 @@ export class UsersController {
             email: string;
             new_password: string;
             forceChangePwd: boolean;
-        }>,
+        }>
     ) {
         if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
         const { email, new_password, forceChangePwd } = msg.payload;
@@ -292,12 +292,15 @@ export class UsersController {
 
                 if (!user) throw new HttpException(new AuthException(AuthExceptions.INVALID_ATTEMPT), HttpStatus.BAD_REQUEST);
 
-                return user.forceChangePwd === true
-                    ? { reset_token: await this.auth.issueResetPasswordToken(user) }
-                    : {
-                          access_token: await this.auth.issueAccessToken(user),
-                          refresh_token: await this.auth.issueRefreshToken(user, null, null, msg.payload.device?.id),
-                      };
+                const result =
+                    user.forceChangePwd === true
+                        ? { reset_token: await this.auth.issueResetPasswordToken(user) }
+                        : {
+                              access_token: await this.auth.issueAccessToken(user),
+                              refresh_token: await this.auth.issueRefreshToken(user, null, null, msg.payload.device?.id),
+                          };
+
+                return result;
             }
             case "refresh": {
                 const token = await this.auth.verifyToken(msg.payload.refresh_token);
@@ -394,7 +397,7 @@ export class UsersController {
                         ...user,
                         external: { ...external, ["google"]: googleUser.sub },
                     } as User,
-                    "",
+                    ""
                 );
                 userRecord = await this.auth.findUserByEmail(res.email);
             } catch (error) {
@@ -417,7 +420,7 @@ export class UsersController {
         const fbuser = await fetch("https://graph.facebook.com/v1.0/me?fields=id,name,email&access_token=" + req.access_token).then((res) => res.json());
         // const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN);
         const inspectToken = await fetch("https://graph.facebook.com/debug_token?input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN).then((res) =>
-            res.json(),
+            res.json()
         );
         // verifying the user token was issued by our app
         if (inspectToken.status !== 200) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
@@ -437,7 +440,7 @@ export class UsersController {
                             ...user,
                             external: { ...external, ["facebook"]: fbuser.data.email },
                         } as unknown as User,
-                        "",
+                        ""
                     );
                 } else userRecord = { _id: fbuser.data.email, ...user } as any;
             }
@@ -465,7 +468,11 @@ export class UsersController {
     @EndPoint({ http: { method: "POST", path: "" }, operation: "Login" })
     public async signIn(@Res() res: Response, @Message() msg: IncomingMessage<SigninRequest>) {
         try {
-            const { access_token, refresh_token } = await this._doSignIn(msg);
+            const { access_token, refresh_token, reset_token } = await this._doSignIn(msg);
+            if (reset_token) {
+                res.send({ reset_token });
+                return;
+            }
             const { useCookies } = this.auth.options;
             if (useCookies?.enabled === true) {
                 res.cookie(useCookies.cookieName, JSON.stringify({ access_token, refresh_token }), useCookies.options);
@@ -554,7 +561,7 @@ export class UsersController {
     @Authorize({ by: "anonymous" })
     public async sendVerification(
         @Message()
-        msg: IncomingMessage<{ id: string; name: string; value: string }>,
+        msg: IncomingMessage<{ id: string; name: string; value: string }>
     ) {
         const name = (msg.payload.name ?? "").trim();
         const value = (msg.payload.value ?? "").trim();
@@ -618,7 +625,7 @@ export class UsersController {
             value: string;
             token: string;
             type: string;
-        }>,
+        }>
     ) {
         try {
             const u = msg.principle;

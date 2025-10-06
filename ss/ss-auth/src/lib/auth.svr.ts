@@ -45,10 +45,7 @@ export class AuthService {
     #secret: Uint8Array;
     model: mongoose.Model<any, {}, {}, {}, any, any>;
 
-    constructor(
-        @Inject("DB_AUTH") public readonly data: DataService,
-        @Inject("AUTH_OPTIONS") public readonly options: AuthOptions,
-    ) {
+    constructor(@Inject("DB_AUTH") public readonly data: DataService, @Inject("AUTH_OPTIONS") public readonly options: AuthOptions) {
         this.#secret = new TextEncoder().encode(this.options.secret);
         this.getModel();
     }
@@ -208,7 +205,7 @@ export class AuthService {
         name = "email",
         value: string,
         sendAttempts?: number,
-        options?: SignOptions,
+        options?: SignOptions
     ): Promise<{ token: string; verification: Verification }> {
         if (!user) {
             throw new AuthException(AuthExceptions.InvalidUserData);
@@ -364,15 +361,14 @@ export class AuthService {
     async resetPassword(resetToken: string, newPassword: string, forceChange = false) {
         const token = await this.verifyToken(resetToken);
         if (token && token.t === TokenTypes.reset) {
-            const user = await this.model.findOne({ _id: token.sub });
+            const user = (await this.model.findOne({ _id: token.sub }).lean()) as unknown as UserDocument;
             if (!user) throw new AuthException(AuthExceptions.USER_NO_LONGER_EXISTS);
-            if (token.sec && token.sec != user.securityCode) throw new AuthException(AuthExceptions.TOKEN_ALREADY_USED);
+            if (token.sec && token.sec !== user.securityCode) throw new AuthException(AuthExceptions.TOKEN_ALREADY_USED);
             const passwordHash = await bcrypt.hash(newPassword, 10);
-            const v = { passwordHash, securityCode: randomString(5) };
-            v["forceChangePwd"] = forceChange === true ? true : undefined;
-            await user.updateOne({
-                $set: { ...v },
-            });
+            const update = {} as any;
+            update["$set"] = { passwordHash, securityCode: randomString(5) };
+            if (user.forceChangePwd && forceChange !== true) update["$unset"] = { forceChangePwd: '' };
+            await this.model.findByIdAndUpdate(user._id, update);
 
             return true;
         } else throw new AuthException(AuthExceptions.InvalidToken);
