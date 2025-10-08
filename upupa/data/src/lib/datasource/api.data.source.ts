@@ -22,11 +22,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
     private get queryParams(): Record<string, string> {
         return this.url ? Object.fromEntries(this.url.searchParams as any) : {};
     }
-    constructor(
-        private readonly dataService: DataService,
-        readonly path: string,
-        readonly key: keyof T = "_id",
-    ) {
+    constructor(private readonly dataService: DataService, readonly path: string, readonly key: keyof T = "_id") {
         this._initUrl();
     }
     private async _initUrl() {
@@ -80,7 +76,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
 
         if (sort?.active) query["sort_by"] = `${sort.active},${sort.direction}`;
 
-        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: res.data ?? [] })));
+        const data$ = this.dataService.get<T[]>(this.pathname, query);
         return firstValueFrom(data$)
             .then((res: ApiGetResult<T[]>) => res as ReadResult<T>)
             .then((res) => {

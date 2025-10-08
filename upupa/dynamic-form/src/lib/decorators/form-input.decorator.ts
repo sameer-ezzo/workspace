@@ -128,7 +128,7 @@ export function formAction(action: Partial<ActionDescriptor> & { order?: number 
             name: action.name || propertyKey,
             handlerName: propertyKey,
             order: action.order ?? formMetadata.actions.length,
-            type: (action.type ?? propertyKey == "onSubmit") ? "submit" : "button",
+            type: action.type ?? propertyKey == "onSubmit" ? "submit" : "button",
         };
         formMetadata.actions.push(_action as any);
         defineFormMetadata(property.constructor, formMetadata);
@@ -193,7 +193,7 @@ export function formInputArray(
     tableViewModel: Class,
     config: { inlineEndSlot?: DynamicComponent[]; showSearch?: boolean } = { inlineEndSlot: [], showSearch: false },
     options?: Partial<FieldOptions>,
-    group?: FieldGroup,
+    group?: FieldGroup
 ) {
     return formInput(
         {
@@ -211,7 +211,7 @@ export function formInputArray(
                 },
             },
         },
-        group,
+        group
     );
 }
 
@@ -269,12 +269,13 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
         case "form":
             field.inputs["viewModel"] = fieldOptions.inputs?.["viewModel"] ?? fieldOptions.viewModel;
             break;
-        case "switch":
+        case "switch": {
             const switchOptions = fieldOptions as any;
             field.inputs["template"] = switchOptions.template ?? "toggle";
             field.inputs["renderer"] = switchOptions.renderer ?? "none";
             break;
-        case "password":
+        }
+        case "password": {
             const pwdOptions = fieldOptions as any;
             field.inputs["showConfirmPasswordInput"] = pwdOptions.showConfirmPasswordInput ?? false;
             field.inputs["showPassword"] = pwdOptions.showPassword ?? false;
@@ -282,7 +283,8 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             //field.inputs["passwordStrength"] = pwdOptions.passwordStrength ?? new PasswordStrength();
             // field.inputs["autocomplete"] = pwdOptions.autocomplete ?? "new-password";
             break;
-        case "file":
+        }
+        case "file": {
             const fileOptions = fieldOptions as any;
             field.inputs["minAllowedFiles"] = fileOptions.minAllowedFiles;
             field.inputs["maxAllowedFiles"] = fileOptions.maxAllowedFiles;
@@ -296,10 +298,12 @@ function fillFieldInputs(fieldName: string, fieldOptions: Partial<FieldOptions>)
             field.inputs["minSize"] = fileOptions.minSize || 0;
             field.inputs["maxSize"] = fileOptions.maxSize || 1024 * 1024 * 10;
             break;
-        case "html":
+        }
+        case "html": {
             const htmlOptions = fieldOptions as any;
             field.inputs["uploadPath"] = htmlOptions.uploadPath || fieldName;
             break;
+        }
         case "date":
             field.updateOn ??= "blur";
             break;

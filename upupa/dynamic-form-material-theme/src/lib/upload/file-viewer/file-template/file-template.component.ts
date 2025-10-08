@@ -33,7 +33,7 @@ const actions = [
             text: "Download",
             icon: "get_app",
             menu: true,
-        }) as ActionDescriptor,
+        } as ActionDescriptor),
     (item: File | FileInfo) =>
         ({
             name: "copy_url",
@@ -41,7 +41,7 @@ const actions = [
             text: "Copy Url",
             icon: "content_copy",
             menu: true,
-        }) as ActionDescriptor,
+        } as ActionDescriptor),
     (item: File | FileInfo) =>
         ({
             name: "remove",
@@ -49,7 +49,7 @@ const actions = [
             text: "Remove",
             icon: "delete",
             menu: true,
-        }) as ActionDescriptor,
+        } as ActionDescriptor),
 ];
 // class="file hoverable" [class.loading]="fileVm.uploadTask"
 @Component({
@@ -108,8 +108,7 @@ export class FileTemplateComponent {
     downloadFile() {
         const vm = this.vm();
         const file = vm.file as FileInfo;
-        const fileUrl = `${file.path}?access_token=${this.auth.get_token()}`;
-
+        const fileUrl = `${this.base()}${file.path}?access_token=${this.auth.get_token()}`;
         const a = this.doc.createElement("a");
         a.href = fileUrl;
         a.download = vm.fileName;

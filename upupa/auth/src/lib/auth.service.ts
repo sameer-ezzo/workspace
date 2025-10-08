@@ -225,7 +225,7 @@ export class AuthService {
             const base64Url = tokenString.split(".")[1];
             const base64 = base64Url.replace("-", "+").replace("_", "/");
             const token = JSON.parse(
-                atob(base64),
+                atob(base64)
                 // Buffer.from(base64, 'base64')
             );
 
@@ -361,7 +361,6 @@ export class AuthService {
 
         try {
             const auth_token = await httpFetch(this.baseUrl, authRequestBody);
-
             if (!auth_token) throw "UNDEFINED_TOKEN";
             if ("reset_token" in auth_token) {
                 const jwt = this.jwt(auth_token.reset_token);

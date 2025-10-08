@@ -26,15 +26,16 @@ export function getStorageDir() {
     return base.endsWith("storage") ? base : join(base, "storage");
 }
 export function makeDir(dir: string) {
-    dir = dir.replace(/\\/g, "/");
-    if (existsSync(join(getStorageDir(), normalizePath(dir)))) return;
+    dir = joinStoragePath(dir.replace(/\\/g, "/"));
+    if (existsSync(dir)) return;
 
     const segments = dir.split(separator);
+    segments[0] = "/";
     for (let i = 1; i < segments.length; i++) {
-        segments[i] = segments[i - 1] + separator + segments[i];
+        segments[i] = join(segments[i - 1], segments[i]);
     }
-    for (let i = 0; i < segments.length; i++) {
-        const dir = join(getStorageDir(), segments[i]);
+    for (let i = 1; i < segments.length; i++) {
+        const dir = segments[i];
         if (!dir || dir === "." || dir === "..") continue;
         if (!existsSync(dir)) mkdirSync(dir);
     }
@@ -45,16 +46,22 @@ export function mv(oldpath: string, newpath: string) {
 }
 export function mvToStorage(oldpath: string, newpath: string) {
     const newPathFull = join(getStorageDir(), normalizePath(newpath));
-    let dirSegments = newPathFull.split("/");
+    const dirSegments = newPathFull.split("/");
     dirSegments.pop();
     const newPathFullDir = dirSegments.join("/");
     if (!isDir(newPathFullDir)) makeDir(newPathFullDir);
     mv(oldpath, newPathFull);
 }
 
+export function joinStoragePath(...segments: string[]) {
+    const base = getStorageDir();
+    const t = join(...segments);
+    const normalized = normalizePath(t);
+    return normalized.startsWith(base) ? normalized : join(base, normalized);
+}
 export function isDir(path: string): boolean {
     try {
-        opendirSync(join(getStorageDir(), normalizePath(path)));
+        opendirSync(joinStoragePath(path));
         return true;
     } catch (error) {
         return false;
@@ -67,7 +74,7 @@ export const normalizePath = (path: string, base = "storage") => {
 };
 
 export function isFile(path: string) {
-    const p = join(getStorageDir(), normalizePath(path));
+    const p = joinStoragePath(path);
     return existsSync(p) && !isDir(path);
 }
 

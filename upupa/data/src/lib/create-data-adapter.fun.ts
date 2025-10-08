@@ -9,7 +9,7 @@ import { TableDataSource } from "./datasource/model";
 export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>, injector: Injector = inject(Injector)): DataAdapter<T> {
     let dataSource: TableDataSource;
 
-    descriptor.mapper ??= (items) => items;
+    descriptor.transformer ??= (items) => items;
     switch (descriptor.type) {
         case "server":
         case "api":
@@ -54,7 +54,7 @@ export function createDataAdapter<T = any>(descriptor: DataAdapterDescriptor<T>,
         sort: descriptor.sort ?? descriptor.options?.sort,
         filter: descriptor.filter ?? descriptor.options?.filter,
         autoRefresh: descriptor.autoRefresh ?? descriptor.options?.autoRefresh,
-        mapper: descriptor.mapper,
+        transformer: descriptor.transformer,
     };
     return runInInjectionContext(
         injector,

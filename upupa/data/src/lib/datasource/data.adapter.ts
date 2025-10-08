@@ -1,5 +1,5 @@
 import { JsonPointer, Patch } from "@noah-ark/json-patch";
-import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult, DataMapperFunction } from "./model";
+import { Key, NormalizedItem, PageDescriptor, DataLoaderOptions, SortDescriptor, FilterDescriptor, Term, TableDataSource, ReadResult, DataAdapterTransformer } from "./model";
 import { computed, InputSignal, Resource, Signal, WritableSignal } from "@angular/core";
 import { patchState, signalStore, withState } from "@ngrx/signals";
 import { updateEntity, removeEntities, setAllEntities, setEntity, withEntities, EntityId } from "@ngrx/signals/entities";
@@ -41,7 +41,7 @@ export type DataAdapterDescriptor<TData = any> = {
     sort?: SortDescriptor;
     filter?: Partial<FilterDescriptor>;
     autoRefresh?: boolean;
-    mapper?: DataMapperFunction<TData, any>;
+    transformer?: DataAdapterTransformer<TData, any>;
 } & (
     | ({ type: "server"; path: string } | { type: "api"; path: string })
     | { type: "client"; data: TData[] }
@@ -71,7 +71,7 @@ function DataAdapterStore<T>() {
             filter: {} as FilterDescriptor,
             terms: [] as Term<T>[],
             keys: [] as (keyof T)[],
-            mapper: (items: T[]) => (items ?? []).slice() as T[],
+            transformer: (items: T[]) => (items ?? []).slice() as T[],
         })
     );
 }
@@ -150,7 +150,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
             filter: options?.filter,
             terms: options?.terms ?? Array.from(new Set(_displayProperties)).map((field) => ({ field, type: "like" })),
             autoRefresh: options?.autoRefresh === false ? false : true,
-            mapper: options?.mapper ?? ((items) => items.slice()),
+            transformer: options?.transformer ?? ((items) => items.slice()),
         };
         patchState(this, _initial);
     }
@@ -199,7 +199,7 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         try {
             patchState(this, { loading: true });
             const readResult: ReadResult = await this.dataSource.load(_options).then((r) => {
-                if (this.mapper()) r.data = this.mapper()(r.data) as any;
+                if (this.transformer()) r.data = this.transformer()(r.data) as any;
                 return r;
             });
             const selectionMap = this.selectionMap(); // to reserve the selected items
