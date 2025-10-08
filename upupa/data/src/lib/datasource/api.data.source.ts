@@ -9,6 +9,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
     readonly allDataLoaded = signal(false);
 
     private _url: URL;
+    readonly getResult = signal<ReadResult<T>>({ data: [], total: 0, query: [] });
     get url(): URL {
         return this._url;
     }
@@ -49,10 +50,7 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
         }
     }
 
-    load(
-        options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] },
-        mapper?: (raw: unknown) => T[],
-    ): Promise<ReadResult<T>> {
+    load(options?: { page?: PageDescriptor; sort?: SortDescriptor; filter?: FilterDescriptor; terms?: Term<T>[]; keys?: Key<T>[] }): Promise<ReadResult<T>> {
         const _opts = cloneDeep(options);
         const filter = _opts?.filter ?? {};
         const search = filter.search;
@@ -82,10 +80,11 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
 
         if (sort?.active) query["sort_by"] = `${sort.active},${sort.direction}`;
 
-        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: mapper ? mapper(res.data ?? []) : res.data })));
+        const data$ = this.dataService.get<T[]>(this.pathname, query).pipe(map((res) => ({ ...res, data: res.data ?? [] })));
         return firstValueFrom(data$)
             .then((res: ApiGetResult<T[]>) => res as ReadResult<T>)
             .then((res) => {
+                this.getResult.set(res);
                 this.allDataLoaded.set(res.data.length === res.total);
                 return res;
             });
