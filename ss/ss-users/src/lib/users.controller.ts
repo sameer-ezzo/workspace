@@ -241,11 +241,11 @@ export class UsersController {
         delete _user.roles;
 
         try {
-            const res = await this.auth.signUp(_user, _user.password);
-            if (roles?.length) this.auth.addUserToRoles(res._id, roles);
-            this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document, options: this.options }));
+            const {_id, document} = await this.auth.signUp(_user, _user.password);
 
-            return { _id: res._id, ...msg.payload };
+            if (roles?.length) await this.auth.addUserToRoles(_id, roles);
+            this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document as UserDocument, options: this.options }));
+            return { ...msg.payload, _id };
         } catch (error) {
             throw new HttpException(error.message ?? "ERROR", HttpStatus.BAD_REQUEST);
         }
