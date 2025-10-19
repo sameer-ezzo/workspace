@@ -28,7 +28,7 @@ export class UploadClient {
         return this.uploadService.uploadAsync(this.combine(this.baseUrl, path), file, filename, formData);
     }
     uploadContentAsync(path: string, files: { content: string; fieldname?: string; filename: string }[], formData?: any) {
-        return this.uploadService.uploadContent(this.baseUrl + path, files, formData);
+        return this.uploadService.uploadContentAsync(this.baseUrl + path, files, formData);
     }
     delete(path: string, baseUrl?: string) {
         path = this.combine(baseUrl || this.baseUrl, path);

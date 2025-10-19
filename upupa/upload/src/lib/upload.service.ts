@@ -80,12 +80,12 @@ export class UploadService {
         return stream;
     }
 
-    uploadAsync(arg0: string, file: File, filename: string, formData: any) {
-        const rx = this.upload(arg0, file, filename, formData);
+    uploadAsync(url: string, file: File, filename: string, formData: any) {
+        const rx = this.upload(url, file, filename, formData);
         return firstValueFrom(rx.response$);
     }
-    uploadContentAsync(arg0: string, files: { content: string; fieldname?: string; filename: string }[], formData: any) {
-        const rx = this.uploadContent(arg0, files, formData);
+    uploadContentAsync(url: string, files: { content: string; fieldname?: string; filename: string }[], formData: any) {
+        const rx = this.uploadContent(url, files, formData);
         return firstValueFrom(rx.response$);
     }
 
