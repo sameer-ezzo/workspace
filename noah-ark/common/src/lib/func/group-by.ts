@@ -13,7 +13,7 @@ type ValueIteratee<T> = (value: T) => PropertyName;
  * and values are arrays of elements belonging to that group.
  * Using Record<string | number, ...> as object keys are coerced to strings or numbers.
  */
-type GroupedResult<T> = Record<string | number, T[]>;
+export type GroupedResult<T> = Record<string | number, T[]>;
 
 // --- Overloads matching the Lodash interface ---
 
