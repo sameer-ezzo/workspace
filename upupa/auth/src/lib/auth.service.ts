@@ -223,11 +223,17 @@ export class AuthService {
     jwt(tokenString: string): any {
         try {
             const base64Url = tokenString.split(".")[1];
-            const base64 = base64Url.replace("-", "+").replace("_", "/");
-            const token = JSON.parse(
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            
+            // Decode base64 and properly handle UTF-8 characters
+            const jsonPayload = decodeURIComponent(
                 atob(base64)
-                // Buffer.from(base64, 'base64')
+                    .split("")
+                    .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join("")
             );
+            
+            const token = JSON.parse(jsonPayload);
 
             const now = new Date();
             const expire = new Date(token.exp * 1000);
@@ -239,10 +245,13 @@ export class AuthService {
     }
     async signout() {
         try {
+            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
+            if (!success) throw new Error("SIGNOUT_FAILED");
             this.localStorage.removeAccessToken();
             this.localStorage.removeRefreshToken();
+            this._access_token = null;
+            this._refresh_token = null;
             this.triggerNext(null);
-            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
         } catch (error) {
             console.error("Error signing out: ", error);
         }

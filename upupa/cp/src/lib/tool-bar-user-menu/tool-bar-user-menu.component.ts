@@ -16,9 +16,9 @@ import { AuthorizeActionDirective } from "@upupa/authz";
 
 @Component({
     selector: "toolbar-user-menu",
-    imports: [ CommonModule, MatIcon, MatDivider, MatMenu, MatIconButton, RouterLink, MatMenuTrigger, AuthorizeActionDirective, MatMenuItem],
+    imports: [CommonModule, MatIcon, MatDivider, MatMenu, MatIconButton, RouterLink, MatMenuTrigger, AuthorizeActionDirective, MatMenuItem],
     templateUrl: "./tool-bar-user-menu.component.html",
-    styleUrls: ["./tool-bar-user-menu.component.scss"]
+    styleUrls: ["./tool-bar-user-menu.component.scss"],
 })
 export class ToolbarUserMenuComponent {
     @Input() commands: SideBarItem[];
@@ -42,8 +42,8 @@ export class ToolbarUserMenuComponent {
         else this.bus.emit(e.name, { msg: e.name, ...e }, this);
     }
 
-    signout() {
-        this.auth.signout();
+    async signout() {
+        await this.auth.signout();
         this.document.location.href = "/";
     }
 

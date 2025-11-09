@@ -248,7 +248,7 @@ export class QueryParser {
             const char = value[i];
             const prevChar = i > 0 ? value[i - 1] : null;
 
-            if (i === 0 && char != "*") purified = "^"; //strict check
+            if (i === 0 && char !== "*") purified = "^"; //strict check
 
             switch (char) {
                 case "*":
