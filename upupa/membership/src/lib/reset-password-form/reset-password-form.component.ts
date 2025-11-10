@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from "@angular/router";
     selector: "reset-password-form",
     templateUrl: "./reset-password-form.component.html",
     styleUrls: ["./reset-password-form.component.scss"],
-    imports: [DynamicFormComponent, MatButtonModule]
+    imports: [DynamicFormComponent, MatButtonModule],
 })
 export class ResetPasswordFormComponent {
     public options = inject<MembershipOptions>(MEMBERSHIP_OPTIONS, { optional: true });
@@ -37,16 +37,14 @@ export class ResetPasswordFormComponent {
     });
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log(changes);
-
         if (changes["reset_token"]) {
             const token = this.reset_token();
             if (!token) this.router.navigate(["../forgot-password"], { relativeTo: this.route });
         }
     }
 
-    success = output<any>();
-    fail = output<any>();
+    on_success = output<any>();
+    on_error = output<any>();
 
     async send(form: DynamicFormComponent) {
         if (form.invalid) return;
@@ -55,11 +53,11 @@ export class ResetPasswordFormComponent {
         try {
             const v = this.value();
             const res = await this.auth.reset_password(v.password, this.reset_token());
-            this.success.emit(res);
+            this.on_success.emit(res);
         } catch (error) {
             const err = this.handleError(error);
             console.error(err);
-            this.fail.emit(err);
+            this.on_error.emit(err);
         } finally {
             this.loading.set(false);
         }
