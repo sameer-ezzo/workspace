@@ -21,6 +21,14 @@ export type WriteResult<T> = {
     errors?: any[];
 };
 
+interface LookupMatch {
+    from: string;
+    localField: string;
+    foreignField: string;
+    as: string;
+    match: Record<string, unknown>[];
+}
+
 import toMongodb from "jsonpatch-to-mongodb";
 import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
@@ -313,30 +321,39 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 if (unwind) pipeline.push({ $unwind: { path: "$" + l.as, preserveNullAndEmptyArrays: true } });
             });
         if (query.lookupsMatch) {
-            query.lookupsMatch.forEach((l: any) => {
-                pipeline.push({
-                    $lookup: {
-                        from: this.prefix + l.from,
-                        let: { l: "$" + l.localField },
-                        pipeline: [
-                            {
-                                $addFields: {
-                                    joined: {
-                                        $in: ["$" + l.foreignField, "$$l"],
+            // In the agg method, replace the selection with:
+            if (query.lookupsMatch) {
+                query.lookupsMatch.forEach((l: LookupMatch) => {
+                    // Validate required properties
+                    if (!l.from || !l.localField || !l.foreignField || !l.as) {
+                        logger.warn("Invalid lookupMatch configuration, skipping:", l);
+                        return;
+                    }
+
+                    pipeline.push({
+                        $lookup: {
+                            from: this.prefix + l.from,
+                            let: { l: "$" + l.localField },
+                            pipeline: [
+                                {
+                                    $addFields: {
+                                        joined: {
+                                            $in: ["$" + l.foreignField, "$$l"],
+                                        },
                                     },
                                 },
-                            },
-                            {
-                                $match: {
-                                    $and: [{ joined: true }, ...l.match],
+                                {
+                                    $match: {
+                                        $and: [{ joined: true }, ...(l.match || [])],
+                                    },
                                 },
-                            },
-                            { $project: { joined: 0 } },
-                        ],
-                        as: l.as,
-                    },
+                                { $project: { joined: 0 } },
+                            ],
+                            as: l.as,
+                        },
+                    });
                 });
-            });
+            }
         }
         if (query.fields3) pipeline.push({ $addFields: query.fields3 });
         if (post_filter.length) pipeline.push({ $match: { $and: post_filter } });
