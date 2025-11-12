@@ -224,15 +224,15 @@ export class AuthService {
         try {
             const base64Url = tokenString.split(".")[1];
             const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-            
+
             // Decode base64 and properly handle UTF-8 characters
             const jsonPayload = decodeURIComponent(
                 atob(base64)
                     .split("")
                     .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-                    .join("")
+                    .join(""),
             );
-            
+
             const token = JSON.parse(jsonPayload);
 
             const now = new Date();
@@ -412,9 +412,8 @@ export class AuthService {
     async reset_password(new_password: string, reset_token: string): Promise<boolean> {
         if (new_password && reset_token) {
             try {
-                const response = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
-                if (response.status === "true") return true;
-                else throw response;
+                const result = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
+                return result;
             } catch (err) {
                 if (err.status) throw await err.json();
                 else if (err.status === 0) throw "CONNECTION_ERROR";

@@ -75,7 +75,7 @@ export class UsersController {
         @Inject("USERS_OPTIONS") private readonly options: UsersOptions,
         @Inject("DB_AUTH") private dataService: DataService,
         private authorizationService: AuthorizeService,
-        private eventEmitter: EventEmitter2
+        private eventEmitter: EventEmitter2,
     ) {
         // this.http = new Axios({
         //     transformResponse: [(data) => JSON.parse(data)],
@@ -122,20 +122,19 @@ export class UsersController {
     @Authorize({ by: "anonymous", access: "grant" })
     public async resetpassword(
         @Message()
-        msg: IncomingMessage<{ new_password: string; reset_token: string }>
+        msg: IncomingMessage<{ new_password: string; reset_token: string }>,
     ) {
         const new_password = msg.payload.new_password;
         const reset_token = msg.payload.reset_token;
-        if (new_password && reset_token) {
-            try {
-                const result = await this.auth.resetPassword(reset_token, new_password);
-                if (result) return { reset: true };
-            } catch (error) {
-                //todo: error msg
-                logger.error(error);
-                throw new HttpException(error.message || error.code || "ERROR", HttpStatus.BAD_REQUEST);
-            }
-        } else throw new HttpException("INVALID_DATA", HttpStatus.BAD_REQUEST);
+        if (!new_password || !reset_token) throw new HttpException("INVALID_DATA", HttpStatus.BAD_REQUEST);
+        try {
+            const reset = await this.auth.resetPassword(reset_token, new_password);
+            return { reset };
+        } catch (error) {
+            //todo: error msg
+            logger.error(error);
+            throw new HttpException(error.message || error.code || "ERROR", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @EndPoint({
@@ -145,7 +144,7 @@ export class UsersController {
     @Authorize({ by: "user", access: "grant" })
     public async changePassword(
         @Message()
-        msg: IncomingMessage<{ new_password: string; old_password: string }>
+        msg: IncomingMessage<{ new_password: string; old_password: string }>,
     ) {
         if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
         const { new_password, old_password } = msg.payload;
@@ -180,7 +179,7 @@ export class UsersController {
             email: string;
             new_password: string;
             forceChangePwd: boolean;
-        }>
+        }>,
     ) {
         if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
         const { email, new_password, forceChangePwd } = msg.payload;
@@ -241,7 +240,7 @@ export class UsersController {
         delete _user.roles;
 
         try {
-            const {_id, document} = await this.auth.signUp(_user, _user.password);
+            const { _id, document } = await this.auth.signUp(_user, _user.password);
 
             if (roles?.length) await this.auth.addUserToRoles(_id, roles);
             this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document as UserDocument, options: this.options }));
@@ -397,7 +396,7 @@ export class UsersController {
                         ...user,
                         external: { ...external, ["google"]: googleUser.sub },
                     } as User,
-                    ""
+                    "",
                 );
                 userRecord = await this.auth.findUserByEmail(res.email);
             } catch (error) {
@@ -420,7 +419,7 @@ export class UsersController {
         const fbuser = await fetch("https://graph.facebook.com/v1.0/me?fields=id,name,email&access_token=" + req.access_token).then((res) => res.json());
         // const inspectToken = await this.http.get("https://graph.facebook.com/debug_token?" + "input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN);
         const inspectToken = await fetch("https://graph.facebook.com/debug_token?input_token=" + req.access_token + "&access_token=" + process.env.FACEBOOK_APP_TOKEN).then((res) =>
-            res.json()
+            res.json(),
         );
         // verifying the user token was issued by our app
         if (inspectToken.status !== 200) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
@@ -440,7 +439,7 @@ export class UsersController {
                             ...user,
                             external: { ...external, ["facebook"]: fbuser.data.email },
                         } as unknown as User,
-                        ""
+                        "",
                     );
                 } else userRecord = { _id: fbuser.data.email, ...user } as any;
             }
@@ -561,7 +560,7 @@ export class UsersController {
     @Authorize({ by: "anonymous" })
     public async sendVerification(
         @Message()
-        msg: IncomingMessage<{ id: string; name: string; value: string }>
+        msg: IncomingMessage<{ id: string; name: string; value: string }>,
     ) {
         const name = (msg.payload.name ?? "").trim();
         const value = (msg.payload.value ?? "").trim();
@@ -625,7 +624,7 @@ export class UsersController {
             value: string;
             token: string;
             type: string;
-        }>
+        }>,
     ) {
         try {
             const u = msg.principle;
