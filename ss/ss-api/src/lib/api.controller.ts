@@ -64,8 +64,7 @@ export class ApiController {
     public async agg(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
 
-        const data = await this.dataService.agg(path, false, ...q);
-        const total = data.length ? await this.dataService.aggCount(path, false, ...q) : 0;
+        const { total, data } = await this.dataService.agg(path, false, ...q);
         const result = { data, total, query: q };
         return result;
     }
@@ -141,8 +140,8 @@ export class ApiController {
     public async export(@Message() msg: IncomingMessage, @Res() res: Response) {
         const { path, q } = _query(msg.path, msg.query, "/export" + baseUrl);
 
-        const data: any[] = await this.dataService.agg(path, true, ...q);
-        if (data.length === 0) throw new HttpException("NotFound", HttpStatus.NOT_FOUND);
+        const { total, data } = await this.dataService.agg(path, true, ...q);
+        if (total === 0) throw new HttpException("NotFound", HttpStatus.NOT_FOUND);
 
         const firstItem = data[0];
         const keys = Object.keys(firstItem).map((key) => {
