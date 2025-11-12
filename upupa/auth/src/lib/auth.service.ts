@@ -365,9 +365,11 @@ export class AuthService {
         if (credentials.email) authRequestBody["email"] = credentials.email;
         if (credentials.phone) authRequestBody["phone"] = credentials.phone;
         authRequestBody["rememberMe"] = credentials.rememberMe === true;
-
-        authRequestBody["device"] = await this.deviceService.getDevice();
-
+        try {
+            authRequestBody["device"] = await this.deviceService.getDevice();
+        } catch (e) {
+            console.error(e);
+        }
         try {
             const auth_token = await httpFetch(this.baseUrl, authRequestBody);
             if (!auth_token) throw "UNDEFINED_TOKEN";
