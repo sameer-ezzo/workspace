@@ -28,8 +28,8 @@
         </button>
         <mat-divider></mat-divider>
 
-        @if (commands?.length > 0) {
-            @for (umc of commands; track $index) {
+        @if (commands()?.length > 0) {
+            @for (umc of commands(); track $index) {
                 <button mat-menu-item authAction [path]="umc['path']" [action]="umc['action']" (click)="umcClicked($event)">
                     @if (umc["icon"]) {
                         <mat-icon>{{ umc["icon"] }}</mat-icon>

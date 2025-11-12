@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, Input, DOCUMENT } from "@angular/core";
+import { Component, computed, inject, input, DOCUMENT } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
 import { AuthService } from "@upupa/auth";
@@ -21,7 +21,7 @@ import { AuthorizeActionDirective } from "@upupa/authz";
     styleUrls: ["./tool-bar-user-menu.component.scss"],
 })
 export class ToolbarUserMenuComponent {
-    @Input() commands: SideBarItem[];
+    readonly commands = input<SideBarItem[]>(undefined);
     readonly userImageResolver = inject(USER_PICTURE_RESOLVER) as Observable<string>;
 
     public readonly auth = inject(AuthService);
