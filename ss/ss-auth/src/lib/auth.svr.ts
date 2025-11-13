@@ -45,7 +45,10 @@ export class AuthService {
     #secret: Uint8Array;
     model: mongoose.Model<any, {}, {}, {}, any, any>;
 
-    constructor(@Inject("DB_AUTH") public readonly data: DataService, @Inject("AUTH_OPTIONS") public readonly options: AuthOptions) {
+    constructor(
+        @Inject("DB_AUTH") public readonly data: DataService,
+        @Inject("AUTH_OPTIONS") public readonly options: AuthOptions,
+    ) {
         this.#secret = new TextEncoder().encode(this.options.secret);
         this.getModel();
     }
@@ -185,9 +188,8 @@ export class AuthService {
     }
 
     async issueResetPasswordToken(user: User, options?: SignOptions) {
-        if (!user) {
-            throw new AuthException(AuthExceptions.InvalidUserData);
-        }
+        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+
         const payload: TokenBase = { t: TokenTypes.reset, sec: user.securityCode };
         const sub = (user._id as any)?.toHexString?.() || user._id;
 
@@ -205,7 +207,7 @@ export class AuthService {
         name = "email",
         value: string,
         sendAttempts?: number,
-        options?: SignOptions
+        options?: SignOptions,
     ): Promise<{ token: string; verification: Verification }> {
         if (!user) {
             throw new AuthException(AuthExceptions.InvalidUserData);
@@ -367,7 +369,7 @@ export class AuthService {
             const passwordHash = await bcrypt.hash(newPassword, 10);
             const update = {} as any;
             update["$set"] = { passwordHash, securityCode: randomString(5) };
-            if (user.forceChangePwd && forceChange !== true) update["$unset"] = { forceChangePwd: '' };
+            if (user.forceChangePwd && forceChange !== true) update["$unset"] = { forceChangePwd: "" };
             await this.model.findByIdAndUpdate(user._id, update);
 
             return true;

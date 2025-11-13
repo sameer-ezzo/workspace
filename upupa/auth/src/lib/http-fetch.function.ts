@@ -1,3 +1,10 @@
+export interface HttpFetchError {
+    status: number;
+    message: string;
+    body?: any;
+    response?: Response;
+}
+
 export async function httpFetch(url, body?: any, timeout = 30000) {
     let response: Response | Record<string, any>;
     let fetcher: Promise<Response>;
@@ -27,10 +34,10 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
     }
 
     // Create a timeout promise
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
             controller?.abort();
-            reject("TIMEOUT");
+            reject(new Error("TIMEOUT"));
         }, timeout);
     });
 
@@ -43,20 +50,68 @@ export async function httpFetch(url, body?: any, timeout = 30000) {
         const contentType = response.headers.get("content-type") || "";
         let responseBody: any;
 
-        if (contentType.startsWith("application/json")) {
-            responseBody = await response.json();
-        } else {
-            responseBody = await response.text();
+        try {
+            if (contentType.startsWith("application/json")) {
+                responseBody = await response.json();
+            } else {
+                responseBody = await response.text();
+            }
+        } catch (parseError) {
+            // Failed to parse response body
+            responseBody = null;
         }
 
         if (response.status >= 200 && response.status < 300) {
             return responseBody;
         } else {
-            throw { status: response.status, body: responseBody, response };
+            // HTTP error response
+            const error: HttpFetchError = {
+                status: response.status,
+                message: responseBody?.message || responseBody?.error || `HTTP ${response.status}: ${response.statusText}`,
+                body: responseBody,
+                response,
+            };
+            throw error;
         }
     } catch (e) {
-        const error = typeof e === "object" && "message" in e ? e : { message: e };
-        if (error["message"] === "Failed to fetch") throw { status: 0, ...error };
-        throw e;
+        // Handle different error types
+        if (e && typeof e === "object" && "status" in e) {
+            // Already a formatted HttpFetchError
+            throw e;
+        }
+
+        // Handle abort/timeout
+        if (e instanceof Error && e.name === "AbortError") {
+            const error: HttpFetchError = {
+                status: 0,
+                message: "REQUEST_TIMEOUT",
+            };
+            throw error;
+        }
+
+        if (e instanceof Error && e.message === "TIMEOUT") {
+            const error: HttpFetchError = {
+                status: 0,
+                message: "REQUEST_TIMEOUT",
+            };
+            throw error;
+        }
+
+        // Handle network errors
+        if (e instanceof Error && e.message === "Failed to fetch") {
+            const error: HttpFetchError = {
+                status: 0,
+                message: "NETWORK_ERROR",
+            };
+            throw error;
+        }
+
+        // Handle unknown errors
+        const error: HttpFetchError = {
+            status: 0,
+            message: e instanceof Error ? e.message : "UNKNOWN_ERROR",
+            body: e,
+        };
+        throw error;
     }
 }

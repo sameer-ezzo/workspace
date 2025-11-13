@@ -51,7 +51,8 @@ export class FieldRef<TCom = any> {
     }
 
     setInput(input: keyof DynamicComponent<TCom>["inputs"], value: any) {
-        this.inputs.update(inputs => ({ ...inputs, [input]: value }));
+        this.inputs.update((inputs) => ({ ...inputs, [input]: value }));
+        this._handleInputs(this.inputs());
     }
 
     setVisibility(visible: boolean) {

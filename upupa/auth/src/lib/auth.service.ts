@@ -417,7 +417,7 @@ export class AuthService {
                 const result = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
                 return result;
             } catch (err) {
-                if (err.status) throw await err.json();
+                if (err.status) throw err.body;
                 else if (err.status === 0) throw "CONNECTION_ERROR";
                 else throw err;
             }
