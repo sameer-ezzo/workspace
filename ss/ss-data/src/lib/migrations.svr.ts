@@ -50,8 +50,6 @@ export class MigrationsService {
         for (const migration of migrations) {
             if (dbMigrations.find((m) => m.name === migration.name) || !("up" in migration) || typeof migration.up !== "function") continue;
             logger.info(`Migrating: ${migration.name} on ${databaseName}`);
-            // const session = await data.connection.startSession();
-            // session.startTransaction();
             try {
                 await migration.up(data);
                 const res = await model.create([
@@ -65,13 +63,9 @@ export class MigrationsService {
                     } as unknown as MigrationModel,
                 ]);
 
-                // await session.commitTransaction();
                 dbMigrations.push(res[0]._doc);
-                // await session.endSession();
-                // await delay(250);
+                await delay(250);
             } catch (error) {
-                // await session.abortTransaction();
-                // await session.endSession();
                 const msg = `Migration on ${databaseName} Error`;
                 logger.error(msg, error);
                 throw new MigrationError(msg);

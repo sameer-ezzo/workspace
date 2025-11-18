@@ -31,7 +31,7 @@ export class LoginFormComponent {
     submitBtn = input<ActionDescriptor>({
         name: "login",
         type: "submit",
-        text: "login",
+        text: $localize`login`,
         color: "primary",
         variant: "raised",
     });
@@ -49,7 +49,7 @@ export class LoginFormComponent {
 
                 return fields;
             },
-        }
+        },
     );
     conditions = input<Condition[]>([]);
 
@@ -69,7 +69,7 @@ export class LoginFormComponent {
 
         try {
             const res = await this.auth.signin(this.value() as Credentials);
-            this.success.emit(res)
+            this.success.emit(res);
         } catch (error) {
             const err = error?.msg ?? error?.message ?? error;
             if (err === "INVALID_ATTEMPT") this.error = "username-password-wrong";
