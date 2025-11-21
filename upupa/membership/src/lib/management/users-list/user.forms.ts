@@ -2,7 +2,7 @@ import { DatePipe } from "@angular/common";
 import { inject } from "@angular/core";
 import { editButton } from "@upupa/cp";
 import { DataAdapter, DataService } from "@upupa/data";
-import { formInput } from "@upupa/dynamic-form";
+import { ExtendedValueChangeEvent, fieldRef, formInput } from "@upupa/dynamic-form";
 import { EmailColumnCellComponent } from "./email-column-cell.component";
 import { ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserButton, ChangeUserRolesButton } from "./users-list-actions.component";
 import { DialogRef, SnackBarService } from "@upupa/dialog";
@@ -24,6 +24,13 @@ export class CreateUserFromViewModel {
     @formInput({ input: "switch", label: "Force change password" })
     forceChangePwd: boolean;
 
+    onValueChange(e: ExtendedValueChangeEvent) {
+        const { previousValue, currentValue, firstChange } = e.changes[e.path];
+        if ((e.path === "/email" && (!this.username || this.username.trim().length === 0)) || this.username === previousValue.trim().toLocaleLowerCase()) {
+            const usernameRef = fieldRef("/username");
+            usernameRef.control.setValue(currentValue.trim().toLocaleLowerCase());
+        }
+    }
     async onSubmit() {
         const snack = inject(SnackBarService);
         const auth = inject(AuthService);
@@ -90,7 +97,7 @@ export class UserListViewModel {
     @column({
         header: " ",
         class: "actions",
-        template: [ImpersonateUserButton, editButton(EditUserFromViewModel, ), ChangeUserRolesButton, ResetPasswordButton, BanUserButton, DeleteUserButton],
+        template: [ImpersonateUserButton, editButton(EditUserFromViewModel), ChangeUserRolesButton, ResetPasswordButton, BanUserButton, DeleteUserButton],
     })
     actions: any;
 }
