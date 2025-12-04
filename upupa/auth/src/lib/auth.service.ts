@@ -12,6 +12,7 @@ import { DeviceService } from "./device.service";
 import { isPlatformBrowser } from "@angular/common";
 import { AUTH_IDPs, IdPName } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { AuthOptions } from "./auth-options";
 
 export const ACCESS_TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
@@ -129,7 +130,7 @@ export class AuthService {
 
     private readonly localStorage: TokenStore = this.isBrowser ? new LocalStorageTokenStore() : new RequestTokenStore();
 
-    public readonly options = inject(AUTH_OPTIONS);
+    public readonly options = inject(AUTH_OPTIONS) ?? new AuthOptions();
     public readonly baseUrl = this.options.base_url;
 
     readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];

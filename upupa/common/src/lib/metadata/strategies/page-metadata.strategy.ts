@@ -1,4 +1,4 @@
-import { inject, Injectable, InjectionToken, Injector, runInInjectionContext, DOCUMENT } from "@angular/core";
+import { inject, InjectionToken, Injector, runInInjectionContext, DOCUMENT } from "@angular/core";
 
 import { MetadataUpdateStrategy } from "../metadata.service";
 import { PageMetadata } from "../models";
