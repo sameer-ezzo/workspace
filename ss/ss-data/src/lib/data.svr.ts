@@ -311,7 +311,9 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         if (query.$text) {
             pipeline.push({ $match: { $text: { $search: query.$text } } });
             pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
+            if (!query.sort) pipeline.push({ $sort: { score: { $meta: "textScore" } } });
         }
+
         if (query.lookups)
             query.lookups.forEach((l: any) => {
                 l.from = this.prefix + l.from;
@@ -360,9 +362,26 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         if (query.sort) pipeline.push({ $sort: query.sort });
         if (query.select) pipeline.push({ $project: query.select });
 
-        const setLimitsBeforeGrouping = query.group === null || query.group?.items !== null; //limit before if document is included
+        // const setLimitsBeforeGrouping = !!query.group; //limit before if document is included
 
-        if (setLimitsBeforeGrouping) {
+        // if (setLimitsBeforeGrouping) {
+        //     pipeline.push({
+        //         $facet: {
+        //             metadata: [{ $count: "total" }],
+        //             data: [{ $skip: (page - 1) * per_page }, { $limit: per_page }],
+        //         },
+        //     });
+        // }
+
+        if (query.group) {
+            pipeline.push({ $group: query.group });
+            pipeline.push({
+                $facet: {
+                    metadata: [{ $count: "total" }],
+                    data: [{ $skip: (page - 1) * per_page }, { $limit: per_page }],
+                },
+            });
+        } else {
             pipeline.push({
                 $facet: {
                     metadata: [{ $count: "total" }],
@@ -371,18 +390,8 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             });
         }
 
-        if (query.group) pipeline.push({ $group: query.group });
-
-        if (!setLimitsBeforeGrouping) {
-            pipeline.push({
-                $facet: {
-                    metadata: [{ $count: "total" }],
-                    data: [{ $skip: (page - 1) * per_page }, { $limit: per_page }],
-                },
-            });
-        }
-
-        const [{ metadata, data }, ...rest] = await model.aggregate(pipeline);
+        const result = await model.aggregate(pipeline);
+        const [{ metadata, data }, ...rest] = result;
         return { total: metadata[0]?.total || 0, data: data || [] };
     }
 
