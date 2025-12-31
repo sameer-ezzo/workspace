@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT, makeStateKey, TransferState } from "@angular/core";
+import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT, makeStateKey, TransferState, signal } from "@angular/core";
 import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
@@ -12,10 +12,10 @@ import { DeviceService } from "./device.service";
 import { isPlatformBrowser } from "@angular/common";
 import { AUTH_IDPs, IdPName } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { AuthOptions } from "./auth-options";
 
 export const ACCESS_TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
+export const AUTH_STATE_KEY = makeStateKey<{ access_token: string; refresh_token: string; user: Principle }>("AUTH_STATE");
 
 export interface TokenStore {
     getToken(key: string): string;
@@ -123,15 +123,15 @@ export class AuthService {
     user$ = this._user$.asObservable();
     userSignal: Signal<Principle> = toSignal(this._user$);
     user: Principle = null;
-    // private readonly transferState = inject(TransferState); // use this to transfer authenticated user in ssr to client
-
+    private readonly transferState = inject(TransferState); // use this to transfer authenticated user in ssr to client
+    refreshing = signal(false);
     private _token$ = new Subject<string>();
     token$ = this._token$.asObservable();
 
     private readonly localStorage: TokenStore = this.isBrowser ? new LocalStorageTokenStore() : new RequestTokenStore();
 
-    public readonly options = inject(AUTH_OPTIONS) ?? new AuthOptions();
-    public readonly baseUrl = this.options.base_url;
+    public readonly options = inject(AUTH_OPTIONS, { optional: false });
+    public readonly baseUrl = this.options.baseUrl;
 
     readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
     get IdProviders(): IdPName[] {
@@ -148,7 +148,7 @@ export class AuthService {
     public readonly deviceService = inject(DeviceService);
 
     get passwordPolicy() {
-        return Object.freeze(this.options.password_policy);
+        return Object.freeze(this.options.passwordPolicy);
     }
 
     constructor() {
@@ -182,6 +182,7 @@ export class AuthService {
                 }, {});
 
             const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies["ssr_jwt"] || "{}")) as { access_token?: string; refresh_token?: string };
+
             if (!access_token) return this.user;
             this._access_token = access_token;
             this._refresh_token = refresh_token;
@@ -199,7 +200,13 @@ export class AuthService {
         });
     }
     private _access_token: string | null = null;
+    get access_token() {
+        return this._access_token;
+    }
     private _refresh_token: string | null = null;
+    get refresh_token() {
+        return this._refresh_token;
+    }
 
     private triggerNext(user: any) {
         if (user) {
@@ -215,10 +222,10 @@ export class AuthService {
     }
 
     get_token() {
-        return this._access_token ?? this.localStorage.getAccessToken();
+        return this.transferState.get(AUTH_STATE_KEY, null)?.access_token ?? this._access_token ?? this.localStorage.getAccessToken();
     }
     get_refresh_token() {
-        return this._refresh_token ?? this.localStorage.getRefreshToken();
+        return this.transferState.get(AUTH_STATE_KEY, null)?.refresh_token ?? this._refresh_token ?? this.localStorage.getRefreshToken();
     }
 
     jwt(tokenString: string): any {
@@ -280,6 +287,7 @@ export class AuthService {
 
         if (refresh_token) {
             try {
+                this.refreshing.set(true);
                 const tokens = await httpFetch(this.baseUrl, { grant_type: "refresh", refresh_token });
                 if (tokens) {
                     this.setTokens(tokens);
@@ -298,6 +306,8 @@ export class AuthService {
                     console.error("Error refreshing token: ", error);
                 }
                 return principle;
+            } finally {
+                this.refreshing.set(false);
             }
         }
         this.triggerNext(principle);

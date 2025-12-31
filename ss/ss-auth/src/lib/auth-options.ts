@@ -38,4 +38,8 @@ export class AuthOptions {
     userSchema = userSchemaFactory("ObjectId");
 
     useCookies = new AuthCookiesOptions();
+
+    constructor(init?: Partial<AuthOptions>) {
+        Object.assign(this, init);
+    }
 }

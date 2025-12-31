@@ -6,7 +6,6 @@ import { FacebookIdProviderOptions } from "./facebook/facebook.idp";
 import { IdProviderService } from "./google/google-id-provider.service";
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
 import { AuthInterceptor } from "../auth.interceptor";
-import { AuthService } from "../auth.service";
 
 export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password" | "username-and-password";
 

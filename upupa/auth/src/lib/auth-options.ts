@@ -1,7 +1,11 @@
 import { PasswordStrength } from "@noah-ark/common";
 
-
 export class AuthOptions {
-    base_url?: string  = "/auth";
-    password_policy?: PasswordStrength = new PasswordStrength();
+    readonly baseUrl: string = "/auth";
+    readonly passwordPolicy?: PasswordStrength;
+    constructor(init?: Partial<AuthOptions>) {
+        if (init) {
+            Object.assign(this, init);
+        }
+    }
 }

@@ -8,7 +8,7 @@ export type EmailAndPasswordProviderOptions = { fields?: any; on_success?: (inst
 export const EMAIL_AND_PASSWORD_PROVIDER_OPTIONS = new InjectionToken<EmailAndPasswordProviderOptions>("EMAIL_AND_PASSWORD_PROVIDER_OPTIONS");
 export type AuthProvider = Omit<Provider, "provide">;
 
-export function authProviders(options: () => AuthOptions): Provider[] {
+export function authProviders(options: () => Partial<AuthOptions>): Provider[] {
     return [
         { provide: AUTH_OPTIONS, useFactory: options },
         // { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
