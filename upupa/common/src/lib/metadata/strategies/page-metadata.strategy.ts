@@ -69,7 +69,6 @@ export function metaImageLinkNormalize(
 
         return base + qStr;
     }
-    console.log(baseUrl, baseHref, path);
 
     return baseHref + path;
 }
