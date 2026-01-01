@@ -55,7 +55,7 @@ An Angular library for creating configurable, grid-based widget dashboards, powe
 
     @Component({
       selector: 'app-dashboard',
-      standalone: true,
+      
       imports: [
         WidgetBuilderComponent,
         ReactiveFormsModule,
@@ -150,7 +150,7 @@ Use the `<widget-builder>` component, provide a list of available `WidgetBluepri
 
     @Component({
       selector: 'app-dashboard-example',
-      standalone: true,
+      
       imports: [
         CommonModule,
         WidgetBuilderComponent,

@@ -7,7 +7,6 @@ import { isPlatformBrowser } from "@angular/common";
 @Directive({
     selector: "[idp-button]",
     exportAs: "idpButton",
-    standalone: true,
 })
 export class IdpButtonDirective {
     private readonly platformId = inject(PLATFORM_ID);

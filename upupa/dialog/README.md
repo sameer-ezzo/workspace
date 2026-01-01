@@ -73,7 +73,7 @@ A library for displaying dialogs and snackbars in Angular applications, built on
 
     @Component({
       selector: 'app-my-dialog',
-      standalone: true,
+      
       template: `
         <h2>{{ data.title }}</h2>
         <p>{{ data.message }}</p>
@@ -101,7 +101,7 @@ A library for displaying dialogs and snackbars in Angular applications, built on
 
     @Component({
       selector: 'app-feature',
-      standalone: true,
+      
       template: '<button (click)="openCustomDialog()">Open Custom Dialog</button>'
     })
     export class FeatureComponent {
@@ -137,7 +137,7 @@ import { SnackBarService } from '@upupa/dialog';
 
 @Component({
   selector: 'app-action-buttons',
-  standalone: true,
+  
   template: `
     <button (click)="showSuccess()">Show Success</button>
     <button (click)="showError()">Show Error</button>
@@ -166,7 +166,7 @@ import { ConfirmService, ConfirmConfig } from '@upupa/dialog'; // Import Confirm
 
 @Component({
   selector: 'app-delete-item',
-  standalone: true,
+  
   template: '<button (click)="confirmDelete()">Delete Item</button>'
 })
 export class DeleteItemComponent {

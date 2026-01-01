@@ -33,7 +33,6 @@ function compareWithFn(optVal: any, selectVal: any) {
 }
 
 @Component({
-    standalone: true,
     template: "",
     providers: [], // base component cannot pass providers to child components
 })

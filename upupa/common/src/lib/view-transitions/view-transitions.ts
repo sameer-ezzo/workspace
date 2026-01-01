@@ -63,7 +63,6 @@ export class ViewTransitionService {
 @Directive({
     // eslint-disable-next-line @angular-eslint/directive-selector
     selector: "[view-transition-source]",
-    standalone: true,
 })
 export class ViewTransitionSourceDirective {
     // viewTransitionName must be passed and must be unique per page
@@ -128,7 +127,6 @@ export class ViewTransitionSourceDirective {
 @Directive({
     // eslint-disable-next-line @angular-eslint/directive-selector
     selector: "[view-transition-destination]",
-    standalone: true,
 })
 export class ViewTransitionDestinationDirective implements OnInit, OnDestroy {
     viewTransitionName = input.required<string>({ alias: "view-transition-destination" }); //TODO this is not used yet. it should be used as a matcher to only apply the transition if the transition animation relevant to the source (useful in cases multiple view transitions are happening at the same time)

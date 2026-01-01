@@ -6,7 +6,7 @@ import { Theme, ThemeService } from "./theme.service";
 
 @Component({
     selector: "app-theme-picket",
-    standalone: true,
+
     imports: [MatIcon, MatMenu, MatIconButton, MatMenuTrigger, MatMenuItem],
     styles: `
         .active {

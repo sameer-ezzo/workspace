@@ -3,7 +3,6 @@ import { PromptService } from "./prompt.service";
 
 @Directive({
     selector: "[prompt]",
-    standalone: true,
 })
 export class PromptDirective {
     prompt = output<Event>();

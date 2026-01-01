@@ -9,7 +9,7 @@ class ImageWidgetSettings {
 
 @Component({
     selector: "img-widget",
-    standalone: true,
+
     template: ` <img [src]="src()" [class]="cssClass()" /> `,
 })
 export class ImageWidget {

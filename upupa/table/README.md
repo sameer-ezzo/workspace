@@ -41,7 +41,7 @@ A dynamic and configurable table component library for Angular, leveraging decor
 
     @Component({
       // ...
-      standalone: true,
+      
       imports: [ DataTableComponent, /* other necessary imports */ ],
       // ...
     })
@@ -85,7 +85,7 @@ A dynamic and configurable table component library for Angular, leveraging decor
 
     @Component({
       selector: 'app-user-list',
-      standalone: true,
+      
       imports: [ DataTableComponent ],
       template: `
         <h2>User List</h2>
@@ -133,7 +133,7 @@ import { UserViewModel } from '../user.viewmodel'; // Your data model
 
 @Component({
   selector: 'app-user-status-template',
-  standalone: true,
+  
   template: `
     <span [style.color]="user.isActive ? 'green' : 'red'">
       {{ user.isActive ? 'Active' : 'Inactive' }}

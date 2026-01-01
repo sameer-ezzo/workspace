@@ -128,7 +128,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-greeting',
-  standalone: true,
+  
   imports: [CommonModule, TextPipe],
   templateUrl: './greeting.component.html' // Contains the HTML above
 })

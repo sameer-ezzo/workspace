@@ -10,7 +10,6 @@ const authzCache0 = new Map<string, AuthorizeResult>();
 @Directive({
     selector: "[authAction]",
     exportAs: "authAction",
-    standalone: true,
 })
 export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     private readonly hostElement = inject(ElementRef);
@@ -81,7 +80,6 @@ export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
 const authzCache = new Map<string, AuthorizeResult>();
 @Directive({
     selector: "[authz]",
-    standalone: true,
 })
 export class AuthzDirective implements AfterViewInit, OnChanges {
     private readonly hostElement = inject(ElementRef);

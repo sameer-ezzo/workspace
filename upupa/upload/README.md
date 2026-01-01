@@ -77,7 +77,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'; // Exampl
 
 @Component({
   selector: 'app-file-uploader',
-  standalone: true,
+  
   imports: [CommonModule, MatProgressBarModule],
   template: `
     <input type="file" (change)="onFileSelected($event)" multiple>

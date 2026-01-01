@@ -8,7 +8,7 @@
 // import { MatTimepickerModule } from "@angular/material/timepicker";
 
 // @Component({
-//     standalone: true,
+//
 //     selector: "mat-form-time-input",
 //     templateUrl: "./time-input.component.html",
 //     providers: [

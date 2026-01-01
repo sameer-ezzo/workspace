@@ -50,7 +50,7 @@ This library provides a component that wraps CKEditor 5 (specifically the decoup
 
     @Component({
       selector: 'app-my-page',
-      standalone: true,
+      
       imports: [ HtmlEditorComponent, ReactiveFormsModule /* or FormsModule */ ],
       // ...
     })
@@ -96,7 +96,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-html-editor-example',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule, HtmlEditorComponent],
   templateUrl: './html-editor-example.component.html' // Contains the HTML above
 })

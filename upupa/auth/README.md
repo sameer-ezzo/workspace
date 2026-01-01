@@ -81,7 +81,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-status',
-  standalone: true,
+  
   template: `
     <div *ngIf="currentUser; else loggedOut">
       Welcome, {{ currentUser.name }}!
@@ -174,7 +174,7 @@ import { AuthService } from '@upupa/auth';
 
 @Component({
   selector: 'app-admin-panel',
-  standalone: true,
+  
   template: `<div *ngIf="isAdmin">Admin Controls Here...</div>`
 })
 export class AdminPanelComponent {

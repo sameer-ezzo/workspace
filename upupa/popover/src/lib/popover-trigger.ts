@@ -1,39 +1,29 @@
 import {
-  AfterViewInit,
-  Directive,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Optional,
-  Output,
-  ViewContainerRef,
-  HostListener,
-  HostBinding,
-  ChangeDetectorRef,
-} from '@angular/core';
+    AfterViewInit,
+    Directive,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    Optional,
+    Output,
+    ViewContainerRef,
+    HostListener,
+    HostBinding,
+    ChangeDetectorRef,
+} from "@angular/core";
 
-import { isFakeMousedownFromScreenReader } from '@angular/cdk/a11y';
-import { Direction, Directionality } from '@angular/cdk/bidi';
-import {
-  Overlay,
-  OverlayRef,
-  OverlayConfig,
-  HorizontalConnectionPos,
-  VerticalConnectionPos,
-  FlexibleConnectedPositionStrategy,
-  ScrollStrategy
-} from '@angular/cdk/overlay';
-import { TemplatePortal } from '@angular/cdk/portal';
+import { isFakeMousedownFromScreenReader } from "@angular/cdk/a11y";
+import { Direction, Directionality } from "@angular/cdk/bidi";
+import { Overlay, OverlayRef, OverlayConfig, HorizontalConnectionPos, VerticalConnectionPos, FlexibleConnectedPositionStrategy, ScrollStrategy } from "@angular/cdk/overlay";
+import { TemplatePortal } from "@angular/cdk/portal";
 
-import { Subscription, Subject } from 'rxjs';
+import { Subscription, Subject } from "rxjs";
 
-import { PopoverPanel, MdeTarget } from './popover-interfaces';
-import { PopoverPositionX, PopoverPositionY, PopoverTriggerEvent, PopoverScrollStrategy } from './popover-types';
-import { throwPopoverMissingError } from './popover-errors';
-import { takeUntil } from 'rxjs/operators';
-
-
+import { PopoverPanel, MdeTarget } from "./popover-interfaces";
+import { PopoverPositionX, PopoverPositionY, PopoverTriggerEvent, PopoverScrollStrategy } from "./popover-types";
+import { throwPopoverMissingError } from "./popover-errors";
+import { takeUntil } from "rxjs/operators";
 
 /**
  * This directive is intended to be used in conjunction with an popover tag. It is
@@ -41,13 +31,13 @@ import { takeUntil } from 'rxjs/operators';
  */
 
 @Directive({
-  selector: '[popoverTriggerFor]',
-  exportAs: 'popoverTrigger',
-  standalone: true,
+    selector: "[popoverTriggerFor]",
+    exportAs: "popoverTrigger",
 })
-export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disable-line:directive-class-suffix
+export class PopoverTrigger implements AfterViewInit, OnDestroy {
+    // tslint:disable-line:directive-class-suffix
 
-    @HostBinding('attr.aria-haspopup') ariaHaspopup = true;
+    @HostBinding("attr.aria-haspopup") ariaHaspopup = true;
 
     popoverOpened = new Subject<void>();
     popoverClosed = new Subject<void>();
@@ -69,53 +59,49 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     private _onDestroy = new Subject<void>();
 
     /** References the popover instance that the trigger is associated with. */
-    @Input('popoverTriggerFor') popover: PopoverPanel;
+    @Input("popoverTriggerFor") popover: PopoverPanel;
 
     /** References the popover target instance that the trigger is associated with. */
-    @Input('popoverTargetAt') targetElement: MdeTarget;
+    @Input("popoverTargetAt") targetElement: MdeTarget;
 
     /** Position of the popover in the X axis */
-    @Input('popoverPositionX') positionX: PopoverPositionX;
+    @Input("popoverPositionX") positionX: PopoverPositionX;
 
     /** Position of the popover in the Y axis */
-    @Input('popoverPositionY') positionY: PopoverPositionY;
+    @Input("popoverPositionY") positionY: PopoverPositionY;
 
     /** Popover trigger event */
-    @Input('popoverTriggerOn') triggerEvent: PopoverTriggerEvent;
+    @Input("popoverTriggerOn") triggerEvent: PopoverTriggerEvent;
 
     /** Popover delay */
-    @Input('popoverEnterDelay') enterDelay: number;
+    @Input("popoverEnterDelay") enterDelay: number;
 
     /** Popover delay */
-    @Input('popoverLeaveDelay') leaveDelay: number;
+    @Input("popoverLeaveDelay") leaveDelay: number;
 
     /** Popover overlap trigger */
-    @Input('popoverOverlapTrigger') overlapTrigger: boolean;
+    @Input("popoverOverlapTrigger") overlapTrigger: boolean;
 
     /** Popover target offset x */
-    @Input('popoverOffsetX') targetOffsetX: number;
+    @Input("popoverOffsetX") targetOffsetX: number;
 
     /** Popover target offset y */
-    @Input('popoverOffsetY') targetOffsetY: number;
+    @Input("popoverOffsetY") targetOffsetY: number;
 
     /** Popover arrow offset x */
-    @Input('popoverArrowOffsetX') arrowOffsetX: number;
-
+    @Input("popoverArrowOffsetX") arrowOffsetX: number;
 
     /** Popover arrow width */
-    @Input('popoverArrowWidth') arrowWidth: number;
-
+    @Input("popoverArrowWidth") arrowWidth: number;
 
     /** Popover arrow color */
-    @Input('popoverArrowColor') arrowColor: string;
-
+    @Input("popoverArrowColor") arrowColor: string;
 
     /** Popover container close on click */
-    @Input('popoverCloseOnClick') closeOnClick: boolean;
-
+    @Input("popoverCloseOnClick") closeOnClick: boolean;
 
     /** Popover backdrop close on click */
-    @Input('popoverBackdropCloseOnClick') backdropCloseOnClick = true;
+    @Input("popoverBackdropCloseOnClick") backdropCloseOnClick = true;
 
     /** Event emitted when the associated popover is opened. */
     @Output() opened = new EventEmitter<void>();
@@ -123,11 +109,13 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     /** Event emitted when the associated popover is closed. */
     @Output() closed = new EventEmitter<void>();
 
-
-    constructor(private _overlay: Overlay, public _elementRef: ElementRef,
-              private _viewContainerRef: ViewContainerRef,
-              @Optional() private _dir: Directionality,
-              private _changeDetectorRef: ChangeDetectorRef) { }
+    constructor(
+        private _overlay: Overlay,
+        public _elementRef: ElementRef,
+        private _viewContainerRef: ViewContainerRef,
+        @Optional() private _dir: Directionality,
+        private _changeDetectorRef: ChangeDetectorRef,
+    ) {}
 
     ngAfterViewInit() {
         this._checkPopover();
@@ -136,17 +124,16 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     }
 
     ngOnDestroy() {
-      this.destroyPopover();
+        this.destroyPopover();
     }
 
     private _setCurrentConfig() {
-
-        if (this.positionX === 'before' || this.positionX === 'after') {
-          this.popover.positionX = this.positionX;
+        if (this.positionX === "before" || this.positionX === "after") {
+            this.popover.positionX = this.positionX;
         }
 
-        if (this.positionY === 'above' || this.positionY === 'below') {
-          this.popover.positionY = this.positionY;
+        if (this.positionY === "above" || this.positionY === "below") {
+            this.popover.positionY = this.positionY;
         }
 
         if (this.triggerEvent) {
@@ -154,11 +141,11 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
         }
 
         if (this.enterDelay) {
-          this.popover.enterDelay = this.enterDelay;
+            this.popover.enterDelay = this.enterDelay;
         }
 
         if (this.leaveDelay) {
-          this.popover.leaveDelay = this.leaveDelay;
+            this.popover.leaveDelay = this.leaveDelay;
         }
 
         if (this.overlapTrigger === true || this.overlapTrigger === false) {
@@ -192,44 +179,45 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
         this.popover.setCurrentStyles();
     }
 
-
     /** Whether the popover is open. */
-    get popoverOpen(): boolean { return this._popoverOpen; }
+    get popoverOpen(): boolean {
+        return this._popoverOpen;
+    }
 
-    @HostListener('click', ['$event'])
+    @HostListener("click", ["$event"])
     onClick(event: MouseEvent): void {
-      if (this.popover.triggerEvent === 'click') {
-        this.togglePopover();
-      }
+        if (this.popover.triggerEvent === "click") {
+            this.togglePopover();
+        }
     }
 
-    @HostListener('mouseenter', ['$event'])
+    @HostListener("mouseenter", ["$event"])
     onMouseEnter(event: MouseEvent): void {
-      this._halt = false;
-      if (this.popover.triggerEvent === 'hover') {
-        this._mouseoverTimer = setTimeout(() => {
-          this.openPopover();
-        }, this.popover.enterDelay);
-      }
+        this._halt = false;
+        if (this.popover.triggerEvent === "hover") {
+            this._mouseoverTimer = setTimeout(() => {
+                this.openPopover();
+            }, this.popover.enterDelay);
+        }
     }
 
-    @HostListener('mouseleave', ['$event'])
+    @HostListener("mouseleave", ["$event"])
     onMouseLeave(event: MouseEvent): void {
-      if (this.popover.triggerEvent === 'hover') {
-        if (this._mouseoverTimer) {
-          clearTimeout(this._mouseoverTimer);
-          this._mouseoverTimer = null;
-        }
-        if (this._popoverOpen) {
-          setTimeout(() => {
-            if (!this.popover.closeDisabled) {
-                this.closePopover();
+        if (this.popover.triggerEvent === "hover") {
+            if (this._mouseoverTimer) {
+                clearTimeout(this._mouseoverTimer);
+                this._mouseoverTimer = null;
             }
-          }, this.popover.leaveDelay);
-        } else {
-          this._halt = true;
+            if (this._popoverOpen) {
+                setTimeout(() => {
+                    if (!this.popover.closeDisabled) {
+                        this.closePopover();
+                    }
+                }, this.popover.leaveDelay);
+            } else {
+                this._halt = true;
+            }
         }
-      }
     }
 
     /** Toggles the popover between the open and closed states. */
@@ -252,8 +240,8 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     /** Closes the popover. */
     closePopover(): void {
         if (this._overlayRef) {
-          this._overlayRef.detach();
-          this._resetPopover();
+            this._overlayRef.detach();
+            this._resetPopover();
         }
     }
 
@@ -264,9 +252,9 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
             this._mouseoverTimer = null;
         }
         if (this._overlayRef) {
-          this._overlayRef.dispose();
-          this._overlayRef = null;
-          this._cleanUpSubscriptions();
+            this._overlayRef.dispose();
+            this._overlayRef = null;
+            this._cleanUpSubscriptions();
         }
 
         this._onDestroy.next();
@@ -280,124 +268,120 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
 
     /** The text direction of the containing app. */
     get dir(): Direction {
-        return this._dir && this._dir.value === 'rtl' ? 'rtl' : 'ltr';
+        return this._dir && this._dir.value === "rtl" ? "rtl" : "ltr";
     }
 
     /**
-    * This method ensures that the popover closes when the overlay backdrop is clicked.
-    * We do not use first() here because doing so would not catch clicks from within
-    * the popover, and it would fail to unsubscribe properly. Instead, we unsubscribe
-    * explicitly when the popover is closed or destroyed.
-    */
+     * This method ensures that the popover closes when the overlay backdrop is clicked.
+     * We do not use first() here because doing so would not catch clicks from within
+     * the popover, and it would fail to unsubscribe properly. Instead, we unsubscribe
+     * explicitly when the popover is closed or destroyed.
+     */
     private _subscribeToBackdrop(): void {
-      if (this._overlayRef) {
-        /** Only subscribe to backdrop if trigger event is click */
-        if (this.triggerEvent === 'click' && this.backdropCloseOnClick === true) {
-          this._overlayRef.backdropClick()
-          .pipe(
-            takeUntil(this.popoverClosed),
-            takeUntil(this._onDestroy),
-          )
-          .subscribe(() => {
-            this.popover._emitCloseEvent();
-          });
+        if (this._overlayRef) {
+            /** Only subscribe to backdrop if trigger event is click */
+            if (this.triggerEvent === "click" && this.backdropCloseOnClick === true) {
+                this._overlayRef
+                    .backdropClick()
+                    .pipe(takeUntil(this.popoverClosed), takeUntil(this._onDestroy))
+                    .subscribe(() => {
+                        this.popover._emitCloseEvent();
+                    });
+            }
         }
-      }
     }
 
     private _subscribeToDetachments(): void {
-      if (this._overlayRef) {
-        this._overlayRef.detachments()
-          .pipe(
-            takeUntil(this.popoverClosed),
-            takeUntil(this._onDestroy),
-          )
-          .subscribe(() => {
-            this._setPopoverClosed();
-          });
-      }
+        if (this._overlayRef) {
+            this._overlayRef
+                .detachments()
+                .pipe(takeUntil(this.popoverClosed), takeUntil(this._onDestroy))
+                .subscribe(() => {
+                    this._setPopoverClosed();
+                });
+        }
     }
 
     /**
-    * This method sets the popover state to open and focuses the first item if
-    * the popover was opened via the keyboard.
-    */
+     * This method sets the popover state to open and focuses the first item if
+     * the popover was opened via the keyboard.
+     */
     private _initPopover(): void {
         this._setPopoverOpened();
     }
 
     /**
-    * This method resets the popover when it's closed, most importantly restoring
-    * focus to the popover trigger if the popover was opened via the keyboard.
-    */
+     * This method resets the popover when it's closed, most importantly restoring
+     * focus to the popover trigger if the popover was opened via the keyboard.
+     */
     private _resetPopover(): void {
         this._setPopoverClosed();
 
         // Focus only needs to be reset to the host element if the popover was opened
         // by the keyboard and manually shifted to the first popover item.
         if (!this._openedByMouse) {
-          this.focus();
+            this.focus();
         }
         this._openedByMouse = false;
     }
 
     /** set state rather than toggle to support triggers sharing a popover */
     private _setPopoverOpened(): void {
-      if (!this._popoverOpen) {
-        this._popoverOpen = true;
+        if (!this._popoverOpen) {
+            this._popoverOpen = true;
 
-        this.popoverOpened.next();
-        this.opened.emit()
-      }
+            this.popoverOpened.next();
+            this.opened.emit();
+        }
     }
 
     /** set state rather than toggle to support triggers sharing a popover */
     private _setPopoverClosed(): void {
-      if (this._popoverOpen) {
-        this._popoverOpen = false;
+        if (this._popoverOpen) {
+            this._popoverOpen = false;
 
-        this.popoverClosed.next();
-        this.closed.emit();
-      }
-    }
-
-    /**
-    *  This method checks that a valid instance of MdPopover has been passed into
-    *  mdPopoverTriggerFor. If not, an exception is thrown.
-    */
-    private _checkPopover() {
-        if (!this.popover) {
-          throwPopoverMissingError();
+            this.popoverClosed.next();
+            this.closed.emit();
         }
     }
 
     /**
-    *  This method creates the overlay from the provided popover's template and saves its
-    *  OverlayRef so that it can be attached to the DOM when openPopover is called.
-    */
+     *  This method checks that a valid instance of MdPopover has been passed into
+     *  mdPopoverTriggerFor. If not, an exception is thrown.
+     */
+    private _checkPopover() {
+        if (!this.popover) {
+            throwPopoverMissingError();
+        }
+    }
+
+    /**
+     *  This method creates the overlay from the provided popover's template and saves its
+     *  OverlayRef so that it can be attached to the DOM when openPopover is called.
+     */
     private _createOverlay(): OverlayRef {
         if (!this._overlayRef) {
-          this._portal = new TemplatePortal(this.popover.templateRef, this._viewContainerRef);
-          const config = this._getOverlayConfig();
-          this._subscribeToPositions(config.positionStrategy as FlexibleConnectedPositionStrategy);
-          this._overlayRef = this._overlay.create(config);
+            this._portal = new TemplatePortal(this.popover.templateRef, this._viewContainerRef);
+            const config = this._getOverlayConfig();
+            this._subscribeToPositions(config.positionStrategy as FlexibleConnectedPositionStrategy);
+            this._overlayRef = this._overlay.create(config);
         }
 
         return this._overlayRef;
     }
 
     /**
-    * This method builds the configuration object needed to create the overlay, the OverlayConfig.
-    * @returns OverlayConfig
-    */
+     * This method builds the configuration object needed to create the overlay, the OverlayConfig.
+     * @returns OverlayConfig
+     */
     private _getOverlayConfig(): OverlayConfig {
         const overlayState = new OverlayConfig();
         overlayState.positionStrategy = this._getPosition();
 
         /** Display overlay backdrop if trigger event is click */
-        if (this.triggerEvent === 'click') {
-          overlayState.hasBackdrop = true;
-          overlayState.backdropClass = 'cdk-overlay-transparent-backdrop';
+        if (this.triggerEvent === "click") {
+            overlayState.hasBackdrop = true;
+            overlayState.backdropClass = "cdk-overlay-transparent-backdrop";
         }
 
         overlayState.direction = this.dir;
@@ -410,31 +394,31 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
      * This method returns the scroll strategy used by the cdk/overlay.
      */
     private _getOverlayScrollStrategy(strategy: PopoverScrollStrategy): ScrollStrategy {
-      switch(strategy) {
-        case 'noop':
-          return this._overlay.scrollStrategies.noop();
-        case 'close':
-          return this._overlay.scrollStrategies.close();
-        case 'block':
-          return this._overlay.scrollStrategies.block();
-        case 'reposition':
-        default:
-          return this._overlay.scrollStrategies.reposition();
-      }
+        switch (strategy) {
+            case "noop":
+                return this._overlay.scrollStrategies.noop();
+            case "close":
+                return this._overlay.scrollStrategies.close();
+            case "block":
+                return this._overlay.scrollStrategies.block();
+            case "reposition":
+            default:
+                return this._overlay.scrollStrategies.reposition();
+        }
     }
 
     /**
-    * Listens to changes in the position of the overlay and sets the correct classes
-    * on the popover based on the new position. This ensures the animation origin is always
-    * correct, even if a fallback position is used for the overlay.
-    */
+     * Listens to changes in the position of the overlay and sets the correct classes
+     * on the popover based on the new position. This ensures the animation origin is always
+     * correct, even if a fallback position is used for the overlay.
+     */
     private _subscribeToPositions(position: FlexibleConnectedPositionStrategy): void {
-        this._positionSubscription = position.positionChanges.subscribe(change => {
-            const posisionX: PopoverPositionX = change.connectionPair.overlayX === 'start' ? 'after' : 'before';
-            let posisionY: PopoverPositionY = change.connectionPair.overlayY === 'top' ? 'below' : 'above';
+        this._positionSubscription = position.positionChanges.subscribe((change) => {
+            const posisionX: PopoverPositionX = change.connectionPair.overlayX === "start" ? "after" : "before";
+            let posisionY: PopoverPositionY = change.connectionPair.overlayY === "top" ? "below" : "above";
 
             if (!this.popover.overlapTrigger) {
-                posisionY = posisionY === 'below' ? 'above' : 'below';
+                posisionY = posisionY === "below" ? "above" : "below";
             }
 
             // required for ChangeDetectionStrategy.OnPush
@@ -451,16 +435,14 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
     }
 
     /**
-    * This method builds the position strategy for the overlay, so the popover is properly connected
-    * to the trigger.
-    * @returns ConnectedPositionStrategy
-    */
+     * This method builds the position strategy for the overlay, so the popover is properly connected
+     * to the trigger.
+     * @returns ConnectedPositionStrategy
+     */
     private _getPosition(): FlexibleConnectedPositionStrategy {
-        const [originX, originFallbackX]: HorizontalConnectionPos[] =
-          this.popover.positionX === 'before' ? ['end', 'start'] : ['start', 'end'];
+        const [originX, originFallbackX]: HorizontalConnectionPos[] = this.popover.positionX === "before" ? ["end", "start"] : ["start", "end"];
 
-        const [overlayY, overlayFallbackY]: VerticalConnectionPos[] =
-          this.popover.positionY === 'above' ? ['bottom', 'top'] : ['top', 'bottom'];
+        const [overlayY, overlayFallbackY]: VerticalConnectionPos[] = this.popover.positionY === "above" ? ["bottom", "top"] : ["top", "bottom"];
 
         // let originY = overlayY;
         // let fallbackOriginY = overlayFallbackY;
@@ -476,21 +458,21 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
 
         /** Reverse overlayY and fallbackOverlayY when overlapTrigger is false */
         if (!this.popover.overlapTrigger) {
-          originY = overlayY === 'top' ? 'bottom' : 'top';
-          originFallbackY = overlayFallbackY === 'top' ? 'bottom' : 'top';
+            originY = overlayY === "top" ? "bottom" : "top";
+            originFallbackY = overlayFallbackY === "top" ? "bottom" : "top";
         }
 
         let offsetX = 0;
         let offsetY = 0;
 
         if (this.popover.targetOffsetX && !isNaN(Number(this.popover.targetOffsetX))) {
-          offsetX = Number(this.popover.targetOffsetX);
-          // offsetX = -16;
+            offsetX = Number(this.popover.targetOffsetX);
+            // offsetX = -16;
         }
 
         if (this.popover.targetOffsetY && !isNaN(Number(this.popover.targetOffsetY))) {
-          offsetY = Number(this.popover.targetOffsetY);
-          // offsetY = -10;
+            offsetY = Number(this.popover.targetOffsetY);
+            // offsetY = -10;
         }
 
         /**
@@ -499,46 +481,47 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
          * If undefined defaults to the trigger element reference.
          */
         let element = this._elementRef;
-        if (typeof this.targetElement !== 'undefined') {
+        if (typeof this.targetElement !== "undefined") {
             this.popover.containerPositioning = true;
             element = this.targetElement._elementRef;
         }
 
-        return this._overlay.position()
-          .flexibleConnectedTo(element)
-          .withLockedPosition(true)
-          .withPositions([
-            {
-                originX,
-                originY,
-                overlayX,
-                overlayY,
-                offsetY
-            },
-            {
-                originX: originFallbackX,
-                originY,
-                overlayX: overlayFallbackX,
-                overlayY,
-                offsetY
-            },
-            {
-              originX,
-              originY: originFallbackY,
-              overlayX,
-              overlayY: overlayFallbackY,
-              offsetY: -offsetY
-            },
-            {
-              originX: originFallbackX,
-              originY: originFallbackY,
-              overlayX: overlayFallbackX,
-              overlayY: overlayFallbackY,
-              offsetY: -offsetY
-            }
-          ])
-          .withDefaultOffsetX(offsetX)
-          .withDefaultOffsetY(offsetY);
+        return this._overlay
+            .position()
+            .flexibleConnectedTo(element)
+            .withLockedPosition(true)
+            .withPositions([
+                {
+                    originX,
+                    originY,
+                    overlayX,
+                    overlayY,
+                    offsetY,
+                },
+                {
+                    originX: originFallbackX,
+                    originY,
+                    overlayX: overlayFallbackX,
+                    overlayY,
+                    offsetY,
+                },
+                {
+                    originX,
+                    originY: originFallbackY,
+                    overlayX,
+                    overlayY: overlayFallbackY,
+                    offsetY: -offsetY,
+                },
+                {
+                    originX: originFallbackX,
+                    originY: originFallbackY,
+                    overlayX: overlayFallbackX,
+                    overlayY: overlayFallbackY,
+                    offsetY: -offsetY,
+                },
+            ])
+            .withDefaultOffsetX(offsetX)
+            .withDefaultOffsetY(offsetY);
     }
 
     private _cleanUpSubscriptions(): void {
@@ -549,11 +532,11 @@ export class PopoverTrigger implements AfterViewInit, OnDestroy { // tslint:disa
             this._positionSubscription.unsubscribe();
         }
         if (this._detachmentsSubscription) {
-          this._detachmentsSubscription.unsubscribe();
+            this._detachmentsSubscription.unsubscribe();
         }
     }
 
-    @HostListener('mousedown', ['$event']) _handleMousedown(event: MouseEvent): void {
+    @HostListener("mousedown", ["$event"]) _handleMousedown(event: MouseEvent): void {
         if (event && !isFakeMousedownFromScreenReader(event)) {
             this._openedByMouse = true;
         }

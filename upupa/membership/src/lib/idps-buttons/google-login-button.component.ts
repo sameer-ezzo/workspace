@@ -2,7 +2,6 @@ import { Component, input, output, inject, ElementRef, SimpleChanges } from "@an
 import { IdProviderService, AuthService } from "@upupa/auth";
 
 @Component({
-    standalone: true,
     selector: "google-id-provider",
     template: ` @if (!this.idp().canRender) {
         <button (click)="auth.signinWithProvider(idp().IdpName)" class="{{ idp().IdpName }}">

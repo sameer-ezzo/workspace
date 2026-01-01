@@ -7,7 +7,6 @@ import { UploadClient } from "@upupa/upload";
 import { ImageViewerComponent } from "@upupa/dynamic-form-material-theme";
 
 @Component({
-    standalone: true,
     // imports: [NgStyle],
     styles: `
         .cell-image {

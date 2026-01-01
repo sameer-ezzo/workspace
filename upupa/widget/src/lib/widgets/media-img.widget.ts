@@ -10,7 +10,7 @@ class ImageWidgetSettings {
 
 @Component({
     selector: "media-img-widget",
-    standalone: true,
+
     template: ` <img [src]="img()" [class]="cssClass()" /> `,
 })
 export class MediaImageWidget {

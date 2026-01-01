@@ -12,7 +12,6 @@ import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
-    standalone: true,
     selector: "mat-form-autocomplete-text-input",
     templateUrl: "./autocomplete-text.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,

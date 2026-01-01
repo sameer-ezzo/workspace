@@ -2,7 +2,6 @@ import { Directive, output } from "@angular/core";
 
 @Directive({
     selector: "[load]",
-    standalone: true,
 })
 export class LoadDirective {
     load = output();

@@ -27,7 +27,6 @@ import { toObservable, toSignal } from "@angular/core/rxjs-interop";
 
 @Directive({
     selector: "[buttonControl]",
-    standalone: true,
 })
 export class ButtonControl implements OnChanges {
     buttonControl = input<AbstractControl | undefined>(undefined);

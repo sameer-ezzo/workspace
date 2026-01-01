@@ -3,7 +3,6 @@ import { Directive, ElementRef, Inject, NgZone, PLATFORM_ID, inject, input } fro
 
 @Directive({
     selector: "[focus]",
-    standalone: true,
 })
 export class FocusDirective {
     readonly focus = input(false);

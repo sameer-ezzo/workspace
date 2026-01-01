@@ -51,7 +51,6 @@ import { deepAssign } from "@noah-ark/common";
 @Pipe({
     name: "orderedKeyValue",
     pure: true,
-    standalone: true,
 })
 export class OrderedKeyValuePipe extends KeyValuePipe {
     override transform(value: any, ...args: any[]): any {

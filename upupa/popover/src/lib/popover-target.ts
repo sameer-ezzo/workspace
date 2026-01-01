@@ -1,13 +1,11 @@
-import { Directive, ElementRef } from '@angular/core';
-
+import { Directive, ElementRef } from "@angular/core";
 
 @Directive({
-  selector: 'popover-target, [popoverTarget]',
-  exportAs: 'popoverTarget',
-  standalone: true,
+    selector: "popover-target, [popoverTarget]",
+    exportAs: "popoverTarget",
 })
-export class PopoverTarget { // tslint:disable-line:directive-class-suffix
+export class PopoverTarget {
+    // tslint:disable-line:directive-class-suffix
 
-  constructor(public _elementRef: ElementRef) { }
-
+    constructor(public _elementRef: ElementRef) {}
 }

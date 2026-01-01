@@ -50,7 +50,7 @@ An Angular component library for integrating the block-style [Editor.js](https:/
 
     @Component({
       selector: 'app-my-page',
-      standalone: true,
+      
       imports: [ EditorJsInputComponent, ReactiveFormsModule /* or FormsModule */ ],
       // ...
     })
@@ -88,7 +88,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-editor-example',
-  standalone: true,
+  
   imports: [CommonModule, ReactiveFormsModule, EditorJsInputComponent],
   templateUrl: './editor-example.component.html' // Contains the HTML above
 })

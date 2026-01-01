@@ -43,7 +43,7 @@ A simple Angular component for rendering buttons based on `ActionDescriptor` obj
 
     @Component({
       selector: 'app-my-actions',
-      standalone: true,
+      
       imports: [
         MatBtnComponent,
         // Required Material modules for MatBtnComponent:
@@ -83,7 +83,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
 @Component({
   selector: 'app-button-example',
-  standalone: true,
+  
   imports: [
     MatBtnComponent,
     MatButtonModule,

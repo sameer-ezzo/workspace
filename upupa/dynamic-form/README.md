@@ -64,7 +64,7 @@ A library for dynamically generating forms in Angular applications.
 
     @Component({
       selector: 'app-my-feature',
-      standalone: true,
+      
       imports: [DynamicFormComponent], // Import the component
       template: `
         <h2>Dynamic Form Example</h2>
@@ -150,7 +150,7 @@ import { UserProfileViewModel } from './user-profile.viewmodel'; // Import the V
 
 @Component({
   selector: 'app-profile-editor',
-  standalone: true,
+  
   imports: [DataFormComponent], // Import DataFormComponent
   template: `
     <h2>Edit Profile</h2>
@@ -266,7 +266,7 @@ import { FormScheme } from '@upupa/dynamic-form';
 
 @Component({
   selector: 'app-signup-wizard',
-  standalone: true,
+  
   imports: [CollectorComponent], // Import CollectorComponent
   template: `
     <h2>Signup Wizard - Step {{ currentPage() + 1 }}</h2>

@@ -59,7 +59,7 @@ An Angular library for handling authorization based on rules and user principles
 
     @Component({
       // ...
-      standalone: true,
+      
       imports: [ AuthzDirective, /* ... other imports */ ],
       // ...
     })

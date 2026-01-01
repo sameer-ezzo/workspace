@@ -1,18 +1,17 @@
-import { Component, effect, inject, input, model } from '@angular/core';
-import { ClientDataSource, DataAdapter, NormalizedItem } from '@upupa/data';
+import { Component, effect, inject, input, model } from "@angular/core";
+import { ClientDataSource, DataAdapter, NormalizedItem } from "@upupa/data";
 
-import { Tag } from '../tag.model';
-import { TagsService } from '../tags.service';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { Tag } from "../tag.model";
+import { TagsService } from "../tags.service";
+import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
 
-@Component({ standalone: true,
-    selector: 'tags-chips-input',
-    templateUrl: './tags-chips-input.component.html',
-    styleUrls: ['./tags-chips-input.component.scss'],
+@Component({
+    selector: "tags-chips-input",
+    templateUrl: "./tags-chips-input.component.html",
+    styleUrls: ["./tags-chips-input.component.scss"],
 })
 export class TagsChipsInputComponent {
     // readonly = input<boolean>(false);
-
     // private readonly tagsService = inject(TagsService);
     // private readonly tagsDs = new ClientDataSource([]);
     // override readonly adapter = model(
@@ -26,7 +25,6 @@ export class TagsChipsInputComponent {
     //         },
     //     })
     // );
-
     // parentPath = input<string>();
     // constructor() {
     //     super();
@@ -43,31 +41,25 @@ export class TagsChipsInputComponent {
     // //     this._parentPath = v;
     // //     this._refresh();
     // // }
-
     // private readonly _refresh = () => {
     //     this.tagsService.getTags(this.parentPath()).subscribe((tags) => {
     //         this.tagsDs.all = tags.slice();
     //         this.adapter().refresh();
     //     });
     // };
-
     // override remove(item: NormalizedItem): void {
     //     this.value.set(this.value().filter((v) => v !== item.key));
     //     this.markAsTouched();
     //     this.propagateChange();
     // }
-
     // optionSelected(event: MatAutocompleteSelectedEvent) {
     //     const v = event.option.value;
     //     super.selectionChange(v);
     // }
-
     // override async add(value: any): Promise<void> {
     //     if (!(value || '').length) return;
     //     if (this.canAdd() !== true) return;
-
     //     const chip = value;
-
     //     let nTag = (await this.adapter().getItems(chip))?.[0];
     //     if (!nTag) {
     //         const tag = await this.tagsService.createTag(

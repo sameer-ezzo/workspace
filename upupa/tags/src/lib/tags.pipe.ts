@@ -5,7 +5,7 @@ import { AsyncPipe } from "@angular/common";
 
 @Pipe({
     name: "tags",
-    standalone: true,
+
     pure: false,
 })
 export class TagsPipe {

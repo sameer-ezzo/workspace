@@ -1,13 +1,10 @@
-import { Directive, Input } from '@angular/core';
-import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@angular/forms';
-
+import { Directive, Input } from "@angular/core";
+import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 
 @Directive({
     selector: `[maximum]`,
-    standalone: true,
-    providers: [
-        { provide: NG_VALIDATORS, useExisting: MaxValidator, multi: true }
-    ]
+
+    providers: [{ provide: NG_VALIDATORS, useExisting: MaxValidator, multi: true }],
 })
 export class MaxValidator implements Validator {
     @Input() maximum: number;
@@ -21,7 +18,6 @@ export class MaxValidator implements Validator {
     }
 
     ngOnChanges() {
-
         this.maximum = this._toNumber(this.maximum);
 
         if (this.maximum != null && this.control) {
@@ -30,15 +26,14 @@ export class MaxValidator implements Validator {
 
             if (error) this.control.setErrors(Object.assign(currentErrors || {}, error));
             else if (currentErrors) {
-                delete currentErrors['maximum'];
+                delete currentErrors["maximum"];
                 if (Object.keys(currentErrors).length) this.control.setErrors(Object.assign({}, currentErrors));
                 else this.control.setErrors(null);
             }
         }
     }
 
-
-    private _toNumber(n: any): number | null { return isNaN(+n) ? null : +n; }
-
-
+    private _toNumber(n: any): number | null {
+        return isNaN(+n) ? null : +n;
+    }
 }

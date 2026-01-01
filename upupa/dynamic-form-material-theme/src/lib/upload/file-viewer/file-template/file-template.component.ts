@@ -33,7 +33,7 @@ const actions = [
             text: "Download",
             icon: "get_app",
             menu: true,
-        } as ActionDescriptor),
+        }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
             name: "copy_url",
@@ -41,7 +41,7 @@ const actions = [
             text: "Copy Url",
             icon: "content_copy",
             menu: true,
-        } as ActionDescriptor),
+        }) as ActionDescriptor,
     (item: File | FileInfo) =>
         ({
             name: "remove",
@@ -49,7 +49,7 @@ const actions = [
             text: "Remove",
             icon: "delete",
             menu: true,
-        } as ActionDescriptor),
+        }) as ActionDescriptor,
 ];
 // class="file hoverable" [class.loading]="fileVm.uploadTask"
 @Component({
@@ -213,7 +213,7 @@ export class FileTemplateComponent {
 
 @Component({
     selector: "image-viewer",
-    standalone: true,
+
     template: `<div class="image-viewer"><img [src]="path()" alt="" /></div>`,
     styles: [
         `

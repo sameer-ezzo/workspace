@@ -14,7 +14,7 @@ export function _defaultForm(parentComponent: any) {
     return control;
 }
 
-@Component({ standalone: true, template: "" })
+@Component({ template: "" })
 export class InputBaseComponent<T = any> implements ControlValueAccessor {
     name = input<string, string>(`field_${Date.now()}`, {
         alias: "fieldName",

@@ -48,7 +48,7 @@ An Angular library for managing and displaying hierarchical tags or keywords.
 
     @Component({
       selector: 'app-my-feature',
-      standalone: true,
+      
       imports: [
         TagsChipsInputComponent,
         ReactiveFormsModule,
@@ -97,7 +97,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-tags-example',
-  standalone: true,
+  
   imports: [
     CommonModule,
     ReactiveFormsModule,

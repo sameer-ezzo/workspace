@@ -3,7 +3,6 @@ import { Injector, Pipe, PipeTransform } from "@angular/core";
 @Pipe({
     name: "dynamic",
     pure: true,
-    standalone: true,
 })
 export class DynamicPipe implements PipeTransform {
     constructor(private injector: Injector) {}
@@ -21,6 +20,5 @@ export class DynamicPipe implements PipeTransform {
 @Pipe({
     name: "impure",
     pure: false,
-    standalone: true,
 })
 export class NonePureDynamicPipe extends DynamicPipe {}

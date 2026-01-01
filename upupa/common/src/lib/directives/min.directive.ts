@@ -1,13 +1,10 @@
-import { Directive, Input } from '@angular/core';
-import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@angular/forms';
-
+import { Directive, Input } from "@angular/core";
+import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 
 @Directive({
     selector: `[minimum]`,
-    standalone: true,
-    providers: [
-        { provide: NG_VALIDATORS, useExisting: MinValidator, multi: true }
-    ]
+
+    providers: [{ provide: NG_VALIDATORS, useExisting: MinValidator, multi: true }],
 })
 export class MinValidator implements Validator {
     @Input() minimum: number;
@@ -21,7 +18,6 @@ export class MinValidator implements Validator {
     }
 
     ngOnChanges() {
-
         this.minimum = this._toNumber(this.minimum);
 
         if (this.minimum != null && this.control) {
@@ -30,15 +26,14 @@ export class MinValidator implements Validator {
 
             if (error) this.control.setErrors(Object.assign(currentErrors || {}, error));
             else if (currentErrors) {
-                delete currentErrors['minimum'];
+                delete currentErrors["minimum"];
                 if (Object.keys(currentErrors).length) this.control.setErrors(Object.assign({}, currentErrors));
                 else this.control.setErrors(null);
             }
         }
     }
 
-
-    private _toNumber(n: any): number | null { return isNaN(+n) ? null : +n; }
-
-
+    private _toNumber(n: any): number | null {
+        return isNaN(+n) ? null : +n;
+    }
 }

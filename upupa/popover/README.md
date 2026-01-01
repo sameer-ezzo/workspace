@@ -41,7 +41,7 @@ An Angular library for creating flexible popover elements, built using Angular C
 
     @Component({
       selector: 'app-my-feature',
-      standalone: true,
+      
       imports: [
         PopoverTrigger,    // Directive for the trigger element
         PopoverComponent,  // The popover panel itself
@@ -116,7 +116,7 @@ import { MatButtonModule } from '@angular/material/button'; // Example using mat
 
 @Component({
   selector: 'app-popover-example',
-  standalone: true,
+  
   imports: [
     PopoverTrigger,
     PopoverComponent,

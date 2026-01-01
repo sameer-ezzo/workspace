@@ -13,8 +13,7 @@ import { firstValueFrom } from "rxjs";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
-
-@Component({ standalone: true,
+@Component({
     selector: "file-input",
     templateUrl: "./file-input.component.html",
     styleUrls: ["./file-input.component.scss"],

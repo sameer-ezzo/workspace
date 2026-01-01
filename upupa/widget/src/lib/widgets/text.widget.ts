@@ -9,7 +9,7 @@ class TextWidgetSettings {
 
 @Component({
     selector: "text-widget",
-    standalone: true,
+
     template: ` {{ text() }} `,
 })
 export class TextWidget {

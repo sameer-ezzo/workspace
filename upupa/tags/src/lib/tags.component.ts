@@ -23,7 +23,6 @@ import { MatTreeComponent } from "@upupa/dynamic-form-material-theme";
     selector: "tags-tree",
     template: ``,
     styles: [],
-    standalone: true,
 })
 export class TagsComponent implements OnInit {
     @ViewChild("treeInput") treeInput: MatTreeComponent;

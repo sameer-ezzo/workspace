@@ -5,7 +5,7 @@ import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultSignupFormFields } from "../default-values";
 import { Condition } from "@noah-ark/expression-engine";
 
-@Component({ standalone: true,
+@Component({
     selector: "password-input",
     styleUrls: ["./password-input.component.scss"],
     templateUrl: "./password-input.component.html",
