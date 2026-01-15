@@ -4,7 +4,6 @@ export * from "./lib/model";
 export * from "./lib/tag.schema";
 export * from "./lib/change-schema";
 export * from "./lib/data.module";
-export * from "./lib/data.svr";
 export * from "./lib/data.change.service";
 export * from "./lib/data-changed-event";
 export * from "./lib/data-options";

@@ -7,7 +7,7 @@ import { HttpException, HttpStatus, Inject, Injectable, OnApplicationShutdown, O
 import { JsonPointer } from "@noah-ark/json-patch";
 
 import { Patch } from "./model";
-import { DbConnectionOptions } from "./data-options";
+import type { DbConnectionOptions } from "./data-options";
 import { Broker } from "@ss/common";
 import { logger } from "./logger";
 

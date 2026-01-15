@@ -33,6 +33,22 @@ export function loggerFactory(scope: string, level: levels = defaultLevel as lev
 }
 
 import { LoggerService } from "@nestjs/common";
+
+function isEpipe(err: unknown): boolean {
+    return typeof err === "object" && err !== null && ("code" in err ? (err as any).code === "EPIPE" : false);
+}
+
+function safeConsole(fn: (...args: any[]) => void, ...args: any[]) {
+    try {
+        fn(...args);
+    } catch (err) {
+        // If the consumer closes stdout/stderr (common when piping or when parent process exits),
+        // Node can throw EPIPE on console.*. Ignore it so the server can keep running.
+        if (isEpipe(err)) return;
+        throw err;
+    }
+}
+
 export class NestLogger implements LoggerService {
     constructor(
         public scope?: string,
@@ -40,10 +56,10 @@ export class NestLogger implements LoggerService {
     ) {}
 
     log(message: any, ...optionalParams: any[]) {
-        console.log(colors.black, colors.green, ...this._format("info", message, optionalParams));
+        safeConsole(console.log, colors.black, colors.green, ...this._format("info", message, optionalParams));
     }
     info(message: any, ...optionalParams: any[]) {
-        if (this.logLevel >= levels.info) console.log(colors.black, colors.green, ...this._format("info", message, optionalParams));
+        if (this.logLevel >= levels.info) safeConsole(console.log, colors.black, colors.green, ...this._format("info", message, optionalParams));
     }
 
     error(message: any, ...optionalParams: any[]) {
@@ -56,19 +72,19 @@ export class NestLogger implements LoggerService {
         } else if (message instanceof Error) {
             e = tame(message);
         }
-        console.error(colors.black, colors.red, ...this._format("error", e, optionalParams));
+        safeConsole(console.error, colors.black, colors.red, ...this._format("error", e, optionalParams));
     }
 
     warn(message: any, ...optionalParams: any[]) {
-        if (this.logLevel >= levels.warn) console.warn(colors.black, colors.yellow, ...this._format("warn", message, optionalParams));
+        if (this.logLevel >= levels.warn) safeConsole(console.warn, colors.black, colors.yellow, ...this._format("warn", message, optionalParams));
     }
 
     debug?(message: any, ...optionalParams: any[]) {
-        if (this.logLevel >= levels.debug) console.debug(colors.black, colors.blue, ...this._format("debug", message, optionalParams));
+        if (this.logLevel >= levels.debug) safeConsole(console.debug, colors.black, colors.blue, ...this._format("debug", message, optionalParams));
     }
 
     verbose(message: any, ...optionalParams: any[]) {
-        if (this.logLevel >= levels.verbose) console.log(colors.black, colors.magenta, ...this._format("verbose", message, optionalParams));
+        if (this.logLevel >= levels.verbose) safeConsole(console.log, colors.black, colors.magenta, ...this._format("verbose", message, optionalParams));
     }
 
     _format(level: string, message: any, ...args: any[]) {

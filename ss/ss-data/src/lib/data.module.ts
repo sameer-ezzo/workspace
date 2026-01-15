@@ -1,6 +1,6 @@
 import { DynamicModule, FactoryProvider, Inject, OnModuleInit, Provider } from "@nestjs/common";
 import { Broker } from "@ss/common";
-import { DbConnectionOptions, DbConnectionOptionsFactory } from "./data-options";
+import { DbConnectionOptionsFactory, type DbConnectionOptions } from "./data-options";
 import { DataService } from "./data.svr";
 import { DatabaseInfo, DatabasesOptions, IDbMigration } from "./databases-collections";
 import { logger } from "./logger";

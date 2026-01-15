@@ -1,5 +1,5 @@
 import { DbModelDefinitionInfo } from "./db-collection-info";
-import { DbConnectionOptions } from "./data-options";
+import type { DbConnectionOptions } from "./data-options";
 import { DataService } from "./data.svr";
 import { Schema } from "mongoose";
 
