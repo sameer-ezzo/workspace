@@ -34,6 +34,7 @@ import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
 import { MigrationsService } from "./migrations.svr";
 import { IDbMigration } from "./databases-collections";
+import { ObjectId } from "mongodb";
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
     autoIndex: true,
@@ -799,7 +800,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         if (instance === "Number") return +value;
         if (instance === "ObjectId")
             try {
-                return new mongoose.Types.ObjectId(value);
+                return new ObjectId(value);
             } catch (error) {
                 return undefined;
             }

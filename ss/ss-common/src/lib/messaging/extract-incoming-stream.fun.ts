@@ -26,7 +26,7 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
                     resolve({ ...msg, streams } as unknown as IncomingMessageStream);
                 };
 
-                const contentType = req.get("content-type")?.toLocaleLowerCase();
+                const contentType = (req.headers['content-type'] as string)?.toLocaleLowerCase();
 
                 if (contentType.startsWith("multipart/") || contentType !== "application/json") {
                     const busboy = Busboy({ headers: req.headers });
