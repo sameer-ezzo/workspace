@@ -15,7 +15,7 @@ export class TemplateBase<T = any> {
 
 @Component({
     selector: 'upupa-template',
-    standalone: true,
+    
     imports: [],
     template: ``,
 })
@@ -51,7 +51,7 @@ export class TemplateComponent<T = any> implements OnDestroy {
 
         const componentType = Component({
             ...options,
-            standalone: true,
+            
             imports: [CommonModule],
         })(TemplateBase)
 
@@ -83,7 +83,7 @@ export class TemplateComponent<T = any> implements OnDestroy {
 
 // @Component({
 //     selector: 'app-root',
-//     standalone: true,
+//     
 //     imports: [TemplateComponent],
 //     template: `<upupa-template [template]="template" [model]="model" [handler]="this" ></upupa-template>`,
 // })

@@ -4,7 +4,7 @@ import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@an
 
 @Directive({
     selector: `[minimum]`,
-    standalone: true,
+    
     providers: [
         { provide: NG_VALIDATORS, useExisting: MinValidator, multi: true }
     ]

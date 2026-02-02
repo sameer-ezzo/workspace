@@ -16,7 +16,7 @@ import { MatBtnComponent } from '@upupa/mat-btn';
 
 @Component({
   selector: 'confirm',
-  standalone: true,
+  
   imports: [MatDialogModule, MatBtnComponent],
   templateUrl: 'confirm.component.html',
   styleUrls: ['confirm.component.scss'],

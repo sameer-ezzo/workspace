@@ -5,7 +5,7 @@ import { map } from "rxjs"
 
 @Pipe({
     name: '_i18n',
-    standalone: true,
+    
     pure: false
 })
 

@@ -47,7 +47,7 @@ import { UpupaDialogActionContext, UpupaDialogPortal } from './dialog.service';
 
 @Component({
   selector: 'upupa-dialog',
-  standalone: true,
+  
   imports: [
     MatDialogModule,
     MatBtnComponent,

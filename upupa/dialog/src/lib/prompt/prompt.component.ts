@@ -44,7 +44,7 @@ import { UpupaDialogPortal } from '../dialog.service';
       }
     `,
   ],
-  standalone: true,
+  
   imports: [
     MatDialogModule,
     MatInputModule,
