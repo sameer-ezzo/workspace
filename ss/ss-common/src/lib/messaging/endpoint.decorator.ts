@@ -1,4 +1,4 @@
-import { applyDecorators, HttpException, HttpStatus } from '@nestjs/common'
+import { applyDecorators } from '@nestjs/common'
 import { HttpEndpoint as _HttpEndpoint } from './http-endpoint.decorator'
 import { HttpMethod } from "./model"
 import { CommandHandler } from "./command-endpoint.decorator"
@@ -45,7 +45,7 @@ export type EndPointOptions = {
 }
 
 export function EndPoint(options: string | EndPointOptions): MethodDecorator {
-    if (!options) throw new HttpException('MISSING_ARGUMENT_OPTIONS', HttpStatus.INTERNAL_SERVER_ERROR)
+    if (!options) throw new Error('MISSING_ARGUMENT_OPTIONS')
 
     if (typeof options === 'string') {
         const path = options

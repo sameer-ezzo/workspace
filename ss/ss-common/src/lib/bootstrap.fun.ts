@@ -47,8 +47,6 @@ export type AppOptions = {
 };
 
 const defaultSocketServerOptions: Partial<ServerOptions> = {
-    pingTimeout: 300,
-    allowEIO3: true,
     connectTimeout: 5000,
 };
 

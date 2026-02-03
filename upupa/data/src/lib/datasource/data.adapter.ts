@@ -388,8 +388,12 @@ export class DataAdapter<T = any> extends DataAdapterStore<any>() {
         const id = this.normalize(item).id;
         const n = this.entities().find((x) => x.id === id);
         const result = await this.dataSource.delete(item);
-        patchState(this, removeEntities([n.id]));
-        this._events.next(new DataAdapterDeleteItemEvent(n));
+
+        if (n) {
+            patchState(this, removeEntities([n.id]));
+            this._events.next(new DataAdapterDeleteItemEvent(n));
+        }
+
         if (opt.refresh || this.autoRefresh()) await this.refresh();
         return result;
     }

@@ -167,11 +167,11 @@ export class StorageService {
         const segments = path.replace(/\\/g, "/").split(separator);
         const filename = segments[segments.length - 1];
         const ext = Path.extname(filename);
-        if (!ext) throw new HttpException("InvalidPath", HttpStatus.BAD_REQUEST);
+        if (!ext) throw new Error("INVALID_PATH");
         const _id = filename.substring(0, filename.length - ext.length);
 
         const doc = await this.data.get<File>(`storage/${_id}`);
-        if (!doc) throw new HttpException("No file found", HttpStatus.NOT_FOUND);
+        if (!doc) throw new Error("NOT_FOUND");
 
         await this.data.delete(`storage/${_id}`, principle);
         const fPath = join(getStorageDir(), doc.path);

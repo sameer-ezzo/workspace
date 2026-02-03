@@ -1,6 +1,6 @@
 import Busboy from "busboy";
 import { Request, Response } from "express";
-import { ExecutionContext, HttpException, HttpStatus } from "@nestjs/common";
+import { ExecutionContext } from "@nestjs/common";
 
 import { ExtractIncomingMessage } from "./extract-incoming-message.fun";
 import { IncomingMessageStream, PostedFile, File } from "@noah-ark/common";
@@ -46,7 +46,7 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
                             res.status(403).send({ message: "Invalid path or file extension", path, extension });
                             res.end();
                             req.socket.destroy();
-                            // throw new HttpException("Invalid path or file extension", HttpStatus.FORBIDDEN);
+                            // throw new Error("Invalid path or file extension");
                         }
 
                         const postedFile = { fieldname: field, stream: file, originalname: originalname, encoding, mimetype: mimeType } as PostedFile;
@@ -74,6 +74,6 @@ export async function ExtractMessageStream(streamHandler: PostedFileHandler, ctx
         //case 'rpc': return ctx.switchToRpc().getData() as IncomingMessage
         //case 'ws': return ctx.switchToWs().getData() as IncomingMessage
         default:
-            throw new HttpException("UNSUPPORTED_TRANSPORT", HttpStatus.BAD_GATEWAY);
+            throw new Error("UNSUPPORTED_TRANSPORT");
     }
 }

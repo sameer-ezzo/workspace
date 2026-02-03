@@ -28,9 +28,6 @@ export enum levels {
 }
 const defaultLevel =
     process.env["LOG_LEVEL"] && !isNaN(+process.env["LOG_LEVEL"]) && levels[+process.env["LOG_LEVEL"]] !== undefined ? levels[+process.env["LOG_LEVEL"]] : levels.info;
-export function loggerFactory(scope: string, level: levels = defaultLevel as levels): NestLogger {
-    return new NestLogger(scope, level);
-}
 
 import { LoggerService } from "@nestjs/common";
 
@@ -94,6 +91,10 @@ export class NestLogger implements LoggerService {
             ? [{ level, time, message, args, scope: this.scope }]
             : [`[${level}]`, colors.black, colors.white, `[${time}]`, message, ...args, colors.black, colors.cyan, `[${this.scope}]`];
     }
+}
+
+export function loggerFactory(scope: string, level: levels = defaultLevel as levels): NestLogger {
+    return new NestLogger(scope, level);
 }
 
 export const logger = loggerFactory(process.env["APP_NAME"] ?? "Nest");

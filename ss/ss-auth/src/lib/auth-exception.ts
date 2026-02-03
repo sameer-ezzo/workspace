@@ -1,4 +1,3 @@
-import { HttpException, HttpStatus } from "@nestjs/common"
 
 export namespace AuthExceptions {
     export const InvalidSecurityCode = "INVALID_SECURITY_CODE"
@@ -17,10 +16,8 @@ export namespace AuthExceptions {
     export const TooManyAttempts = "TOO_MANY_ATTEMPTS"
     export const INVALID_PASSWORDLESS_SIGNIN_REQUEST = "INVALID_PASSWORDLESS_SIGNIN_REQUEST"
 }
-export class AuthException extends HttpException {
+export class AuthException extends Error {
     constructor(public readonly code: string, message?: any) {
-        super(null, HttpStatus.UNAUTHORIZED)
-        this.message = message ?? code
-
+        super(message ?? code)
     }
 }

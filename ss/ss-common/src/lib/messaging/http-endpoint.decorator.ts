@@ -1,4 +1,4 @@
-import { All, applyDecorators, Delete, Get, HttpException, HttpStatus, Patch, Post, Put, Type } from '@nestjs/common'
+import { All, applyDecorators, Delete, Get, Patch, Post, Put, Type } from '@nestjs/common'
 import { EndpointsInfo } from "./endpoints-info.fun"
 import { EndPointOptions } from './endpoint.decorator'
 import { ENDPOINT_OPERATION, ENDPOINT_PATH } from './constants';
@@ -18,7 +18,7 @@ export function HttpEndpoint(route: EndPointOptions['http'], meta?: Pick<EndPoin
         case 'PATCH': httpDecorator = Patch(path); break
         case 'DELETE': httpDecorator = Delete(path); break
         case 'ALL': httpDecorator = All(path); break
-        default: throw new HttpException('Invalid http method', HttpStatus.INTERNAL_SERVER_ERROR)
+        default: throw new Error('INVALID_HTTP_METHOD')
     }
 
     return applyDecorators((target: any, property: string, descriptor: PropertyDescriptor) => {

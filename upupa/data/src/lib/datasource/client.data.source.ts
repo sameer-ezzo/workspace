@@ -100,6 +100,9 @@ export class SignalDataSource<T = any, R = T> implements TableDataSource<T, Part
         const key = this._key(item);
         const entries = this.entries();
         const ref = entries.get(key);
+        if (!ref) {
+           return Promise.resolve(item);
+        }
         this._all.update((v) => (v ?? []).filter((x) => x !== ref));
         return Promise.resolve(item);
     }
