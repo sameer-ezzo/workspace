@@ -93,20 +93,28 @@ export class ApiDataSource<T extends { _id?: unknown } = any> implements TableDa
 
     async put(item: T, value: Partial<T>) {
         const key = item?.[this.key];
-        if (key == undefined) throw new Error("Item has no key");
+        if (key == undefined) throw new Error("MISSING_KEY");
         const document = await this.dataService.put(`${this.pathname}/${key}`, value);
         return document as T;
     }
 
     patch(item: T, patches: Patch[]) {
         const key = item?.[this.key];
-        if (key == undefined) throw new Error("Item has no key");
+        if (key == undefined) throw new Error("MISSING_KEY");
         return this.dataService.patch(`${this.pathname}/${key}`, patches);
     }
-    delete(item: T) {
+    
+    async delete(item: T) {
         const key = item?.[this.key];
-        if (key == undefined) throw new Error("Item has no key");
-        return this.dataService.delete(`${this.pathname}/${key}`);
+        if (key == undefined) throw new Error("MISSING_KEY");
+        try {
+            return await this.dataService.delete(`${this.pathname}/${key}`);
+        } catch (error: any) {
+             if (error?.status === 404) {
+                 return item;
+             }
+             throw error;
+         }
     }
 
     destroy?() {}

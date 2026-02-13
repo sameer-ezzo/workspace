@@ -18,6 +18,7 @@ import { PostedFile, File } from "@noah-ark/common";
 import mongoose from "mongoose";
 import { join } from "path";
 import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from "fs";
+import { ObjectId } from "mongodb";
 
 const separator = "/";
 
@@ -78,9 +79,9 @@ export function isFile(path: string) {
     return existsSync(p) && !isDir(path);
 }
 
-export function toObjectId(id: string): mongoose.Types.ObjectId | undefined {
+export function toObjectId(id: string): ObjectId | undefined {
     try {
-        return mongoose.Types.ObjectId.createFromHexString(id) as mongoose.Types.ObjectId;
+        return new ObjectId(id);
     } catch (error) {
         return undefined;
     }
@@ -103,7 +104,7 @@ export async function saveStreamToTmp(path: string, file: PostedFile): Promise<F
             segments.push(filename); //path originally points to dir so put the file name back
             ext = Path.extname(file.originalname);
             _id = file.originalname.substring(file.originalname.length - ext.length);
-            if (!toObjectId(_id)) _id = new mongoose.Types.ObjectId().toHexString();
+            if (!toObjectId(_id)) _id = new ObjectId().toHexString();
         }
 
         filename = _id + ext;
@@ -166,11 +167,11 @@ export class StorageService {
         const segments = path.replace(/\\/g, "/").split(separator);
         const filename = segments[segments.length - 1];
         const ext = Path.extname(filename);
-        if (!ext) throw new HttpException("InvalidPath", HttpStatus.BAD_REQUEST);
+        if (!ext) throw new Error("INVALID_PATH");
         const _id = filename.substring(0, filename.length - ext.length);
 
         const doc = await this.data.get<File>(`storage/${_id}`);
-        if (!doc) throw new HttpException("No file found", HttpStatus.NOT_FOUND);
+        if (!doc) throw new Error("NOT_FOUND");
 
         await this.data.delete(`storage/${_id}`, principle);
         const fPath = join(getStorageDir(), doc.path);

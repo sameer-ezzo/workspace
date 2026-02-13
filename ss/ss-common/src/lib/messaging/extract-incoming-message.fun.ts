@@ -1,4 +1,4 @@
-import { ExecutionContext, HttpException, HttpStatus } from "@nestjs/common";
+import { ExecutionContext } from "@nestjs/common";
 import { Request } from "express";
 import type { IncomingMessage } from "@noah-ark/common";
 import { EndpointsInfo } from "./endpoints-info.fun";
@@ -67,7 +67,7 @@ export function ExtractIncomingMessage(ctx: ExecutionContext): IncomingMessage {
         }
         default: {
             const n: never = transport;
-            throw new HttpException({ msg: "UNSUPPORTED_TRANSPORT", value: n }, HttpStatus.BAD_GATEWAY);
+            throw new Error("UNSUPPORTED_TRANSPORT");
         }
     }
 }

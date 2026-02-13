@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Inject, Redirect, Req, Request, Res, UseGuards } from "@nestjs/common";
-import { Response } from "express";
+
 import { AuthGuard } from "@nestjs/passport";
 
 import type { IncomingMessage, UserDevice } from "@noah-ark/common";
@@ -465,7 +465,7 @@ export class UsersController {
 
     @Authorize({ by: "anonymous", access: "grant" })
     @EndPoint({ http: { method: "POST", path: "" }, operation: "Login" })
-    public async signIn(@Res() res: Response, @Message() msg: IncomingMessage<SigninRequest>) {
+    public async signIn(@Res() res, @Message() msg: IncomingMessage<SigninRequest>) {
         try {
             const { access_token, refresh_token, reset_token } = await this._doSignIn(msg);
             if (reset_token) {
@@ -485,7 +485,7 @@ export class UsersController {
 
     @Authorize({ by: "user", access: "grant" })
     @EndPoint({ http: { method: "GET", path: "signout" }, operation: "Sign out" })
-    public async signOut(@Res() res: Response) {
+    public async signOut(@Res() res) {
         const { useCookies } = this.auth.options;
         if (useCookies?.enabled === true) {
             res.clearCookie(useCookies.cookieName, useCookies.options);

@@ -3,7 +3,7 @@ import { Model, Document } from "mongoose";
 
 import mongooseUniqueValidator from "mongoose-unique-validator";
 import { PathInfo } from "@noah-ark/path-matcher";
-import { HttpException, HttpStatus, Inject, Injectable, OnApplicationShutdown, OnModuleInit } from "@nestjs/common";
+import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from "@nestjs/common";
 import { JsonPointer } from "@noah-ark/json-patch";
 
 import { Patch } from "./model";
@@ -34,6 +34,7 @@ import { QueryParser } from "./api.query";
 import { DataChangedEvent } from "./data-changed-event";
 import { MigrationsService } from "./migrations.svr";
 import { IDbMigration } from "./databases-collections";
+import { ObjectId } from "mongodb";
 
 export const defaultMongoDbConnectionOptions: ConnectOptions = {
     autoIndex: true,
@@ -210,7 +211,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = typeof path === "string" ? PathInfo.parse(path) : path;
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         let projection: any = {};
@@ -240,7 +241,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             pathInfo = PathInfo.parse(path);
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(pathInfo.collection);
@@ -249,7 +250,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
         if (pathInfo.id) {
             const _id = this.convertToModelId(pathInfo.id, "_id", model, `func(${f}) ${path} ${q}`);
-            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+            if (!_id) throw new Error("INVALID_ID");
             query["_id"] = _id;
         }
 
@@ -272,7 +273,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             pathInfo = PathInfo.parse(path);
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(pathInfo.collection);
@@ -282,7 +283,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         let _id = undefined;
         if (pathInfo.id) {
             _id = this.convertToModelId(pathInfo.id, "_id", model, `agg ${path} ${q}`);
-            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+            if (!_id) throw new Error("INVALID_ID");
 
             pipeline.push({ $match: { _id } });
             if (query.select) pipeline.push({ $project: query.select });
@@ -409,7 +410,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             pathInfo = PathInfo.parse(path);
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(pathInfo.collection);
@@ -419,7 +420,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         let _id = undefined;
         if (pathInfo.id) {
             _id = this.convertToModelId(pathInfo.id, "_id", model, `agg ${path} ${q}`);
-            if (!_id) throw new HttpException({ body: "INVALID_ID" }, HttpStatus.NOT_FOUND);
+            if (!_id) throw new Error("INVALID_ID");
 
             pipeline.push({ $match: { _id } });
             if (query.select) pipeline.push({ $project: query.select });
@@ -507,7 +508,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = typeof path === "string" ? PathInfo.parse(path) : path;
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(segments.collection);
@@ -519,7 +520,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             else update.$push = newData;
 
             const document = await model.findById(segments.id);
-            if (!document) throw new HttpException("Not found", HttpStatus.NOT_FOUND);
+            if (!document) throw new Error("Not found");
 
             const result: any = await model.findByIdAndUpdate(segments.id, update, {
                 new: true,
@@ -543,7 +544,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
             if (!newData._id) newData._id = await this.generateId();
             else {
                 const old = await model.countDocuments({ _id: newData._id });
-                if (old) throw new HttpException("CANNOT_POST_OVER_EXISTING_DOCUMENT", HttpStatus.NOT_ACCEPTABLE);
+                if (old) throw new Error("CANNOT_POST_OVER_EXISTING_DOCUMENT");
             }
 
             const result: any = await model.findByIdAndUpdate(newData._id, newData, {
@@ -594,14 +595,14 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
     ): Promise<WriteResult<T>> {
         const segments = path.split("/").filter((s) => s);
         if (segments.length !== 2) {
-            throw new HttpException({ body: "INVALID_PATH_FOR_PATCH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH_FOR_PATCH");
         }
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
         const model = await this.getModel(collection);
         const doc = await model.findById(id).lean();
-        if (!doc) throw new HttpException({ body: "NOT_FOUND" }, HttpStatus.NOT_FOUND);
+        if (!doc) throw new Error("NOT_FOUND");
 
         patches ??= [];
         const directPatches = patches.filter((p) => p.path === "/");
@@ -653,7 +654,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
 
     toPatches<T = any>(path: string, value: any): { path: string; patches: Patch[] } {
         const segments = path.split("/").filter((s) => s);
-        if (segments.length < 2) throw new HttpException({ body: "INVALID_DOCUMENT_PATH" }, HttpStatus.BAD_REQUEST);
+        if (segments.length < 2) throw new Error("INVALID_DOCUMENT_PATH");
 
         const collection = <string>segments.shift();
         const id = <string>segments.shift();
@@ -673,11 +674,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = PathInfo.parse(path);
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(segments.collection);
-        if (!model) throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+        if (!model) throw new Error("INVALID_PATH");
         if (!segments.id) return this.post(path, value, user);
 
         const doc = await model.findById(segments.id).lean();
@@ -704,11 +705,11 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         try {
             segments = PathInfo.parse(path);
         } catch (error) {
-            throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+            throw new Error("INVALID_PATH");
         }
 
         const model = await this.getModel(segments.collection);
-        if (!model) throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+        if (!model) throw new Error("INVALID_PATH");
         let _id = undefined;
         if (segments.id) {
             _id = this.convertToModelId(segments.id, "_id", model, `Delete ${path}`);
@@ -736,7 +737,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
                 });
                 return { _id: segments.id, ...result } as WriteResult<T>;
             }
-        } else throw new HttpException({ body: "INVALID_PATH" }, HttpStatus.BAD_REQUEST);
+        } else throw new Error("INVALID_PATH");
     }
 
     async inflate<T extends { _id: any }>(
@@ -799,7 +800,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         if (instance === "Number") return +value;
         if (instance === "ObjectId")
             try {
-                return new mongoose.Types.ObjectId(value);
+                return new ObjectId(value);
             } catch (error) {
                 return undefined;
             }
