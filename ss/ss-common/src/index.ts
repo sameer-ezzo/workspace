@@ -28,3 +28,6 @@ export * from './lib/read-default-redis-client-config'
 
 export * from './lib/secret.fun'
 export * from './lib/messaging/constants'
+export * from './lib/errors/app.error'
+export * from './lib/errors/http-exception.filter'
+export * from './lib/errors/http-exception.mapper'

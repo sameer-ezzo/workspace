@@ -17,7 +17,7 @@ import { EditUserRolesFromViewModel } from "../edit-user-roles/edit-user-roles.f
 @Component({
     selector: "impersonate-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent]
+    imports: [MatIconModule, MatBtnComponent],
 })
 export class ImpersonateUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -41,7 +41,7 @@ export class ImpersonateUserButton extends DefaultTableCellTemplate {
 @Component({
     selector: "change-user-roles-button",
     template: `<mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent]
+    imports: [MatIconModule, MatBtnComponent],
 })
 export class ChangeUserRolesButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -76,7 +76,7 @@ export class ChangeUserRolesButton extends DefaultTableCellTemplate {
 @Component({
     selector: "reset-password-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent]
+    imports: [MatIconModule, MatBtnComponent],
 })
 export class ResetPasswordButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -105,7 +105,7 @@ export class ResetPasswordButton extends DefaultTableCellTemplate {
 @Component({
     selector: "delete-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent]
+    imports: [MatIconModule, MatBtnComponent],
 })
 export class DeleteUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
@@ -136,13 +136,13 @@ export class DeleteUserButton extends DefaultTableCellTemplate {
 @Component({
     selector: "ban-user-button",
     template: ` <mat-btn class="action" [buttonDescriptor]="btn()" [data]="[item()]" (action)="onAction($event)"></mat-btn> `,
-    imports: [MatIconModule, MatBtnComponent]
+    imports: [MatIconModule, MatBtnComponent],
 })
 export class BanUserButton extends DefaultTableCellTemplate {
     table = inject(DataTableComponent);
     adapter = this.table.adapter();
 
-    public readonly http = inject(HttpClient);
+    public readonly http: HttpClient = inject(HttpClient);
     public readonly auth = inject(AuthService);
     public readonly data = inject(DataService);
     public readonly snack = inject(SnackBarService);
@@ -171,6 +171,7 @@ export class BanUserButton extends DefaultTableCellTemplate {
         ) {
             const baseUrl = this.auth.baseUrl;
             const { document } = await firstValueFrom(this.http.post<{ document: UserBase }>(`${baseUrl}/lock`, { id, lock }));
+
             await this.adapter.refresh();
             if (document.disabled) this.snack.openSuccess(`User ${this.item().email} has been banned`);
             else this.snack.openSuccess(`User ${this.item().email} has been unbanned`);

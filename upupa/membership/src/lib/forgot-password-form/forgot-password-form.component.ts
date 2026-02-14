@@ -6,6 +6,7 @@ import { defaultForgotPasswordFormFields } from "../default-values";
 import { Condition } from "@noah-ark/expression-engine";
 import { FormControl } from "@angular/forms";
 import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
+import { parseApiError } from "@upupa/common";
 
 @Component({
     selector: "forgot-password-form",
@@ -55,11 +56,12 @@ export class ForgotPasswordFormComponent {
     }
 
     handleError(e) {
-        let err = e.error ?? e;
-        if (err.statusCode === 400) {
-            if (e.message === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
-            else if (e.message === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
-            else if (e.message === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
+        const parsed = parseApiError(e);
+        let err = parsed.raw;
+        if (parsed.statusCode === 400) {
+            if (parsed.code === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
+            else if (parsed.code === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
+            else if (parsed.code === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
         }
         return err;
     }

@@ -22,6 +22,7 @@ import { env } from "process";
 import { NestFactoryStatic } from "@nestjs/core/nest-factory";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 import cookieParser from "cookie-parser";
+import { HttpExceptionFilter } from "./errors/http-exception.filter";
 
 export let appName: string;
 export let application: NestExpressApplication;
@@ -169,6 +170,7 @@ async function _bootstrap(applicationName: string, module: Type<unknown>, port =
         if (!options.cors?.enabled) logger.warn("CORS Should be enabled and configured to use cookies");
         else application.use(cookieParser(options["useCookies"].secret, options["useCookies"].options));
     }
+    application.useGlobalFilters(new HttpExceptionFilter());
     application.useGlobalInterceptors();
 
     //START MICROSERVICES

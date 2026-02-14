@@ -17,7 +17,7 @@ const loginFormProviders = (providers) => providers.filter(loginFormMatcher);
     selector: "login",
     styleUrls: ["./login.component.scss"],
     templateUrl: "./login.component.html",
-    imports: [LoginFormComponent, MatButtonModule, GoogleIdProviderButton],
+    imports: [LoginFormComponent, GoogleIdProviderButton],
     host: { class: "login-page" },
 })
 export class LoginComponent {

@@ -6,6 +6,7 @@ import { MEMBERSHIP_OPTIONS } from "../di.token";
 import { MembershipOptions } from "../types";
 import { MatButtonModule } from "@angular/material/button";
 import { ActivatedRoute, Router } from "@angular/router";
+import { parseApiError } from "@upupa/common";
 
 @Component({
     selector: "reset-password-form",
@@ -64,13 +65,14 @@ export class ResetPasswordFormComponent {
     }
 
     handleError(e) {
-        let err = e.error ?? e;
-        if (err.statusCode === 400) {
+        const parsed = parseApiError(e);
+        let err = parsed.raw;
+        if (parsed.statusCode === 400) {
             // if (msg === "NEW-PASSWORD_RESET-TOKEN_REQUIRED" || msg === "TOKEN_ALREADY_USED" || msg === "INVALID_TOKEN") {
 
-            if (e.message === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
-            else if (e.message === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
-            else if (e.message === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
+            if (parsed.code === "MISSING_EMAIL") err = { message: "Username or Email should be provided", code: 400 };
+            else if (parsed.code === "INVALID_USER") err = { message: "User Can not perform this action", code: 400 };
+            else if (parsed.code === "ALREADY_SENT") err = { message: "Reset password link already sent", code: 400 };
         }
         return err;
     }

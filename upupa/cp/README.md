@@ -65,6 +65,17 @@ A library for building Control Panel (CP) or Admin Dashboard interfaces in Angul
 
 ## Quick Start
 
+## Error Handling Convention
+
+For UI error messages in CP actions/forms, use `parseApiError` from `@upupa/common` and prefer `parsed.code` over raw messages.
+
+```typescript
+import { parseApiError } from '@upupa/common';
+
+const parsed = parseApiError(error);
+snack.openFailed(parsed.code ?? parsed.message, parsed.raw ?? error);
+```
+
 ### Using the CP Layout
 
 Set up your main application routing to use `CpLayoutComponent` for your admin/control panel section.
@@ -124,8 +135,6 @@ Set up your main application routing to use `CpLayoutComponent` for your admin/c
           },
           {
             path: 'users',
-            loadComponent: () => import('./users/users.component').then(m => m.UsersComponent)
-          },
           {
             path: 'products',
             loadComponent: () => import('./products/products.component').then(m => m.ProductsComponent)

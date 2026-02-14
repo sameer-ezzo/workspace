@@ -13,7 +13,7 @@ import { WriteFileOptions } from "fs";
 
 import { DataService } from "@ss/data";
 import { AuthorizeService } from "@ss/rules";
-import { EndPoint, Message, MessageStream } from "@ss/common";
+import { AppError, EndPoint, Message, MessageStream, toHttpException } from "@ss/common";
 import { logger } from "./logger";
 import { extname, join } from "path";
 
@@ -52,13 +52,13 @@ export class StorageController {
         msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload New");
-        if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny" || msg$.path.indexOf(".") > -1) throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, action, source, q: msg$.query } }));
 
         //            one file   //multi files
         //path not    create it   create them
         //path dir    create in   create in
         //path file        error (post can not modify)
-        if (isFile(msg$.path)) throw new HttpException("PostCannotOverwriteExistingFile", HttpStatus.CONFLICT); //TODO stop the upload if this is the case
+        if (isFile(msg$.path)) throw toHttpException(new AppError("Post cannot overwrite existing file", { code: "POST_CANNOT_OVERWRITE_EXISTING_FILE", status: HttpStatus.CONFLICT })); //TODO stop the upload if this is the case
 
         if (msg$.payload!.files) {
             return await this._uploadBase64(msg$.path, msg$.principle!, msg$.payload!.files, msg$.query?.overwrite === "true");
@@ -101,7 +101,7 @@ export class StorageController {
             return files;
         } catch (err) {
             logger.error(err);
-            throw new HttpException(err, HttpStatus.BAD_REQUEST);
+            throw toHttpException(err);
         }
     }
 
@@ -111,7 +111,7 @@ export class StorageController {
         msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
     ) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg$, "Upload Edit");
-        if (access === "deny" || msg$.path.indexOf(".") > -1) throw new HttpException({ rule, action, source, q: msg$.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny" || msg$.path.indexOf(".") > -1) throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, action, source, q: msg$.query } }));
 
         //          one file   //multi files
         //path not        same as post
@@ -188,7 +188,7 @@ export class StorageController {
             try {
                 await this.writeFile(join(targetPath, f.filename), buffer);
             } catch (error) {
-                throw new HttpException("Error", HttpStatus.BAD_REQUEST);
+                throw toHttpException(error);
             }
 
             delete f.content;
@@ -209,7 +209,7 @@ export class StorageController {
     @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
     async delete(@Message() msg: IncomingMessage) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Delete");
-        if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny") throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, action, source, q: msg.query } }));
 
         await this.storageService.delete(msg.path, msg.principle);
     }
@@ -220,7 +220,7 @@ export class StorageController {
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);
 
         const decodedPath = normalizePath(msg.path);
-        if (!isFile(decodedPath)) throw new HttpException("File not found", HttpStatus.NOT_FOUND);
+        if (!isFile(decodedPath)) throw toHttpException(new AppError("File not found", { code: "FILE_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         const fname = Path.basename(decodedPath);
 
@@ -231,7 +231,7 @@ export class StorageController {
         const files = await this.data.get<File[]>("storage", { path: decodedPath });
         const file = files.find((f) => f._id === _id);
         const fullPath = join(getStorageDir(), decodedPath);
-        if (!file && !fs.existsSync(fullPath)) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!file && !fs.existsSync(fullPath)) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         const extension = Path.extname(fullPath).substring(1);
 

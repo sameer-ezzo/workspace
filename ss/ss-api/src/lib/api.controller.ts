@@ -3,9 +3,8 @@ import { Response } from "express";
 import { DataService, Patch } from "@ss/data";
 import { AuthorizeService } from "@ss/rules";
 import type { IncomingMessage, Rule } from "@noah-ark/common";
-import { EndPoint, Message } from "@ss/common";
+import { AppError, EndPoint, Message, toHttpException } from "@ss/common";
 import ObjectToCSV from "object-to-csv";
-import { logger } from "@ss/common";
 import { _query } from "./_query";
 
 const baseUrl = "/api";
@@ -56,7 +55,7 @@ export class ApiController {
             const result = await this.dataService.post(path, newData, principle);
             return result;
         } catch (error) {
-            throw this._error(error);
+            throw toHttpException(error);
         }
     }
 
@@ -76,7 +75,7 @@ export class ApiController {
         const principle = msg.principle;
 
         const segments = path.split("/").filter((s) => s);
-        if (segments.length < 2) throw new HttpException("InvalidDocumentPath", HttpStatus.BAD_REQUEST);
+        if (segments.length < 2) throw toHttpException(new AppError("Invalid document path", { code: "INVALID_DOCUMENT_PATH", status: HttpStatus.BAD_REQUEST }));
 
         segments.shift();
         segments.shift();
@@ -84,13 +83,14 @@ export class ApiController {
 
         const oldData = await this.dataService.get(path);
         const { access, rule, source, action } = this.authorizationService.authorize(msg, "Update", { ...msg, oldData, patches });
-        if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny")
+            throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, source, action, q: msg.query } }));
 
         try {
             const result = await this.dataService.put(path, doc, principle);
             return result;
         } catch (error) {
-            throw this._error(error);
+            throw toHttpException(error);
         }
     }
 
@@ -102,19 +102,20 @@ export class ApiController {
 
         const segments = path.split("/").filter((s) => s);
         if (segments.length !== 2) {
-            throw new HttpException("Invalid_Document_Path", HttpStatus.BAD_REQUEST);
+            throw toHttpException(new AppError("Invalid document path", { code: "INVALID_DOCUMENT_PATH", status: HttpStatus.BAD_REQUEST }));
         }
 
         const oldData = await this.dataService.get(path);
 
         const { access, rule, source, action } = this.authorizationService.authorize(msg, "Update", { oldData, patches });
-        if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny")
+            throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, source, action, q: msg.query } }));
 
         try {
             const result = await this.dataService.patch(path, patches, principle);
             return result;
         } catch (error) {
-            throw this._error(error);
+            throw toHttpException(error);
         }
     }
 
@@ -126,13 +127,14 @@ export class ApiController {
         const oldData = await this.dataService.get(path);
 
         const { access, rule, source, action } = this.authorizationService.authorize(msg, "Delete", { oldData });
-        if (access === "deny") throw new HttpException({ rule, source, action, q: msg.query }, HttpStatus.FORBIDDEN);
+        if (access === "deny")
+            throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, source, action, q: msg.query } }));
 
         try {
             const result = await this.dataService.delete(path, principle);
             return result;
         } catch (error) {
-            throw this._error(error);
+            throw toHttpException(error);
         }
     }
 
@@ -141,7 +143,7 @@ export class ApiController {
         const { path, q } = _query(msg.path, msg.query, "/export" + baseUrl);
 
         const { total, data } = await this.dataService.agg(path, true, ...q);
-        if (total === 0) throw new HttpException("NotFound", HttpStatus.NOT_FOUND);
+        if (total === 0) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         const firstItem = data[0];
         const keys = Object.keys(firstItem).map((key) => {
@@ -156,93 +158,5 @@ export class ApiController {
         }
 
         return Buffer.from(csv);
-    }
-
-    _error(error: any) {
-        if (!error) return new HttpException({ code: "UNKNOWN-ERROR" }, HttpStatus.INTERNAL_SERVER_ERROR);
-        if (error.code === 11000) {
-            // duplicate key error
-            const keys = Object.entries(error["keyPattern"])
-                .filter(([, v]) => v === 1)
-                .map(([k]) => k);
-            return new HttpException({ code: "CONSTRAINT-VIOLATION", message: `Cannot create duplicate ${keys.join()}`, type: "UNIQUE", keys }, HttpStatus.CONFLICT);
-        }
-
-        if (error.code === 121) {
-            // document validation error
-            return new HttpException({ code: "VALIDATION-ERROR", message: error.errInfo }, HttpStatus.BAD_REQUEST);
-        }
-
-        if (error.code === 13) {
-            return new HttpException({ code: "ACCESS-DENIED", message: "You do not have permission to perform this operation." }, HttpStatus.FORBIDDEN);
-        }
-        if (error.code === 26) {
-            return new HttpException({ code: "RESOURCE-NOT-FOUND", message: "The specified collection or database does not exist." }, HttpStatus.NOT_FOUND);
-        }
-        if (error.code === 50) {
-            return new HttpException({ code: "TIMEOUT", message: "The operation took too long to execute." }, HttpStatus.REQUEST_TIMEOUT);
-        }
-
-        if (error.code === 11600) {
-            return new HttpException({ code: "INTERRUPTED", message: "The operation was interrupted. Please retry." }, HttpStatus.SERVICE_UNAVAILABLE);
-        }
-        if (error.code === 4) {
-            return new HttpException({ code: "TOO-MANY-REQUESTS", message: "The operation failed due to rate limiting. Please retry later." }, HttpStatus.TOO_MANY_REQUESTS);
-        }
-        if (error.code === 112) {
-            return new HttpException({ code: "WRITE-NOT-ALLOWED", message: "Writes are not allowed on this node or database." }, HttpStatus.FORBIDDEN);
-        }
-        if (error.code === 2) {
-            return new HttpException({ code: "BAD-VALUE", message: "Invalid value or argument provided in the query." }, HttpStatus.BAD_REQUEST);
-        }
-        //TRANSACTION ERRORS
-        if (error.code === 251) {
-            return new HttpException({ code: "NO-SUCH-TRANSACTION", message: "The transaction does not exist or has expired." }, HttpStatus.BAD_REQUEST);
-        }
-        if (error.code === 244) {
-            return new HttpException({ code: "TRANSIENT-TRANSACTION-ERROR", message: "A transient error occurred during the transaction. Please retry." }, HttpStatus.CONFLICT);
-        }
-        if (error.code === 225) {
-            return new HttpException({ code: "TRANSACTION-TIMEOUT", message: "The transaction exceeded its lifetime limit." }, HttpStatus.REQUEST_TIMEOUT);
-        }
-        if (error.code === 225) {
-            return new HttpException({ code: "TRANSACTION-TIMEOUT", message: "The transaction exceeded its lifetime limit." }, HttpStatus.REQUEST_TIMEOUT);
-        }
-
-        if (error.code === 8000) {
-            return new HttpException({ code: "WRITE-CONFLICT", message: "A write conflict occurred. Please retry the operation." }, HttpStatus.CONFLICT);
-        }
-        if (error.code === 11600) {
-            return new HttpException({ code: "INTERRUPTED-OPERATION", message: "The operation was interrupted. Please retry." }, HttpStatus.SERVICE_UNAVAILABLE);
-        }
-
-        if (error.code === 67) {
-            return new HttpException({ code: "INDEX-CREATION-ERROR", message: "Failed to create index. Check your index options and fields." }, HttpStatus.BAD_REQUEST);
-        }
-        if (error.code === 85) {
-            return new HttpException({ code: "INDEX-OPTIONS-CONFLICT", message: "Conflicting index options detected. Check your index definitions." }, HttpStatus.CONFLICT);
-        }
-        if (error.code === 173) {
-            return new HttpException({ code: "TEXT-SEARCH-NOT-ENABLED", message: "Text search is not enabled on the specified field or collection." }, HttpStatus.BAD_REQUEST);
-        }
-
-        //SHARDING ERRORS
-        if (error.code === 63) {
-            return new HttpException({ code: "STALE-SHARD-VERSION", message: "Shard version is stale. Retrying the operation may resolve this." }, HttpStatus.CONFLICT);
-        }
-        if (error.code === 150) {
-            return new HttpException(
-                { code: "SHARD-KEY-NOT-FOUND", message: "The shard key is missing in the operation. Ensure the shard key is included." },
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-        if (error.code === 72) {
-            return new HttpException({ code: "INVALID-OPTIONS", message: "Invalid options were provided in the command." }, HttpStatus.BAD_REQUEST);
-        }
-
-        const message = error.message || error;
-        const stack = error.stack || "";
-        logger.error(message, stack);
-        return new HttpException({ message }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

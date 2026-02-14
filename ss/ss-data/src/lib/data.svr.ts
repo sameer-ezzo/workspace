@@ -514,7 +514,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         const model = await this.getModel(segments.collection);
         if (segments.projectionPath) {
             //push to array field
-            //if (!Array.isArray(oldData)) { throw new HttpException("INVALID_POST", HttpStatus.NOT_ACCEPTABLE); }
+            //if (!Array.isArray(oldData)) { throw toHttpException(new AppError("Invalid post", { code: "INVALID_POST", status: HttpStatus.NOT_ACCEPTABLE })); }
             const update = { $push: {} };
             if (segments.projectionPath) update.$push[segments.projectionPath] = newData;
             else update.$push = newData;

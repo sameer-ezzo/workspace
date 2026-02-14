@@ -1,6 +1,6 @@
 import { Controller, HttpException, HttpStatus } from "@nestjs/common";
 import type { IncomingMessage, Principle, SimplePermission } from "@noah-ark/common";
-import { EndPoint, EndpointsInfo, Message, logger } from "@ss/common";
+import { AppError, EndPoint, EndpointsInfo, Message, logger, toHttpException } from "@ss/common";
 import { DataService } from "@ss/data";
 import { join } from "path";
 import { RulesService } from "./rules.svr";
@@ -46,7 +46,7 @@ export class PermissionController {
         const principle = msg.principle as Principle;
         if (!principle && !userId) return [];
         const user = userId && userId !== principle.sub ? await this.data.find("user", userId) : principle;
-        if (!user) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("User not found", { code: "USER_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
         return [];
     }
 
@@ -76,7 +76,7 @@ export class PermissionController {
             return await this.rulesService.updatePermission(rule, action, msg.payload!, msg.principle!);
         } catch (error) {
             logger.error(error);
-            throw new HttpException(error.message ?? "Unexpected error", HttpStatus.BAD_REQUEST);
+            throw toHttpException(error);
         }
     }
 
@@ -86,7 +86,7 @@ export class PermissionController {
     })
     public async deletePermission(@Message() msg: IncomingMessage<any>) {
         const id = msg.query!.id as string;
-        if (!id) throw new HttpException("id is required", HttpStatus.NOT_FOUND);
+        if (!id) throw toHttpException(new AppError("Id is required", { code: "ID_REQUIRED", status: HttpStatus.NOT_FOUND }));
         return await this.rulesService.deletePermission(id, msg.principle!);
     }
 

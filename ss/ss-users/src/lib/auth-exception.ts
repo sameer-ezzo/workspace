@@ -16,6 +16,3 @@ export namespace AuthExceptions {
     export const TooManyAttempts = "TOO_MANY_ATTEMPTS"
     export const INVALID_PASSWORDLESS_SIGNIN_REQUEST = "INVALID_PASSWORDLESS_SIGNIN_REQUEST"
 }
-export class AuthException {
-    constructor(public readonly code: string, public readonly message?: any) { }
-}

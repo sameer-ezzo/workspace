@@ -18,10 +18,6 @@ This library simplifies the implementation of login, signup, password reset, acc
     *   `RolesListComponent`: Component for managing user roles.
     *   Admin password reset functionalities.
 *   **IDP Button Support:** Automatically displays buttons for configured external Identity Providers (Google, etc.) on the login/signup pages.
-*   **Routing Module:** `MembershipRoutingModule` provides predefined routes (e.g., `/login`, `/signup`, `/forgot-password`) for the authentication components.
-*   **Built on Upupa Libraries:** Leverages `@upupa/auth` for logic, `@upupa/dynamic-form` for forms, `@upupa/cp` and `@upupa/table` for management UI, and likely `@upupa/common`.
-
-## Installation
 
 **Prerequisites:**
 

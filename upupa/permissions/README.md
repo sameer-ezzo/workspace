@@ -87,6 +87,14 @@ Once installed and routed, navigate to the configured path (e.g., `/cp/permissio
 
 The components interact with `PermissionsService` and `AuthorizationService` to load and save data.
 
+### Error Handling Convention
+
+Permission-management UI should parse API errors using `parseApiError` from `@upupa/common` and display `parsed.code` first:
+
+```typescript
+import { parseApiError } from '@upupa/common';
+
+
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).

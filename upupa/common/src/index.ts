@@ -61,3 +61,4 @@ export * from "./lib/theme/theme.service";
 export * from "./lib/theme/material-symbols";
 
 export * from "./lib/helpers/print";
+export * from "./lib/helpers/parse-api-error";

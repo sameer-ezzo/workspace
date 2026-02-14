@@ -7,6 +7,7 @@ import { SnackBarService } from "@upupa/dialog";
 import { Router } from "@angular/router";
 import { PasswordStrength } from "@noah-ark/common";
 import { LocationStrategy } from "@angular/common";
+import { parseApiError } from "@upupa/common";
 
 export type IdpName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple";
 export type GoogleIDPOptions = {
@@ -85,7 +86,8 @@ export function loginSuccessHandler(instance, response) {
 }
 
 export function loginErrorHandler(instance, error) {
-    inject(SnackBarService).openFailed(error.message);
+    const parsed = parseApiError(error?.error ?? error);
+    inject(SnackBarService).openFailed(parsed.message ?? error.code ?? "Login failed");
 }
 export class MembershipLoginOptions extends BaseMembershipFormOptions {
     constructor(fields?: FormScheme, conditions?: Condition[], on_success?: FormHandler, on_error?: FormHandler) {
@@ -107,8 +109,9 @@ export function forgotPasswordErrorHandler(instance, error) {
     const snack = inject(SnackBarService);
     const router = inject(Router);
     const route = inject(ActivatedRoute);
+    const parsed = parseApiError(error);
     snack
-        .openFailed(error.message)
+        .openFailed(parsed.code ?? parsed.message)
         .afterDismissed()
         .subscribe(() => {
             router.navigate(["/"], { relativeTo: route });

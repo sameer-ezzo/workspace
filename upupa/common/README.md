@@ -4,49 +4,39 @@ This library provides common utilities, services, components, directives, and pi
 
 ## Overview
 
-`@upupa/common` serves as a foundational module, centralizing shared frontend functionalities. It includes helpers for theming, event handling, local storage, logging, dynamic components, commonly used Angular Material modules, and various utility functions and pipes.
-
-## Features
-
--   **Shared Angular Module (`UtilsModule`)**: Imports and re-exports common Angular modules (`CommonModule`, `FormsModule`, `ReactiveFormsModule`), essential Angular Material components, and custom utilities.
--   **Theming (`ThemeService`)**: Manages application themes (light/dark), detects OS preferences, applies theme classes to the root element, and persists selection in local storage.
--   **Event Bus (`EventBus`)**: Extends `@noah-ark/event-bus` for application-wide event communication. Includes integration for receiving messages from a browser service worker (likely for push notifications).
--   **Local Storage (`LocalStorageService`)**: Simple service for interacting with browser `localStorage`.
--   **Logging (`LoggerService`)**: Provides application logging capabilities.
--   **Base Components/Directives/Pipes**:
-    -   `InputBaseComponent`: Potential base class for custom form controls.
-    -   `PortalComponent`: Likely related to Angular Portals for rendering content dynamically.
-    -   `HtmlPipe`: Sanitizes and renders HTML content.
-    -   `MarkdownPipe`: Converts Markdown to HTML.
-    -   `ErrorPipe`: Potentially formats or displays error messages.
-    -   `FocusDirective`: Manages element focus.
-    -   `OnlyNumberDirective`: Restricts input to numbers.
--   **Utility Functions**: Includes helpers like `toTitleCase`, `deepAssign`.
--   **Specialized Features**: Contains directories for routing helpers (`routing/`), metadata (`metadata/`), Server-Side Rendering (`ssr/`), View Transitions (`view-transitions/`), and potentially API gateway interaction (`gateway/`).
+- **Event Bus (`EventBus`)**: Extends `@noah-ark/event-bus` for application-wide event communication. Includes integration for receiving messages from a browser service worker (likely for push notifications).
+- **Local Storage (`LocalStorageService`)**: Simple service for interacting with browser `localStorage`.
+- **Logging (`LoggerService`)**: Provides application logging capabilities.
+- **Base Components/Directives/Pipes**:
+  - `InputBaseComponent`: Potential base class for custom form controls.
+  - `PortalComponent`: Likely related to Angular Portals for rendering content dynamically.
+  - `HtmlPipe`: Sanitizes and renders HTML content.
+  - `OnlyNumberDirective`: Restricts input to numbers.
+- **Specialized Features**: Contains directories for routing helpers (`routing/`), metadata (`metadata/`), Server-Side Rendering (`ssr/`), View Transitions (`view-transitions/`), and potentially API gateway interaction (`gateway/`).
 
 ## Key Components
 
--   `UtilsModule`: The main Angular module to import.
--   `ThemeService`: Manages application themes.
--   `EventBus`: Handles application-wide events and service worker messages.
--   `LocalStorageService`: Interacts with local storage.
--   `LoggerService`: Provides logging.
--   `InputBaseComponent`: Base for form inputs.
--   `PortalComponent`: Dynamic content rendering.
--   `HtmlPipe`, `MarkdownPipe`, `ErrorPipe`: Common pipes.
--   `FocusDirective`, `OnlyNumberDirective`: Common directives.
+- `UtilsModule`: The main Angular module to import.
+- `ThemeService`: Manages application themes.
+- `EventBus`: Handles application-wide events and service worker messages.
+- `LocalStorageService`: Interacts with local storage.
+- `LoggerService`: Provides logging.
+- `InputBaseComponent`: Base for form inputs.
+- `PortalComponent`: Dynamic content rendering.
+- `HtmlPipe`, `MarkdownPipe`, `ErrorPipe`: Common pipes.
+- `FocusDirective`, `OnlyNumberDirective`: Common directives.
 
 ## Dependencies
 
--   `@angular/core`, `@angular/common`, `@angular/forms`
--   `@angular/material` (various components like form-field, input, icon, button, select, snack-bar, dialog, tooltip, badge)
--   `@noah-ark/event-bus` (Base for `EventBus`)
--   `marked` (likely used by `MarkdownPipe`, needs verification)
--   `dompurify` (likely used by `HtmlPipe`, needs verification)
+- `@angular/core`, `@angular/common`, `@angular/forms`
+- `@angular/material` (various components like form-field, input, icon, button, select, snack-bar, dialog, tooltip, badge)
+- `@noah-ark/event-bus` (Base for `EventBus`)
+- `marked` (likely used by `MarkdownPipe`, needs verification)
+- `dompurify` (likely used by `HtmlPipe`, needs verification)
 
 ## Configuration
 
--   **`ThemeService`**: Initialized via `themeService.init(themes: Theme[], autoApplySystemTheme?: boolean)` where `themes` is an array defining theme names, CSS classes, and optionally `colorScheme` ('light'/'dark').
+- **`ThemeService`**: Initialized via `themeService.init(themes: Theme[], autoApplySystemTheme?: boolean)` where `themes` is an array defining theme names, CSS classes, and optionally `colorScheme` ('light'/'dark').
 
 ## Usage
 
@@ -124,6 +114,23 @@ Apply pipes and directives in your component templates.
 <!-- Auto focus -->
 <input type="text" upupaFocus>
 ```
+
+**4. Parse API Errors (code-first):**
+
+```typescript
+import { parseApiError } from '@upupa/common';
+
+const parsed = parseApiError(error);
+// Prefer parsed.code for UI logic, fallback to parsed.message
+const key = parsed.code ?? parsed.message;
+```
+
+`parseApiError` normalizes code values to `UPPER_SNAKE_CASE` and provides:
+
+- `code?: string`
+- `message?: string`
+- `statusCode?: number`
+- `raw: any`
 
 ## License
 

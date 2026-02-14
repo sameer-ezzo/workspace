@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Redirect, Req, Request, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Inject, Redirect, Req, Request, Res, UseGuards } from "@nestjs/common";
 
 import { AuthGuard } from "@nestjs/passport";
 
@@ -11,7 +11,8 @@ import { DataChangedEvent, DataService } from "@ss/data";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { logger } from "./logger";
 import { AuthService, TokenTypes, UserDocument } from "@ss/auth";
-import { AuthException, AuthExceptions } from "./auth-exception";
+import { AuthExceptions } from "./auth-exception";
+import { AppError, toHttpException } from "@ss/common";
 import { UsersOptions } from "./types";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 import { UserCreatedEvent, UserForgotPasswordEvent, UserSendVerificationEvent, UserSignedUpEvent } from "./events";
@@ -99,15 +100,15 @@ export class UsersController {
     })
     public async forgotPassword(@Message() msg: IncomingMessage<{ email: string }>) {
         const { email } = msg.payload;
-        if (!email) throw new HttpException("MISSING_EMAIL", HttpStatus.BAD_REQUEST);
+        if (!email) throw toHttpException(new AppError("Missing email", { code: "MISSING_EMAIL", status: HttpStatus.BAD_REQUEST }));
 
         const user = await this.auth.findUserByEmail(email);
-        if (!user) throw new HttpException("INVALID_USER", HttpStatus.BAD_REQUEST);
+        if (!user) throw toHttpException(new AppError("Invalid user", { code: "INVALID_USER", status: HttpStatus.BAD_REQUEST }));
 
         const resetToken = await this.auth.issueResetPasswordToken(user);
         const expire = user.get("forgetExpire");
         const now = new Date().getTime();
-        if (expire && expire > now) throw new HttpException("ALREADY_SENT", HttpStatus.BAD_REQUEST);
+        if (expire && expire > now) throw toHttpException(new AppError("Already sent", { code: "ALREADY_SENT", status: HttpStatus.BAD_REQUEST }));
 
         user.set("forgetExpire", now + 1000 * 60 * 10);
         await user.save();
@@ -126,14 +127,14 @@ export class UsersController {
     ) {
         const new_password = msg.payload.new_password;
         const reset_token = msg.payload.reset_token;
-        if (!new_password || !reset_token) throw new HttpException("INVALID_DATA", HttpStatus.BAD_REQUEST);
+        if (!new_password || !reset_token) throw toHttpException(new AppError("Invalid data", { code: "INVALID_DATA", status: HttpStatus.BAD_REQUEST }));
         try {
             const reset = await this.auth.resetPassword(reset_token, new_password);
             return { reset };
         } catch (error) {
             //todo: error msg
             logger.error(error);
-            throw new HttpException(error.message || error.code || "ERROR", HttpStatus.BAD_REQUEST);
+            throw toHttpException(error);
         }
     }
 
@@ -146,26 +147,26 @@ export class UsersController {
         @Message()
         msg: IncomingMessage<{ new_password: string; old_password: string }>,
     ) {
-        if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
+        if (!msg.payload) throw toHttpException(new AppError("Missing info", { code: "MISSING_INFO", status: HttpStatus.BAD_REQUEST }));
         const { new_password, old_password } = msg.payload;
         if (new_password === old_password) return true;
 
         const id = msg.query.id as string;
-        if (!id) throw new HttpException("MISSING_ID", HttpStatus.BAD_REQUEST);
+        if (!id) throw toHttpException(new AppError("Missing id", { code: "MISSING_ID", status: HttpStatus.BAD_REQUEST }));
         const user = await this.auth.findUserById(id);
-        if (!user) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         if (new_password) {
             try {
                 const result = await this.auth.changePassword(id, old_password, new_password);
                 if (result) return true;
-                else throw new HttpException("INVALID_PASSWORD", HttpStatus.BAD_REQUEST);
+                else throw toHttpException(new AppError("Invalid password", { code: "INVALID_PASSWORD", status: HttpStatus.BAD_REQUEST }));
             } catch (error) {
                 //todo: error msg
                 logger.error(error);
-                throw new HttpException(error.message ?? "ERROR", HttpStatus.BAD_REQUEST);
+                throw toHttpException(error);
             }
-        } else throw new HttpException("INVALID_DATA", HttpStatus.BAD_REQUEST);
+        } else throw toHttpException(new AppError("Invalid data", { code: "INVALID_DATA", status: HttpStatus.BAD_REQUEST }));
     }
 
     @EndPoint({
@@ -181,21 +182,21 @@ export class UsersController {
             forceChangePwd: boolean;
         }>,
     ) {
-        if (!msg.payload) throw new HttpException("MISSING_INFO", HttpStatus.BAD_REQUEST);
+        if (!msg.payload) throw toHttpException(new AppError("Missing info", { code: "MISSING_INFO", status: HttpStatus.BAD_REQUEST }));
         const { email, new_password, forceChangePwd } = msg.payload;
         //todo: register this event with admin info
         const { access, rule, source } = this.authorizationService.authorize(msg, "update");
-        if (access === "deny") throw new HttpException({ rule, source }, HttpStatus.FORBIDDEN);
+        if (access === "deny") throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, source } }));
 
         const user = await this.auth.findUserByEmail(email);
-        if (!user) throw new HttpException("INVALID_USER", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("Invalid user", { code: "INVALID_USER", status: HttpStatus.NOT_FOUND }));
 
         const resetToken = await this.auth.issueResetPasswordToken(user);
         const result = await this.auth.resetPassword(resetToken, new_password, forceChangePwd === true);
         await this.auth.signOut(user);
 
         if (result) return { result: true };
-        else throw new HttpException("INVALID_OPERATION", HttpStatus.BAD_REQUEST);
+        else throw toHttpException(new AppError("Invalid operation", { code: "INVALID_OPERATION", status: HttpStatus.BAD_REQUEST }));
     }
 
     @EndPoint({
@@ -205,11 +206,11 @@ export class UsersController {
     @Authorize({ by: "role", value: "super-admin" })
     public async addUserToRoles(@Message() msg: IncomingMessage<{ userId: string; roles: string[] }>) {
         const { userId, roles } = msg.payload;
-        if (!userId) throw new HttpException("MISSING_USER_ID", HttpStatus.BAD_REQUEST);
+        if (!userId) throw toHttpException(new AppError("Missing user id", { code: "MISSING_USER_ID", status: HttpStatus.BAD_REQUEST }));
         const usersModel = await this.dataService.getModel("user");
-        if (!usersModel) throw new HttpException("MISSING_USER_MODEL", HttpStatus.BAD_REQUEST);
+        if (!usersModel) throw toHttpException(new AppError("Missing user model", { code: "MISSING_USER_MODEL", status: HttpStatus.BAD_REQUEST }));
         const user = await usersModel.findOne({ _id: userId });
-        if (!user) throw new HttpException("USER_NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("User not found", { code: "USER_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
         await this.auth.addUserToRoles(user._id, roles);
 
         this.auth.signOut(user);
@@ -246,7 +247,7 @@ export class UsersController {
             this.eventEmitter.emit(UserCreatedEvent.EVENT_NAME, new UserCreatedEvent({ user: document as UserDocument, options: this.options }));
             return { ...msg.payload, _id };
         } catch (error) {
-            throw new HttpException(error.message ?? "ERROR", HttpStatus.BAD_REQUEST);
+            throw toHttpException(error);
         }
     }
 
@@ -258,11 +259,11 @@ export class UsersController {
     public async impersonate(@Message() msg: IncomingMessage<{ sub: string }>) {
         //get current principle
         const principle = msg.principle;
-        if (!principle) throw new HttpException("UNAUTHORIZED", HttpStatus.UNAUTHORIZED);
+        if (!principle) throw toHttpException(new AppError("Unauthorized", { code: "UNAUTHORIZED", status: HttpStatus.UNAUTHORIZED }));
 
         //if yes, get user by id
         const user = (await this.auth.findUserById(msg.payload.sub)).toObject() as User;
-        if (!user) throw new HttpException("INVALID_USER_ID", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("Invalid user id", { code: "INVALID_USER_ID", status: HttpStatus.NOT_FOUND }));
 
         //add impersonate claim
         user.claims ??= {};
@@ -281,7 +282,7 @@ export class UsersController {
         switch (grantType) {
             case "password": {
                 const password = msg.payload.password;
-                if (!password && !msg.payload["id"]) throw new HttpException("INVALID_PASSWORD", HttpStatus.BAD_REQUEST); //allow id signin without passing a password
+                if (!password && !msg.payload["id"]) throw toHttpException(new AppError("Invalid password", { code: "INVALID_PASSWORD", status: HttpStatus.BAD_REQUEST })); //allow id signin without passing a password
 
                 let user: User | null = null;
                 if ("id" in msg.payload) user = await this.auth.signInUserByIdAndPassword(msg.payload.id, password, msg.payload.device);
@@ -289,7 +290,7 @@ export class UsersController {
                 else if ("email" in msg.payload) user = await this.auth.signInUserByEmailAndPassword(msg.payload.email, password, msg.payload.device);
                 else if ("phone" in msg.payload) user = await this.auth.signInUserByPhoneAndPassword(msg.payload.phone, password, msg.payload.device);
 
-                if (!user) throw new HttpException(new AuthException(AuthExceptions.INVALID_ATTEMPT), HttpStatus.BAD_REQUEST);
+                if (!user) throw toHttpException(new AppError("Invalid attempt", { code: AuthExceptions.INVALID_ATTEMPT, status: HttpStatus.BAD_REQUEST }));
 
                 const result =
                     user.forceChangePwd === true
@@ -308,7 +309,7 @@ export class UsersController {
                     user = await this.auth.signInUserByRefreshToken(msg.payload.refresh_token);
                     if (token.d) {
                         const currentDevice = user.devices?.[token.d];
-                        if (!currentDevice || currentDevice.active === false) throw new HttpException("INVALID_DEVICE", HttpStatus.BAD_REQUEST);
+                        if (!currentDevice || currentDevice.active === false) throw toHttpException(new AppError("Invalid device", { code: "INVALID_DEVICE", status: HttpStatus.BAD_REQUEST }));
                     }
                 } else if (msg.principle) {
                     try {
@@ -324,10 +325,10 @@ export class UsersController {
                                 },
                             });
                             user = await this.auth.findUserByEmail(msg.principle.email);
-                            if (!user) throw new HttpException("USER_NOT_FOUND", HttpStatus.NOT_FOUND);
+                            if (!user) throw toHttpException(new AppError("User not found", { code: "USER_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
                         } else throw error;
                     }
-                } else throw new HttpException("INVALID_TOKEN", HttpStatus.BAD_REQUEST);
+                } else throw toHttpException(new AppError("Invalid token", { code: "INVALID_TOKEN", status: HttpStatus.BAD_REQUEST }));
 
                 return {
                     access_token: await this.auth.issueAccessToken(user),
@@ -344,7 +345,7 @@ export class UsersController {
             // }
             // break;
             default:
-                throw new HttpException(AuthExceptions.InvalidGrantType, HttpStatus.BAD_REQUEST);
+                throw toHttpException(new AppError("Invalid grant type", { code: AuthExceptions.InvalidGrantType, status: HttpStatus.BAD_REQUEST }));
         }
     }
 
@@ -368,7 +369,7 @@ export class UsersController {
         const googleUser = await verifyGoogleUser(req.token);
         if (!googleUser) {
             // maybe check if the user had been registered using google, the lock the user account or delete it.
-            throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+            throw toHttpException(new AppError("Invalid token", { code: "INVALID_TOKEN", status: HttpStatus.BAD_REQUEST }));
         }
 
         let userRecord: User = await this.auth.findUserByEmail(googleUser.email);
@@ -376,7 +377,7 @@ export class UsersController {
         const GOOGLE_CLIENT_REGISTRATION_ENABLED = (process.env.GOOGLE_CLIENT_REGISTRATION_ENABLED || "false").toLowerCase() === "true";
 
         if (!userRecord) {
-            if (GOOGLE_CLIENT_REGISTRATION_ENABLED !== true) throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+            if (GOOGLE_CLIENT_REGISTRATION_ENABLED !== true) throw toHttpException(new AppError("User not found", { code: "USER_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
             const user = {
                 hd: googleUser.hd,
                 email: googleUser.email,
@@ -400,7 +401,7 @@ export class UsersController {
                 );
                 userRecord = await this.auth.findUserByEmail(res.email);
             } catch (error) {
-                throw new HttpException(error.message ?? "ERROR", HttpStatus.BAD_REQUEST);
+                throw toHttpException(error);
             }
         }
 
@@ -422,7 +423,7 @@ export class UsersController {
             res.json(),
         );
         // verifying the user token was issued by our app
-        if (inspectToken.status !== 200) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+        if (inspectToken.status !== 200) throw toHttpException(new AppError("Invalid token", { code: "INVALID_TOKEN", status: HttpStatus.BAD_REQUEST }));
         const user = {
             username: fbuser.data.email,
             email: fbuser.data.email,
@@ -455,7 +456,7 @@ export class UsersController {
     @UseGuards(AuthGuard("facebook"))
     async facebookLoginRedirect(@Req() req: Request) {
         const { user } = req as Request & { user: User };
-        if (!user) throw new HttpException("invalid token", HttpStatus.BAD_REQUEST);
+        if (!user) throw toHttpException(new AppError("Invalid token", { code: "INVALID_TOKEN", status: HttpStatus.BAD_REQUEST }));
         const access_token = await this.auth.issueAccessToken(user);
         const refresh_token = await this.auth.issueRefreshToken((<any>req).user);
         return {
@@ -478,8 +479,10 @@ export class UsersController {
             }
             res.send({ access_token, refresh_token });
         } catch (error) {
-            if (error instanceof AuthException) throw new HttpException(error, HttpStatus.BAD_REQUEST);
-            else throw error;
+            if (error instanceof AppError) {
+                throw toHttpException(error);
+            }
+            throw toHttpException(error);
         }
     }
 
@@ -500,7 +503,7 @@ export class UsersController {
             const _user = msg.payload;
             const user_errors = validateUser(msg.payload);
             if (user_errors.length) {
-                throw new HttpException(user_errors, HttpStatus.BAD_REQUEST);
+                throw toHttpException(new AppError("User validation failed", { code: "USER_VALIDATION_FAILED", status: HttpStatus.BAD_REQUEST, details: user_errors }));
             }
             const { document: user } = await this.auth.signUp(_user, msg.payload.password);
             delete user.passwordHash;
@@ -509,7 +512,7 @@ export class UsersController {
             return user;
         } catch (error) {
             logger.error("", error);
-            throw new HttpException(error.message ?? "ERROR", HttpStatus.BAD_REQUEST);
+            throw toHttpException(error);
         }
     }
 
@@ -518,14 +521,14 @@ export class UsersController {
     public async lock(@Message() msg: IncomingMessage<{ id: string; lock: string | boolean }>) {
         const id = msg.payload.id ?? msg.payload["_id"];
         if (!id) {
-            throw new HttpException("MISSING_ID_VALUE", HttpStatus.BAD_REQUEST);
+            throw toHttpException(new AppError("Missing id value", { code: "MISSING_ID_VALUE", status: HttpStatus.BAD_REQUEST }));
         }
 
         let lock: boolean;
         if (msg.payload.lock === "true" || msg.payload.lock === true) lock = true;
         else if (msg.payload.lock === "false" || msg.payload.lock === false) lock = false;
         else {
-            throw new HttpException("INVALID_LOCK_VALUE", HttpStatus.BAD_REQUEST);
+            throw toHttpException(new AppError("Invalid lock value", { code: "INVALID_LOCK_VALUE", status: HttpStatus.BAD_REQUEST }));
         }
 
         const user = await this.auth.model.findById(id);
@@ -533,7 +536,7 @@ export class UsersController {
             user.disabled = lock;
             await user.save();
             return { document: user };
-        } else throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        } else throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
     }
 
     @Authorize({ by: "anonymous", access: "grant" })
@@ -543,12 +546,12 @@ export class UsersController {
     })
     async checkUser(@Message() msg) {
         const { usernameOrEmailOrPhone } = msg.payload;
-        if (!usernameOrEmailOrPhone) throw new HttpException("MISSING_ARGUMENTS", HttpStatus.BAD_REQUEST);
+        if (!usernameOrEmailOrPhone) throw toHttpException(new AppError("Missing arguments", { code: "MISSING_ARGUMENTS", status: HttpStatus.BAD_REQUEST }));
 
         let user = await this.auth.findUserByEmail(usernameOrEmailOrPhone);
         if (!user) user = await this.auth.findUserByUsername(usernameOrEmailOrPhone);
         if (!user) user = await this.auth.findUserByPhone(usernameOrEmailOrPhone);
-        if (!user) throw new HttpException("INVALID_USER", HttpStatus.BAD_REQUEST);
+        if (!user) throw toHttpException(new AppError("Invalid user", { code: "INVALID_USER", status: HttpStatus.BAD_REQUEST }));
         if (user.disabled) return { requiresPassword: true, canLogin: false, requires2FA: false };
         return { requiresPassword: true, canLogin: true, requires2FA: false };
     }
@@ -564,7 +567,7 @@ export class UsersController {
     ) {
         const name = (msg.payload.name ?? "").trim();
         const value = (msg.payload.value ?? "").trim();
-        if (!name || !value) throw new HttpException("INVALID_ARGUMENTS", HttpStatus.BAD_REQUEST);
+        if (!name || !value) throw toHttpException(new AppError("Invalid arguments", { code: "INVALID_ARGUMENTS", status: HttpStatus.BAD_REQUEST }));
 
         const principle = msg.principle;
         const id = msg.payload.id ?? principle?.sub;
@@ -573,7 +576,7 @@ export class UsersController {
 
         //query user
         const user = await this.getUser(name, value, id);
-        if (!user) throw new HttpException("Can not find user", HttpStatus.NOT_FOUND);
+        if (!user) throw toHttpException(new AppError("Can not find user", { code: "USER_NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         let verification = user.get(`${name}Verification`);
         const now = new Date().getTime();
@@ -582,7 +585,7 @@ export class UsersController {
             const r = await this.auth.issueVerifyToken(user, name, value, verification?.sendAttempts);
             token = r.token;
             verification = r.verification;
-        } else if (verification.sendAttempts > 2 && now - verification?.lastSend < 60 * 1000) throw new HttpException("ALREADY_SENT", HttpStatus.BAD_REQUEST);
+        } else if (verification.sendAttempts > 2 && now - verification?.lastSend < 60 * 1000) throw toHttpException(new AppError("Already sent", { code: "ALREADY_SENT", status: HttpStatus.BAD_REQUEST }));
 
         try {
             verification = {
@@ -632,11 +635,11 @@ export class UsersController {
             const value = (msg.payload.value || "").trim();
             const type = (msg.payload.type || "").trim();
             let token = (msg.payload.token || "").trim();
-            if (type === "code" && (!name || !value)) throw new HttpException("INVALID_ARGS", HttpStatus.BAD_REQUEST);
+            if (type === "code" && (!name || !value)) throw toHttpException(new AppError("Invalid args", { code: "INVALID_ARGS", status: HttpStatus.BAD_REQUEST }));
             //When type is token then all we need is to verify that token and update the user properly
 
             const user = await this.getUser(name, value, msg.payload.id || u?.sub);
-            if (!user) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+            if (!user) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
             await this.auth.verify(user, name, msg.payload.token, value);
 
@@ -648,7 +651,7 @@ export class UsersController {
         } catch (error) {
             //todo: error msg
             logger.log(error);
-            throw new HttpException({ ...error }, HttpStatus.BAD_REQUEST);
+            throw toHttpException(error);
         }
     }
 
@@ -659,15 +662,15 @@ export class UsersController {
     @Authorize({ by: "role", value: "super-admin" })
     public async updateDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle;
-        if (!principal) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!principal) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         const device = msg.payload;
-        if (!device.id) throw new HttpException("INVALID_DEVICE", HttpStatus.BAD_REQUEST);
+        if (!device.id) throw toHttpException(new AppError("Invalid device", { code: "INVALID_DEVICE", status: HttpStatus.BAD_REQUEST }));
 
         const user = await this.auth.findUserById(principal.sub);
         const devices = user.devices;
 
-        if (!devices?.[device.id]) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!devices?.[device.id]) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
         devices[device.id] = { ...devices?.[device.id], ...device };
         await user.updateOne({
             $set: {
@@ -683,15 +686,15 @@ export class UsersController {
     @Authorize({ by: "role", value: "super-admin" })
     public async removeDevice(@Message() msg: IncomingMessage<UserDevice>) {
         const principal = msg.principle;
-        if (!principal) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!principal) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         const deviceId = msg.query?.id as string;
-        if (!deviceId) throw new HttpException("INVALID_DEVICE", HttpStatus.BAD_REQUEST);
+        if (!deviceId) throw toHttpException(new AppError("Invalid device", { code: "INVALID_DEVICE", status: HttpStatus.BAD_REQUEST }));
 
         const user = await this.auth.findUserById(principal.sub);
         const devices = user.devices;
 
-        if (!devices?.[deviceId]) throw new HttpException("NOT_FOUND", HttpStatus.NOT_FOUND);
+        if (!devices?.[deviceId]) throw toHttpException(new AppError("Not found", { code: "NOT_FOUND", status: HttpStatus.NOT_FOUND }));
 
         delete devices[deviceId];
 

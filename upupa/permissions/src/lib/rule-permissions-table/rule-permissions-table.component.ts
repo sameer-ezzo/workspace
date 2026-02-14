@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, SimpleChanges } from "@angular/core";
 import { DataAdapter, ClientDataSource } from "@upupa/data";
-import { ActionDescriptor, ActionEvent } from "@upupa/common";
+import { ActionDescriptor, ActionEvent, parseApiError } from "@upupa/common";
 import { AccessType, Rule, SimplePermission, _NullPermissionTypes, _ObjectPermissionTypes, _StringPermissionTypes } from "@noah-ark/common";
 import { PermissionsService } from "../permissions.service";
 import { column, ColumnsDescriptor, DataTableComponent, DefaultTableCellTemplate, reflectTableViewModel } from "@upupa/table";
@@ -339,7 +339,8 @@ export class RulePermissionsTableComponent {
 
             // this.updateRulePermissions(action, actionPermissions.slice());
         } catch (err) {
-            this.snack.openFailed(err.message, err);
+            const parsed = parseApiError(err);
+            this.snack.openFailed(parsed.code ?? parsed.message, parsed.raw ?? err);
         }
     }
 }

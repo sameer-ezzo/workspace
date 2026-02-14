@@ -1,4 +1,4 @@
-import { Component, inject, signal, output, viewChild, model, input, computed } from "@angular/core";
+import { Component, inject, signal, output, viewChild, model, input } from "@angular/core";
 import { AuthService, Credentials } from "@upupa/auth";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
@@ -9,6 +9,7 @@ import { Principle } from "@noah-ark/common";
 
 import { MembershipFormExternalLinksComponent } from "../membership-form-external-links.component";
 import { defaultLoginFormFields } from "../default-values";
+import { parseApiError } from "@upupa/common";
 
 @Component({
     selector: "login-form",
@@ -71,13 +72,16 @@ export class LoginFormComponent {
             const res = await this.auth.signin(this.value() as Credentials);
             this.success.emit(res);
         } catch (error) {
-            const err = error?.msg ?? error?.message ?? error;
-            if (err === "INVALID_ATTEMPT") this.error = "username-password-wrong";
-            else if (err === "TOO_MANY_LOGIN_ATTEMPTS") this.error = "too-many-attempts";
-            else if (err === "CONNECTION_ERROR") this.error = "connection-error";
-            else this.error = error;
+            const parsed = parseApiError(error);
+            const errCode = parsed.code ?? "";
+
+            if (errCode === "INVALID_ATTEMPT") this.error = "username-password-wrong";
+            else if (errCode === "TOO_MANY_LOGIN_ATTEMPTS") this.error = "too-many-attempts";
+            else if (errCode === "USER_DISABLED") this.error = "user-disabled";
+            else if (errCode === "CONNECTION_ERROR") this.error = "connection-error";
+            else this.error = parsed.message ?? error;
             console.error("login", error);
-            this.fail.emit(this.error);
+            this.fail.emit(parsed);
         } finally {
             this.loading.set(false);
         }

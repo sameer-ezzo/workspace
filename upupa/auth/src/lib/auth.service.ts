@@ -381,29 +381,29 @@ export class AuthService {
         } catch (e) {
             console.error(e);
         }
-        try {
-            const auth_token = await httpFetch(this.baseUrl, authRequestBody);
-            if (!auth_token) throw "UNDEFINED_TOKEN";
-            if ("reset_token" in auth_token) {
-                const jwt = this.jwt(auth_token.reset_token);
-                if (jwt?.t === "rst") return { type: "reset-pwd", reset_token: auth_token.reset_token };
-                else throw "INVALID_TOKEN_TYPE";
-            } else {
-                const jwt = this.jwt(auth_token.access_token);
+        // try {
+        const auth_token = await httpFetch(this.baseUrl, authRequestBody);
+        if (!auth_token) throw "UNDEFINED_TOKEN";
+        if ("reset_token" in auth_token) {
+            const jwt = this.jwt(auth_token.reset_token);
+            if (jwt?.t === "rst") return { type: "reset-pwd", reset_token: auth_token.reset_token };
+            else throw "INVALID_TOKEN_TYPE";
+        } else {
+            const jwt = this.jwt(auth_token.access_token);
 
-                this.setTokens(auth_token);
-                this.triggerNext(jwt);
-                if (authRequestBody["rememberMe"] !== true) this.setupBeforeUnloadListener();
+            this.setTokens(auth_token);
+            this.triggerNext(jwt);
+            if (authRequestBody["rememberMe"] !== true) this.setupBeforeUnloadListener();
 
-                return jwt as Principle;
-            }
-        } catch (error) {
-            if (typeof error === "string") throw error;
-            // if (error.status) throw error.json()
-            if (error.status) throw error.body.code;
-            else if (error.status === 0) throw "CONNECTION_ERROR";
-            else throw error;
+            return jwt as Principle;
         }
+        // } catch (error) {
+        //     if (typeof error === "string") throw error;
+        //     // if (error.status) throw error.json()
+        //     if (error.status) throw error.body.code;
+        //     else if (error.status === 0) throw "CONNECTION_ERROR";
+        //     else throw error;
+        // }
     }
 
     login(credentials: Credentials & { rememberMe?: boolean }): Promise<{} | Principle> {

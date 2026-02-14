@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 import { Model } from "mongoose";
 import { DataService, WriteResult } from "@ss/data";
-import { AuthException, AuthExceptions } from "./auth-exception";
+import { AuthExceptions } from "./auth-exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { AuthOptions } from "./auth-options";
 import { logger } from "./logger";
@@ -13,7 +13,7 @@ import { logger } from "./logger";
 import { User, randomString, randomDigits, UserDevice, Principle } from "@noah-ark/common";
 import { UserDocument } from "./user.document";
 import { ObjectId } from "mongodb";
-import { sha256 } from "@ss/common";
+import { AppError, sha256 } from "@ss/common";
 
 export type SignOptions = {
     issuer?: string;
@@ -67,7 +67,7 @@ export class AuthService {
         try {
             return this.data.post("user", payload);
         } catch (err) {
-            throw new AuthException(AuthExceptions.InvalidSignup, err);
+            throw new AppError(err?.message || AuthExceptions.InvalidSignup, { code: AuthExceptions.InvalidSignup });
         }
     }
 
@@ -93,9 +93,9 @@ export class AuthService {
     }
 
     async changeUserToRoles(userId: string, roles: string[]) {
-        if (!userId) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!userId) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         const user = await this.findUserById(userId);
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         const rs = roles ?? [];
         await this.data.patch(`/user/${user.id}`, [{ op: "replace", path: "/roles", value: rs }], user);
@@ -104,23 +104,23 @@ export class AuthService {
     }
 
     async addUserToRoles(userId: string, roles: string[]) {
-        if (!userId) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!userId) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         const user = await this.findUserById(userId);
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         const rs = (user.roles || []).concat(roles.filter((r) => user.roles?.indexOf(r) < 0));
-        if (!roles || roles.length === 0) throw new AuthException(AuthExceptions.InvalidRolesData);
+        if (!roles || roles.length === 0) throw new AppError("Invalid roles data", { code: AuthExceptions.InvalidRolesData });
         await this.data.patch(`/user/${user.id}`, [{ op: "replace", path: "/roles", value: rs }], user);
 
         return userId;
     }
 
     async removeUserRoles(userId: string, roles: string[]) {
-        if (!userId) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!userId) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         const user = await this.findUserById(userId);
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
-        if (!roles || roles.length === 0) throw new AuthException(AuthExceptions.InvalidRolesData);
+        if (!roles || roles.length === 0) throw new AppError("Invalid roles data", { code: AuthExceptions.InvalidRolesData });
         const rs = (user.roles || []).filter((r) => roles.indexOf(r) === -1);
         await this.data.patch(`/user/${user.id}`, [{ op: "replace", path: "/roles", value: rs }], user);
 
@@ -133,7 +133,7 @@ export class AuthService {
 
     async issueAccessToken(user: User, options?: SignOptions, additionalClaims?: Record<string, any>): Promise<string> {
         if (!user) {
-            throw new AuthException(AuthExceptions.InvalidUserData);
+            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
 
         const payload: TokenBase = {
@@ -168,7 +168,7 @@ export class AuthService {
 
     async issueRefreshToken(user: User, options?: SignOptions, additionalClaims?: Record<string, any>, device?: string) {
         if (!user) {
-            throw new AuthException(AuthExceptions.InvalidUserData);
+            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
         const payload: TokenBase = {
             t: TokenTypes.refresh,
@@ -188,7 +188,7 @@ export class AuthService {
     }
 
     async issueResetPasswordToken(user: User, options?: SignOptions) {
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         const payload: TokenBase = { t: TokenTypes.reset, sec: user.securityCode };
         const sub = (user._id as any)?.toHexString?.() || user._id;
@@ -210,7 +210,7 @@ export class AuthService {
         options?: SignOptions,
     ): Promise<{ token: string; verification: Verification }> {
         if (!user) {
-            throw new AuthException(AuthExceptions.InvalidUserData);
+            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
         const code = `${randomDigits(6)}`;
         const payload: TokenBase = { t: TokenTypes.verify, code };
@@ -245,7 +245,7 @@ export class AuthService {
 
     async removeVerifyToken(user: UserDocument, name: string) {
         if (!user) {
-            throw new AuthException(AuthExceptions.InvalidUserData);
+            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
         await user.updateOne({ $set: { [`${name}Verification`]: undefined } });
     }
@@ -296,11 +296,11 @@ export class AuthService {
 
     async signInUserByIdAndPassword(id: string, password: string | undefined, device: UserDevice): Promise<UserDocument> {
         const user = await this.findUserById(id);
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         if (!password && (user.passwordHash || user.email || user.phone)) {
             await this._registerFailedAttempt(user);
-            throw new AuthException(AuthExceptions.INVALID_PASSWORDLESS_SIGNIN_REQUEST, "");
+            throw new AppError("Invalid passwordless signin request", { code: AuthExceptions.INVALID_PASSWORDLESS_SIGNIN_REQUEST });
         }
         return this.signInUser(user, password, true, device);
     }
@@ -309,8 +309,8 @@ export class AuthService {
         const token = await this.verifyToken(refreshToken);
         if (token && token.t === "rfs") {
             const user = await this.findUserById(token.sub);
-            if (!user) throw new AuthException(AuthExceptions.UserNotFound);
-            if (user && user.securityCode !== token.sec) throw new AuthException(AuthExceptions.InvalidSecurityCode);
+            if (!user) throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
+            if (user && user.securityCode !== token.sec) throw new AppError("Invalid security code", { code: AuthExceptions.InvalidSecurityCode });
 
             this.signInUser(user, null, true, token.d ? token.d : null);
             const additional_claims = token.claims ?? {};
@@ -318,14 +318,14 @@ export class AuthService {
             user.claims = { ...user.claims, ...additional_claims };
             return user;
         }
-        throw new AuthException(AuthExceptions.InvalidToken);
+        throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
     }
 
     async signInUserByPrinciple(principle: Principle, key: keyof User = "email"): Promise<UserDocument> {
-        if (!principle) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!principle) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         const user = await this.model.findOne({ [key]: principle[key] });
-        if (!user) throw new AuthException(AuthExceptions.UserNotFound);
-        if (user && user.securityCode !== principle.sec) throw new AuthException(AuthExceptions.InvalidSecurityCode);
+        if (!user) throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
+        if (user && user.securityCode !== principle.sec) throw new AppError("Invalid security code", { code: AuthExceptions.InvalidSecurityCode });
 
         this.signInUser(user, null, true, null);
         user.claims ??= {};
@@ -333,8 +333,8 @@ export class AuthService {
     }
 
     async signInUser(user: UserDocument, password?: string, registerAttempt = true, device?: UserDevice) {
-        if (!user) throw new AuthException(AuthExceptions.INVALID_ATTEMPT);
-        if (user.disabled) throw new AuthException(AuthExceptions.UserDisabled);
+        if (!user) throw new AppError("Invalid attempt", { code: AuthExceptions.INVALID_ATTEMPT });
+        if (user.disabled) throw new AppError("User disabled", { code: AuthExceptions.UserDisabled });
 
         const userDoc = user._doc as User;
         const isPasswordCorrect = password ? await bcrypt.compare(password, userDoc.passwordHash) : true;
@@ -356,7 +356,7 @@ export class AuthService {
 
     async signOut(user: User | Pick<User, "_id">): Promise<void> {
         const _user = await this.model.findOne({ _id: user._id });
-        if (!_user) throw new AuthException(AuthExceptions.USER_NO_LONGER_EXISTS);
+        if (!_user) throw new AppError("User no longer exists", { code: AuthExceptions.USER_NO_LONGER_EXISTS });
         await _user.updateOne({ $set: { securityCode: randomString(5) } });
     }
 
@@ -364,8 +364,8 @@ export class AuthService {
         const token = await this.verifyToken(resetToken);
         if (token && token.t === TokenTypes.reset) {
             const user = (await this.model.findOne({ _id: token.sub }).lean()) as unknown as UserDocument;
-            if (!user) throw new AuthException(AuthExceptions.USER_NO_LONGER_EXISTS);
-            if (token.sec && token.sec !== user.securityCode) throw new AuthException(AuthExceptions.TOKEN_ALREADY_USED);
+            if (!user) throw new AppError("User no longer exists", { code: AuthExceptions.USER_NO_LONGER_EXISTS });
+            if (token.sec && token.sec !== user.securityCode) throw new AppError("Token already used", { code: AuthExceptions.TOKEN_ALREADY_USED });
             const passwordHash = await bcrypt.hash(newPassword, 10);
             const update = {} as any;
             update["$set"] = { passwordHash, securityCode: randomString(5) };
@@ -373,7 +373,7 @@ export class AuthService {
             await this.model.findByIdAndUpdate(user._id, update);
 
             return true;
-        } else throw new AuthException(AuthExceptions.InvalidToken);
+        } else throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
     }
 
     async changeUserPassword(id: string, newPassword: string) {
@@ -388,7 +388,7 @@ export class AuthService {
                 },
             });
             return true;
-        } else throw new AuthException(AuthExceptions.UserNotFound);
+        } else throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
     }
 
     async changePassword(id: string, password: string, newPassword: string) {
@@ -405,11 +405,11 @@ export class AuthService {
                 });
                 return true;
             }
-        } else throw new AuthException(AuthExceptions.UserNotFound);
+        } else throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
     }
 
     async verify(user: UserDocument, name: string, verifyToken: string, value?: string): Promise<boolean> {
-        if (!user) throw new AuthException(AuthExceptions.InvalidUserData);
+        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         if (!value) {
             const token = await this.verifyToken(verifyToken);
@@ -441,9 +441,9 @@ export class AuthService {
                     },
                 });
 
-                throw new AuthException(AuthExceptions.TooManyAttempts, "please try again in a while");
-            } else throw new AuthException(AuthExceptions.InvalidOperation);
-        } else throw new AuthException(AuthExceptions.InvalidToken);
+                throw new AppError("Too many attempts, please try again in a while", { code: AuthExceptions.TooManyAttempts });
+            } else throw new AppError("Invalid operation", { code: AuthExceptions.InvalidOperation });
+        } else throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
     }
 
     private _registerFailedAttempt(user: UserDocument) {

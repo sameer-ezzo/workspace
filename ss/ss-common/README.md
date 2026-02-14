@@ -24,6 +24,40 @@ This library provides a set of common utilities, configurations, and core servic
 -   **Messaging Utilities**: Includes components like `Broker`, `EventBusService`, `BrokerController`, and functions for registering message listeners (`registerListeners`).
 -   **WebSocket Utilities**: Includes a Redis adapter (`RedisIoAdapter`) for scalable WebSocket deployments.
 -   **Shared Utilities**: Contains directories for general utils (`utils/`), HTTP models (`http.models.ts`), logging (`logger.ts`), etc.
+-   **Global HTTP Exception Mapping**: `bootstrap` now registers a global NestJS exception filter that converts non-HTTP errors thrown by services into `HttpException` responses.
+
+## Error Handling (NestJS)
+
+The recommended NestJS mechanism for translating service errors to HTTP responses is a **global exception filter**.
+
+`@ss/common` now applies `HttpExceptionFilter` automatically inside `bootstrap(...)`.
+
+This means:
+
+-   Throwing `HttpException` keeps your existing response/status unchanged.
+-   Throwing regular `Error` or string values from services still returns a structured HTTP error payload.
+-   If an error has `status` / `statusCode`, that status is respected.
+
+Example service errors:
+
+```typescript
+throw new Error('NOT_FOUND'); // => 404
+throw new Error('INVALID_DATA'); // => 400
+throw new HttpException('Forbidden', 403); // => 403
+throw new AppError('INVALID_DEVICE', { status: 400, details: { deviceId } }); // => 400 + details
+```
+
+Recommended for libraries: throw `AppError` when you need deterministic status/code/details without coupling to Nest controllers.
+
+```typescript
+import { AppError } from '@ss/common';
+
+throw new AppError('USER_NOT_FOUND', {
+  status: 404,
+  code: 'USER_NOT_FOUND',
+  details: { userId },
+});
+```
 
 ## Key Components
 
