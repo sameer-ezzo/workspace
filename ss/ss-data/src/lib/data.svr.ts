@@ -68,7 +68,7 @@ export class DataService implements OnModuleInit, OnApplicationShutdown {
         logger.info(`DataService created for ${name} with prefix: ${this.prefix}`);
     }
 
-    async getModel<T extends Document = any>(name: string, prefix?: string): Promise<Model<T> | undefined> {
+    async getModel<T extends Document<any, any, any> = any>(name: string, prefix?: string): Promise<Model<T> | undefined> {
         prefix ??= this.prefix;
         let model = this.connection.models[name];
         if (!model && this.options.autoCreateModel) {
