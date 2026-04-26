@@ -11,8 +11,7 @@ export class AppError extends Error {
     readonly code?: string | number;
     readonly status?: HttpStatus;
     readonly details?: unknown;
-    // override
-     readonly cause?: unknown;
+    readonly cause?: unknown;
 
     constructor(message: string, options?: AppErrorOptions) {
         super(message);

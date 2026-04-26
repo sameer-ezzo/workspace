@@ -25,11 +25,11 @@ export interface TokenStore {
     getAccessToken(): string;
     getRefreshToken(): string;
 
-    setAccessToken(access_token: string);
-    setRefreshToken(refresh_token: string);
+    setAccessToken(access_token: string): void;
+    setRefreshToken(refresh_token: string): void;
 
-    removeRefreshToken();
-    removeAccessToken();
+    removeRefreshToken(): void;
+    removeAccessToken(): void;
 }
 
 export class LocalStorageTokenStore implements TokenStore {
@@ -49,16 +49,16 @@ export class LocalStorageTokenStore implements TokenStore {
     getRefreshToken(): string {
         return this.getToken(REFRESH_TOKEN);
     }
-    setAccessToken(access_token: string) {
+    setAccessToken(access_token: string): void {
         this.setToken(ACCESS_TOKEN, access_token);
     }
-    setRefreshToken(refresh_token: string) {
+    setRefreshToken(refresh_token: string): void {
         this.setToken(REFRESH_TOKEN, refresh_token);
     }
-    removeAccessToken() {
+    removeAccessToken(): void {
         this.removeToken(ACCESS_TOKEN);
     }
-    removeRefreshToken() {
+    removeRefreshToken(): void {
         this.removeToken(REFRESH_TOKEN);
     }
 }
@@ -101,31 +101,31 @@ export class RequestTokenStore implements TokenStore {
         this.store.delete(key);
     }
 
-    removeRefreshToken() {
+    removeRefreshToken(): void {
         this.removeToken(REFRESH_TOKEN);
     }
-    removeAccessToken() {
+    removeAccessToken(): void {
         this.removeToken(ACCESS_TOKEN);
     }
-    setAccessToken(access_token: string) {
+    setAccessToken(access_token: string): void {
         this.setToken(ACCESS_TOKEN, access_token);
     }
-    setRefreshToken(refresh_token: string) {
+    setRefreshToken(refresh_token: string): void {
         this.setToken(REFRESH_TOKEN, refresh_token);
     }
 }
 
-@Injectable({ providedIn: "root" })
+@Injectable()
 export class AuthService {
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
     refreshed$ = new Subject<number>();
-    private _user$ = new ReplaySubject<Principle>(1);
+    private _user$ = new ReplaySubject<Principle | null>(1);
     user$ = this._user$.asObservable();
-    userSignal: Signal<Principle> = toSignal(this._user$);
-    user: Principle = null;
+    userSignal: Signal<Principle | null> = toSignal(this._user$, { initialValue: null });
+    user: Principle | null = null;
     private readonly transferState = inject(TransferState); // use this to transfer authenticated user in ssr to client
     refreshing = signal(false);
-    private _token$ = new Subject<string>();
+    private _token$ = new Subject<string | null>();
     token$ = this._token$.asObservable();
 
     private readonly localStorage: TokenStore = this.isBrowser ? new LocalStorageTokenStore() : new RequestTokenStore();
@@ -135,7 +135,7 @@ export class AuthService {
 
     readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
     get IdProviders(): IdPName[] {
-        return this.authIdPs.map((x) => x.IdpName);
+        return this.authIdPs.map((x) => x.IdpName).filter((x): x is IdPName => !!x);
     }
     getProviderByName(providerName: IdPName): any {
         const idp = this.authIdPs.find((x) => x.IdpName === providerName);
@@ -163,7 +163,7 @@ export class AuthService {
         }
     }
 
-    fromCookies(req: Request | HttpRequest<unknown>): Principle | null {
+    fromCookies(req: Request | HttpRequest<unknown> | null): Principle | null {
         if (!req) {
             console.warn("No request object provided");
             return null;
@@ -175,17 +175,20 @@ export class AuthService {
             const parsedCookies = cookies
                 .split(";")
                 .map((s) => s.trim())
-                .reduce((acc, current) => {
-                    const [key, value] = current.split("=");
-                    acc[key] = value;
-                    return acc;
-                }, {});
+                .reduce(
+                    (acc, current) => {
+                        const [key, value] = current.split("=");
+                        acc[key] = value;
+                        return acc;
+                    },
+                    {} as Record<string, string>,
+                );
 
             const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies["ssr_jwt"] || "{}")) as { access_token?: string; refresh_token?: string };
 
             if (!access_token) return this.user;
             this._access_token = access_token;
-            this._refresh_token = refresh_token;
+            this._refresh_token = refresh_token ?? null;
             this.triggerNext(this.jwt(access_token));
         }
 
@@ -206,10 +209,9 @@ export class AuthService {
         if (this.beforeUnloadHandler) return;
 
         console.warn("User Tokens will be removed on page refresh");
-        this.beforeUnloadHandler = () => {
+        this.doc.defaultView?.addEventListener("beforeunload", (_event) => {
             this.setTokens(null);
-        };
-        this.doc.defaultView?.addEventListener("beforeunload", this.beforeUnloadHandler);
+        });
     }
     private _access_token: string | null = null;
     get access_token() {
@@ -220,12 +222,13 @@ export class AuthService {
         return this._refresh_token;
     }
 
-    private triggerNext(user: any) {
+    private triggerNext(user: Principle | null): void {
         if (user) {
-            user.emailVerified = user.emv === 1 || user.emailVerified === true;
-            user.phoneVerified = user.phv === 1 || user.phoneVerified === true;
-            delete user.emv;
-            delete user.phv;
+            const mutable = user as Principle & { emv?: number; phv?: number; emailVerified?: boolean; phoneVerified?: boolean };
+            mutable.emailVerified = mutable.emv === 1 || mutable.emailVerified === true;
+            mutable.phoneVerified = mutable.phv === 1 || mutable.phoneVerified === true;
+            delete mutable.emv;
+            delete mutable.phv;
         }
 
         this.user = user;
@@ -240,7 +243,7 @@ export class AuthService {
         return this.transferState.get(AUTH_STATE_KEY, null)?.refresh_token ?? this._refresh_token ?? this.localStorage.getRefreshToken();
     }
 
-    jwt(tokenString: string): any {
+    jwt(tokenString: string): Principle | null {
         try {
             const base64Url = tokenString.split(".")[1];
             const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -253,10 +256,10 @@ export class AuthService {
                     .join(""),
             );
 
-            const token = JSON.parse(jsonPayload);
+            const token = JSON.parse(jsonPayload) as Principle & { exp?: number };
 
             const now = new Date();
-            const expire = new Date(token.exp * 1000);
+            const expire = new Date((token.exp ?? 0) * 1000);
             if (now > expire) return null;
             return token;
         } catch (err) {
@@ -296,7 +299,7 @@ export class AuthService {
     @MutexAsync()
     async refresh(refresh_token?: string): Promise<Principle | null> {
         refresh_token = refresh_token ? refresh_token : this.get_refresh_token();
-        let principle: Principle = this.user ?? (this.jwt(this.get_token()) as Principle);
+        let principle: Principle | null = null;
 
         if (refresh_token) {
             try {
@@ -309,7 +312,8 @@ export class AuthService {
                     return principle;
                 }
             } catch (error) {
-                const status = `${error.status ?? 0}`;
+                const typedError = error as { status?: number };
+                const status = `${typedError.status ?? 0}`;
                 if (status.startsWith("4")) {
                     // Keep current valid access-token session if refresh token is rejected.
                     if (!principle) {
@@ -332,7 +336,7 @@ export class AuthService {
         return principle;
     }
 
-    private setTokens(tokens: { access_token: string; refresh_token: string }) {
+    private setTokens(tokens: { access_token: string; refresh_token: string } | null): void {
         if (tokens) {
             this._access_token = tokens.access_token;
             this._refresh_token = tokens.refresh_token;
@@ -353,7 +357,7 @@ export class AuthService {
         return principle;
     }
 
-    async signin_Facebook(user) {
+    async signin_Facebook(user: { token: string }) {
         const res = await httpFetch(`${this.baseUrl}/facebook-auth`, user);
         this.setTokens(res);
         this.clearBeforeUnloadListener();
@@ -362,7 +366,7 @@ export class AuthService {
         return principle;
     }
 
-    async signinWithProvider<Name extends IdPName>(provider: Name): Promise<Principle | { type: "reset-pwd"; reset_token: string }> {
+    async signinWithProvider<Name extends IdPName>(provider: Name): Promise<Principle | { type: "reset-pwd"; reset_token: string } | null> {
         const idp = this.getProviderByName(provider);
 
         try {
@@ -450,8 +454,9 @@ export class AuthService {
                 const result = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
                 return result;
             } catch (err) {
-                if (err.status) throw err.body;
-                else if (err.status === 0) throw "CONNECTION_ERROR";
+                const typedError = err as { status?: number; body?: unknown };
+                if (typedError.status) throw typedError.body;
+                else if (typedError.status === 0) throw "CONNECTION_ERROR";
                 else throw err;
             }
         }
@@ -502,7 +507,7 @@ export class AuthService {
     async unimpersonate() {
         const original_refresh_token = this.localStorage.getToken(`ORG_${REFRESH_TOKEN}`);
         if (original_refresh_token) {
-            this._access_token = undefined;
+            this._access_token = null;
             this._refresh_token = original_refresh_token;
             const res = await this.refresh(original_refresh_token);
             this.localStorage.removeToken(`ORG_${REFRESH_TOKEN}`);

@@ -2,6 +2,7 @@ import { EnvironmentProviders, InjectionToken, Provider } from "@angular/core";
 import { AUTH_OPTIONS } from "./di.token";
 import { AuthOptions } from "./auth-options";
 import { AUTH_IDPs } from "./idps";
+import { AuthService } from "./auth.service";
 
 export type EmailAndPasswordProviderOptions = { fields?: any; on_success?: (instance: any, value: any) => void; on_error?: (instance: any, error: any) => void };
 
@@ -10,6 +11,7 @@ export type AuthProvider = Omit<Provider, "provide">;
 
 export function authProviders(options: () => Partial<AuthOptions>): Provider[] {
     return [
+        AuthService,
         { provide: AUTH_OPTIONS, useFactory: options },
         // { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     ] as Provider[];

@@ -1,9 +1,11 @@
-import { inject, InjectionToken, Injector, PLATFORM_ID, runInInjectionContext } from "@angular/core";
-import { ActivatedRoute, ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from "@angular/router";
+import { inject, Injector, runInInjectionContext } from "@angular/core";
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { AuthService } from "@upupa/auth";
 import { AuthorizationService } from "../authorization.service";
-import { firstValueFrom } from "rxjs";
-import { isPlatformServer, Location } from "@angular/common";
+import { Location } from "@angular/common";
+
+export type GuardRedirectResult = void | boolean | UrlTree | Promise<void | boolean | UrlTree>;
+export type GuardRedirectFn = (ctx: { route: ActivatedRouteSnapshot; state: RouterStateSnapshot }) => GuardRedirectResult;
 
 export type AuthGuardOptions = {
     path?: string;
@@ -11,53 +13,51 @@ export type AuthGuardOptions = {
     payload?: unknown;
     query?: unknown;
     ctx?: unknown;
-    loginRedirect?: () => void;
-    forbiddenRedirect?: () => void;
+    loginRedirect?: GuardRedirectFn;
+    forbiddenRedirect?: GuardRedirectFn;
 };
-export const defaultLoginRedirect = (loginRoute: string | string[] = ["/login"], redirectToParamName = "redirectTo") => {
+export const defaultLoginRedirect = (loginRoute: string | string[] = ["/login"], redirectToParamName = "redirectTo"): GuardRedirectFn => {
+    return ({ route, state }) => {
+        const router = inject(Router);
+        const location = inject(Location);
+        const qps = route.queryParams ?? {};
+        let redirectTo = ((redirectToParamName ? (qps[redirectToParamName] ?? state.url ?? location.path()) : state.url ?? location.path()) || "").trim();
+
+        redirectTo = redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`;
+
+        const queryParams = redirectToParamName ? { ...qps, [redirectToParamName]: redirectTo } : { ...qps };
+        return router.createUrlTree(Array.isArray(loginRoute) ? loginRoute : [loginRoute], { queryParams });
+    };
+};
+
+const defaultForbiddenRedirect: GuardRedirectFn = () => {
     const router = inject(Router);
-    const route = inject(ActivatedRoute);
-    const location = inject(Location);
-    const qps = route.snapshot.queryParams;
-    let redirectTo = ((redirectToParamName ? (qps[redirectToParamName] ?? location.path()) : location.path()) || "").trim();
-
-    redirectTo = redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`;
-
-    router.navigate(Array.isArray(loginRoute) ? loginRoute : [loginRoute], { queryParams: { ...qps, redirectTo } });
+    return router.createUrlTree(["/forbidden"]);
 };
 
-const defaultForbiddenRedirect = () => {
-    const router = inject(Router);
-    router.navigateByUrl("/forbidden");
+const resolveRedirect = async (
+    injector: Injector,
+    redirect: GuardRedirectFn,
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot,
+): Promise<boolean | UrlTree> => {
+    const redirectResult = await Promise.resolve(runInInjectionContext(injector, () => redirect({ route, state })));
+    return redirectResult === undefined ? false : redirectResult;
 };
+
 export const authGuardFn = (options: AuthGuardOptions) => {
     let { path, action, payload, query, ctx, loginRedirect, forbiddenRedirect } = options;
-    loginRedirect = loginRedirect || defaultLoginRedirect;
+    loginRedirect = loginRedirect || defaultLoginRedirect();
     forbiddenRedirect = forbiddenRedirect || defaultForbiddenRedirect;
 
     return async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        if (isPlatformServer(inject(PLATFORM_ID))) {
-            // If not in browser, we don't need to check auth. To avoid having login page rendered if the user is logged in.
-            // on the server side there is no auth token stored in local storage therefore the user is not logged in. while he is logged in on the client side.
-            return true;
-        }
-
         const authService = inject(AuthService);
         const authz = inject(AuthorizationService);
         const injector = inject(Injector);
 
-        let user = authService.user ?? authService.jwt(authService.get_token());
-        if (!user && authService.get_refresh_token()) {
-            user = await authService.refresh();
-        }
-
+        const user = authService.user;
         if (!user) {
-            user = await firstValueFrom(authService.user$);
-        }
-
-        if (!user) {
-            runInInjectionContext(injector, loginRedirect);
-            return false;
+            return resolveRedirect(injector, loginRedirect, route, state);
         }
 
         path = path || route.data["$path"];
@@ -66,11 +66,10 @@ export const authGuardFn = (options: AuthGuardOptions) => {
         query = query || route.queryParams["query"] || null;
         ctx = ctx || route.data["ctx"] || null;
 
-        if (path) {
+        if (path && action) {
             const res = await authz.authorize(path, action, user, payload, query, ctx);
             if (res.access === "deny") {
-                runInInjectionContext(injector, forbiddenRedirect);
-                return false;
+                return resolveRedirect(injector, forbiddenRedirect, route, state);
             }
             if (res.access === "grant") {
                 return true;
