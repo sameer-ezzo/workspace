@@ -18,11 +18,11 @@
                     [ngClass]="column.class"
                 >
                     <div [ngClass]="column.class">
-                        @for (template of column.template ?? []; track colIdx; let colIdx = $index) {
+                        @for (template of templateList(column.template); track colIdx; let colIdx = $index) {
                             <portal
                                 [component]="template['component']"
                                 [inputs]="
-                                    merge(template.inputs, {
+                                    merge(template['inputs'], {
                                         value: element.item | jpointer: colName,
                                         item: element.item,
                                         element,

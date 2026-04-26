@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Injector, OnDestroy, SimpleChanges, Type, computed, inject, input } from "@angular/core";
 import { createDataAdapter, DataAdapter, DataAdapterDescriptor } from "@upupa/data";
 import { ActivatedRoute } from "@angular/router";
-import { _defaultControl, DynamicComponent, PortalComponent } from "@upupa/common";
+import { _defaultControl, DynamicComponent, DynamicTemplate, PortalComponent } from "@upupa/common";
 import { CommonModule } from "@angular/common";
 import { Class } from "@noah-ark/common";
 import { MatTableModule } from "@angular/material/table";
@@ -75,5 +75,10 @@ export class TableViewComponent {
             ...inputs,
             ...inp2,
         };
+    }
+
+    templateList(template?: DynamicTemplate<any> | DynamicTemplate<any>[]) {
+        if (!template) return [];
+        return Array.isArray(template) ? template : [template];
     }
 }

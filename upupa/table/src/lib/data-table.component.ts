@@ -38,7 +38,7 @@ import { JsonPointerPipe } from "./json-pointer.pipe";
 import { PortalComponent } from "@upupa/common";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatIconModule } from "@angular/material/icon";
-import { DynamicComponent } from "@upupa/common";
+import { DynamicComponent, DynamicTemplate } from "@upupa/common";
 import { NG_ASYNC_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 export const ROW_ITEM = new InjectionToken<any>("ITEM");
@@ -332,6 +332,11 @@ export class DataTableComponent<T = any> extends DataComponentBase<T> implements
 
     merge(obj1: any, obj2: any) {
         return { ...obj1, ...obj2 };
+    }
+
+    templateList(template?: DynamicTemplate<any> | DynamicTemplate<any>[]) {
+        if (!template) return [];
+        return Array.isArray(template) ? template : [template];
     }
 
     trackByFn(index, item) {

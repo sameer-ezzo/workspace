@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
     "target": "ES2019",
+    "moduleResolution": "bundler",
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,

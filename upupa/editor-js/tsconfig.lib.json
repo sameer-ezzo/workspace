@@ -4,6 +4,7 @@
     "outDir": "../../../dist/out-tsc",
     "allowJs": true,
     "target": "ES2019",
+    "moduleResolution": "bundler",
     "declaration": true,
     "declarationMap": true,
     "inlineSources": true,

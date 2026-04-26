@@ -36,7 +36,7 @@ export const authGuardFn = (options: AuthGuardOptions) => {
     forbiddenRedirect = forbiddenRedirect || defaultForbiddenRedirect;
 
     return async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        if (isPlatformServer(PLATFORM_ID)) {
+        if (isPlatformServer(inject(PLATFORM_ID))) {
             // If not in browser, we don't need to check auth. To avoid having login page rendered if the user is logged in.
             // on the server side there is no auth token stored in local storage therefore the user is not logged in. while he is logged in on the client side.
             return true;
@@ -46,7 +46,15 @@ export const authGuardFn = (options: AuthGuardOptions) => {
         const authz = inject(AuthorizationService);
         const injector = inject(Injector);
 
-        const user = await firstValueFrom(authService.user$);
+        let user = authService.user ?? authService.jwt(authService.get_token());
+        if (!user && authService.get_refresh_token()) {
+            user = await authService.refresh();
+        }
+
+        if (!user) {
+            user = await firstValueFrom(authService.user$);
+        }
+
         if (!user) {
             runInInjectionContext(injector, loginRedirect);
             return false;

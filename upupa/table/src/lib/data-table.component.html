@@ -65,11 +65,11 @@
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">
-                        @for (template of column.value.template ?? []; track colIdx; let colIdx = $index) {
+                        @for (template of templateList(column.value.template); track colIdx; let colIdx = $index) {
                             <portal
                                 [component]="template['component']"
                                 [inputs]="
-                                    merge(template.inputs, {
+                                    merge(template['inputs'], {
                                         value: element.item | jpointer: column.key,
                                         item: element.item,
                                         element,
@@ -159,11 +159,11 @@
                     [ngClass]="column.value.class"
                 >
                     <div [ngClass]="column.value.class">
-                        @for (template of column.value.template ?? []; track colIdx; let colIdx = $index) {
+                        @for (template of templateList(column.value.template); track colIdx; let colIdx = $index) {
                             <portal
                                 [component]="template['component']"
                                 [inputs]="
-                                    merge(template.inputs, {
+                                    merge(template['inputs'], {
                                         value: element.item | jpointer: column.key,
                                         item: element.item,
                                         element,

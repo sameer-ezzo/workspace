@@ -8,6 +8,7 @@ export class Credentials {
     email?: string;
     phone?: string;
     password: string;
+    rememberMe?: boolean;
 }
 
 export type Verification = { type: 'token' | 'code', value: string, token: string };

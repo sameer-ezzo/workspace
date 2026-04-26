@@ -193,11 +193,23 @@ export class AuthService {
     }
 
     private readonly doc = inject(DOCUMENT);
+    private beforeUnloadHandler?: (event: BeforeUnloadEvent) => void;
+
+    private clearBeforeUnloadListener(): void {
+        if (!this.beforeUnloadHandler) return;
+
+        this.doc.defaultView?.removeEventListener("beforeunload", this.beforeUnloadHandler);
+        this.beforeUnloadHandler = undefined;
+    }
+
     private setupBeforeUnloadListener(): void {
+        if (this.beforeUnloadHandler) return;
+
         console.warn("User Tokens will be removed on page refresh");
-        this.doc.defaultView.addEventListener("beforeunload", (event) => {
+        this.beforeUnloadHandler = () => {
             this.setTokens(null);
-        });
+        };
+        this.doc.defaultView?.addEventListener("beforeunload", this.beforeUnloadHandler);
     }
     private _access_token: string | null = null;
     get access_token() {
@@ -255,6 +267,7 @@ export class AuthService {
         try {
             const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
             if (!success) throw new Error("SIGNOUT_FAILED");
+            this.clearBeforeUnloadListener();
             this.localStorage.removeAccessToken();
             this.localStorage.removeRefreshToken();
             this._access_token = null;
@@ -283,7 +296,7 @@ export class AuthService {
     @MutexAsync()
     async refresh(refresh_token?: string): Promise<Principle | null> {
         refresh_token = refresh_token ? refresh_token : this.get_refresh_token();
-        let principle: Principle = null;
+        let principle: Principle = this.user ?? (this.jwt(this.get_token()) as Principle);
 
         if (refresh_token) {
             try {
@@ -298,8 +311,13 @@ export class AuthService {
             } catch (error) {
                 const status = `${error.status ?? 0}`;
                 if (status.startsWith("4")) {
-                    console.warn("SIGNING OUT: ", error);
-                    this.signout();
+                    // Keep current valid access-token session if refresh token is rejected.
+                    if (!principle) {
+                        console.warn("SIGNING OUT: ", error);
+                        this.signout();
+                    } else {
+                        this.triggerNext(principle);
+                    }
                 } else if (status === "0") {
                     console.warn("Network error: ", error);
                 } else {
@@ -329,6 +347,7 @@ export class AuthService {
     async signin_Google(user: { token: string }) {
         const res = await httpFetch(`${this.baseUrl}/google-auth`, user);
         this.setTokens(res);
+        this.clearBeforeUnloadListener();
         const principle = this.jwt(res.access_token);
         this.triggerNext(principle);
         return principle;
@@ -337,6 +356,7 @@ export class AuthService {
     async signin_Facebook(user) {
         const res = await httpFetch(`${this.baseUrl}/facebook-auth`, user);
         this.setTokens(res);
+        this.clearBeforeUnloadListener();
         const principle = this.jwt(res.access_token);
         this.triggerNext(principle);
         return principle;
@@ -357,6 +377,7 @@ export class AuthService {
             } else {
                 const jwt = this.jwt(auth_token.access_token);
                 this.setTokens(auth_token);
+                this.clearBeforeUnloadListener();
                 this.triggerNext(jwt);
                 return jwt as Principle;
             }
@@ -393,7 +414,8 @@ export class AuthService {
 
             this.setTokens(auth_token);
             this.triggerNext(jwt);
-            if (authRequestBody["rememberMe"] !== true) this.setupBeforeUnloadListener();
+            if (authRequestBody["rememberMe"] === true) this.clearBeforeUnloadListener();
+            else this.setupBeforeUnloadListener();
 
             return jwt as Principle;
         }
