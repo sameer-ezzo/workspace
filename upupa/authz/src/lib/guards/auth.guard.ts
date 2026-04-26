@@ -4,7 +4,7 @@ import { AuthService } from "@upupa/auth";
 import { AuthorizationService } from "../authorization.service";
 import { Location } from "@angular/common";
 
-export type GuardRedirectResult = void | boolean | UrlTree | Promise<void | boolean | UrlTree>;
+export type GuardRedirectResult = boolean | UrlTree | Promise<boolean | UrlTree>;
 export type GuardRedirectFn = (ctx: { route: ActivatedRouteSnapshot; state: RouterStateSnapshot }) => GuardRedirectResult;
 
 export type AuthGuardOptions = {
@@ -21,7 +21,7 @@ export const defaultLoginRedirect = (loginRoute: string | string[] = ["/login"],
         const router = inject(Router);
         const location = inject(Location);
         const qps = route.queryParams ?? {};
-        let redirectTo = ((redirectToParamName ? (qps[redirectToParamName] ?? state.url ?? location.path()) : state.url ?? location.path()) || "").trim();
+        let redirectTo = ((redirectToParamName ? (qps[redirectToParamName] ?? state.url ?? location.path()) : (state.url ?? location.path())) || "").trim();
 
         redirectTo = redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`;
 
@@ -35,12 +35,7 @@ const defaultForbiddenRedirect: GuardRedirectFn = () => {
     return router.createUrlTree(["/forbidden"]);
 };
 
-const resolveRedirect = async (
-    injector: Injector,
-    redirect: GuardRedirectFn,
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot,
-): Promise<boolean | UrlTree> => {
+const resolveRedirect = async (injector: Injector, redirect: GuardRedirectFn, route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean | UrlTree> => {
     const redirectResult = await Promise.resolve(runInInjectionContext(injector, () => redirect({ route, state })));
     return redirectResult === undefined ? false : redirectResult;
 };
