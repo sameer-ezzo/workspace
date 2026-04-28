@@ -26,7 +26,7 @@ export class PermissionController {
         return this.rulesService.rulesManager.tree;
     }
 
-    @EndPoint({ http: { method: "GET", path: "*" } })
+    @EndPoint({ http: { method: "GET", path: "{*path}" } })
     async getPermissions() {
         return await this.data.get("permission");
     }

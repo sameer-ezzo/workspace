@@ -11,7 +11,7 @@ export class ImageController {
 
     constructor(private imgService: ImageService) { }
 
-    @Get('**')
+    @Get('{*path}')
     public async get(@Req() req: Request | any, @Res() res: Response) {
 
         //todo: fix line 88 path

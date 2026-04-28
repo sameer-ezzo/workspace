@@ -10,7 +10,8 @@
             "executor": "@nx/angular:package",
             "outputs": ["{workspaceRoot}/dist/libs/workspace/upupa/cp"],
             "options": {
-                "project": "libs/workspace/upupa/cp/ng-package.json"
+                "project": "libs/workspace/upupa/cp/ng-package.json",
+                "tsConfig": "libs/workspace/upupa/cp/tsconfig.lib.json"
             },
             "configurations": {
                 "production": {

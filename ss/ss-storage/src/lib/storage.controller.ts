@@ -46,7 +46,7 @@ export class StorageController {
         return this.post(msg$);
     }
 
-    @EndPoint({ http: { method: "POST", path: "**" }, operation: "Upload New" })
+    @EndPoint({ http: { method: "POST", path: "{*path}" }, operation: "Upload New" })
     async post(
         @MessageStream(_uploadToTmp)
         msg$: IncomingMessageStream<{ files: (File & { content?: string })[] } & Record<string, unknown>>
@@ -105,7 +105,7 @@ export class StorageController {
         }
     }
 
-    @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Upload Edit" })
+    @EndPoint({ http: { method: "PUT", path: "{*path}" }, operation: "Upload Edit" })
     async put(
         @MessageStream(_uploadToTmp)
         msg$: IncomingMessageStream<{ files: File[] } & Record<string, unknown>>
@@ -206,7 +206,7 @@ export class StorageController {
         });
     }
 
-    @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
+    @EndPoint({ http: { method: "DELETE", path: "{*path}" }, operation: "Delete" })
     async delete(@Message() msg: IncomingMessage) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Delete");
         if (access === "deny") throw toHttpException(new AppError("Access denied", { code: "ACCESS_DENIED", status: HttpStatus.FORBIDDEN, details: { rule, action, source, q: msg.query } }));
@@ -214,7 +214,7 @@ export class StorageController {
         await this.storageService.delete(msg.path, msg.principle);
     }
 
-    @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
+    @EndPoint({ http: { method: "GET", path: "{*path}" }, operation: "Read" })
     async download(@Message() msg: IncomingMessage, @Res() res: Response) {
         const { access, rule, source, action } = this.authorizeService.authorize(msg, "Read");
         if (access === "deny") throw new HttpException({ rule, action, source, q: msg.query }, HttpStatus.FORBIDDEN);

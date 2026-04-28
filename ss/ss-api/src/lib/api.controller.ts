@@ -45,7 +45,7 @@ export class ApiController {
         private dataService: DataService,
     ) {}
 
-    @EndPoint({ http: { method: "POST", path: "**" }, operation: "Create" })
+    @EndPoint({ http: { method: "POST", path: "{*path}" }, operation: "Create" })
     public async post(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
         const newData = msg.payload;
@@ -59,7 +59,7 @@ export class ApiController {
         }
     }
 
-    @EndPoint({ http: { method: "GET", path: "**" }, operation: "Read" })
+    @EndPoint({ http: { method: "GET", path: "{*path}" }, operation: "Read" })
     public async agg(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
 
@@ -68,7 +68,7 @@ export class ApiController {
         return result;
     }
 
-    @EndPoint({ http: { method: "PUT", path: "**" }, operation: "Update" })
+    @EndPoint({ http: { method: "PUT", path: "{*path}" }, operation: "Update" })
     public async put(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
         const doc = msg.payload;
@@ -94,7 +94,7 @@ export class ApiController {
         }
     }
 
-    @EndPoint({ http: { method: "PATCH", path: "**" }, operation: "Patch" })
+    @EndPoint({ http: { method: "PATCH", path: "{*path}" }, operation: "Patch" })
     public async patch(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
         const patches = <Patch[]>msg.payload; //req.body
@@ -119,7 +119,7 @@ export class ApiController {
         }
     }
 
-    @EndPoint({ http: { method: "DELETE", path: "**" }, operation: "Delete" })
+    @EndPoint({ http: { method: "DELETE", path: "{*path}" }, operation: "Delete" })
     public async delete(@Message() msg: IncomingMessage) {
         const { path, q } = _query(msg.path, msg.query, baseUrl);
         const principle = msg.principle;
@@ -138,7 +138,7 @@ export class ApiController {
         }
     }
 
-    @EndPoint({ http: { method: "GET", path: "export/**" }, operation: "Export" })
+    @EndPoint({ http: { method: "GET", path: "export/{*path}" }, operation: "Export" })
     public async export(@Message() msg: IncomingMessage, @Res() res: Response) {
         const { path, q } = _query(msg.path, msg.query, "/export" + baseUrl);
 
