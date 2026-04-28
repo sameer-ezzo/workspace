@@ -201,3 +201,25 @@ Use the `@FormViewModel` decorator and the `openFormDialog` helper.
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- CP auth integration migrated to focused accessors:
+  - role/user reads through `AuthUserAccessor`
+  - session actions (signout/unimpersonate) through `AuthSessionAccessor`
+- Reduced direct coupling to `AuthService` in layout and toolbar internals.
+
+## Usage Notes
+
+When extending toolbar/sidebar behavior, inject only the accessor you need:
+
+```ts
+const authUser = inject(AuthUserAccessor);
+const authSession = inject(AuthSessionAccessor);
+
+if (authUser.hasRole('teacher')) {
+  // build teacher navigation
+}
+
+await authSession.signout();
+```

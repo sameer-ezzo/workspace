@@ -16,7 +16,7 @@ import { FileIconPerTypePipe } from "../../file-icon-per-type.pipe";
 import { FileUploadService } from "../../file-upload.service";
 import { Subscription } from "rxjs";
 import { FileSizePipe, UploadStream } from "@upupa/upload";
-import { AuthService } from "@upupa/auth";
+import { AuthTokenAccessor } from "@upupa/auth";
 import { AsyncPipe, DatePipe } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
@@ -64,7 +64,7 @@ const actions = [
     imports: [MatIconModule, MatButtonModule, DatePipe, AsyncPipe, MatMenuModule, MatBtnComponent, FileSizePipe],
 })
 export class FileTemplateComponent {
-    private readonly auth = inject(AuthService);
+    private readonly authToken = inject(AuthTokenAccessor);
     class = computed(() => {
         return "file hoverable" + (this.stream() ? " loading" : "");
     });
@@ -92,14 +92,16 @@ export class FileTemplateComponent {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     src = e.target.result as string;
-                    this.imageSrc.set(src + (this.includeAccess() ? `?access_token=${this.auth.get_token()}` : ""));
+                    const token = this.authToken.getToken();
+                    this.imageSrc.set(src + (this.includeAccess() && token ? `?access_token=${token}` : ""));
                 };
                 reader.readAsDataURL(f);
                 this.startUpload(file);
             } else {
                 if (file.fileType !== "image") src = `/assets/upload/files-icons/${this.fi.transform(f)}.png`;
                 else src = this.base() + f.path;
-                this.imageSrc.set(src + (this.includeAccess() ? `?access_token=${this.auth.get_token()}` : ""));
+                const token = this.authToken.getToken();
+                this.imageSrc.set(src + (this.includeAccess() && token ? `?access_token=${token}` : ""));
             }
         }
     }
@@ -108,7 +110,8 @@ export class FileTemplateComponent {
     downloadFile() {
         const vm = this.vm();
         const file = vm.file as FileInfo;
-        const fileUrl = `${this.base()}${file.path}?access_token=${this.auth.get_token()}`;
+        const token = this.authToken.getToken();
+        const fileUrl = `${this.base()}${file.path}${token ? `?access_token=${token}` : ""}`;
         const a = this.doc.createElement("a");
         a.href = fileUrl;
         a.download = vm.fileName;

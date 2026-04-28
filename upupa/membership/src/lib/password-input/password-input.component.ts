@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, ViewChild, inject, signal } from "@angular/core";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient, AuthService } from "@upupa/auth";
 import { ActionDescriptor } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultSignupFormFields } from "../default-values";
@@ -14,6 +14,7 @@ export class PasswordInputComponent {
     @ViewChild("signupForm") signupForm: CollectorComponent;
     loading = signal<boolean>(false);
     public readonly auth: AuthService = inject(AuthService);
+    private readonly authApi = inject(AuthApiClient);
 
     @Output() success = new EventEmitter();
     @Output() fail = new EventEmitter();
@@ -39,8 +40,8 @@ export class PasswordInputComponent {
             delete user.confirmPassword;
             let value = user;
 
-            let res = await this.auth.signup(value, this.model.password);
-            let res2 = await this.auth.signin({ email: user.email, password: this.model.password });
+            const res = await this.authApi.signup(value, this.model.password);
+            await this.auth.signin({ email: user.email, password: this.model.password });
             this.success.emit(res);
         } catch (error) {
             this.fail.emit(error);

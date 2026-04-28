@@ -148,3 +148,27 @@ export class MyEditorComponent {
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- The CKEditor 4 component now reacts when `language` or `dir` input values change at runtime.
+- On `language`/`dir` change, the editor is safely recreated and current content is preserved.
+- Upload authentication remains token-based via `@upupa/auth` integration.
+
+## Usage Notes
+
+Bind `language` and `dir` directly so UI/content direction updates when app locale changes:
+
+```html
+<form-html
+  [language]="currentLang"
+  [dir]="currentDir"
+  [(ngModel)]="content"
+  [uploadPath]="'/html-editor-assets'"
+></form-html>
+```
+
+```ts
+currentLang = 'ar';
+currentDir: 'rtl' | 'ltr' = 'rtl';
+```

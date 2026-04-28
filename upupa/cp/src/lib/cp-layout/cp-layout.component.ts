@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, PLATFORM_ID, viewChild, ViewEncapsulation } from "@angular/core";
-import { AuthService } from "@upupa/auth";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { MatDrawer, MatDrawerMode, MatSidenavModule } from "@angular/material/sidenav";
 import { SideBarItem, SideBarViewModel } from "../side-bar-group-item";
@@ -75,7 +74,6 @@ export class CpLayoutComponent {
     }
 
     public breakPointObserver = inject(BreakpointObserver);
-    public auth = inject(AuthService);
     private readonly el = inject(ElementRef);
     constructor() {
         effect(() => {

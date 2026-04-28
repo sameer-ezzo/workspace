@@ -3,14 +3,14 @@
 import { CP_OPTIONS, USER_PICTURE_RESOLVER } from "./di.token";
 import { DataService } from "@upupa/data";
 import { getUserInitialsImage } from "./user-image.service";
-import { AuthService } from "@upupa/auth";
+import { AuthUserAccessor } from "@upupa/auth";
 import { catchError, filter, map, of, switchMap } from "rxjs";
 
 import { makeEnvironmentProviders, DOCUMENT } from "@angular/core";
 
 export const DEFAULT_USER_AVATAR_PROVIDER = {
     provide: USER_PICTURE_RESOLVER,
-    useFactory: (auth: AuthService, data: DataService, document) => {
+    useFactory: (auth: AuthUserAccessor, data: DataService, document) => {
         if (!auth.user$) return of(getUserInitialsImage(document, ""));
         return auth.user$.pipe(
             filter((u) => !!u),
@@ -23,7 +23,7 @@ export const DEFAULT_USER_AVATAR_PROVIDER = {
             ),
         );
     },
-    deps: [AuthService, DataService, DOCUMENT],
+    deps: [AuthUserAccessor, DataService, DOCUMENT],
 };
 
 export function provideControlPanel(

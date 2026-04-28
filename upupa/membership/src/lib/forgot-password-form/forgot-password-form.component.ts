@@ -1,5 +1,5 @@
 import { Component, inject, signal, model, output, viewChild, input } from "@angular/core";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient } from "@upupa/auth";
 import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultForgotPasswordFormFields } from "../default-values";
@@ -17,7 +17,7 @@ import { parseApiError } from "@upupa/common";
 export class ForgotPasswordFormComponent {
     control = new FormControl();
     loginForm = viewChild<CollectorComponent>("loginForm");
-    private readonly auth = inject(AuthService);
+    private readonly authApi = inject(AuthApiClient);
     loading = signal(false);
     error: string;
     success = output<any>();
@@ -36,7 +36,7 @@ export class ForgotPasswordFormComponent {
         this.disableSubmit();
         try {
             const value = { ...this.model() };
-            const res = await this.auth.forgotPassword(value.email, value);
+            const res = await this.authApi.forgotPassword(value.email, value);
             this.success.emit(res);
         } catch (error) {
             const err = this.handleError(error);

@@ -102,3 +102,40 @@ Default values are provided in `auth-options.ts`.
     ```
 
 *(Note: Specific implementation details like decorator names (`@User`, `@Roles`, `AuthGuard`) might need verification based on `decorators.ts`, `auth.guard.ts` and `index.ts` exports.)*
+
+## Recent Changes
+
+- Split core auth behavior into focused services:
+  - `TokenService`
+  - `SessionService`
+  - `VerificationService`
+  - `ProviderAuthService`
+- Kept `AuthService` as facade-compatible entrypoint while delegating internals to the new services.
+- Added cookie-based auth options support in module config (`useCookies.enabled`, `useCookies.cookieName`).
+- Hardened signout/session invalidation behavior.
+
+## Usage Notes
+
+Enable SSR-friendly cookie auth in module registration:
+
+```ts
+AuthModule.register(
+  { dbName: 'DB_DEFAULT', userSchema: UserSchema },
+  {
+    secret: process.env.AUTH_SECRET,
+    useCookies: {
+      enabled: true,
+      cookieName: 'ssr_jwt',
+    },
+  },
+);
+```
+
+Inject focused services for specialized flows, or continue using `AuthService` for compatibility:
+
+```ts
+constructor(
+  private readonly auth: AuthService,
+  private readonly tokenService: TokenService,
+) {}
+```

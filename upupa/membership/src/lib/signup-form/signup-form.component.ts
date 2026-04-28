@@ -1,5 +1,5 @@
 import { Component, Output, inject, signal, input, model, output, viewChild } from "@angular/core";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient, AuthService } from "@upupa/auth";
 import { ActionDescriptor, DynamicComponent, PortalComponent } from "@upupa/common";
 import { CollectorComponent, FormScheme } from "@upupa/dynamic-form";
 import { defaultSignupFormFields } from "../default-values";
@@ -16,6 +16,7 @@ import { JsonPipe } from "@angular/common";
 })
 export class SignUpFormComponent {
     public readonly auth: AuthService = inject(AuthService);
+    private readonly authApi = inject(AuthApiClient);
 
     signupForm = viewChild<CollectorComponent>("signupForm");
 
@@ -46,8 +47,8 @@ export class SignUpFormComponent {
             delete user.password;
             delete user.confirmPassword;
 
-            const res = await this.auth.signup(user, value.password);
-            const res2 = await this.auth.signin({ email: value.email, password: value.password });
+            const res = await this.authApi.signup(user, value.password);
+            await this.auth.signin({ email: value.email, password: value.password });
             this.success.emit(res);
         } catch (error) {
             this.fail.emit(error);

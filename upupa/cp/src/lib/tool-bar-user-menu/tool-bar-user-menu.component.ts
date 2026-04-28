@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, DOCUMENT } from "@angular/core";
 import { filter, map, Observable } from "rxjs";
 import { EventBus } from "@upupa/common";
-import { AuthService } from "@upupa/auth";
+import { AuthSessionAccessor, AuthUserAccessor } from "@upupa/auth";
 import { SideBarItem } from "../side-bar-group-item";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { USER_PICTURE_RESOLVER } from "../di.token";
@@ -24,7 +24,8 @@ export class ToolbarUserMenuComponent {
     readonly commands = input<SideBarItem[]>(undefined);
     readonly userImageResolver = inject(USER_PICTURE_RESOLVER) as Observable<string>;
 
-    public readonly auth = inject(AuthService);
+    public readonly auth = inject(AuthUserAccessor);
+    private readonly session = inject(AuthSessionAccessor);
     private readonly bus = inject(EventBus);
     loginUrl = input("/login");
 
@@ -43,12 +44,12 @@ export class ToolbarUserMenuComponent {
     }
 
     async signout() {
-        await this.auth.signout();
+        await this.session.signout();
         this.document.location.href = "/";
     }
 
     async unimpersonate() {
-        await this.auth.unimpersonate();
+        await this.session.unimpersonate();
         this.document.location.href = "/";
     }
     private readonly document = inject(DOCUMENT);

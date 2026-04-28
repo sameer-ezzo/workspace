@@ -1,19 +1,14 @@
-import { Injectable, Injector } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild, ActivatedRoute, CanActivateFn } from "@angular/router";
 import { Observable } from "rxjs";
-import { AuthService } from "./auth.service";
+import { AuthUserAccessor } from "./auth-user.accessor";
 import { Principle } from "@noah-ark/common";
 @Injectable({ providedIn: "root" })
 export class AuthGuard implements CanActivate, CanActivateChild {
-    constructor(
-        public router: Router,
-        private route: ActivatedRoute,
-        public authService: AuthService,
-        private injector: Injector,
-    ) {}
+    public auth = inject(AuthUserAccessor);
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-        const user = this.authService.user;
+        const user = this.auth.user;
 
         if (!user) return this.reject(user);
         const data = route.routeConfig?.data ?? {};
@@ -31,7 +26,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         return this.canActivate(route, state);
     }
 
-    reject(user: Principle | undefined): boolean {
+    reject(user: Principle | null | undefined): boolean {
         // if (user) {
         //     const forbiddenUrl = this.injector.get(DEFAULT_FORBIDDEN_PROVIDER_TOKEN, "/forbidden") as string;
         //     this.router.navigateByUrl(forbiddenUrl ?? "");

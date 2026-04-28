@@ -14,6 +14,9 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { userSchemaFactory } from "./user.schema";
 import { roleSchema } from "./role.schema";
 import { Schema } from "mongoose";
+import { TokenService } from "./token.service";
+import { SessionService } from "./session.service";
+import { VerificationService } from "./verification.service";
 
 const defaultAuthOptions = new AuthOptions();
 const _authOptions = {
@@ -66,6 +69,9 @@ export class AuthModule implements OnModuleInit {
 
         const providers: Provider[] = [
             AuthService,
+            TokenService,
+            SessionService,
+            VerificationService,
             { provide: "USER_SCHEMA", useValue: modelOptions.userSchema },
             { provide: "AUTH_OPTIONS", useValue: options },
             {

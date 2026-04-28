@@ -94,3 +94,17 @@ The appearance and specific form fields used by components like Login and Signup
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- Membership network flows were aligned with the split auth architecture:
+  - forgot password
+  - reset password
+  - signup
+  - verification
+  now route through `AuthApiClient`-backed behavior.
+- Login provider mapping was hardened to avoid relying on provider-specific undocumented fields.
+
+## Usage Notes
+
+Keep membership routes/components usage unchanged. Ensure auth providers are configured through `provideAuth(...)` and enabled IDPs (`withEmailAndPassword()`, `withGoogle()`, etc.) so membership screens can resolve provider actions correctly.

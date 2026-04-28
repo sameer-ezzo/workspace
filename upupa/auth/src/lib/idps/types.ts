@@ -6,6 +6,7 @@ import { FacebookIdProviderOptions } from "./facebook/facebook.idp";
 import { IdProviderService } from "./google/google-id-provider.service";
 import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
 import { AuthInterceptor } from "../auth.interceptor";
+import { AuthSessionAccessor } from "../auth-session.accessor";
 
 export type IdPName = "google" | "facebook" | "github" | "twitter" | "linkedin" | "microsoft" | "apple" | "email-and-password" | "username-and-password";
 
@@ -16,8 +17,8 @@ export type IdPsOptions<Name extends IdPName = "email-and-password"> = { name: N
       : { options: unknown });
 
 export type IdProviderOptions<Name extends IdPName> = Partial<IdPsOptions<Name>> & {
-    on_success?: (instance: any, value: any) => void;
-    on_error?: (instance: any, error: any) => void;
+    on_success?: (instance: unknown, value: unknown) => void;
+    on_error?: (instance: unknown, error: unknown) => void;
 };
 export type AuthIdProvider<Name extends IdPName = IdPName> = IdProviderService<Name>;
 export const AUTH_IDPs = new InjectionToken<AuthIdProvider[]>("AUTH_IdPs");
@@ -32,9 +33,9 @@ export function provideAuth(options: (() => Partial<AuthOptions>) | Partial<Auth
         ...authProviders(opts),
         ...providers,
         provideHttpClient(withFetch(), withInterceptors([AuthInterceptor])),
-        // provideAppInitializer(async () => {
-        //     const auth = inject(AuthService);
-        //     await auth.refresh();
-        // }),
+        provideAppInitializer(async () => {
+            const session = inject(AuthSessionAccessor);
+            await session.refresh();
+        }),
     ]);
 }

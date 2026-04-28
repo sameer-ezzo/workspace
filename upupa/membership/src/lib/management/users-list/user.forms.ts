@@ -8,7 +8,7 @@ import { ImpersonateUserButton, ResetPasswordButton, BanUserButton, DeleteUserBu
 import { DialogRef, SnackBarService } from "@upupa/dialog";
 import { column } from "@upupa/table";
 import { HttpErrorResponse } from "@angular/common/http";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient } from "@upupa/auth";
 
 export class CreateUserFromViewModel {
     @formInput({ input: "hidden" })
@@ -33,12 +33,12 @@ export class CreateUserFromViewModel {
     }
     async onSubmit() {
         const snack = inject(SnackBarService);
-        const auth = inject(AuthService);
+        const authApi = inject(AuthApiClient);
         const dialogRef = inject(DialogRef, { optional: true });
 
         const adapter = inject(DataAdapter);
         try {
-            const { document } = await auth.signup(
+            const document = await authApi.signup(
                 {
                     email: this.email.trim().toLocaleLowerCase(),
                     username: (this.username || this.email).trim().toLocaleLowerCase(),

@@ -1,5 +1,5 @@
 import { Component, input, output, model } from "@angular/core";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient, AuthService } from "@upupa/auth";
 import { TranslateService } from "@upupa/language";
 import { FormDesign, FormScheme } from "@upupa/dynamic-form";
 import { ActivatedRoute } from "@angular/router";
@@ -58,6 +58,7 @@ export class VerifyComponent {
     destroy = new Subject<void>();
     constructor(
         public auth: AuthService,
+        private readonly authApi: AuthApiClient,
         private route: ActivatedRoute,
         private data: DataService,
         private snack: SnackBarService,
@@ -92,15 +93,16 @@ export class VerifyComponent {
     async resendCode() {
         try {
             this.loading = true;
-            await this.auth.sendVerificationCode(this.name(), this.value(), {
+            await this.authApi.sendVerificationCode(this.name(), this.value(), {
                 method: this.type(),
                 id: this.auth.user.sub,
             });
             this.snack.openSuccess("sent");
             this.codeSent.emit();
         } catch (error) {
-            if (error.status === 400) {
-                const e = error.json();
+            const typedError = error as { status?: number; body?: { msg?: string } };
+            if (typedError.status === 400) {
+                const e = typedError.body ?? {};
                 if (e.msg === "ALREADY_SENT") {
                     this.snack.openFailed("code-already-sent");
                     //const expire = e.expire; TODO
@@ -120,7 +122,7 @@ export class VerifyComponent {
                 return;
             }
 
-            await this.auth.verify(this.name(), {
+            await this.authApi.verify(this.name(), {
                 type: this.type(),
                 token: this.token(),
                 value: this.value(),

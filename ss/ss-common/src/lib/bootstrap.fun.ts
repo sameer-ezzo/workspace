@@ -21,7 +21,7 @@ import { ConfigOptions } from "express-handlebars/types";
 import { env } from "process";
 import { NestFactoryStatic } from "@nestjs/core/nest-factory";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
-import cookieParser from "cookie-parser";
+import cookieParser = require("cookie-parser");
 import { HttpExceptionFilter } from "./errors/http-exception.filter";
 
 export let appName: string;

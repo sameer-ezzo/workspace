@@ -6,3 +6,7 @@ export * from "./lib/auth-options";
 export * from "./lib/auth.middleware";
 export * from "./lib/auth.guard";
 export * from "./lib/user.document";
+export { TokenService } from "./lib/token.service";
+export * from "./lib/session.service";
+export * from "./lib/verification.service";
+export * from "./lib/provider-auth.service";

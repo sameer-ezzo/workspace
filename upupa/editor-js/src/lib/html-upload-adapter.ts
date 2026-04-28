@@ -1,4 +1,4 @@
-import { AuthService } from '@upupa/auth';
+import { AuthTokenAccessor } from '@upupa/auth';
 import { UploadClient, UploadService, UploadStream } from '@upupa/upload';
 
 export class HtmlUploadAdapter {
@@ -12,7 +12,7 @@ export class HtmlUploadAdapter {
         private readonly loader: any,
         private readonly url: string,
         private readonly client: UploadClient,
-        private readonly auth: AuthService,
+        private readonly authToken: AuthTokenAccessor,
     ) {}
 
     task: UploadStream;
@@ -28,7 +28,8 @@ export class HtmlUploadAdapter {
             this.task.response$.subscribe({
                 next: (fileInfo) => {
                     this.loader.uploaded = true;
-                    const qps = this.auth.get_token() ? `?access_token=${this.auth.get_token()}` : '';
+                    const token = this.authToken.getToken();
+                    const qps = token ? `?access_token=${token}` : '';
                     resolve({
                         default: `${this.client.baseOrigin}${fileInfo.path}${qps}`,
                     });

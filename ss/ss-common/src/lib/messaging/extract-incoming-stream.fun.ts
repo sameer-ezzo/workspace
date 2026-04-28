@@ -1,4 +1,4 @@
-import Busboy from "busboy";
+import Busboy = require("busboy");
 import { Request, Response } from "express";
 import { ExecutionContext } from "@nestjs/common";
 

@@ -154,3 +154,21 @@ export class MyService {
   }
 }
 ```
+
+## Recent Changes
+
+- `bootstrap(...)` now applies a global HTTP exception mapping filter by default.
+- Improved robustness in request stream extraction and Redis default config handling.
+
+## Usage Notes
+
+Prefer throwing typed errors (`HttpException` or `AppError`) from service/controller code so HTTP responses remain deterministic:
+
+```ts
+import { AppError } from '@ss/common';
+
+throw new AppError('INVALID_DEVICE', {
+  status: 400,
+  details: { deviceId },
+});
+```

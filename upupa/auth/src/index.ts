@@ -9,3 +9,8 @@ export * from "./lib/auth-options";
 export * from "./lib/idps/index";
 export * from "./lib/auth.interceptor";
 export * from "./lib/ssr-auth.providers";
+export * from "./lib/auth-api.client";
+export * from "./lib/session-orchestrator";
+export * from "./lib/auth-token.accessor";
+export * from "./lib/auth-user.accessor";
+export * from "./lib/auth-session.accessor";

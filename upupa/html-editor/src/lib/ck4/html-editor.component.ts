@@ -2,7 +2,7 @@ import { isPlatformBrowser, LocationStrategy } from "@angular/common";
 import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild, DOCUMENT } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { loadScript } from "@noah-ark/common";
-import { AuthService } from "@upupa/auth";
+import { AuthTokenAccessor } from "@upupa/auth";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 import { UploadClient } from "@upupa/upload";
 
@@ -63,7 +63,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     label = input("");
     hint = input("");
     upload = inject(UploadClient);
-    auth = inject(AuthService);
+    authToken = inject(AuthTokenAccessor);
     doc = inject(DOCUMENT);
 
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -77,14 +77,27 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
     private baseHref = inject(LocationStrategy).getBaseHref();
 
-    private async loadEditor(): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`);
+    private normalizedLanguage(): string | undefined {
+        const value = `${this.language() || ""}`.trim();
+        return value || undefined;
+    }
 
-        const config = {
+    private normalizedDir(): "ltr" | "rtl" | undefined {
+        const value = `${this.dir() || ""}`.trim().toLowerCase();
+        if (value === "rtl" || value === "ltr") return value;
+        return undefined;
+    }
+
+    private getEditorConfig() {
+        const language = this.normalizedLanguage();
+        const contentsLangDirection = this.normalizedDir();
+
+        return {
             licenseKey: "GPL",
             versionCheck: false,
             uiColor: "#fff7f9",
             toolbar: SMART_TOOLBAR,
+
             extraPlugins: "image2,pastefromword, pastefromgdocs",
             removePlugins: "image,exportpdf",
             embed_provider: "//ckeditor.iframe.ly/api/oembed?url={url}&callback={callback}",
@@ -100,13 +113,35 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             // https://ckeditor.com/docs/ckeditor4/latest/guide/dev_allowed_content_rules.html
             extraAllowedContent: "*[style,id](*);iframe[*]{*}[*]'; figure()[]; oembed[];source[];",
             // disallowedContent: "*{font-family,font-size}",
-            allowedContent:true,
-            protectedSource: [ /<iframe[\s\S]*?<\/iframe>/gi ] ,
+            allowedContent: true,
+            protectedSource: [/<iframe[\s\S]*?<\/iframe>/gi],
 
             ...this.config(),
+            language,
+            contentsLanguage: language,
+            contentsLangDirection,
         };
-        this.editor = CKEDITOR.replace(this.editorElement().nativeElement, config);
-        this.editor.setData(this.value());
+    }
+
+    private destroyEditor(): void {
+        if (!this.editor) return;
+        this.editor.destroy();
+        this.editor = null;
+    }
+
+    private async recreateEditor(): Promise<void> {
+        if (!this.editorElement()) return;
+        const data = this.editor?.getData?.() ?? this.value() ?? "";
+        this.destroyEditor();
+        await this.loadEditor(data);
+    }
+
+    private async loadEditor(initialData?: string): Promise<void> {
+        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`);
+
+        const config = this.getEditorConfig();
+        this.editor = CKEDITOR.replace(this.editorElement()?.nativeElement, config);
+        this.editor.setData(initialData ?? this.value() ?? "");
 
         // Handle editor changes
         this.editor.on("change", () => {
@@ -116,7 +151,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
         this.editor.on("fileUploadRequest", (evt) => {
             const xhr = evt.data.fileLoader.xhr;
-            xhr.setRequestHeader("Authorization", "Bearer " + this.auth.get_token());
+            xhr.setRequestHeader("Authorization", "Bearer " + this.authToken.getToken());
         });
 
         this.editor.on("fileUploadResponse", (evt) => {
@@ -165,6 +200,14 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes);
+
+        const languageChanged = !!changes["language"] && !changes["language"].firstChange;
+        const dirChanged = !!changes["dir"] && !changes["dir"].firstChange;
+
+        if (this.isBrowser && this.editor && (languageChanged || dirChanged)) {
+            await this.recreateEditor();
+        }
+
         if (changes["value"]) {
             this.editor?.setData(this.value() ?? "");
         }

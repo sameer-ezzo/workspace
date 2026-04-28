@@ -21,8 +21,8 @@ import { NG_VALUE_ACCESSOR } from "@angular/forms";
 
 import { HtmlUploadAdapter } from "../html-upload-adapter";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
-import { UploadClient, UploadModule } from "@upupa/upload";
-import { AuthService } from "@upupa/auth";
+import { UploadClient } from "@upupa/upload";
+import { AuthTokenAccessor } from "@upupa/auth";
 import { isPlatformBrowser } from "@angular/common";
 import { OutputData, ToolConstructable } from "@editorjs/editorjs";
 import { languageDir } from "@upupa/language";
@@ -41,7 +41,7 @@ declare let Delimiter: any;
     selector: "editor-js-input",
     templateUrl: "./editor-js.component.html",
     styleUrls: ["./editor-js.component.scss"],
-    imports: [UploadModule, ErrorsDirective],
+    imports: [ErrorsDirective],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -55,6 +55,7 @@ declare let Delimiter: any;
     },
 })
 export class EditorJsInputComponent extends InputBaseComponent<OutputData> implements OnChanges, AfterViewInit, OnDestroy {
+    id = input("");
     readOnly = input(false);
     placeholder = input("");
     label = input("");
@@ -63,7 +64,7 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     uploadPath = input("/editor-js-assets");
     classList = computed(() => (this.readOnly() ? "readonly" : ""));
     private readonly uploadClient = inject(UploadClient);
-    private readonly auth = inject(AuthService);
+    private readonly authToken = inject(AuthTokenAccessor);
 
     private readonly aiPrompt = inject(EDITOR_JS_AI_PROMPT, { optional: true });
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -150,7 +151,7 @@ export class EditorJsInputComponent extends InputBaseComponent<OutputData> imple
     public uploadAdapterPlugin(editor: any): void {
         const path = this.uploadPath();
         editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
-            const adapter = new HtmlUploadAdapter(loader, path, this.uploadClient, this.auth);
+            const adapter = new HtmlUploadAdapter(loader, path, this.uploadClient, this.authToken);
             return adapter;
         };
     }

@@ -3,8 +3,14 @@ import { AUTH_OPTIONS } from "./di.token";
 import { AuthOptions } from "./auth-options";
 import { AUTH_IDPs } from "./idps";
 import { AuthService } from "./auth.service";
+import { AuthApiClient } from "./auth-api.client";
+import { SessionOrchestrator } from "./session-orchestrator";
 
-export type EmailAndPasswordProviderOptions = { fields?: any; on_success?: (instance: any, value: any) => void; on_error?: (instance: any, error: any) => void };
+export type EmailAndPasswordProviderOptions = {
+    fields?: unknown;
+    on_success?: (instance: unknown, value: unknown) => void;
+    on_error?: (instance: unknown, error: unknown) => void;
+};
 
 export const EMAIL_AND_PASSWORD_PROVIDER_OPTIONS = new InjectionToken<EmailAndPasswordProviderOptions>("EMAIL_AND_PASSWORD_PROVIDER_OPTIONS");
 export type AuthProvider = Omit<Provider, "provide">;
@@ -12,6 +18,8 @@ export type AuthProvider = Omit<Provider, "provide">;
 export function authProviders(options: () => Partial<AuthOptions>): Provider[] {
     return [
         AuthService,
+        AuthApiClient,
+        SessionOrchestrator,
         { provide: AUTH_OPTIONS, useFactory: options },
         // { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     ] as Provider[];

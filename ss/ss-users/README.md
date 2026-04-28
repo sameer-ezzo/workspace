@@ -99,3 +99,23 @@ This module primarily exposes API endpoints under the `/auth` path (or whatever 
 -   **Who Am I:** `GET /auth/whoami` (requires Authorization header with Bearer token).
 
 See the `UsersController` source code (`users.controller.ts`) for details on all available endpoints, required payloads, and authorization requirements.
+
+## Recent Changes
+
+- Canonicalized social auth endpoint usage around `/auth/facebook-auth`.
+- Hardened auth payload validation for signin/verify/reset flows.
+- Added safer user event logging via explicit payload shaping (`toLogPayload`) to avoid leaking sensitive fields.
+- Added targeted controller tests around social auth compatibility and validation behavior.
+
+## Usage Notes
+
+Use canonical social endpoint and accepted payload shape:
+
+```http
+POST /auth/facebook-auth
+Content-Type: application/json
+
+{ "token": "<provider-token>" }
+```
+
+For event handling/logging, prefer explicit payload projection from event objects instead of logging raw event instances.

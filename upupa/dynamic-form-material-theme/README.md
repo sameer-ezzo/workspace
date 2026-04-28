@@ -121,3 +121,12 @@ const myFormScheme: FormScheme = {
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- Upload-related components were updated to use token accessor-based auth integration from `@upupa/auth`.
+- Removed direct dependence on broad auth service APIs for upload authorization.
+
+## Usage Notes
+
+No template-level migration is required. Ensure your app provides `@upupa/auth` with token access so upload inputs can attach authorization headers correctly.

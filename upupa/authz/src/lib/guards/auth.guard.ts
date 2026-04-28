@@ -1,6 +1,6 @@
 import { inject, Injector, runInInjectionContext } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
-import { AuthService } from "@upupa/auth";
+import { AuthUserAccessor } from "@upupa/auth";
 import { AuthorizationService } from "../authorization.service";
 import { Location } from "@angular/common";
 
@@ -46,11 +46,11 @@ export const authGuardFn = (options: AuthGuardOptions) => {
     forbiddenRedirect = forbiddenRedirect || defaultForbiddenRedirect;
 
     return async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        const authService = inject(AuthService);
+        const auth = inject(AuthUserAccessor);
         const authz = inject(AuthorizationService);
         const injector = inject(Injector);
 
-        const user = authService.user;
+        const user = auth.user;
         if (!user) {
             return resolveRedirect(injector, loginRedirect, route, state);
         }

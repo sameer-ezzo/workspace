@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, DestroyRef, Directive, ElementRef, inject, OnChanges, Renderer2, SimpleChanges, input, computed, effect } from "@angular/core";
 import { AuthorizeResult, Principle } from "@noah-ark/common";
-import { AuthService } from "@upupa/auth";
+import { AuthUserAccessor } from "@upupa/auth";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 import { AuthorizationService } from "./authorization.service";
@@ -13,7 +13,7 @@ const authzCache0 = new Map<string, AuthorizeResult>();
 })
 export class AuthorizeActionDirective implements AfterViewInit, OnChanges {
     private readonly hostElement = inject(ElementRef);
-    private readonly auth = inject(AuthService);
+    private readonly auth = inject(AuthUserAccessor);
     private readonly renderer = inject(Renderer2);
     private readonly cdRef = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef);
@@ -83,7 +83,7 @@ const authzCache = new Map<string, AuthorizeResult>();
 })
 export class AuthzDirective implements AfterViewInit, OnChanges {
     private readonly hostElement = inject(ElementRef);
-    private readonly auth = inject(AuthService);
+    private readonly auth = inject(AuthUserAccessor);
     private readonly renderer = inject(Renderer2);
     private readonly cdRef = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef);
@@ -170,7 +170,7 @@ export class AuthzDirective implements AfterViewInit, OnChanges {
     },
 })
 export class HasRoleDirective {
-    auth = inject(AuthService);
+    auth = inject(AuthUserAccessor);
     host = inject(ElementRef);
     hasRole = input<string[], string | string[]>(undefined, { transform: (value) => (typeof value === "string" ? [value] : value) });
 

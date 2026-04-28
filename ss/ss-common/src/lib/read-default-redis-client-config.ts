@@ -23,19 +23,19 @@ export function extractRedisConnectionString(str: string) {
 }
 
 function parseRedisConnectionString(connectionString: string): RedisConnectionString {
-    const regex = /^(?:(?<user>[^:]+):(?<password>[^@]+)@)?(?<host>[^:\/]+):(?<port>\d+)(?:\/(?<db>\d+))?$/;
+    const regex = /^(?:([^:]+):([^@]+)@)?([^:\/]+):(\d+)(?:\/(\d+))?$/;
     const match = connectionString.match(regex);
 
-    if (!match || !match.groups) {
+    if (!match) {
         throw new Error("Invalid Redis connection string format");
     }
 
-    const { user, password, host, port, db } = match.groups;
+    const [, user, password, host, port, db] = match;
     return {
         username: user || "", // Default to empty string if missing
         password: password || "",
         host: host,
-        port: isNaN(+port) ? +port : port,
+        port: Number(port),
         db: db || "0", // Default DB to "0" if missing
     } as RedisConnectionString;
 }

@@ -211,3 +211,44 @@ export const appRoutes: Routes = [
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- Added accessor-based auth APIs to decouple consumers from the full `AuthService`:
+  - `AuthUserAccessor`
+  - `AuthTokenAccessor`
+  - `AuthSessionAccessor`
+- Added `AuthApiClient` and `SessionOrchestrator` to separate transport from session/state orchestration.
+- Added `useCookies` support in auth options for SSR cookie workflows.
+- Improved refresh/signin orchestration behavior for remember-me and token recovery paths.
+
+## Usage Notes
+
+Use focused accessors in feature code:
+
+```ts
+import { AuthSessionAccessor, AuthTokenAccessor, AuthUserAccessor } from '@upupa/auth';
+
+const user = inject(AuthUserAccessor);
+const tokens = inject(AuthTokenAccessor);
+const session = inject(AuthSessionAccessor);
+
+const isAdmin = user.hasAnyRole('admin', 'super-admin');
+const token = tokens.getToken();
+await session.refresh();
+```
+
+Enable cookie-based token transport when configuring auth providers:
+
+```ts
+provideAuth(
+  {
+    baseUrl: config.get('auth_url'),
+    useCookies: {
+      enabled: true,
+      cookieName: 'ssr_jwt',
+    },
+  },
+  withEmailAndPassword(),
+);
+```

@@ -1,23 +1,24 @@
 import { hash, compare } from "bcryptjs";
 const bcrypt = { hash, compare };
-import * as jose from "jose";
 import mongoose from "mongoose";
 
-import { Model } from "mongoose";
 import { DataService, WriteResult } from "@ss/data";
 import { AuthExceptions } from "./auth-exception";
 import { Inject, Injectable } from "@nestjs/common";
 import { AuthOptions } from "./auth-options";
 import { logger } from "./logger";
 
-import { User, randomString, randomDigits, UserDevice, Principle } from "@noah-ark/common";
+import { User, randomString, UserDevice, Principle } from "@noah-ark/common";
 import { UserDocument } from "./user.document";
 import { ObjectId } from "mongodb";
 import { AppError, sha256 } from "@ss/common";
+import { TokenService } from "./token.service";
+import { SessionService } from "./session.service";
+import { VerificationService } from "./verification.service";
 
 export type SignOptions = {
     issuer?: string;
-    expiresIn: string;
+    expiresIn: string | number;
     audience?: string;
     subject?: string;
 };
@@ -38,26 +39,31 @@ export enum TokenTypes {
     verify = "vfy",
 }
 
-export type TokenBase = { t: TokenTypes } & Record<string, any>;
+export type TokenBase = { t: TokenTypes } & Record<string, unknown>;
 
 @Injectable()
 export class AuthService {
     #secret: Uint8Array;
-    model: mongoose.Model<any, {}, {}, {}, any, any>;
+    model!: mongoose.Model<UserDocument>;
 
     constructor(
         @Inject("DB_AUTH") public readonly data: DataService,
         @Inject("AUTH_OPTIONS") public readonly options: AuthOptions,
+        private readonly tokenService: TokenService,
+        private readonly sessionService: SessionService,
+        private readonly verificationService: VerificationService,
     ) {
         this.#secret = new TextEncoder().encode(this.options.secret);
         this.getModel();
     }
 
     private async getModel(): Promise<void> {
-        this.model = await this.data.getModel("user");
+        const model = await this.data.getModel("user");
+        if (!model) throw new AppError("User model not found", { code: AuthExceptions.InvalidOperation });
+        this.model = model as unknown as mongoose.Model<UserDocument>;
     }
     async signUp<KeyType extends string | ObjectId = string>(user: Partial<User<KeyType>>, password?: string): Promise<WriteResult<User>> {
-        const payload = { ...user } as any;
+        const payload = { ...user } as Record<string, unknown>;
 
         if (password) payload.passwordHash = await bcrypt.hash(password, 10);
 
@@ -67,29 +73,17 @@ export class AuthService {
         try {
             return this.data.post("user", payload);
         } catch (err) {
-            throw new AppError(err?.message || AuthExceptions.InvalidSignup, { code: AuthExceptions.InvalidSignup });
+            const message = err instanceof Error ? err.message : AuthExceptions.InvalidSignup;
+            throw new AppError(message, { code: AuthExceptions.InvalidSignup });
         }
     }
 
     async verifyToken(token: string): Promise<TokenBase> {
-        try {
-            const result = await jose.jwtVerify(token, this.#secret);
-            return result.payload as TokenBase;
-        } catch (error) {
-            return undefined;
-        }
+        return this.tokenService.verifyToken(this.#secret, token) as Promise<TokenBase>;
     }
 
     async sign(payload: TokenBase, options: SignOptions): Promise<string> {
-        const jwt = await new jose.SignJWT(payload).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime(options.expiresIn);
-
-        if (this.options.issuer) jwt.setIssuer(this.options.issuer);
-        if (options.issuer) jwt.setIssuer(options.issuer);
-        if (options.audience) jwt.setAudience(options.audience);
-        if (options.subject) jwt.setSubject(options.subject);
-        if (options.expiresIn) jwt.setExpirationTime(options.expiresIn);
-
-        return jwt.sign(this.#secret);
+        return this.tokenService.sign(this.#secret, this.options.issuer, payload, options);
     }
 
     async changeUserToRoles(userId: string, roles: string[]) {
@@ -128,10 +122,10 @@ export class AuthService {
     }
 
     async issueGenericToken(payload: TokenBase, expiresIn = "7 days"): Promise<string> {
-        return this.sign(payload, { expiresIn });
+        return this.tokenService.issueGenericToken(this.#secret, this.options.issuer, payload, expiresIn);
     }
 
-    async issueAccessToken(user: User, options?: SignOptions, additionalClaims?: Record<string, any>): Promise<string> {
+    async issueAccessToken(user: User, options?: SignOptions, additionalClaims?: Record<string, unknown>): Promise<string> {
         if (!user) {
             throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
@@ -153,20 +147,20 @@ export class AuthService {
         const claims = { ...user.claims, ...additionalClaims };
         if (Object.keys(claims).length) payload.claims = claims;
 
-        const sub = (user._id as any)?.toHexString?.() || user._id;
+        const sub = this.getSubject(user);
 
-        options = {
+        const signOptions: SignOptions = {
             subject: sub,
             expiresIn: this.options.accessTokenExpiry || "20m",
             ...options,
         };
 
-        if (!options.issuer) options.issuer = this.options.issuer ?? "ss";
+        if (!signOptions.issuer) signOptions.issuer = this.options.issuer ?? "ss";
 
-        return this.sign(payload, options);
+        return this.sign(payload, signOptions);
     }
 
-    async issueRefreshToken(user: User, options?: SignOptions, additionalClaims?: Record<string, any>, device?: string) {
+    async issueRefreshToken(user: User, options?: SignOptions, additionalClaims?: Record<string, unknown>, device?: string) {
         if (!user) {
             throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
         }
@@ -175,31 +169,31 @@ export class AuthService {
             sec: user.securityCode,
         };
         if (additionalClaims) payload.claims = additionalClaims;
-        const sub = (user._id as any)?.toHexString?.() || user._id;
+        const sub = this.getSubject(user);
 
-        options = {
+        const signOptions: SignOptions = {
             subject: sub,
             expiresIn: this.options.refreshTokenExpiry || "20m",
             ...options,
         };
-        if (!options.issuer) options.issuer = this.options.issuer ?? "ss";
+        if (!signOptions.issuer) signOptions.issuer = this.options.issuer ?? "ss";
         if (device) payload.d = device;
-        return this.sign(payload, options);
+        return this.sign(payload, signOptions);
     }
 
     async issueResetPasswordToken(user: User, options?: SignOptions) {
         if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
 
         const payload: TokenBase = { t: TokenTypes.reset, sec: user.securityCode };
-        const sub = (user._id as any)?.toHexString?.() || user._id;
+        const sub = this.getSubject(user);
 
-        options = {
+        const signOptions: SignOptions = {
             subject: sub,
             expiresIn: this.options.resetTokenExpiry || "20m",
             ...options,
         };
-        if (!options.issuer) options.issuer = this.options.issuer ?? "ss";
-        return this.sign(payload, options);
+        if (!signOptions.issuer) signOptions.issuer = this.options.issuer ?? "ss";
+        return this.sign(payload, signOptions);
     }
 
     async issueVerifyToken(
@@ -209,49 +203,23 @@ export class AuthService {
         sendAttempts?: number,
         options?: SignOptions,
     ): Promise<{ token: string; verification: Verification }> {
-        if (!user) {
-            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
-        }
-        const code = `${randomDigits(6)}`;
-        const payload: TokenBase = { t: TokenTypes.verify, code };
-        payload[name] = value;
-        const now = new Date();
-
-        //strict false schema only allows adding new properties this way (not direct property set)
-        await user.updateOne({
-            $set: {
-                [`${name}Verification`]: {
-                    code,
-                    expire: now.getTime() + 1000 * 60 * 20,
-                    issuedAt: now.getTime(),
-                    attempts: 0,
-                    sendAttempts: sendAttempts ?? 0,
-                    lastSend: undefined,
-                },
-            },
-        });
-        const sub = (user._id as any)?.toHexString?.() || user._id;
-
-        options = {
-            subject: sub,
-            expiresIn: this.options.verifyTokenExpiry || "20m",
-            ...options,
-        };
-
-        if (!options.issuer) options.issuer = this.options.issuer ?? "ss";
-        const token = await this.sign(payload, options);
-        return { token, verification: user.get(name + "Verification") };
+        return this.verificationService.issueVerifyToken(
+            user,
+            name,
+            value,
+            sendAttempts,
+            options,
+            String(this.options.verifyTokenExpiry || "20m"),
+            this.options.issuer ?? "ss",
+            (payload, signOptions) => this.sign(payload as TokenBase, signOptions),
+        ) as Promise<{ token: string; verification: Verification }>;
     }
 
     async removeVerifyToken(user: UserDocument, name: string) {
-        if (!user) {
-            throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
-        }
-        await user.updateOne({ $set: { [`${name}Verification`]: undefined } });
+        return this.verificationService.removeVerifyToken(user, name);
     }
 
-    async generateApiKey(user: UserDocument, name: string, principle: any) {
-        const model = await this.data.getModel("api_key");
+    async generateApiKey(user: UserDocument, name: string, principle: unknown) {
         const key = randomString(20);
         const secret = randomString(20);
         const secrethash = sha256(key + secret).toString("base64");
@@ -268,182 +236,102 @@ export class AuthService {
         return key + ":" + secret;
     }
 
-    async findUserById(id: string): Promise<UserDocument> {
+    async findUserById(id: string): Promise<UserDocument | null> {
         return this.model.findOne({ _id: id });
     }
-    async findUserByUsername(username: string): Promise<UserDocument> {
+    async findUserByUsername(username: string): Promise<UserDocument | null> {
         return this.model.findOne({ username });
     }
-    async findUserByEmail(email: string): Promise<UserDocument> {
+    async findUserByEmail(email: string): Promise<UserDocument | null> {
         return this.model.findOne({ email });
     }
-    async findUserByPhone(phone: string): Promise<UserDocument> {
+    async findUserByPhone(phone: string): Promise<UserDocument | null> {
         return this.model.findOne({ phone });
     }
 
     async signInUserByUsernameAndPassword(username: string, password: string, device: UserDevice): Promise<UserDocument> {
-        const user = await this.findUserByUsername(username);
-        return this.signInUser(user, password, true, device);
+        return this.sessionService.signInUserByIdentifier(() => this.findUserByUsername(username), password, device, (user, nextPassword, registerAttempt, nextDevice) =>
+            this.signInUser(user, nextPassword ?? undefined, registerAttempt, nextDevice ?? undefined),
+        );
     }
     async signInUserByEmailAndPassword(email: string, password: string, device: UserDevice): Promise<UserDocument> {
-        const user = await this.findUserByEmail(email);
-        return this.signInUser(user, password, true, device);
+        return this.sessionService.signInUserByIdentifier(() => this.findUserByEmail(email), password, device, (user, nextPassword, registerAttempt, nextDevice) =>
+            this.signInUser(user, nextPassword ?? undefined, registerAttempt, nextDevice ?? undefined),
+        );
     }
     async signInUserByPhoneAndPassword(phone: string, password: string, device: UserDevice): Promise<UserDocument> {
-        const user = await this.findUserByPhone(phone);
-        return this.signInUser(user, password, true, device);
+        return this.sessionService.signInUserByIdentifier(() => this.findUserByPhone(phone), password, device, (user, nextPassword, registerAttempt, nextDevice) =>
+            this.signInUser(user, nextPassword ?? undefined, registerAttempt, nextDevice ?? undefined),
+        );
     }
 
     async signInUserByIdAndPassword(id: string, password: string | undefined, device: UserDevice): Promise<UserDocument> {
-        const user = await this.findUserById(id);
-        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
-
-        if (!password && (user.passwordHash || user.email || user.phone)) {
-            await this._registerFailedAttempt(user);
-            throw new AppError("Invalid passwordless signin request", { code: AuthExceptions.INVALID_PASSWORDLESS_SIGNIN_REQUEST });
-        }
-        return this.signInUser(user, password, true, device);
+        return this.sessionService.signInUserByIdAndPassword(
+            (userId) => this.findUserById(userId),
+            (user) => this._registerFailedAttempt(user),
+            (user, nextPassword, registerAttempt, nextDevice) => this.signInUser(user, nextPassword ?? undefined, registerAttempt, nextDevice ?? undefined),
+            id,
+            password,
+            device,
+        );
     }
 
     async signInUserByRefreshToken(refreshToken: string): Promise<UserDocument> {
-        const token = await this.verifyToken(refreshToken);
-        if (token && token.t === "rfs") {
-            const user = await this.findUserById(token.sub);
-            if (!user) throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
-            if (user && user.securityCode !== token.sec) throw new AppError("Invalid security code", { code: AuthExceptions.InvalidSecurityCode });
-
-            this.signInUser(user, null, true, token.d ? token.d : null);
-            const additional_claims = token.claims ?? {};
-            user.claims ??= {};
-            user.claims = { ...user.claims, ...additional_claims };
-            return user;
-        }
-        throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
+        return this.sessionService.signInUserByRefreshToken(
+            (token) => this.verifyToken(token),
+            (id) => this.findUserById(id),
+            (user, password, registerAttempt, device) => this.signInUser(user, password ?? undefined, registerAttempt, device ?? undefined),
+            refreshToken,
+        );
     }
 
     async signInUserByPrinciple(principle: Principle, key: keyof User = "email"): Promise<UserDocument> {
-        if (!principle) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
-        const user = await this.model.findOne({ [key]: principle[key] });
-        if (!user) throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
-        if (user && user.securityCode !== principle.sec) throw new AppError("Invalid security code", { code: AuthExceptions.InvalidSecurityCode });
-
-        this.signInUser(user, null, true, null);
-        user.claims ??= {};
-        return user;
+        return this.sessionService.signInUserByPrinciple(
+            (searchKey, value) => this.model.findOne({ [searchKey]: value }),
+            (user, password, registerAttempt, device) => this.signInUser(user, password ?? undefined, registerAttempt, device ?? undefined),
+            principle,
+            key,
+        );
     }
 
     async signInUser(user: UserDocument, password?: string, registerAttempt = true, device?: UserDevice) {
-        if (!user) throw new AppError("Invalid attempt", { code: AuthExceptions.INVALID_ATTEMPT });
-        if (user.disabled) throw new AppError("User disabled", { code: AuthExceptions.UserDisabled });
-
-        const userDoc = user._doc as User;
-        const isPasswordCorrect = password ? await bcrypt.compare(password, userDoc.passwordHash) : true;
-        if (isPasswordCorrect) {
-            try {
-                if (registerAttempt) await this._registerSuccessLoginAttempt(user, device);
-            } catch (err) {
-                logger.error("signInUser could not register success login attempt", err);
-            }
-            return user;
-        } else {
-            try {
-                if (registerAttempt) await this._registerFailedAttempt(user);
-            } catch (err) {
-                logger.error("signInUser could not register failed login attempt", err);
-            }
-        }
+        return this.sessionService.signInUser(
+            user,
+            password,
+            registerAttempt,
+            device,
+            (sessionUser, sessionDevice) => this._registerSuccessLoginAttempt(sessionUser, sessionDevice as UserDevice | undefined),
+            (sessionUser) => this._registerFailedAttempt(sessionUser),
+            (message, error) => logger.error(message, error),
+        );
     }
 
     async signOut(user: User | Pick<User, "_id">): Promise<void> {
-        const _user = await this.model.findOne({ _id: user._id });
-        if (!_user) throw new AppError("User no longer exists", { code: AuthExceptions.USER_NO_LONGER_EXISTS });
-        await _user.updateOne({ $set: { securityCode: randomString(5) } });
+        const userId = String(user._id);
+        logger.info({ event: "auth.signout.invalidate.start", userId });
+        try {
+            await this.sessionService.signOut(this.model, user, randomString(5));
+            logger.info({ event: "auth.signout.invalidate.success", userId });
+        } catch (error) {
+            logger.error("auth.signout.invalidate.failed", error);
+            throw error;
+        }
     }
 
     async resetPassword(resetToken: string, newPassword: string, forceChange = false) {
-        const token = await this.verifyToken(resetToken);
-        if (token && token.t === TokenTypes.reset) {
-            const user = (await this.model.findOne({ _id: token.sub }).lean()) as unknown as UserDocument;
-            if (!user) throw new AppError("User no longer exists", { code: AuthExceptions.USER_NO_LONGER_EXISTS });
-            if (token.sec && token.sec !== user.securityCode) throw new AppError("Token already used", { code: AuthExceptions.TOKEN_ALREADY_USED });
-            const passwordHash = await bcrypt.hash(newPassword, 10);
-            const update = {} as any;
-            update["$set"] = { passwordHash, securityCode: randomString(5) };
-            if (user.forceChangePwd && forceChange !== true) update["$unset"] = { forceChangePwd: "" };
-            await this.model.findByIdAndUpdate(user._id, update);
-
-            return true;
-        } else throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
+        return this.verificationService.resetPassword(this.model, resetToken, newPassword, forceChange, (token) => this.verifyToken(token));
     }
 
     async changeUserPassword(id: string, newPassword: string) {
-        const user = await this.findUserById(id);
-        if (user) {
-            const passwordHash = await bcrypt.hash(newPassword, 10);
-            const securityCode = randomString(5);
-            await user.updateOne({
-                $set: {
-                    passwordHash,
-                    securityCode,
-                },
-            });
-            return true;
-        } else throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
+        return this.verificationService.changeUserPassword((userId) => this.findUserById(userId), id, newPassword);
     }
 
     async changePassword(id: string, password: string, newPassword: string) {
-        const user = await this.findUserById(id);
-        if (user) {
-            if (user.passwordHash && (await bcrypt.compare(password, user.passwordHash))) {
-                const passwordHash = await bcrypt.hash(newPassword, 10);
-                const securityCode = randomString(5);
-                await user.updateOne({
-                    $set: {
-                        passwordHash,
-                        securityCode,
-                    },
-                });
-                return true;
-            }
-        } else throw new AppError("User not found", { code: AuthExceptions.UserNotFound });
+        return this.verificationService.changePassword((userId) => this.findUserById(userId), id, password, newPassword);
     }
 
     async verify(user: UserDocument, name: string, verifyToken: string, value?: string): Promise<boolean> {
-        if (!user) throw new AppError("Invalid user data", { code: AuthExceptions.InvalidUserData });
-
-        if (!value) {
-            const token = await this.verifyToken(verifyToken);
-            verifyToken = "";
-            if (token && token.t === TokenTypes.verify) {
-                verifyToken = token.code;
-                value = token[name];
-            }
-        }
-
-        if (verifyToken && value) {
-            const now = new Date();
-            const verification = user.get(`${name}Verification`);
-            if (verification && verification.attempts < 3 && (verification.code === "616626" || verification.code === verifyToken) && verification.expire > now.getTime()) {
-                await user.updateOne({
-                    $set: {
-                        [`${name}Verified`]: true,
-                        [`${name}Verification`]: undefined,
-                    },
-                });
-                return true;
-            } else if (verification) {
-                verification.attempts = verification.attempts ?? 0;
-                verification.attempts++;
-                await user.updateOne({
-                    $set: {
-                        [`${name}Verification`]: undefined,
-                        [`${name}Verification`]: Object.assign({}, verification),
-                    },
-                });
-
-                throw new AppError("Too many attempts, please try again in a while", { code: AuthExceptions.TooManyAttempts });
-            } else throw new AppError("Invalid operation", { code: AuthExceptions.InvalidOperation });
-        } else throw new AppError("Invalid token", { code: AuthExceptions.InvalidToken });
+        return this.verificationService.verify(user, name, verifyToken, value, (token) => this.verifyToken(token));
     }
 
     private _registerFailedAttempt(user: UserDocument) {
@@ -491,31 +379,10 @@ export class AuthService {
 
         return user.attempts < this.options.maximumAllowedLoginAttempts;
     }
-}
 
-async function authCallback(accessToken: any, refreshToken: any, profile: any, done: any) {
-    const model: Model<UserDocument> = await this.data.getModel("user");
-    try {
-        const email = profile.emails[0].value;
-        const document = await this.model.findOne({ email }).lean();
-        //TODO even if user already exists the doc should be edited (provider.id + emailVerified + displayName) => findOrUpdate(upsert)?
-        if (document) {
-            return done(null, document);
-        } else {
-            const user = {
-                email,
-                emailVerified: true, //TODO what  the?
-                username: profile.username || email,
-                name: profile.displayName,
-                external: {
-                    [profile.provider]: profile.id,
-                },
-            } as any;
-            await this.signUp(user, randomString(20));
-            const doc = await this.model.findOne({ email }).lean();
-            return done(null, doc);
-        }
-    } catch (err) {
-        return done(err, null);
+    private getSubject(user: User): string {
+        const maybeObjectId = user._id as unknown as { toHexString?: () => string };
+        if (typeof maybeObjectId?.toHexString === "function") return maybeObjectId.toHexString();
+        return String(user._id);
     }
 }

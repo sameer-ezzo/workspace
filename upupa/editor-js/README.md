@@ -151,3 +151,12 @@ export const appConfig: ApplicationConfig = {
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- Upload adapter integration now uses token accessor-based auth wiring from `@upupa/auth`.
+- Reduced direct coupling to full auth service internals.
+
+## Usage Notes
+
+Existing editor usage stays the same. Ensure `@upupa/auth` is configured so token access is available during file upload calls from Editor.js blocks.

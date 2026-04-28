@@ -1,17 +1,18 @@
 import { Injectable, PLATFORM_ID, REQUEST, Signal, inject, DOCUMENT, makeStateKey, TransferState, signal } from "@angular/core";
-import { ReplaySubject, interval, Subject, firstValueFrom } from "rxjs";
+import { ReplaySubject, interval, Subject } from "rxjs";
 import { delayWhen } from "rxjs/operators";
 import { AUTH_OPTIONS } from "./di.token";
-import { HttpClient, HttpRequest } from "@angular/common/http";
+import { HttpRequest } from "@angular/common/http";
 import { Credentials, Verification } from "./model";
 import { Router } from "@angular/router";
-import { httpFetch } from "./http-fetch.function";
-import { analyzePassword, MutexAsync, Principle } from "@noah-ark/common";
+import { analyzePassword, MutexAsync, Principle, SocialAuthRequest, TokenPairResponse } from "@noah-ark/common";
 
 import { DeviceService } from "./device.service";
 import { isPlatformBrowser } from "@angular/common";
-import { AUTH_IDPs, IdPName } from "./idps";
+import { AUTH_IDPs, AuthIdProvider, IdPName } from "./idps";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { AuthApiClient } from "./auth-api.client";
+import { SessionOrchestrator } from "./session-orchestrator";
 
 export const ACCESS_TOKEN = "token";
 export const REFRESH_TOKEN = "refresh_token";
@@ -133,19 +134,20 @@ export class AuthService {
     public readonly options = inject(AUTH_OPTIONS, { optional: false });
     public readonly baseUrl = this.options.baseUrl;
 
-    readonly authIdPs = inject(AUTH_IDPs, { optional: true }) ?? [];
+    readonly authIdPs: AuthIdProvider[] = inject(AUTH_IDPs, { optional: true }) ?? [];
     get IdProviders(): IdPName[] {
         return this.authIdPs.map((x) => x.IdpName).filter((x): x is IdPName => !!x);
     }
-    getProviderByName(providerName: IdPName): any {
+    getProviderByName(providerName: IdPName): AuthIdProvider {
         const idp = this.authIdPs.find((x) => x.IdpName === providerName);
         if (!idp) throw new Error(`Provider ${providerName} not found`);
         return idp;
     }
 
     public readonly router = inject(Router);
-    public readonly httpAuthorized = inject(HttpClient);
     public readonly deviceService = inject(DeviceService);
+    private readonly authApi = inject(AuthApiClient);
+    private readonly sessionOrchestrator = inject(SessionOrchestrator);
 
     get passwordPolicy() {
         return Object.freeze(this.options.passwordPolicy);
@@ -184,7 +186,9 @@ export class AuthService {
                     {} as Record<string, string>,
                 );
 
-            const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies["ssr_jwt"] || "{}")) as { access_token?: string; refresh_token?: string };
+            const cookieName = (this.options as { useCookies?: { cookieName?: string } })?.useCookies?.cookieName ?? "ssr_jwt";
+            const fallbackCookie = parsedCookies["ssr_jwt"] || parsedCookies["auth"] || "{}";
+            const { access_token, refresh_token } = JSON.parse(decodeURIComponent(parsedCookies[cookieName] || fallbackCookie)) as { access_token?: string; refresh_token?: string };
 
             if (!access_token) return this.user;
             this._access_token = access_token;
@@ -209,9 +213,10 @@ export class AuthService {
         if (this.beforeUnloadHandler) return;
 
         console.warn("User Tokens will be removed on page refresh");
-        this.doc.defaultView?.addEventListener("beforeunload", (_event) => {
+        this.beforeUnloadHandler = () => {
             this.setTokens(null);
-        });
+        };
+        this.doc.defaultView?.addEventListener("beforeunload", this.beforeUnloadHandler);
     }
     private _access_token: string | null = null;
     get access_token() {
@@ -262,27 +267,20 @@ export class AuthService {
             const expire = new Date((token.exp ?? 0) * 1000);
             if (now > expire) return null;
             return token;
-        } catch (err) {
+        } catch {
             return null;
         }
     }
     async signout() {
-        try {
-            const { success } = await firstValueFrom(this.httpAuthorized.get<{ success: boolean }>(`${this.baseUrl}/signout`, { withCredentials: true }));
-            if (!success) throw new Error("SIGNOUT_FAILED");
-            this.clearBeforeUnloadListener();
-            this.localStorage.removeAccessToken();
-            this.localStorage.removeRefreshToken();
-            this._access_token = null;
-            this._refresh_token = null;
-            this.triggerNext(null);
-        } catch (error) {
-            console.error("Error signing out: ", error);
-        }
+        return this.sessionOrchestrator.signout({
+            setTokens: (tokens) => this.setTokens(tokens),
+            clearBeforeUnloadListener: () => this.clearBeforeUnloadListener(),
+            triggerNext: (user) => this.triggerNext(user),
+        });
     }
 
     async checkUser(usernameOrEmailOrPhone: string): Promise<{ canLogin: boolean } & Record<string, unknown>> {
-        return httpFetch(`${this.baseUrl}/check-user`, { usernameOrEmailOrPhone });
+        return this.authApi.checkUser(usernameOrEmailOrPhone);
     }
 
     // async refresh(refresh_token?: string): Promise<Principle | null> {
@@ -298,45 +296,26 @@ export class AuthService {
 
     @MutexAsync()
     async refresh(refresh_token?: string): Promise<Principle | null> {
-        refresh_token = refresh_token ? refresh_token : this.get_refresh_token();
-        let principle: Principle | null = null;
+        const current = this.jwt(this.get_token());
+        const next = await this.sessionOrchestrator.refresh(refresh_token, {
+            getRefreshToken: () => this.get_refresh_token(),
+            setRefreshing: (value) => this.refreshing.set(value),
+            setTokens: (tokens) => this.setTokens(tokens),
+            jwt: (token) => this.jwt(token),
+            emitRefreshed: () => this.refreshed$.next(Date.now()),
+            signout: () => this.signout(),
+            triggerNext: (user) => this.triggerNext(user),
+        });
 
-        if (refresh_token) {
-            try {
-                this.refreshing.set(true);
-                const tokens = await httpFetch(this.baseUrl, { grant_type: "refresh", refresh_token });
-                if (tokens) {
-                    this.setTokens(tokens);
-                    principle = this.jwt(tokens.access_token) as Principle;
-                    this.refreshed$.next(Date.now());
-                    return principle;
-                }
-            } catch (error) {
-                const typedError = error as { status?: number };
-                const status = `${typedError.status ?? 0}`;
-                if (status.startsWith("4")) {
-                    // Keep current valid access-token session if refresh token is rejected.
-                    if (!principle) {
-                        console.warn("SIGNING OUT: ", error);
-                        this.signout();
-                    } else {
-                        this.triggerNext(principle);
-                    }
-                } else if (status === "0") {
-                    console.warn("Network error: ", error);
-                } else {
-                    console.error("Error refreshing token: ", error);
-                }
-                return principle;
-            } finally {
-                this.refreshing.set(false);
-            }
+        if (!next && current) {
+            this.triggerNext(current);
+            return current;
         }
-        this.triggerNext(principle);
-        return principle;
+
+        return next;
     }
 
-    private setTokens(tokens: { access_token: string; refresh_token: string } | null): void {
+    private setTokens(tokens: TokenPairResponse | null): void {
         if (tokens) {
             this._access_token = tokens.access_token;
             this._refresh_token = tokens.refresh_token;
@@ -348,136 +327,71 @@ export class AuthService {
         }
         this._token$.next(this._access_token);
     }
-    async signin_Google(user: { token: string }) {
-        const res = await httpFetch(`${this.baseUrl}/google-auth`, user);
-        this.setTokens(res);
-        this.clearBeforeUnloadListener();
-        const principle = this.jwt(res.access_token);
-        this.triggerNext(principle);
-        return principle;
+    async signin_Google(user: SocialAuthRequest & { token: string }) {
+        return this.sessionOrchestrator.signinGoogle(user, {
+            setTokens: (tokens) => this.setTokens(tokens),
+            clearBeforeUnloadListener: () => this.clearBeforeUnloadListener(),
+            setupBeforeUnloadListener: () => this.setupBeforeUnloadListener(),
+            triggerNext: (principle) => this.triggerNext(principle),
+            jwt: (token) => this.jwt(token),
+            getProviderByName: (provider) => this.getProviderByName(provider),
+        });
     }
 
-    async signin_Facebook(user: { token: string }) {
-        const res = await httpFetch(`${this.baseUrl}/facebook-auth`, user);
-        this.setTokens(res);
-        this.clearBeforeUnloadListener();
-        const principle = this.jwt(res.access_token);
-        this.triggerNext(principle);
-        return principle;
+    async signin_Facebook(user: SocialAuthRequest & { token: string }) {
+        return this.sessionOrchestrator.signinFacebook(user, {
+            setTokens: (tokens) => this.setTokens(tokens),
+            clearBeforeUnloadListener: () => this.clearBeforeUnloadListener(),
+            setupBeforeUnloadListener: () => this.setupBeforeUnloadListener(),
+            triggerNext: (principle) => this.triggerNext(principle),
+            jwt: (token) => this.jwt(token),
+            getProviderByName: (provider) => this.getProviderByName(provider),
+        });
     }
 
     async signinWithProvider<Name extends IdPName>(provider: Name): Promise<Principle | { type: "reset-pwd"; reset_token: string } | null> {
-        const idp = this.getProviderByName(provider);
-
-        try {
-            const e = await idp.signin();
-            const auth_token = await httpFetch(`${this.baseUrl}/${provider}-auth`, { token: e.credential });
-
-            if (!auth_token) throw "UNDEFINED_TOKEN";
-            if ("reset_token" in auth_token) {
-                const jwt = this.jwt(auth_token.reset_token);
-                if (jwt?.t === "rst") return { type: "reset-pwd", reset_token: auth_token.reset_token };
-                else throw "INVALID_TOKEN_TYPE";
-            } else {
-                const jwt = this.jwt(auth_token.access_token);
-                this.setTokens(auth_token);
-                this.clearBeforeUnloadListener();
-                this.triggerNext(jwt);
-                return jwt as Principle;
-            }
-        } catch (err) {
-            console.log(err);
-        }
-
-        return null;
+        return this.sessionOrchestrator.signinWithProvider(provider, {
+            setTokens: (tokens) => this.setTokens(tokens),
+            clearBeforeUnloadListener: () => this.clearBeforeUnloadListener(),
+            setupBeforeUnloadListener: () => this.setupBeforeUnloadListener(),
+            triggerNext: (principle) => this.triggerNext(principle),
+            jwt: (token) => this.jwt(token),
+            getProviderByName: (providerName) => this.getProviderByName(providerName),
+        });
     }
     async signin(credentials: Credentials & { rememberMe?: boolean }): Promise<Principle | { type: "reset-pwd"; reset_token: string }> {
-        const authRequestBody: Record<string, string | any> = { grant_type: "password", rememberMe: false, password: credentials.password, device: undefined };
-
-        if (credentials.id) authRequestBody["id"] = credentials.id;
-        else if (!credentials.password) throw "USERNAME_AND_PASSWORD_ARE_REQUIRED"; //password is required for all cases except id login (passwordless login)
-
-        if (credentials.username) authRequestBody["username"] = credentials.username;
-        if (credentials.email) authRequestBody["email"] = credentials.email;
-        if (credentials.phone) authRequestBody["phone"] = credentials.phone;
-        authRequestBody["rememberMe"] = credentials.rememberMe === true;
-        try {
-            authRequestBody["device"] = await this.deviceService.getDevice();
-        } catch (e) {
-            console.error(e);
-        }
-        // try {
-        const auth_token = await httpFetch(this.baseUrl, authRequestBody);
-        if (!auth_token) throw "UNDEFINED_TOKEN";
-        if ("reset_token" in auth_token) {
-            const jwt = this.jwt(auth_token.reset_token);
-            if (jwt?.t === "rst") return { type: "reset-pwd", reset_token: auth_token.reset_token };
-            else throw "INVALID_TOKEN_TYPE";
-        } else {
-            const jwt = this.jwt(auth_token.access_token);
-
-            this.setTokens(auth_token);
-            this.triggerNext(jwt);
-            if (authRequestBody["rememberMe"] === true) this.clearBeforeUnloadListener();
-            else this.setupBeforeUnloadListener();
-
-            return jwt as Principle;
-        }
-        // } catch (error) {
-        //     if (typeof error === "string") throw error;
-        //     // if (error.status) throw error.json()
-        //     if (error.status) throw error.body.code;
-        //     else if (error.status === 0) throw "CONNECTION_ERROR";
-        //     else throw error;
-        // }
+        return this.sessionOrchestrator.signin(credentials, {
+            setTokens: (tokens) => this.setTokens(tokens),
+            clearBeforeUnloadListener: () => this.clearBeforeUnloadListener(),
+            setupBeforeUnloadListener: () => this.setupBeforeUnloadListener(),
+            triggerNext: (principle) => this.triggerNext(principle),
+            jwt: (token) => this.jwt(token),
+            getProviderByName: (provider) => this.getProviderByName(provider),
+        });
     }
 
-    login(credentials: Credentials & { rememberMe?: boolean }): Promise<{} | Principle> {
-        return this.signin(credentials);
+    signup(user: Record<string, unknown>, password: string): Promise<Record<string, unknown>> {
+        return this.authApi.signup(user, password);
     }
 
-    signup(user: any, password: string): Promise<any> {
-        const payload = Object.assign(user, { password });
-        return httpFetch(this.baseUrl + "/signup", payload);
-    }
-
-    forgotPassword(email: string, payload?: any): Promise<any> {
+    forgotPassword(email: string, payload?: Record<string, unknown>): Promise<Record<string, unknown>> {
         if (email) {
-            payload = payload || {};
-            return httpFetch(this.baseUrl + "/forgot-password", { ...payload, email: email.trim().toLocaleLowerCase() });
+            return this.authApi.forgotPassword(email, payload);
         } else throw "EMAIL_REQUIRED";
     }
 
-    async reset_password(new_password: string, reset_token: string): Promise<boolean> {
-        if (new_password && reset_token) {
-            try {
-                const result = await httpFetch(this.baseUrl + "/resetpassword", { new_password, reset_token });
-                return result;
-            } catch (err) {
-                const typedError = err as { status?: number; body?: unknown };
-                if (typedError.status) throw typedError.body;
-                else if (typedError.status === 0) throw "CONNECTION_ERROR";
-                else throw err;
-            }
-        }
-        throw new Error("NEW-PASSWORD_RESET-TOKEN_REQUIRED");
-    }
-
-    async sendVerificationCode(name: string, value: string, payload?: any): Promise<boolean> {
+    async sendVerificationCode(name: string, value: string, payload?: Record<string, unknown>): Promise<boolean> {
         try {
-            const post = { name, value, [name]: value, ...payload };
-            await firstValueFrom(this.httpAuthorized.post<boolean>(`${this.baseUrl}/verify/send`, post, { headers: { Authorization: `Bearer ${this.get_token()}` } }));
-            return true;
-        } catch (error) {
+            return await this.authApi.sendVerificationCode(name, value, payload);
+        } catch {
             return false;
         }
     }
 
-    async verify(name: string, verification: Verification): Promise<any> {
-        const value = verification.value;
+    async verify(name: string, verification: Verification): Promise<unknown> {
         // if (verification.type === 'token') const t = this.jwt(verification.token)
 
-        return firstValueFrom(this.httpAuthorized.post(`${this.baseUrl}/verify`, { name, ...verification }));
+        return this.authApi.verify(name, verification);
     }
 
     verifyPassword(password: string) {
@@ -490,7 +404,7 @@ export class AuthService {
         this.localStorage.setToken(`ORG_${REFRESH_TOKEN}`, original_refresh_token);
 
         try {
-            const impersonation_tokens = await firstValueFrom(this.httpAuthorized.post<{ access_token: string; refresh_token: string }>(`${this.baseUrl}/impersonate`, { sub }));
+            const impersonation_tokens = await this.authApi.impersonate(sub);
             //override current user tokens
             this.setTokens(impersonation_tokens);
 
@@ -498,7 +412,7 @@ export class AuthService {
             const principle = this.jwt(impersonation_tokens.access_token);
             this.triggerNext(principle);
             return principle;
-        } catch (error) {
+        } catch {
             this.localStorage.removeToken(`ORG_${original_refresh_token}`);
             return this.user;
         }

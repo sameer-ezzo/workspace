@@ -4,7 +4,7 @@ import { ThemePalette } from "@angular/material/core";
 import { DataService } from "@upupa/data";
 import { ErrorsDirective, InputBaseComponent } from "@upupa/common";
 
-import { AuthService } from "@upupa/auth";
+import { AuthTokenAccessor } from "@upupa/auth";
 import { openFileDialog } from "@upupa/upload";
 import { DialogService } from "@upupa/dialog";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -50,13 +50,13 @@ export class LocalFileInputComponent extends InputBaseComponent implements OnCha
     isBrowser = isPlatformBrowser(this.platform);
 
     data = inject(DataService);
-    auth = inject(AuthService);
+    authToken = inject(AuthTokenAccessor);
     dialog = inject(DialogService);
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
         await super.ngOnChanges(changes);
         if (this.includeAccess() === true) {
-            this.auth.token$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => this.access_token.set(`?access_token=${t}`));
+            this.authToken.token$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((t) => this.access_token.set(t ? `?access_token=${t}` : ""));
         }
     }
 

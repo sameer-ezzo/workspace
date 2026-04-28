@@ -150,3 +150,12 @@ export class DocumentViewerComponent implements OnInit {
 ## License
 
 This library needs a `LICENSE` file. Please add one. (Assuming MIT if none provided).
+
+## Recent Changes
+
+- Migrated internal auth dependency usage to accessor-first APIs from `@upupa/auth`.
+- Authorization directives and guards now read identity/roles through `AuthUserAccessor`-style integration patterns.
+
+## Usage Notes
+
+Keep using directives the same way in templates. For programmatic checks in custom authz code, inject user accessors instead of full `AuthService` when you only need identity/roles.

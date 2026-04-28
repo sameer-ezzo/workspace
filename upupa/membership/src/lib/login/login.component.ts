@@ -37,7 +37,7 @@ export class LoginComponent {
             .filter((p) => !loginFormMatcher(p))
             .map((idp) => {
                 const provider = this.auth.getProviderByName(idp);
-                return { name: idp, provider: provider, options: provider.options };
+                return { name: idp, provider: provider };
             }),
     );
 

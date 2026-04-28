@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, Optional, Inject, ViewChild, output, input, inject, signal, viewChild, model, SimpleChanges } from "@angular/core";
-import { AuthService } from "@upupa/auth";
+import { AuthApiClient } from "@upupa/auth";
 import { DynamicFormComponent, FormScheme, hiddenField } from "@upupa/dynamic-form";
 import { passwordField } from "../default-values";
 import { MEMBERSHIP_OPTIONS } from "../di.token";
@@ -18,7 +18,7 @@ export class ResetPasswordFormComponent {
     public options = inject<MembershipOptions>(MEMBERSHIP_OPTIONS, { optional: true });
     router = inject(Router);
     route = inject(ActivatedRoute);
-    public auth = inject(AuthService);
+    private readonly authApi = inject(AuthApiClient);
 
     redirectPath: string;
     loading = signal(false);
@@ -53,7 +53,7 @@ export class ResetPasswordFormComponent {
 
         try {
             const v = this.value();
-            const res = await this.auth.reset_password(v.password, this.reset_token());
+            const res = await this.authApi.resetPassword(v.password, this.reset_token());
             this.on_success.emit(res);
         } catch (error) {
             const err = this.handleError(error);
