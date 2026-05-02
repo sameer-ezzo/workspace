@@ -21,6 +21,10 @@ export function ExtractIncomingMessage(ctx: ExecutionContext): IncomingMessage {
                     query[k] = req.params[k]; // is this correct?!
                 });
 
+            // 'path' is the route wildcard parameter (e.g. /api/{*path}) and must
+            // not become a DB filter key.
+            delete query["path"];
+
             const route = req.route.path;
             return {
                 path: (req.path.startsWith("/") ? req.path : `/${req.path}`) as string,

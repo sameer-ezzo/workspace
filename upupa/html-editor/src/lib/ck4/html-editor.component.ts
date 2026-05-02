@@ -1,5 +1,5 @@
 import { isPlatformBrowser, LocationStrategy } from "@angular/common";
-import { Component, ElementRef, forwardRef, inject, input, PLATFORM_ID, SimpleChanges, viewChild, DOCUMENT } from "@angular/core";
+import { Component, DOCUMENT, ElementRef, forwardRef, inject, input, OnDestroy, PLATFORM_ID, SimpleChanges, viewChild } from "@angular/core";
 import { NG_VALUE_ACCESSOR } from "@angular/forms";
 import { loadScript } from "@noah-ark/common";
 import { AuthTokenAccessor } from "@upupa/auth";
@@ -69,6 +69,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     private editor: any;
+    private isEditorReady = false;
+    private pendingData: string | null = null;
 
     async ngAfterViewInit() {
         if (!this.isBrowser) return;
@@ -91,6 +93,8 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     private getEditorConfig() {
         const language = this.normalizedLanguage();
         const contentsLangDirection = this.normalizedDir();
+        const requestedBaseFloatZIndex = Number(this.config()?.baseFloatZIndex ?? 0);
+        const baseFloatZIndex = Number.isFinite(requestedBaseFloatZIndex) ? Math.max(100000, requestedBaseFloatZIndex) : 100000;
 
         return {
             licenseKey: "GPL",
@@ -115,18 +119,65 @@ export class CKEditor4Component extends InputBaseComponent<string> {
             // disallowedContent: "*{font-family,font-size}",
             allowedContent: true,
             protectedSource: [/<iframe[\s\S]*?<\/iframe>/gi],
+            startupFocus: false,
 
             ...this.config(),
+            baseFloatZIndex,
             language,
             contentsLanguage: language,
             contentsLangDirection,
         };
     }
 
+    private async ensureEditorScriptLoaded(): Promise<void> {
+        if (typeof CKEDITOR !== "undefined") return;
+
+        const src = `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`;
+        if (CKEditor4Component.isScriptLoaded[src]) return;
+
+        if (!CKEditor4Component.loadPromise[src]) {
+            CKEditor4Component.loadPromise[src] = loadScript(this.doc, src)
+                .then(() => {
+                    CKEditor4Component.isScriptLoaded[src] = true;
+                })
+                .finally(() => {
+                    CKEditor4Component.loadPromise[src] = null;
+                });
+        }
+
+        await CKEditor4Component.loadPromise[src];
+    }
+
+    private setEditorData(value: string): void {
+        if (!this.editor) return;
+
+        if (this.isEditorReady) {
+            this.editor.setData(value || "", { internal: true });
+        } else {
+            this.pendingData = value || "";
+        }
+    }
+
+    private isKnownDestroyRace(error: unknown): boolean {
+        const message = error instanceof Error ? error.message : `${error ?? ""}`;
+        const stack = error instanceof Error ? error.stack ?? "" : "";
+        return message.includes("reading 'blur'") || stack.includes("focusManager.remove");
+    }
+
     private destroyEditor(): void {
         if (!this.editor) return;
-        this.editor.destroy();
+
+        try {
+            this.editor.destroy(true);
+        } catch (error) {
+            if (!this.isKnownDestroyRace(error)) {
+                console.warn("CKEditor destroy failed", error);
+            }
+        }
+
         this.editor = null;
+        this.isEditorReady = false;
+        this.pendingData = null;
     }
 
     private async recreateEditor(): Promise<void> {
@@ -137,14 +188,25 @@ export class CKEditor4Component extends InputBaseComponent<string> {
     }
 
     private async loadEditor(initialData?: string): Promise<void> {
-        if (typeof CKEDITOR === "undefined") await loadScript(this.doc, `${this.baseHref}ckeditor/ckeditor.js?v=0.0.1`);
+        await this.ensureEditorScriptLoaded();
 
         const config = this.getEditorConfig();
         this.editor = CKEDITOR.replace(this.editorElement()?.nativeElement, config);
-        this.editor.setData(initialData ?? this.value() ?? "");
+        this.isEditorReady = false;
+        this.pendingData = initialData ?? this.value() ?? "";
+
+        this.editor.on("instanceReady", () => {
+            this.isEditorReady = true;
+            if (this.pendingData !== null) {
+                const next = this.pendingData;
+                this.pendingData = null;
+                this.editor?.setData(next, { internal: true });
+            }
+        });
 
         // Handle editor changes
         this.editor.on("change", () => {
+            if (!this.isEditorReady) return;
             const value = this.editor.getData();
             this.handleUserInput(value);
         });
@@ -195,7 +257,7 @@ export class CKEditor4Component extends InputBaseComponent<string> {
 
     override writeValue(value: string | null): void {
         super.writeValue(value);
-        if (this.editor) this.editor.setData(value || "", { internal: true });
+        if (this.editor) this.setEditorData(value || "");
     }
 
     override async ngOnChanges(changes: SimpleChanges): Promise<void> {
@@ -209,7 +271,11 @@ export class CKEditor4Component extends InputBaseComponent<string> {
         }
 
         if (changes["value"]) {
-            this.editor?.setData(this.value() ?? "");
+            this.setEditorData(this.value() ?? "");
         }
+    }
+
+    ngOnDestroy(): void {
+        this.destroyEditor();
     }
 }
