@@ -137,7 +137,7 @@ export class AuthService {
         };
 
         if (user.phone) payload.phone = user.phone;
-        if (user.roles?.length) payload.roles = user.roles;
+        if (user.roles?.length) payload.roles = Array.from(user.roles as string[]);
         if (user.emailVerified === true) payload.emv = 1;
         if (user.phoneVerified === true) payload.phv = 1;
 

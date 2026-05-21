@@ -13,10 +13,9 @@ import * as os from "os";
 // import mongoose from "mongoose"
 // import { rejects } from "assert"
 
-import { execSync } from "child_process";
 import { PostedFile, File } from "@noah-ark/common";
 import mongoose from "mongoose";
-import { join } from "path";
+import { dirname, join } from "path";
 import { createWriteStream, existsSync, mkdirSync, opendirSync, renameSync, statSync } from "fs";
 import { ObjectId } from "mongodb";
 
@@ -27,29 +26,17 @@ export function getStorageDir() {
     return base.endsWith("storage") ? base : join(base, "storage");
 }
 export function makeDir(dir: string) {
-    dir = joinStoragePath(dir.replace(/\\/g, "/"));
-    if (existsSync(dir)) return;
-
-    const segments = dir.split(separator);
-    segments[0] = "/";
-    for (let i = 1; i < segments.length; i++) {
-        segments[i] = join(segments[i - 1], segments[i]);
-    }
-    for (let i = 1; i < segments.length; i++) {
-        const dir = segments[i];
-        if (!dir || dir === "." || dir === "..") continue;
-        if (!existsSync(dir)) mkdirSync(dir);
-    }
+    const normalizedDir = joinStoragePath(dir.replace(/\\/g, "/"));
+    if (existsSync(normalizedDir)) return;
+    mkdirSync(normalizedDir, { recursive: true });
 }
 
 export function mv(oldpath: string, newpath: string) {
-    execSync(`mv "${oldpath}" "${newpath}"`);
+    renameSync(oldpath, newpath);
 }
 export function mvToStorage(oldpath: string, newpath: string) {
     const newPathFull = join(getStorageDir(), normalizePath(newpath));
-    const dirSegments = newPathFull.split("/");
-    dirSegments.pop();
-    const newPathFullDir = dirSegments.join("/");
+    const newPathFullDir = dirname(newPathFull);
     if (!isDir(newPathFullDir)) makeDir(newPathFullDir);
     mv(oldpath, newPathFull);
 }

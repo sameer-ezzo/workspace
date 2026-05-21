@@ -342,7 +342,7 @@ export class QueryParser {
                 fields = fields || {};
                 const o = this._operator(segments[1]);
                 if (o) {
-                    const res = Object.entries(o).at(0) as [string, any];
+                    const res = Object.entries(o)[0] as [string, any];
                     fields[segments[0]] = { [res[0]]: res[1] || 1 };
                 } else fields[segments[0]] = segments[1];
             }
