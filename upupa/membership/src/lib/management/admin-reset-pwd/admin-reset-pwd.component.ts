@@ -1,11 +1,12 @@
-import { Component, Input } from "@angular/core";
+import { Component, input } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { TranslateService } from "@upupa/language";
 import { ActionEvent } from "@upupa/common";
 import { firstValueFrom } from "rxjs";
-import { MatFormField, MatFormFieldAppearance, MatHint } from "@angular/material/form-field";
+import { MatFormField, MatHint } from "@angular/material/form-field";
+import type { MatFormFieldAppearance } from "@angular/material/form-field";
 import { SnackBarService } from "@upupa/dialog";
 import { FormsModule } from "@angular/forms";
 @Component({
@@ -23,11 +24,11 @@ import { FormsModule } from "@angular/forms";
 export class AdminResetPasswordComponent {
     loading = false;
 
-    @Input() email: string;
-    @Input() appearance: MatFormFieldAppearance = "outline";
+    readonly email = input<string>(undefined);
+    readonly appearance = input<MatFormFieldAppearance>("outline");
 
-    password: string;
-    confirmPassword: string;
+    password!: string;
+    confirmPassword!: string;
 
     constructor(
         private auth: AuthService,
@@ -44,7 +45,7 @@ export class AdminResetPasswordComponent {
         try {
             this.loading = true;
             const base = this.auth.baseUrl;
-            await firstValueFrom(this.http.post(`${base}/adminreset`, { email: this.email, new_password: this.password }));
+            await firstValueFrom(this.http.post(`${base}/adminreset`, { email: this.email(), new_password: this.password }));
         } catch (error) {
             this.snack.openFailed();
         } finally {

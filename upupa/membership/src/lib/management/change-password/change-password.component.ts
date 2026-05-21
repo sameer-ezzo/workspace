@@ -2,7 +2,8 @@ import { Component, Input, Optional, Output, EventEmitter } from "@angular/core"
 import { AuthService } from "@upupa/auth";
 import { HttpClient } from "@angular/common/http";
 import { MatDialogRef } from "@angular/material/dialog";
-import { MatFormFieldAppearance, MatFormFieldModule } from "@angular/material/form-field";
+import type { MatFormFieldAppearance } from "@angular/material/form-field";
+import { MatFormFieldModule } from "@angular/material/form-field";
 import { firstValueFrom } from "rxjs";
 import { SnackBarService } from "@upupa/dialog";
 import { FormsModule } from "@angular/forms";
@@ -17,9 +18,9 @@ import { FormsModule } from "@angular/forms";
 export class ChangePasswordComponent {
     loading = false;
 
-    oldPassword: string;
-    newPassword: string;
-    confirmPassword: string;
+    oldPassword!: string;
+    newPassword!: string;
+    confirmPassword!: string;
 
     @Input() appearance: MatFormFieldAppearance = "fill";
     @Output() passwordChanged = new EventEmitter<boolean>();
